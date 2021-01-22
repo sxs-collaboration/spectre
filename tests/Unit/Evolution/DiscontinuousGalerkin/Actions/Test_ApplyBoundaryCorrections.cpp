@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
@@ -19,6 +18,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
@@ -170,11 +170,9 @@ struct SetLocalMortarData {
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT
     constexpr size_t volume_dim = Metavariables::volume_dim;
     const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
+    const auto& volume_mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
     const auto& mortar_meshes =
         db::get<evolution::dg::Tags::MortarMesh<volume_dim>>(box);
-    const auto& face_meshes = db::get<
-        domain::Tags::Interface<domain::Tags::InternalDirections<volume_dim>,
-                                domain::Tags::Mesh<volume_dim - 1>>>(box);
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     const auto& next_time_step_id =
         db::get<::Tags::Next<::Tags::TimeStepId>>(box);
@@ -183,8 +181,29 @@ struct SetLocalMortarData {
     constexpr size_t number_of_dg_package_tags_components =
         Variables<mortar_tags_list>::number_of_independent_components;
 
+    MAKE_GENERATOR(generator);
+    std::uniform_real_distribution<> dist_positive(0.5, 1.);
+
+    using CovectorAndMag =
+        Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                             evolution::dg::Tags::NormalCovector<volume_dim>>>;
     for (const auto& [direction, neighbor_ids] : element.neighbors()) {
       size_t count = 0;
+      const Mesh<volume_dim - 1> face_mesh =
+          volume_mesh.slice_away(direction.dimension());
+      CovectorAndMag covector_and_mag{face_mesh.number_of_grid_points()};
+      get<evolution::dg::Tags::MagnitudeOfNormal>(covector_and_mag) =
+          make_with_random_values<Scalar<DataVector>>(
+              make_not_null(&generator), make_not_null(&dist_positive),
+              face_mesh.number_of_grid_points());
+      db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
+          make_not_null(&box),
+          [&covector_and_mag](const auto covector_and_mag_ptr,
+                              const auto& local_direction) {
+            (*covector_and_mag_ptr)[local_direction] = covector_and_mag;
+          },
+          direction);
+
       for (const auto& neighbor_id : neighbor_ids) {
         std::pair mortar_id{direction, neighbor_id};
         const Mesh<volume_dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
@@ -199,14 +218,13 @@ struct SetLocalMortarData {
 
         db::mutate<evolution::dg::Tags::MortarData<volume_dim>>(
             make_not_null(&box),
-            [&face_meshes, &mortar_id, &next_time_step_id, &time_step_id,
+            [&face_mesh, &mortar_id, &next_time_step_id, &time_step_id,
              &type_erased_boundary_data_on_mortar](
                 const auto mortar_data_ptr) noexcept {
               mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
                   Metavariables::local_time_stepping ? next_time_step_id
                                                      : time_step_id,
-                  face_meshes.at(mortar_id.first),
-                  std::move(type_erased_boundary_data_on_mortar));
+                  face_mesh, std::move(type_erased_boundary_data_on_mortar));
             });
         ++count;
       }
@@ -260,6 +278,7 @@ struct component {
                                     Frame::Inertial>,
       domain::Tags::DetInvJacobianCompute<Metavariables::volume_dim,
                                           Frame::Logical, Frame::Inertial>,
+
       domain::Tags::InternalDirectionsCompute<Metavariables::volume_dim>,
       domain::Tags::InterfaceCompute<
           internal_directions,
@@ -429,10 +448,6 @@ void test_impl(const Spectral::Quadrature quadrature,
       get_tag<evolution::dg::Tags::MortarData<Dim>>(runner, self_id);
 
   // "Send" mortar data to element
-  const auto& face_meshes =
-      get_tag<domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
-                                      domain::Tags::Mesh<Dim - 1>>>(runner,
-                                                                    self_id);
   const auto& mortar_meshes =
       get_tag<evolution::dg::Tags::MortarMesh<Dim>>(runner, self_id);
   using mortar_tags_list = typename BoundaryTerms<Dim>::dg_package_field_tags;
@@ -440,6 +455,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       Variables<mortar_tags_list>::number_of_independent_components;
   for (const auto& [direction, neighbor_ids] : neighbors) {
     size_t count = 0;
+    const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
     for (const auto& neighbor_id : neighbor_ids) {
       std::pair mortar_id{direction, neighbor_id};
       const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
@@ -452,7 +468,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                     100 * count);
       std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
                  std::optional<std::vector<double>>, ::TimeStepId>
-          data{face_meshes.at(direction),
+          data{face_mesh,
                {},
                {flux_data},
                {metavars::local_time_stepping ? next_time_step_id
@@ -465,7 +481,7 @@ void test_impl(const Spectral::Quadrature quadrature,
               time_step_id, std::pair{std::pair{direction, neighbor_id}, data});
       all_mortar_data.at(mortar_id).insert_neighbor_mortar_data(
           metavars::local_time_stepping ? next_time_step_id : time_step_id,
-          face_meshes.at(direction), flux_data);
+          face_mesh, flux_data);
       ++count;
     }
   }
@@ -566,19 +582,11 @@ void test_impl(const Spectral::Quadrature quadrature,
 
     // Lift the boundary terms from the face into the volume
     const auto& magnitude_of_face_normal =
-        mortar_id.second == ElementId<Dim>::external_boundary_id()
-            ? get_tag<domain::Tags::Interface<
-                  domain::Tags::BoundaryDirectionsInterior<Dim>,
-                  ::Tags::Magnitude<
-                      domain::Tags::UnnormalizedFaceNormal<Dim>>>>(runner,
-                                                                   self_id)
-                  .at(direction)
-            : get_tag<domain::Tags::Interface<
-                  domain::Tags::InternalDirections<Dim>,
-                  ::Tags::Magnitude<
-                      domain::Tags::UnnormalizedFaceNormal<Dim>>>>(runner,
-                                                                   self_id)
-                  .at(direction);
+        get<evolution::dg::Tags::MagnitudeOfNormal>(
+            *get_tag<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
+                 runner, self_id)
+                 .at(direction));
+
     if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
       // The lift_flux function lifts only on the slice, it does not add
       // the contribution to the volume.
