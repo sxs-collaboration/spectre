@@ -5,8 +5,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
@@ -25,6 +26,9 @@ struct System {
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = 1;
 
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
+
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;
   using flux_variables = tmpl::list<Tags::U>;
   using gradient_variables = tmpl::list<>;
@@ -35,11 +39,5 @@ struct System {
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed;
-
-  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute;
-  using char_speeds_tag = Tags::CharacteristicSpeeds;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
 };
 }  // namespace Burgers
