@@ -15,6 +15,7 @@
 #include <type_traits>
 
 #include "Time/BoundaryHistory.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -457,7 +458,10 @@ void check_dense_output(const TimeStepper& stepper,
                         const int expected_order) noexcept {
   const auto get_dense = [&stepper](TimeDelta step_size,
                                     const double time) noexcept {
-    TimeStepId time_id(true, 0, step_size.slab().start());
+    TimeStepId time_id(step_size.is_positive(), 0,
+                       step_size.is_positive() ? step_size.slab().start()
+                                               : step_size.slab().end());
+    const evolution_less<double> before{time_id.time_runs_forward()};
     double y = 1.;
     TimeSteppers::History<double, double> history;
     initialize_history(
@@ -470,7 +474,7 @@ void check_dense_output(const TimeStepper& stepper,
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
       history.insert(time_id, y, y);
       if (next_time_id.substep() == 0 and
-          time < next_time_id.step_time().value()) {
+          before(time, next_time_id.step_time().value())) {
         stepper.dense_update_u(make_not_null(&y), history, time);
         return y;
       }
@@ -482,22 +486,29 @@ void check_dense_output(const TimeStepper& stepper,
 
   // Check that the dense output is continuous
   {
-    const Slab slab(0., 1.);
-    Time time = slab.start();
-    double y = 1.;
-    TimeSteppers::History<double, double> history;
-    const auto rhs = [](const double v, const double /*t*/) noexcept {
-      return v;
-    };
-    initialize_history(
-        time, &history, [](const double t) noexcept { return exp(t); }, rhs,
-        slab.duration(), stepper.number_of_past_steps());
-    take_step(&time, &y, &history, stepper, rhs, slab.duration());
+    auto local_approx = approx.epsilon(1e-12);
+    for (const auto time_step :
+         {Slab(0., 1.).duration(), -Slab(-1., 0.).duration()}) {
+      CAPTURE(time_step);
+      Time time = Slab(0., 1.).start().with_slab(time_step.slab());
+      double y = 1.;
+      TimeSteppers::History<double, double> history;
+      const auto rhs = [](const double v, const double /*t*/) noexcept {
+        return v;
+      };
+      initialize_history(
+          time, &history, [](const double t) noexcept { return exp(t); }, rhs,
+          time_step, stepper.number_of_past_steps());
+      take_step(&time, &y, &history, stepper, rhs, time_step);
 
-    CHECK(get_dense(slab.duration(), std::numeric_limits<double>::epsilon()) ==
-          approx(1.));
-    CHECK(get_dense(slab.duration(),
-                    1. - std::numeric_limits<double>::epsilon()) == approx(y));
+      // Some time steppers special-case the endpoints of the
+      // interval, so check just inside to trigger the main dense
+      // output path.
+      CHECK(get_dense(time_step, std::numeric_limits<double>::epsilon() *
+                                     time_step.value()) == local_approx(1.));
+      CHECK(get_dense(time_step, (1. - std::numeric_limits<double>::epsilon()) *
+                                     time.value()) == local_approx(y));
+    }
   }
 
   // Test convergence
@@ -512,6 +523,14 @@ void check_dense_output(const TimeStepper& stepper,
                  exp(0.25 * M_PI));
     };
     CHECK(convergence_rate(large_steps, small_steps, error) ==
+          approx(expected_order).margin(0.4));
+
+    const auto error_backwards = [&get_dense](const int32_t steps) noexcept {
+      const Slab slab(-1., 0.);
+      return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
+                 exp(-0.25 * M_PI));
+    };
+    CHECK(convergence_rate(large_steps, small_steps, error_backwards) ==
           approx(expected_order).margin(0.4));
   }
 }
