@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -48,23 +47,7 @@ struct component {
                  domain::Tags::Element<Metavariables::volume_dim>,
                  domain::Tags::Mesh<Metavariables::volume_dim>,
                  evolution::dg::Tags::Quadrature>;
-  using compute_tags = tmpl::list<
-      domain::Tags::InternalDirectionsCompute<Metavariables::volume_dim>,
-      domain::Tags::InterfaceCompute<
-          internal_directions,
-          domain::Tags::Direction<Metavariables::volume_dim>>,
-      domain::Tags::InterfaceCompute<
-          internal_directions,
-          domain::Tags::InterfaceMesh<Metavariables::volume_dim>>,
-
-      domain::Tags::BoundaryDirectionsInteriorCompute<
-          Metavariables::volume_dim>,
-      domain::Tags::InterfaceCompute<
-          boundary_directions_interior,
-          domain::Tags::Direction<Metavariables::volume_dim>>,
-      domain::Tags::InterfaceCompute<
-          boundary_directions_interior,
-          domain::Tags::InterfaceMesh<Metavariables::volume_dim>>>;
+  using compute_tags = tmpl::list<>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

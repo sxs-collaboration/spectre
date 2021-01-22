@@ -25,9 +25,7 @@ template <size_t Dim>
 auto Mortars<Dim>::apply_impl(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Spectral::Quadrature quadrature, const Element<Dim>& element,
-    const TimeStepId& next_temporal_id,
-    const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
-        interface_meshes) noexcept
+    const TimeStepId& next_temporal_id, const Mesh<Dim>& volume_mesh) noexcept
     -> std::tuple<
         MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
         MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
@@ -50,7 +48,7 @@ auto Mortars<Dim>::apply_impl(
       mortar_data[mortar_id];  // Default initialize data
       mortar_meshes.emplace(
           mortar_id,
-          ::dg::mortar_mesh(interface_meshes.at(direction),
+          ::dg::mortar_mesh(volume_mesh.slice_away(direction.dimension()),
                             ::domain::Initialization::create_initial_mesh(
                                 initial_extents, neighbor, quadrature,
                                 neighbors.orientation())

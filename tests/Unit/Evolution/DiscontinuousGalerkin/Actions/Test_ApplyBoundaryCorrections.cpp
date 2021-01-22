@@ -44,24 +44,6 @@ struct Var2 : db::SimpleTag {
 };
 
 template <size_t Dim>
-struct SimpleFaceNormalMagnitude
-    : db::ComputeTag,
-      ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>> {
-  using base = ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>;
-  using return_type = typename base::type;
-  static void function(const gsl::not_null<return_type*> result,
-                       const Mesh<Dim - 1>& face_mesh,
-                       const Direction<Dim>& direction) noexcept {
-    result->get() =
-        DataVector{face_mesh.number_of_grid_points(),
-                   1.0 + (direction.side() == Side::Upper ? 1.0 : 0.5) +
-                       (direction.sign() == 1.0 ? 0.25 : 0.125)};
-  }
-  using argument_tags =
-      tmpl::list<domain::Tags::Mesh<Dim - 1>, domain::Tags::Direction<Dim>>;
-};
-
-template <size_t Dim>
 struct BoundaryTerms;
 
 template <size_t Dim>
@@ -277,30 +259,7 @@ struct component {
       domain::Tags::JacobianCompute<Metavariables::volume_dim, Frame::Logical,
                                     Frame::Inertial>,
       domain::Tags::DetInvJacobianCompute<Metavariables::volume_dim,
-                                          Frame::Logical, Frame::Inertial>,
-
-      domain::Tags::InternalDirectionsCompute<Metavariables::volume_dim>,
-      domain::Tags::InterfaceCompute<
-          internal_directions,
-          domain::Tags::Direction<Metavariables::volume_dim>>,
-      domain::Tags::InterfaceCompute<
-          internal_directions,
-          domain::Tags::InterfaceMesh<Metavariables::volume_dim>>,
-      domain::Tags::InterfaceCompute<
-          internal_directions,
-          SimpleFaceNormalMagnitude<Metavariables::volume_dim>>,
-
-      domain::Tags::BoundaryDirectionsInteriorCompute<
-          Metavariables::volume_dim>,
-      domain::Tags::InterfaceCompute<
-          boundary_directions_interior,
-          domain::Tags::Direction<Metavariables::volume_dim>>,
-      domain::Tags::InterfaceCompute<
-          boundary_directions_interior,
-          domain::Tags::InterfaceMesh<Metavariables::volume_dim>>,
-      domain::Tags::InterfaceCompute<
-          boundary_directions_interior,
-          SimpleFaceNormalMagnitude<Metavariables::volume_dim>>>;
+                                          Frame::Logical, Frame::Inertial>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
