@@ -62,10 +62,9 @@ void take_step_and_check_error(
     CHECK(time_id.substep() == substep);
     history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
     bool error_updated = stepper.update_u(y, y_error, history, step_size);
-    if (substep != stepper.number_of_substeps_for_error() - 1) {
-      CAPTURE(substep);
-      CHECK_FALSE(error_updated);
-    }
+    CAPTURE(substep);
+    REQUIRE((substep == stepper.number_of_substeps_for_error() - 1) ==
+            error_updated);
     time_id = stepper.next_time_id_for_error(time_id, step_size);
   }
   CHECK(time_id.substep_time() - *time == step_size);
@@ -252,7 +251,6 @@ void integrate_error_test(const TimeStepper& stepper,
     // from the analytic solution. This solution is smooth, so the error should
     // be dominated by the stepper.
     if (i > num_steps / 2) {
-      REQUIRE(static_cast<bool>(y_error));
       double local_error = abs((y - analytic(time.value())) -
                                (previous_y - analytic(previous_time)));
       CHECK(local_error < std::max(abs(y_error), 1e-14));
