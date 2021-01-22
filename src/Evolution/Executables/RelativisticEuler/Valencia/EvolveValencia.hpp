@@ -269,7 +269,7 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
-                  SelfStart::self_start_procedure<step_actions>>,
+                  SelfStart::self_start_procedure<step_actions, system>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,

@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/Actions/Goto.hpp"     // IWYU pragma: keep
 #include "Parallel/Actions/TerminatePhase.hpp"     // IWYU pragma: keep
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
@@ -164,6 +165,7 @@ using vars_to_save = typename vars_to_save_impl<
 ///     has primitives
 /// - Removes: nothing
 /// - Modifies: Tags::TimeStep
+template <typename System>
 struct Initialize {
  private:
   template <typename TagsToSave>
@@ -171,16 +173,19 @@ struct Initialize {
 
   template <typename... TagsToSave>
   struct StoreInitialValues<tmpl::list<TagsToSave...>> {
+    using simple_tags = tmpl::list<Tags::InitialValue<TagsToSave>...>;
+
     template <typename Box>
-    static auto apply(Box box) noexcept {
-      return db::create_from<
-          db::RemoveTags<>,
-          db::AddSimpleTags<Tags::InitialValue<TagsToSave>...>>(
-          std::move(box), std::make_tuple(db::get<TagsToSave>(box))...);
+    static void apply(Box& box) noexcept {
+      ::Initialization::mutate_assign<simple_tags>(
+          make_not_null(&box), std::make_tuple(db::get<TagsToSave>(box))...);
     }
   };
 
  public:
+  using simple_tags = typename StoreInitialValues<tmpl::push_back<
+      detail::vars_to_save<System>, ::Tags::TimeStep>>::simple_tags;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -190,7 +195,6 @@ struct Initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
 
     const TimeDelta initial_step = db::get<::Tags::TimeStep>(box);
     // The slab number increments each time a new point is generated
@@ -208,17 +212,17 @@ struct Initialize {
       self_start_step /= (values_needed + 1);
     }
 
-    auto new_box = StoreInitialValues<tmpl::push_back<
-        detail::vars_to_save<system>, ::Tags::TimeStep>>::apply(std::move(box));
+    StoreInitialValues<tmpl::push_back<detail::vars_to_save<System>,
+                                       ::Tags::TimeStep>>::apply(box);
 
     db::mutate<::Tags::TimeStep>(
-        make_not_null(&new_box), [&self_start_step](
-                                     const gsl::not_null<::TimeDelta*>
-                                         time_step) noexcept {
+        make_not_null(&box),
+        [&self_start_step](
+            const gsl::not_null<::TimeDelta*> time_step) noexcept {
           *time_step = self_start_step;
         });
 
-    return std::make_tuple(std::move(new_box));
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -416,9 +420,19 @@ struct Cleanup {
           *time_step = get<0>(initial_step);
         },
         db::get<initial_step_tag>(box));
-
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
-    return std::make_tuple(db::create_from<remove_tags>(std::move(box)));
+    // reset each tag to default constructed values to reduce memory usage (Data
+    // structures like `DataVector`s and `Tensor`s have negligible memory usage
+    // when default-constructed). This tends to be better for build time than
+    // constructing more DataBox types with and without this handful of tags.
+    tmpl::for_each<remove_tags>(
+        [&box](auto tag_v) noexcept {
+          using tag = typename decltype(tag_v)::type;
+          db::mutate<tag>(make_not_null(&box), [](auto tag_value) noexcept {
+            *tag_value = std::decay_t<decltype(*tag_value)>{};
+          });
+        });
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions
@@ -427,7 +441,7 @@ namespace detail {
 struct PhaseStart;
 struct PhaseEnd;
 
-template <typename StepActions>
+template <typename StepActions, typename System>
 struct self_start_procedure_impl {
   using flat_actions = tmpl::flatten<tmpl::list<StepActions>>;
   static_assert(
@@ -436,7 +450,7 @@ struct self_start_procedure_impl {
       "update the history.");
   // clang-format off
   using type = tmpl::flatten<tmpl::list<
-      SelfStart::Actions::Initialize,
+      SelfStart::Actions::Initialize<System>,
       ::Actions::Label<detail::PhaseStart>,
       SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
       ::Actions::AdvanceTime,
@@ -462,7 +476,7 @@ struct self_start_procedure_impl {
 /// time).
 ///
 /// \see SelfStart
-template <typename StepActions>
+template <typename StepActions, typename System>
 using self_start_procedure =
-    typename detail::self_start_procedure_impl<StepActions>::type;
+    typename detail::self_start_procedure_impl<StepActions, System>::type;
 }  // namespace SelfStart

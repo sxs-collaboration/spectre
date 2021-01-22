@@ -19,7 +19,8 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
+#include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
@@ -144,12 +145,15 @@ struct Component {
                      tmpl::list<Actions::UpdateU<>, Actions::UpdatePrimitives>,
                      Actions::UpdateU<>>>;
   using action_list = tmpl::flatten<
-      tmpl::list<SelfStart::self_start_procedure<step_actions>, step_actions>>;
+      tmpl::list<SelfStart::self_start_procedure<
+                     step_actions, typename metavariables::system>,
+                 step_actions>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
+              Actions::SetupDataBox>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, action_list>>;
 };
@@ -204,7 +208,7 @@ template <template <typename> class U, typename T>
 using is_a_lambda = detail::wrapped_is_a<detail::is_a_wrapper<U>, T>;
 
 using not_self_start_action = std::negation<std::disjunction<
-    std::is_same<SelfStart::Actions::Initialize, tmpl::_1>,
+    is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
     is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
     std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
     is_a_lambda<SelfStart::Actions::StartNextOrderIfReady, tmpl::_1>,
@@ -252,14 +256,13 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
   const Time initial_time = forward_in_time ? slab.start() : slab.end();
   const double initial_value = -1.;
 
-  using simple_tags = typename Component<Metavariables<>>::simple_tags;
-  using compute_tags = typename Component<Metavariables<>>::compute_tags;
-
   MockRuntimeSystem<> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
   emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
                                    initial_time, initial_time_step, order,
                                    initial_value);
+  ActionTesting::next_action<Component<Metavariables<>>>(make_not_null(&runner),
+                                                         0);
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables<>::Phase::Testing);
@@ -267,7 +270,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
   {
     INFO("Initialize");
     const bool jumped =
-        run_past<std::is_same<SelfStart::Actions::Initialize, tmpl::_1>,
+        run_past<is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
                  not_self_start_action>(make_not_null(&runner));
     CHECK(not jumped);
     CHECK(
@@ -348,18 +351,23 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
       ActionTesting::next_action<Component<Metavariables<>>>(
           make_not_null(&runner), 0);
     }
-    const auto& box =
-        ActionTesting::get_databox<Component<Metavariables<>>,
-                                   tmpl::append<simple_tags, compute_tags>>(
-            runner, 0);
-    CHECK(db::get<Var>(box) == initial_value);
-    CHECK(db::get<Tags::TimeStep>(box) == initial_time_step);
-    CHECK(db::get<Tags::TimeStepId>(box) ==
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>, Var>(
+              runner, 0) == initial_value);
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                         Tags::TimeStep>(runner, 0) ==
+          initial_time_step);
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                         Tags::TimeStepId>(runner, 0) ==
           TimeStepId(forward_in_time, 0, initial_time));
     // This test only uses Adams-Bashforth.
-    CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                         Tags::Next<Tags::TimeStepId>>(runner,
+                                                                       0) ==
           TimeStepId(forward_in_time, 0, initial_time + initial_time_step));
-    CHECK(db::get<history_tag>(box).size() == order - 1);
+    CHECK(
+        ActionTesting::get_databox_tag<Component<Metavariables<>>, history_tag>(
+            runner, 0)
+            .size() == order - 1);
   }
 }
 
@@ -379,6 +387,9 @@ double error_in_step(const size_t order, const double step) noexcept {
   emplace_component_and_initialize<TestPrimitives>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
+  ActionTesting::next_action<Component<Metavariables<TestPrimitives>>>(
+      make_not_null(&runner), 0);
+
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables<TestPrimitives>::Phase::Testing);
 
