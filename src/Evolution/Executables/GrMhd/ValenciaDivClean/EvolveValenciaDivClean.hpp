@@ -244,12 +244,11 @@ struct EvolutionMetavars {
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>, Limiters::Actions::SendData<EvolutionMetavars>,
+      Actions::MutateApply<boundary_scheme>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
+      Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<
           grmhd::ValenciaDivClean::FixConservatives>,
@@ -318,16 +317,12 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  VariableFixing::Actions::FixVariables<
-                      VariableFixing::FixToAtmosphere<volume_dim,
-                                                      thermodynamic_dim>>,
-                  Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
-                  Actions::ChangeSlabSize, step_actions,
-                  tmpl::conditional_t<local_time_stepping,
-                                      Actions::ChangeStepSize<step_choosers>,
-                                      tmpl::list<>>,
-                  Actions::AdvanceTime>>>>;
+              tmpl::list<VariableFixing::Actions::FixVariables<
+                             VariableFixing::FixToAtmosphere<
+                                 volume_dim, thermodynamic_dim>>,
+                         Actions::UpdateConservatives,
+                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime>>>>;
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
