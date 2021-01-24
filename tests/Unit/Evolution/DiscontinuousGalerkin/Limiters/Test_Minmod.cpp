@@ -304,13 +304,15 @@ void test_minmod_does_not_activate(
 
 void test_minmod_slopes_on_linear_function(
     const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing linear function...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto element_size = make_array<1>(2.0);
 
@@ -395,13 +397,15 @@ void test_minmod_slopes_on_linear_function(
 
 void test_minmod_slopes_on_quadratic_function(
     const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing quadratic function...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto element_size = make_array<1>(2.0);
 
@@ -458,12 +462,14 @@ void test_minmod_slopes_on_quadratic_function(
 
 void test_minmod_slopes_with_tvb_correction(
     const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing TVB correction...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
+  CAPTURE(quadrature);
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto element_size = make_array<1>(2.0);
 
@@ -513,11 +519,10 @@ void test_minmod_slopes_with_tvb_correction(
 // Here we test the coupling of the LambdaPiN troubled cell detector with the
 // TVB constant value.
 void test_lambda_pin_troubled_cell_tvb_correction(
-    const size_t number_of_grid_points) noexcept {
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing LambdaPiN-TVB correction...");
-  CAPTURE(number_of_grid_points);
-  const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  CAPTURE(quadrature);
+  const Mesh<1> mesh(4, Spectral::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(2.0);
@@ -552,8 +557,31 @@ void test_lambda_pin_troubled_cell_tvb_correction(
   const double m2 = 2.0;
 
   const auto input = [&mesh]() noexcept {
-    const auto coords = logical_coordinates(mesh);
-    return DataVector{10.0 * step_function(get<0>(coords))};
+    // We want a function that is somewhat step-like. But for the test to work
+    // using GaussLobatto _and_ Gauss points, we need to use a representable
+    // polynomial function.
+    //
+    // So, we find here the smooth cubic that equals 10*step_function on a
+    // 4-point LGL mesh. This has the form,
+    //   f(x) = 5 + A x + B x^3
+    // subject to the constraint f(x) = 10*step_function(x) on the LGL mesh,
+    // i.e.,
+    //   f(1) = 5 + A + B = 10
+    //   f(1/sqrt(5)) = 5 + A / sqrt(5) + B / sqrt(5)^3 = 10
+    // giving the coeffs:
+    //   A = 5 (sqrt(5)^3 - 1) / 4
+    //   B = 1 - A = 25 (1 - sqrt(5)) / 4
+    //
+    // Finally, we scale around the mean by a factor just under 1, to make sure
+    // that any roundoff does not lead to values outside the range [0, 10]. this
+    // is because the minmod algorithm has sudden behavior changes if thresholds
+    // are exceeded even by roundoff, and we want to use [0, 10] as bounds on
+    // the solution values.
+    const DataVector x = get<0>(logical_coordinates(mesh));
+    const double a = 1.25 * (cube(sqrt(5)) - 1.0);
+    const double b = 6.25 * (1.0 - sqrt(5));
+    const double nearly_one = 1.0 - 1e-15;
+    return DataVector{5.0 + nearly_one * (a * x + b * cube(x))};
   }();
 
   // Establish baseline m = 0 case; LambdaPiN normally avoids limiting when
@@ -584,13 +612,15 @@ void test_lambda_pin_troubled_cell_tvb_correction(
 
 void test_minmod_slopes_at_boundary(
     const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const auto element_size = make_array<1>(2.0);
 
   const double muscl_slope_factor =
@@ -625,13 +655,15 @@ void test_minmod_slopes_at_boundary(
 
 void test_minmod_slopes_with_different_size_neighbor(
     const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing limiter with neighboring elements of different size...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const double dx = 1.0;
   const auto element_size = make_array<1>(dx);
@@ -702,31 +734,38 @@ void test_minmod_slopes_with_different_size_neighbor(
 // Check that each combination reduces the slopes as expected.
 void test_minmod_limited_slopes_1d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 1D");
-  for (const auto& minmod_type :
-       {Limiters::MinmodType::LambdaPi1, Limiters::MinmodType::LambdaPiN,
-        Limiters::MinmodType::Muscl}) {
-    for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
-      test_minmod_slopes_on_linear_function(num_grid_points, minmod_type);
-      test_minmod_slopes_with_tvb_correction(num_grid_points, minmod_type);
-      test_minmod_slopes_at_boundary(num_grid_points, minmod_type);
-      test_minmod_slopes_with_different_size_neighbor(num_grid_points,
-                                                      minmod_type);
+  for (const auto quadrature :
+       {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+    for (const auto& minmod_type :
+         {Limiters::MinmodType::LambdaPi1, Limiters::MinmodType::LambdaPiN,
+          Limiters::MinmodType::Muscl}) {
+      for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
+        test_minmod_slopes_on_linear_function(num_grid_points, minmod_type,
+                                              quadrature);
+        test_minmod_slopes_with_tvb_correction(num_grid_points, minmod_type,
+                                               quadrature);
+        test_minmod_slopes_at_boundary(num_grid_points, minmod_type,
+                                       quadrature);
+        test_minmod_slopes_with_different_size_neighbor(
+            num_grid_points, minmod_type, quadrature);
+      }
+      // This test only makes sense with more than 2 grid points
+      test_minmod_slopes_on_quadratic_function(3, minmod_type, quadrature);
+      test_minmod_slopes_on_quadratic_function(4, minmod_type, quadrature);
     }
-    // This test only makes sense with more than 2 grid points
-    test_minmod_slopes_on_quadratic_function(3, minmod_type);
-    test_minmod_slopes_on_quadratic_function(4, minmod_type);
+    // This test only makes sense with LambdaPiN, and is hardcoded for a
+    // particular number of grid points
+    test_lambda_pin_troubled_cell_tvb_correction(quadrature);
   }
-  // This test only makes sense with LambdaPiN and more than 2 grid points
-  test_lambda_pin_troubled_cell_tvb_correction(4);
 }
 
 // In 2D, test that the slopes are correctly reduced dimension-by-dimension.
-void test_minmod_limited_slopes_2d() noexcept {
-  INFO("Testing Minmod minmod_limited_slopes in 2D");
+void test_minmod_limited_slopes_2d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvb_constant = 0.0;
-  const Mesh<2> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh(3, Spectral::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<2>();
   const auto element_size = make_array<2>(2.0);
 
@@ -774,13 +813,19 @@ void test_minmod_limited_slopes_2d() noexcept {
   test_activates(input, {{3.9, 4.2, -0.5, 2.9}}, {{0.0, 0.0}});
 }
 
+void test_minmod_limited_slopes_2d() noexcept {
+  INFO("Testing Minmod minmod_limited_slopes in 2D");
+  test_minmod_limited_slopes_2d_impl(Spectral::Quadrature::GaussLobatto);
+  test_minmod_limited_slopes_2d_impl(Spectral::Quadrature::Gauss);
+}
+
 // In 3D, test that the slopes are correctly reduced dimension-by-dimension.
-void test_minmod_limited_slopes_3d() noexcept {
-  INFO("Testing Minmod minmod_limited_slopes in 3D");
+void test_minmod_limited_slopes_3d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvb_constant = 0.0;
-  const Mesh<3> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh(3, Spectral::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto element_size = make_array<3>(2.0);
 
@@ -833,6 +878,12 @@ void test_minmod_limited_slopes_3d() noexcept {
   // Limit for xi, eta, and zeta directions
   test_activates(input, {{3.4, -0.1, 1.5, 2.3, 1.2, 2.1}}, {{-1.4, 0.3, 0.1}});
   test_activates(input, {{3.8, 2.1, 2.1, 2.7, 2.2, 2.5}}, {{0.0, 0.0, 0.0}});
+}
+
+void test_minmod_limited_slopes_3d() noexcept {
+  INFO("Testing Minmod minmod_limited_slopes in 3D");
+  test_minmod_limited_slopes_3d_impl(Spectral::Quadrature::GaussLobatto);
+  test_minmod_limited_slopes_3d_impl(Spectral::Quadrature::Gauss);
 }
 
 // Helper function for testing Minmod::op()
@@ -905,14 +956,14 @@ void test_limiter_work(
   }
 }
 
-void test_minmod_limiter_1d() noexcept {
-  INFO("Test Minmod limiter in 1D");
+void test_minmod_limiter_1d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   // This test checks that Minmod limits different tensor components
   // independently
   //
   // We fill each local tensor component with the same volume data
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<1>(3, Spectral::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(0.5);
   const auto true_slope = std::array<double, 1>{{2.0}};
@@ -960,16 +1011,21 @@ void test_minmod_limiter_1d() noexcept {
                     target_vector_slope);
 }
 
-void test_minmod_limiter_2d() noexcept {
-  INFO("Test Minmod limiter in 2D");
+void test_minmod_limiter_1d() noexcept {
+  INFO("Test Minmod limiter in 1D");
+  test_minmod_limiter_1d_impl(Spectral::Quadrature::GaussLobatto);
+  test_minmod_limiter_1d_impl(Spectral::Quadrature::Gauss);
+}
+
+void test_minmod_limiter_2d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   // This test checks that Minmod limits...
   // - different tensor components independently
   // - different dimensions independently
   //
   // We fill each local tensor component with the same volume data
-  const auto mesh =
-      Mesh<2>(std::array<size_t, 2>{{3, 3}}, Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<2>(3, Spectral::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array(0.5, 1.0);
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
@@ -1051,16 +1107,21 @@ void test_minmod_limiter_2d() noexcept {
                     target_vector_slope);
 }
 
-void test_minmod_limiter_3d() noexcept {
-  INFO("Test Minmod limiter in 3D");
+void test_minmod_limiter_2d() noexcept {
+  INFO("Test Minmod limiter in 2D");
+  test_minmod_limiter_2d_impl(Spectral::Quadrature::GaussLobatto);
+  test_minmod_limiter_2d_impl(Spectral::Quadrature::Gauss);
+}
+
+void test_minmod_limiter_3d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   // This test checks that Minmod limits...
   // - different tensor components independently
   // - different dimensions independently
   //
   // We fill each local tensor component with the same volume data
-  const auto mesh =
-      Mesh<3>(std::array<size_t, 3>{{3, 3, 4}}, Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<3>({{3, 3, 4}}, Spectral::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array(0.5, 1.0, 0.8);
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};
@@ -1166,6 +1227,12 @@ void test_minmod_limiter_3d() noexcept {
   test_limiter_work(input_scalar, input_vector, mesh, logical_coords,
                     element_size, neighbor_data, target_scalar_slope,
                     target_vector_slope);
+}
+
+void test_minmod_limiter_3d() noexcept {
+  INFO("Test Minmod limiter in 3D");
+  test_minmod_limiter_3d_impl(Spectral::Quadrature::GaussLobatto);
+  test_minmod_limiter_3d_impl(Spectral::Quadrature::Gauss);
 }
 
 // Test that the limiter activates in the x-direction only. Domain quantities
