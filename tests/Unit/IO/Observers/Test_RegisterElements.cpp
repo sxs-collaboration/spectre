@@ -40,11 +40,11 @@ void check_observer_registration() {
   using element_comp = element_component<metavariables, registration_list>;
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
-  ActionTesting::emplace_component<obs_component>(&runner, 0);
+  ActionTesting::emplace_group_component<obs_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::emplace_component<obs_writer>(&runner, 0);
+  ActionTesting::emplace_nodegroup_component<obs_writer>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
   }

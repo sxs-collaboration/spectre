@@ -162,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
       {serialize_and_deserialize(events_and_triggers)}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
   ActionTesting::emplace_component<my_component>(&runner, 1);
-  ActionTesting::emplace_component<obs_component>(&runner, 0);
+  ActionTesting::emplace_group_component<obs_component>(&runner);
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 

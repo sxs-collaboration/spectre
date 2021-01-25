@@ -231,7 +231,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       0);
-  ActionTesting::emplace_component<observer_component>(&runner, 0);
+  ActionTesting::emplace_group_component<observer_component>(&runner);
 
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});

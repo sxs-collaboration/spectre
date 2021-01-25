@@ -342,7 +342,7 @@ void test_observe(
           std::move(analytic_solution)});
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       element_id);
-  ActionTesting::emplace_component<observer_component>(&runner, 0);
+  ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<db::AddSimpleTags<
       ObservationTimeTag, domain::Tags::Mesh<volume_dim>,

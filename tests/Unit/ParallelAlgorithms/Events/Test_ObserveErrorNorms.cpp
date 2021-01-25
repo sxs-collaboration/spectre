@@ -250,7 +250,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
           std::move(analytic_solution)});
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       0);
-  ActionTesting::emplace_component<observer_component>(&runner, 0);
+  ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<db::AddSimpleTags<
       ObservationTimeTag, Tags::Variables<typename decltype(vars)::tags_list>,

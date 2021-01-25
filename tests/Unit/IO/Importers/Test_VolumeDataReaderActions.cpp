@@ -102,7 +102,8 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
       {"TestVolumeData.h5", "element_data", 0.}};
 
   // Setup mock data file reader
-  ActionTesting::emplace_component<reader_component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_nodegroup_component<reader_component>(
+      make_not_null(&runner));
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<reader_component>(make_not_null(&runner), 0);
   }
