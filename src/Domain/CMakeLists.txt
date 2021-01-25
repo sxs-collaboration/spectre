@@ -52,6 +52,7 @@ target_link_libraries(
   Boost::boost
   CoordinateMaps
   DataStructures
+  DomainBoundaryConditions
   DomainStructure
   ErrorHandling
   Options

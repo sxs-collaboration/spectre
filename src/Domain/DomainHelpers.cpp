@@ -1244,6 +1244,10 @@ template <size_t VolumeDim>
 Domain<VolumeDim> rectilinear_domain(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
+    std::vector<DirectionMap<
+        VolumeDim,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        boundary_conditions,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     const std::array<bool, VolumeDim>& dimension_is_periodic,
@@ -1274,9 +1278,20 @@ Domain<VolumeDim> rectilinear_domain(
   set_cartesian_periodic_boundaries<VolumeDim>(
       dimension_is_periodic, corners_of_all_blocks, rotations_of_all_blocks,
       &neighbors_of_all_blocks);
+  ASSERT(
+      boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
+      "There must be either one boundary condition per block or none at all "
+      "specified. Boundary conditions: "
+          << boundary_conditions.size() << " total blocks: " << maps.size());
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
-    blocks.emplace_back(std::move(maps[i]), i,
-                        std::move(neighbors_of_all_blocks[i]));
+    if (boundary_conditions.empty()) {
+      blocks.emplace_back(std::move(maps[i]), i,
+                          std::move(neighbors_of_all_blocks[i]));
+    } else {
+      blocks.emplace_back(std::move(maps[i]), i,
+                          std::move(neighbors_of_all_blocks[i]),
+                          std::move(boundary_conditions[i]));
+    }
   }
   return Domain<VolumeDim>(std::move(blocks));
 }
@@ -1442,6 +1457,10 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
   template Domain<DIM(data)> rectilinear_domain(                               \
       const Index<DIM(data)>& domain_extents,                                  \
       const std::array<std::vector<double>, DIM(data)>& block_demarcations,    \
+      std::vector<DirectionMap<                                                \
+          DIM(data),                                                           \
+          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>     \
+          boundary_conditions,                                                 \
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude,           \
       const std::vector<OrientationMap<DIM(data)>>&                            \
           orientations_of_all_blocks,                                          \

@@ -76,10 +76,10 @@ template <size_t VolumeDim>
 Domain<VolumeDim> AlignedLattice<VolumeDim>::create_domain() const noexcept {
   if (blocks_to_exclude_.empty()) {
     return rectilinear_domain<VolumeDim>(
-        number_of_blocks_by_dim_, block_bounds_, {}, {}, is_periodic_in_);
+        number_of_blocks_by_dim_, block_bounds_, {}, {}, {}, is_periodic_in_);
   }
   return rectilinear_domain<VolumeDim>(
-      number_of_blocks_by_dim_, block_bounds_,
+      number_of_blocks_by_dim_, block_bounds_, {},
       {std::vector<Index<VolumeDim>>(blocks_to_exclude_.begin(),
                                      blocks_to_exclude_.end())},
       {}, make_array<VolumeDim>(false));

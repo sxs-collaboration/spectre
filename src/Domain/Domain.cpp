@@ -27,13 +27,28 @@ template <size_t VolumeDim>
 Domain<VolumeDim>::Domain(
     std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>
-        maps) noexcept {
+        maps,
+    std::vector<DirectionMap<
+        VolumeDim,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        boundary_conditions) noexcept {
+  ASSERT(
+      boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
+      "There must be either one set of boundary conditions per block or none "
+      "at all specified.");
+
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks, maps);
   for (size_t i = 0; i < maps.size(); i++) {
-    blocks_.emplace_back(std::move(maps[i]), i,
-                         std::move(neighbors_of_all_blocks[i]));
+    if (boundary_conditions.empty()) {
+      blocks_.emplace_back(std::move(maps[i]), i,
+                           std::move(neighbors_of_all_blocks[i]));
+    } else {
+      blocks_.emplace_back(std::move(maps[i]), i,
+                           std::move(neighbors_of_all_blocks[i]),
+                           std::move(boundary_conditions[i]));
+    }
   }
 }
 
@@ -44,12 +59,20 @@ Domain<VolumeDim>::Domain(
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    const std::vector<PairOfFaces>& identifications) noexcept {
+    const std::vector<PairOfFaces>& identifications,
+    std::vector<DirectionMap<
+        VolumeDim,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        boundary_conditions) noexcept {
   ASSERT(
       maps.size() == corners_of_all_blocks.size(),
       "Must pass same number of maps as block corner sets, but maps.size() == "
           << maps.size() << " and corners_of_all_blocks.size() == "
           << corners_of_all_blocks.size());
+  ASSERT(
+      boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
+      "There must be either one set of boundary conditions per block or none "
+      "at all specified.");
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks,
@@ -57,8 +80,14 @@ Domain<VolumeDim>::Domain(
   set_identified_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
                                        &neighbors_of_all_blocks);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
-    blocks_.emplace_back(std::move(maps[i]), i,
-                         std::move(neighbors_of_all_blocks[i]));
+    if (boundary_conditions.empty()) {
+      blocks_.emplace_back(std::move(maps[i]), i,
+                           std::move(neighbors_of_all_blocks[i]));
+    } else {
+      blocks_.emplace_back(std::move(maps[i]), i,
+                           std::move(neighbors_of_all_blocks[i]),
+                           std::move(boundary_conditions[i]));
+    }
   }
 }
 

@@ -15,6 +15,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -293,6 +294,10 @@ template <size_t VolumeDim>
 Domain<VolumeDim> rectilinear_domain(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
+    std::vector<DirectionMap<
+        VolumeDim,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        boundary_conditions = {},
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
