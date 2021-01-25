@@ -578,8 +578,8 @@ void test_lambda_pin_troubled_cell_tvb_correction(
     // are exceeded even by roundoff, and we want to use [0, 10] as bounds on
     // the solution values.
     const DataVector x = get<0>(logical_coordinates(mesh));
-    const double a = 1.25 * (cube(sqrt(5)) - 1.0);
-    const double b = 6.25 * (1.0 - sqrt(5));
+    const double a = 1.25 * (cube(sqrt(5.0)) - 1.0);
+    const double b = 6.25 * (1.0 - sqrt(5.0));
     const double nearly_one = 1.0 - 1e-15;
     return DataVector{5.0 + nearly_one * (a * x + b * cube(x))};
   }();
