@@ -470,33 +470,49 @@ void check_convergence_order(const TimeStepper& stepper) noexcept {
 }
 
 void check_dense_output(const TimeStepper& stepper) noexcept {
-  const auto get_dense = [&stepper](TimeDelta step_size,
+  const auto get_dense = [&stepper](const TimeDelta& step_size,
                                     const double time) noexcept {
-    TimeStepId time_id(step_size.is_positive(), 0,
-                       step_size.is_positive() ? step_size.slab().start()
-                                               : step_size.slab().end());
-    const evolution_less<double> before{time_id.time_runs_forward()};
-    double y = 1.;
-    TimeSteppers::History<double, double> history{stepper.order()};
-    initialize_history(
-        time_id.substep_time(), &history,
-        [](const double t) noexcept { return exp(t); },
-        [](const double v, const double /*t*/) noexcept { return v; },
-        step_size, stepper.number_of_past_steps());
-    for (;;) {
-      // Dense output is done after the last substep
-      const auto next_time_id = stepper.next_time_id(time_id, step_size);
-      history.insert(time_id, y, y);
-      if (next_time_id.substep() == 0 and
-          before(time, next_time_id.step_time().value())) {
-        double result = std::numeric_limits<double>::signaling_NaN();
-        stepper.dense_update_u(make_not_null(&result), history, time);
-        return result;
+    const auto impl =
+        [&stepper, &step_size, &time](const bool use_error_methods) noexcept {
+      CAPTURE(use_error_methods);
+      TimeStepId time_id(step_size.is_positive(), 0,
+                         step_size.is_positive() ? step_size.slab().start()
+                                                 : step_size.slab().end());
+      const evolution_less<double> before{time_id.time_runs_forward()};
+      double y = 1.;
+      TimeSteppers::History<double, double> history{stepper.order()};
+      initialize_history(
+          time_id.substep_time(), &history,
+          [](const double t) noexcept { return exp(t); },
+          [](const double v, const double /*t*/) noexcept { return v; },
+          step_size, stepper.number_of_past_steps());
+      auto step = step_size;
+      for (;;) {
+        history.insert(time_id, y, y);
+        if (not before((time_id.step_time() + step).value(), time)) {
+          double result = std::numeric_limits<double>::signaling_NaN();
+          if (stepper.dense_update_u(make_not_null(&result), history, time)) {
+            return result;
+          }
+          REQUIRE(before(time_id.step_time().value(), time));
+        }
+        if (use_error_methods) {
+          double error = 0.0;
+          stepper.update_u(make_not_null(&y), make_not_null(&error),
+                           make_not_null(&history), step);
+        } else {
+          stepper.update_u(make_not_null(&y), make_not_null(&history), step);
+        }
+        time_id = use_error_methods
+                      ? stepper.next_time_id_for_error(time_id, step)
+                      : stepper.next_time_id(time_id, step);
+        step = step.with_slab(time_id.substep_time().slab());
       }
-      stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
-      time_id = next_time_id;
-      step_size = step_size.with_slab(time_id.substep_time().slab());
-    }
+    };
+    const double with_error = impl(true);
+    const double without_error = impl(false);
+    CHECK(with_error == without_error);
+    return without_error;
   };
 
   // Check that the dense output is continuous

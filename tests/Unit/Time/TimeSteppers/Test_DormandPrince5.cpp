@@ -24,9 +24,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   TimeStepperTestUtils::integrate_variable_test(stepper, 5, 0, 1.0e-9);
   TimeStepperTestUtils::check_convergence_order(stepper);
   TimeStepperTestUtils::stability_test(stepper);
-  // The dense output is currently broken and does not converge at the
-  // correct rate.
-  //TimeStepperTestUtils::check_dense_output(stepper);
+  TimeStepperTestUtils::check_dense_output(stepper);
 
   CHECK(stepper.order() == 5_st);
   CHECK(stepper.error_estimate_order() == 4_st);

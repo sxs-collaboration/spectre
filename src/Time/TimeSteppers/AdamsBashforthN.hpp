@@ -123,7 +123,7 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
-  void dense_update_u(gsl::not_null<Vars*> u,
+  bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
@@ -405,13 +405,14 @@ bool AdamsBashforthN::update_u(
 }
 
 template <typename Vars, typename DerivVars>
-void AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
+bool AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
                                      const History<Vars, DerivVars>& history,
                                      const double time) const noexcept {
   ASSERT(history.integration_order() == order_,
          "Dense output is only supported at full order");
   const ApproximateTimeDelta time_step{time - history.back().value()};
   update_u_impl(u, history, time_step, order_);
+  return true;
 }
 
 template <typename UpdateVars, typename Vars, typename DerivVars,

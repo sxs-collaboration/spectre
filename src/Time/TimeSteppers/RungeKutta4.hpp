@@ -13,6 +13,7 @@
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
@@ -80,7 +81,7 @@ class RungeKutta4 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
-  void dense_update_u(gsl::not_null<Vars*> u,
+  bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
@@ -139,7 +140,13 @@ void RungeKutta4::update_u(
   ASSERT(history->integration_order() == 4,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
-  const size_t substep = history->size() - 1;
+  const size_t substep = (history->end() - 1).time_step_id().substep();
+
+  // Clean up old history
+  if (substep == 0) {
+    history->mark_unneeded(history->end() - 1);
+  }
+
   const auto& dt_vars = (history->end() - 1).derivative();
   const auto& u0 = history->begin().value();
 
@@ -191,11 +198,6 @@ void RungeKutta4::update_u(
     default:
       ERROR("Substep in RK4 should be one of 0,1,2,3, not " << substep);
   }
-
-  // Clean up old history
-  if (history->size() == number_of_substeps()) {
-    history->mark_unneeded(history->end());
-  }
 }
 
 template <typename Vars, typename ErrVars, typename DerivVars>
@@ -206,7 +208,7 @@ bool RungeKutta4::update_u(
   ASSERT(history->integration_order() == 4,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
-  const size_t substep = history->size() - 1;
+  const size_t substep = (history->end() - 1).time_step_id().substep();
   if (substep < 3) {
     update_u(u, history, time_step);
   } else {
@@ -256,23 +258,28 @@ bool RungeKutta4::update_u(
               << substep);
     }
   }
-  // Clean up old history
-  if (history->size() == number_of_substeps_for_error()) {
-    history->mark_unneeded(history->end());
-  }
   return substep == 4;
 }
 
 template <typename Vars, typename DerivVars>
-void RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
+bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
                                  const History<Vars, DerivVars>& history,
                                  const double time) const noexcept {
-  ASSERT(history.size() == number_of_substeps(),
-         "RK4 can only dense output on last substep ("
-             << number_of_substeps() - 1 << "), not substep "
-             << history.size() - 1);
-  const double step_start = history[0].value();
-  const double step_end = history[history.size() - 1].value();
+  if ((history.end() - 1).time_step_id().substep() != 0) {
+    return false;
+  }
+  const double step_start = history.front().value();
+  const double step_end = history.back().value();
+  if (time == step_end) {
+    // Special case necessary for dense output at the initial time,
+    // before taking a step.
+    *u = (history.end() - 1).value();
+    return true;
+  }
+  const evolution_less<double> before{step_end > step_start};
+  if (history.size() == 1 or before(step_end, time)) {
+    return false;
+  }
   const double time_step = step_end - step_start;
   const double output_fraction = (time - step_start) / time_step;
   ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
@@ -283,22 +290,16 @@ void RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
                                      << step_start << ", " << step_end << "]");
 
   // Numerical Recipes Eq. (17.2.15). This implements cubic interpolation
-  // throughout the step. Because the history only is available through the
-  // penultimate step, i) the value after the step is computed algebraically
-  // from previous substeps, and ii) the derivative at the final step is
-  // approximated as the derivative at the penultimate substep.
-  constexpr double one_sixth = 1.0 / 6.0;
+  // throughout the step.
   const auto& u0 = history.begin().value();
-  const auto& dt_vars = (history.end() - 1).derivative();
-  const Vars u1 =
-      (2.0 * (history.begin() + 1).value() +
-       4.0 * (history.begin() + 2).value() +
-       2.0 * (history.begin() + 3).value() + (time_step * dt_vars - 2.0 * u0)) *
-      one_sixth;
+  const auto& deriv0 = history.begin().derivative();
+  const auto& u1 = (history.end() - 1).value();
+  const auto& deriv1 = (history.end() - 1).derivative();
   *u = (1.0 - output_fraction) * u0 + output_fraction * u1 +
        (output_fraction) * (output_fraction - 1.0) *
            ((1.0 - 2.0 * output_fraction) * (u1 - u0) +
-            (output_fraction - 1.0) * time_step * history.begin().derivative() +
-            output_fraction * time_step * dt_vars);
+            (output_fraction - 1.0) * time_step * deriv0 +
+            output_fraction * time_step * deriv1);
+  return true;
 }
 }  // namespace TimeSteppers

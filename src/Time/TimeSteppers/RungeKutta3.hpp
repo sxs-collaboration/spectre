@@ -13,6 +13,7 @@
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
@@ -60,7 +61,7 @@ class RungeKutta3 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
-  void dense_update_u(gsl::not_null<Vars*> u,
+  bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
@@ -119,7 +120,13 @@ void RungeKutta3::update_u(
   ASSERT(history->integration_order() == 3,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
-  const size_t substep = history->size() - 1;
+  const size_t substep = (history->end() - 1).time_step_id().substep();
+
+  // Clean up old history
+  if (substep == 0) {
+    history->mark_unneeded(history->end() - 1);
+  }
+
   const auto& vars = (history->end() - 1).value();
   const auto& dt_vars = (history->end() - 1).derivative();
   const auto& U0 = history->begin().value();
@@ -157,11 +164,6 @@ void RungeKutta3::update_u(
     default:
       ERROR("Bad substep value in RK3: " << substep);
   }
-
-  // Clean up old history
-  if (history->size() == number_of_substeps()) {
-    history->mark_unneeded(history->end());
-  }
 }
 
 template <typename Vars, typename ErrVars, typename DerivVars>
@@ -172,43 +174,40 @@ bool RungeKutta3::update_u(
   ASSERT(history->integration_order() == 3,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
-  const size_t substep = history->size() - 1;
+  update_u(u, history, time_step);
   // error estimate is only available when completing a full step
-  if(substep != 2) {
-    update_u(u, history, time_step);
-  } else {
-    const auto& vars = (history->end() - 1).value();
-    const auto& dt_vars = (history->end() - 1).derivative();
+  if ((history->end() - 1).time_step_id().substep() == 2) {
     const auto& U0 = history->begin().value();
-    // from (5.32) of Hesthaven
-    // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
-    // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
-    // time = t^n + (1/2)*dt
-    *u = (history->end() - 1).value() +
-         (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
-    // On exit v = u^(n+1), time = t^n + dt
-
     // error is estimated by comparing the order 3 step result with an order 2
     // estimate. See e.g. Chapter II.4 of Harrier, Norsett, and Wagner 1993
     *u_error = *u - U0 -
                time_step.value() * 0.5 *
                    (history->begin().derivative() +
                     (history->begin() + 1).derivative());
-    // Clean up old history
-    if (history->size() == number_of_substeps()) {
-      history->mark_unneeded(history->end());
-    }
+    return true;
   }
-  return substep == 2;
+  return false;
 }
 
 template <typename Vars, typename DerivVars>
-void RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
+bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
                                  const History<Vars, DerivVars>& history,
                                  const double time) const noexcept {
-  ASSERT(history.size() == 3, "Can only dense output on last substep");
-  const double step_start = history[0].value();
-  const double step_end = history[1].value();
+  if ((history.end() - 1).time_step_id().substep() != 0) {
+    return false;
+  }
+  const double step_start = history.front().value();
+  const double step_end = history.back().value();
+  if (time == step_end) {
+    // Special case necessary for dense output at the initial time,
+    // before taking a step.
+    *u = (history.end() - 1).value();
+    return true;
+  }
+  const evolution_less<double> before{step_end > step_start};
+  if (history.size() == 1 or before(step_end, time)) {
+    return false;
+  }
   const double time_step = step_end - step_start;
   const double output_fraction = (time - step_start) / time_step;
   ASSERT(output_fraction >= 0, "Attempting dense output at time " << time
@@ -218,12 +217,10 @@ void RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
          << ", " << step_end << "]");
 
   // arXiv:1605.02429
-  *u = (1.0 - output_fraction * (1.0 - output_fraction / 3.0)) *
-           history.begin().value() +
+  *u = (1.0 - output_fraction) * history.begin().value() +
        output_fraction * (1.0 - output_fraction) *
            (history.begin() + 1).value() +
-       2.0 / 3.0 * square(output_fraction) * (history.begin() + 2).value() +
-       2.0 / 3.0 * square(output_fraction) * time_step *
-           (history.begin() + 2).derivative();
+       square(output_fraction) * (history.begin() + 3).value();
+  return true;
 }
 }  // namespace TimeSteppers
