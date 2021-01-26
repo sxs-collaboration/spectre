@@ -60,10 +60,23 @@ template <typename Type>
 struct VolumeDouble : db::SimpleTag {
   using type = Type;
 };
-}  // namespace Tags
 
 template <size_t Dim>
-struct System {
+struct InverseSpatialMetric : db::SimpleTag {
+  using type = tnsr::II<DataVector, Dim, Frame::Inertial>;
+};
+}  // namespace Tags
+
+template <size_t Dim, bool IncludeTypeAlias>
+struct InverseSpatialMetric {};
+
+template <size_t Dim>
+struct InverseSpatialMetric<Dim, true> {
+  using inverse_spatial_metric_tag = Tags::InverseSpatialMetric<Dim>;
+};
+
+template <size_t Dim, bool CurvedBackground>
+struct System : public InverseSpatialMetric<Dim, CurvedBackground> {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
@@ -140,6 +153,38 @@ struct Correction final {
     return max(get(*packaged_abs_char_speed));
   }
 
+  double dg_package_data(
+      const gsl::not_null<Scalar<DataVector>*> packaged_var1,
+      const gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux_var1,
+      const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+          packaged_var2,
+      const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+          packaged_normal_dot_flux_var2,
+      const gsl::not_null<Scalar<DataVector>*> packaged_abs_char_speed,
+      const Scalar<DataVector>& var1,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& var2,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& flux_var1,
+      const tnsr::Ij<DataVector, Dim, Frame::Inertial>& flux_var2,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+          mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      const VolumeDoubleType volume_double_in) const noexcept {
+    const double max_speed = dg_package_data(
+        packaged_var1, packaged_normal_dot_flux_var1, packaged_var2,
+        packaged_normal_dot_flux_var2, packaged_abs_char_speed, var1, var2,
+        flux_var1, flux_var2, normal_covector, mesh_velocity,
+        normal_dot_mesh_velocity, volume_double_in);
+
+    // We add the normal vector to the flux just to verify that it is being
+    // used. This is total nonsense in terms of physics.
+    for (size_t i = 0; i < Dim; ++i) {
+      packaged_normal_dot_flux_var2->get(i) += normal_vector.get(i);
+    }
+    return max_speed;
+  }
+
   void dg_boundary_terms(
       const gsl::not_null<Scalar<DataVector>*> boundary_correction_var1,
       const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
@@ -186,25 +231,39 @@ struct Correction final {
   }
 };
 
-template <size_t Dim, typename VolumeDoubleType>
-void test() {
+template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
+void test_impl() {
   const Correction<Dim, VolumeDoubleType> correction{};
   const Mesh<Dim - 1> face_mesh{Dim * Dim, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::Gauss};
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      System<Dim>>(correction, face_mesh,
-                   tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
-                       VolumeDoubleType{2.3}});
+      System<Dim, CurvedBackground>>(
+      correction, face_mesh,
+      tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
+          VolumeDoubleType{2.3}});
+  const std::string curved_suffix =
+      CurvedBackground ? std::string{"_curved"} : std::string{""};
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      System<Dim>, tmpl::list<VolumeDoubleConversion>>(
+      System<Dim, CurvedBackground>, tmpl::list<VolumeDoubleConversion>>(
       "BoundaryCorrectionsHelper",
-      {{"dg_package_data_var1", "dg_package_data_var1_normal_dot_flux",
-        "dg_package_data_var2", "dg_package_data_var2_normal_dot_flux",
-        "dg_package_data_abs_char_speed"}},
+      {{"dg_package_data_var1" + curved_suffix,
+        "dg_package_data_var1_normal_dot_flux" + curved_suffix,
+        "dg_package_data_var2" + curved_suffix,
+        "dg_package_data_var2_normal_dot_flux" + curved_suffix,
+        "dg_package_data_abs_char_speed" + curved_suffix}},
       {{"dg_boundary_terms_var1", "dg_boundary_terms_var2"}}, correction,
       face_mesh,
       tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
           VolumeDoubleType{2.3}});
+}
+
+template <size_t Dim>
+void test() {
+  test_impl<Dim, false, double>();
+  test_impl<Dim, false, VolumeDouble>();
+
+  test_impl<Dim, true, double>();
+  test_impl<Dim, true, VolumeDouble>();
 }
 }  // namespace
 
@@ -212,11 +271,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.BoundaryCorrectionsHelper",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/DiscontinuousGalerkin/"};
-  test<1, double>();
-  test<2, double>();
-  test<3, double>();
-
-  test<1, VolumeDouble>();
-  test<2, VolumeDouble>();
-  test<3, VolumeDouble>();
+  test<1>();
+  test<2>();
+  test<3>();
 }
