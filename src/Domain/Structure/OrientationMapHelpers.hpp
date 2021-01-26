@@ -111,6 +111,7 @@ Variables<TagsList> orient_variables_on_slice(
 }
 // }@
 
+// @{
 /// \ingroup ComputationalDomainGroup
 /// Orient data in a `std::vector<double>` representing one or more tensor
 /// components.
@@ -126,3 +127,10 @@ template <size_t VolumeDim>
 std::vector<double> orient_variables(
     const std::vector<double>& variables, const Index<VolumeDim>& extents,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
+
+template <size_t VolumeDim>
+std::vector<double> orient_variables_on_slice(
+    const std::vector<double>& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_extents, size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
+// }@

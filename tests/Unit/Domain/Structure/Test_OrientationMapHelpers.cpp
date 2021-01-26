@@ -267,6 +267,21 @@ void test_3d_orient_variables() noexcept {
   CHECK(number_of_orientations_checked == 48);
 }
 
+template <typename TagsList, size_t Dim>
+void check_vector(const Variables<TagsList>& vars,
+                  const Variables<TagsList>& expected_vars,
+                  const Index<Dim - 1>& slice_extents, const size_t sliced_dim,
+                  const OrientationMap<Dim>& orientation_map) {
+  // NOLINTNEXTLINE
+  const std::vector<double> vars_vector{vars.data(), vars.data() + vars.size()};
+  const auto oriented_vars_vector = orient_variables_on_slice(
+      vars_vector, slice_extents, sliced_dim, orientation_map);
+  const std::vector<double> expected_vars_vector{
+      // NOLINTNEXTLINE
+      expected_vars.data(), expected_vars.data() + expected_vars.size()};
+  CHECK(oriented_vars_vector == expected_vars_vector);
+}
+
 // Test 0D slice of a 1D element
 void test_0d_orient_variables_on_slice() noexcept {
   const Index<0> slice_extents{1};
@@ -281,6 +296,7 @@ void test_0d_orient_variables_on_slice() noexcept {
         orient_variables_on_slice(vars, slice_extents, 0, orientation_map);
     // 1D boundary is a point, so no change expected
     CHECK(oriented_vars == vars);
+    check_vector(vars, oriented_vars, slice_extents, 0, orientation_map);
   }
 }
 
@@ -324,6 +340,9 @@ void test_1d_slice_with_orientation(
     get<Coords<1>>(expected_vars) = map_oriented(
         logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh)));
     CHECK(oriented_vars == expected_vars);
+
+    check_vector(vars, oriented_vars, slice_extents, sliced_dim,
+                 orientation_map);
   }
 }
 
@@ -414,6 +433,9 @@ void test_2d_slice_with_orientation(
     get<0>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[0];
     get<1>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[1];
     CHECK(oriented_vars == expected_vars);
+
+    check_vector(vars, oriented_vars, slice_extents, sliced_dim,
+                 orientation_map);
   }
 }
 
