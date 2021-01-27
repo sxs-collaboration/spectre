@@ -197,7 +197,7 @@ void call_dg_boundary_terms(
 template <typename System, typename BoundaryCorrection, size_t FaceDim,
           typename... VolumeTags>
 void test_boundary_correction_impl(
-    const BoundaryCorrection& correction, const Mesh<FaceDim>& face_mesh,
+    const BoundaryCorrection& correction_in, const Mesh<FaceDim>& face_mesh,
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const bool use_moving_mesh, const ::dg::Formulation dg_formulation,
     const ZeroOnSmoothSolution zero_on_smooth_solution) {
@@ -225,6 +225,11 @@ void test_boundary_correction_impl(
       typename BoundaryCorrection::dg_package_data_temporary_tags;
   using package_primitive_tags = detail::get_correction_primitive_vars<
       System::has_primitive_and_conservative_vars, BoundaryCorrection>;
+
+  const auto correction_base_ptr =
+      serialize_and_deserialize(correction_in.get_clone());
+  const auto& correction =
+      dynamic_cast<const BoundaryCorrection&>(*correction_base_ptr);
 
   // Check that the temporary tags needed on the boundary
   // (package_temporary_tags) are listed as temporary tags for the volume time

@@ -15,6 +15,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryCorrections.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -94,8 +95,28 @@ struct System : public InverseSpatialMetric<Dim, CurvedBackground> {
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
 };
 
+struct CorrectionBase : public PUP::able {
+  CorrectionBase() = default;
+  CorrectionBase(const CorrectionBase&) = default;
+  CorrectionBase& operator=(const CorrectionBase&) = default;
+  CorrectionBase(CorrectionBase&&) = default;
+  CorrectionBase& operator=(CorrectionBase&&) = default;
+  ~CorrectionBase() override = default;
+
+  explicit CorrectionBase(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
+
+  /// \cond
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_abstract(CorrectionBase);  // NOLINT
+#pragma GCC diagnostic pop
+  /// \endcond
+
+  virtual std::unique_ptr<CorrectionBase> get_clone() const noexcept = 0;
+};
+
 template <size_t Dim, typename VolumeDoubleType>
-struct Correction final {
+struct Correction final : public CorrectionBase {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -108,6 +129,24 @@ struct Correction final {
   using dg_package_data_temporary_tags = tmpl::list<>;
   using dg_package_data_volume_tags =
       tmpl::list<Tags::VolumeDouble<VolumeDoubleType>>;
+
+  Correction() = default;
+  Correction(const Correction&) = default;
+  Correction& operator=(const Correction&) = default;
+  Correction(Correction&&) = default;
+  Correction& operator=(Correction&&) = default;
+  ~Correction() override = default;
+
+  std::unique_ptr<CorrectionBase> get_clone() const noexcept override {
+    return std::make_unique<Correction>(*this);
+  }
+
+  /// \cond
+  explicit Correction(CkMigrateMessage* msg) noexcept : CorrectionBase(msg) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Correction);  // NOLINT
+  /// \endcond
+  void pup(PUP::er& p) override { CorrectionBase::pup(p); }
 
   double dg_package_data(
       const gsl::not_null<Scalar<DataVector>*> packaged_var1,
@@ -231,8 +270,12 @@ struct Correction final {
   }
 };
 
+template <size_t Dim, typename VolumeDoubleType>
+PUP::able::PUP_ID Correction<Dim, VolumeDoubleType>::my_PUP_ID = 0;
+
 template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
 void test_impl() {
+  PUPable_reg(SINGLE_ARG(Correction<Dim, VolumeDoubleType>));
   const Correction<Dim, VolumeDoubleType> correction{};
   const Mesh<Dim - 1> face_mesh{Dim * Dim, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::Gauss};
