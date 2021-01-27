@@ -63,7 +63,7 @@ struct EvolutionMetavars {
   using evolved_coordinates_variables_tag = Tags::Variables<
       std::conditional_t<uses_partially_flat_cartesian_coordinates,
                          tmpl::list<Cce::Tags::CauchyCartesianCoords,
-                                    Cce::Tags::InertialCartesianCoords,
+                                    Cce::Tags::PartiallyFlatCartesianCoords,
                                     Cce::Tags::InertialRetardedTime>,
                          tmpl::list<Cce::Tags::CauchyCartesianCoords,
                                     Cce::Tags::InertialRetardedTime>>>;

@@ -148,7 +148,9 @@ void test_initialize_j_zero_nonsmooth(
       Tags::CauchyCartesianCoords>>(box_to_initialize);
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       box_to_initialize);
-  db::mutate_apply<GaugeUpdateOmega>(box_to_initialize);
+  db::mutate_apply<
+      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+      box_to_initialize);
 
   db::mutate_apply<GaugeAdjustedBoundaryValue<Tags::BondiJ>>(box_to_initialize);
 
@@ -287,7 +289,9 @@ void test_initialize_j_no_radiation(
       Tags::CauchyCartesianCoords>>(box_to_initialize);
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       box_to_initialize);
-  db::mutate_apply<GaugeUpdateOmega>(box_to_initialize);
+  db::mutate_apply<
+      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+      box_to_initialize);
 
   db::mutate_apply<PrecomputeCceDependencies<Tags::EvolutionGaugeBoundaryValue,
                                              Tags::OneMinusY>>(
@@ -348,9 +352,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   using pre_swsh_derivatives_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
       Tags::BondiK, Tags::BondiR, Tags::OneMinusY, Tags::Psi0>>;
-  using tensor_variables_tag = ::Tags::Variables<
-      tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords,
-                 Tags::InertialCartesianCoords, Tags::InertialAngularCoords>>;
+  using tensor_variables_tag = ::Tags::Variables<tmpl::list<
+      Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords,
+      Tags::PartiallyFlatCartesianCoords, Tags::PartiallyFlatAngularCoords>>;
 
   const size_t number_of_boundary_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);

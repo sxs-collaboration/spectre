@@ -49,7 +49,8 @@ using swsh_cauchy_boundary_tags_to_compute =
     tmpl::list<Tags::GaugeC, Tags::GaugeD>;
 
 using real_inertial_boundary_tags_to_compute =
-    tmpl::list<Tags::InertialCartesianCoords, Tags::InertialAngularCoords>;
+    tmpl::list<Tags::PartiallyFlatCartesianCoords,
+               Tags::PartiallyFlatAngularCoords>;
 
 using swsh_inertial_boundary_tags_to_compute =
     tmpl::list<Tags::CauchyGaugeC, Tags::CauchyGaugeD>;
@@ -93,12 +94,12 @@ struct mock_characteristic_evolution {
                   Metavariables::uses_partially_flat_cartesian_coordinates,
                   tmpl::list<
                       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
-                          Tags::InertialAngularCoords,
-                          Tags::InertialCartesianCoords>>,
+                          Tags::PartiallyFlatAngularCoords,
+                          Tags::PartiallyFlatCartesianCoords>>,
                       ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
                           Tags::CauchyGaugeC, Tags::CauchyGaugeD,
-                          Tags::InertialAngularCoords,
-                          Tags::InertialCartesianCoords>>>,
+                          Tags::PartiallyFlatAngularCoords,
+                          Tags::PartiallyFlatCartesianCoords>>>,
                   tmpl::list<>>>>>;
 };
 
@@ -203,11 +204,12 @@ void test_InitializeFirstHypersurface() noexcept {
       Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
   if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
     db::mutate_apply<GaugeUpdateAngularFromCartesian<
-        Tags::InertialAngularCoords, Tags::InertialCartesianCoords>>(
+        Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
         make_not_null(&expected_box));
     db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-        Tags::CauchyGaugeC, Tags::CauchyGaugeD, Tags::InertialAngularCoords,
-        Tags::InertialCartesianCoords>>(make_not_null(&expected_box));
+        Tags::CauchyGaugeC, Tags::CauchyGaugeD,
+        Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
+        make_not_null(&expected_box));
   }
   db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
       make_not_null(&expected_box), 1.0);

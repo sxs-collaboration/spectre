@@ -113,8 +113,8 @@ struct InitializeJ<true> : public PUP::able {
 
   using mutate_tags =
       tmpl::list<Tags::BondiJ, Tags::CauchyCartesianCoords,
-                 Tags::CauchyAngularCoords, Tags::InertialCartesianCoords,
-                 Tags::InertialAngularCoords>;
+                 Tags::CauchyAngularCoords, Tags::PartiallyFlatCartesianCoords,
+                 Tags::PartiallyFlatAngularCoords>;
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 

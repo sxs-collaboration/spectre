@@ -73,7 +73,8 @@ struct mock_characteristic_evolution {
           Tags::CauchyCartesianCoords>>,
       ::Actions::MutateApply<
           GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>,
-      ::Actions::MutateApply<GaugeUpdateOmega>,
+      ::Actions::MutateApply<
+          GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -323,7 +324,9 @@ SPECTRE_TEST_CASE(
       Tags::CauchyCartesianCoords>>(make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       make_not_null(&boundary_box));
-  db::mutate_apply<GaugeUpdateOmega>(make_not_null(&boundary_box));
+  db::mutate_apply<
+      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+      make_not_null(&boundary_box));
 
   tmpl::for_each<gauge_adjustments_setup_tags>([&boundary_box](auto tag_v) {
     using tag = typename decltype(tag_v)::type;

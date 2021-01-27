@@ -586,6 +586,54 @@ struct GaugeUpdateTimeDerivatives {
 };
 
 /*!
+ * \brief Update the inertial gauge cartesian coordinate derivative
+ * \f$\partial_u \hat x(x)\f$.
+ *
+ * \details For the asymptotically inertial angular coordinates
+ * \f$\hat{x}^{\hat{A}}\f$, we have:
+ *
+ * \f{align*}{
+ * \partial_u \hat{x}^{\hat{A}} = -U^{(0)B}\partial_B \hat{x}^{\hat{A}}
+ * \f}
+ *
+ * and the Cartesian version reads
+ *
+ * \f{align*}{
+ * \partial_u \hat{x}^{\hat{i}}= - \text{Re}(\bar{U}^{(0)}
+ * \eth \hat{x}^{\hat{i}})
+ * \f}
+ *
+ * Note that \f$U^{0}\f$ and \f$\mathcal U^{(0)}\f$ are related by
+ *
+ * \f{align*}{
+ * U^{(0)} &= \frac{1}{2\omega^2} \left( \bar{d} \mathcal U^{(0)} -
+ * c \bar{\mathcal U}^{(0)} \right) \\
+ * &= \frac{\hat \omega^2}{2} \left( \bar{d} \mathcal U^{(0)} -
+ * c \bar{\mathcal U}^{(0)} \right)
+ * \f}
+ *
+ * see Eq. (79) of \cite Moxon2020gha.
+ */
+struct GaugeUpdateInertialTimeDerivatives {
+  using return_tags = tmpl::list<::Tags::dt<Tags::PartiallyFlatCartesianCoords>,
+                                 Tags::BondiUAtScri>;
+  using argument_tags = tmpl::list<
+      Tags::PartiallyFlatCartesianCoords, Tags::CauchyGaugeC, Tags::GaugeOmega,
+      Tags::CauchyGaugeD, Tags::LMax,
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>>;
+  static void apply(
+      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_inertial_du_x,
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+          evolution_gauge_u_at_scri,
+      const tnsr::i<DataVector, 3>& cartesian_inertial_coordinates,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_cauchy_c,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_cauchy_d,
+      size_t l_max,
+      const Spectral::Swsh::SwshInterpolator& interpolator) noexcept;
+};
+
+/*!
  * \brief Update the angular coordinates stored in `AngularTag` via
  * trigonometric operations applied to the Cartesian coordinates stored in
  * `CartesianTag`.
@@ -726,12 +774,12 @@ struct GaugeUpdateInterpolator {
  * \hat \omega = \frac{1}{2} \sqrt{\hat d \hat{\bar d} - \hat c \hat{\bar c}}.
  * \f}
  */
+template <typename GaugeC, typename GaugeD, typename GaugeOmega>
 struct GaugeUpdateOmega {
-  using argument_tags = tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::LMax>;
-  using return_tags =
-      tmpl::list<Tags::GaugeOmega,
-                 Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
-                                                  Spectral::Swsh::Tags::Eth>>;
+  using argument_tags = tmpl::list<GaugeC, GaugeD, Tags::LMax>;
+  using return_tags = tmpl::list<
+      GaugeOmega,
+      Spectral::Swsh::Tags::Derivative<GaugeOmega, Spectral::Swsh::Tags::Eth>>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
