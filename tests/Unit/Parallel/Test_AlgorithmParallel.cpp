@@ -111,6 +111,27 @@ template <class Metavariables>
 struct NodegroupParallelComponent;
 
 namespace SingletonActions {
+
+// One component (A) may call this simple action on another component (B) so
+// that B then invokes the `perform_algorithm` entry method on A, which will
+// restart A if it has been terminated.
+// This helps to add artificial breaks to the iterable actions to better test
+// charm runtime processes that must wait for the components to be outside entry
+// methods, such as load balancing.
+template <typename ComponentToRestart>
+struct RestartMe {
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
+            typename IndexToRestart, typename Metavariables>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const IndexToRestart index_to_restart) noexcept {
+    Parallel::get_parallel_component<ComponentToRestart>(
+        cache)[index_to_restart]
+        .perform_algorithm(true);
+  }
+};
+
 struct CountReceives {
   /// [int_receive_tag_list]
   using inbox_tags = tmpl::list<Tags::IntReceiveTag>;
@@ -268,7 +289,7 @@ struct CheckWasUnpacked {
       // problem, you might solve it either by balancing even more often, or by
       // doing more computational work during each iteration of the algorithm.
       SPECTRE_PARALLEL_REQUIRE(db::get<Tags::UnpackCounter>(box).counter_value >
-                               5);
+                               2);
     }
     return std::make_tuple(std::move(box), true);
   }
@@ -306,9 +327,8 @@ struct RemoveInt0 {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
@@ -319,11 +339,23 @@ struct RemoveInt0 {
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
         });
-    const bool terminate_algorithm =
-        db::get<Tags::CountActionsCalled>(box) >= 15;
+    // Run the iterable action sequence several times to ensure that
+    // load-balancing has a chance to be invoked multiple times.
+    if (db::get<Tags::CountActionsCalled>(box) < 150) {
+      // The simple action that runs on the singleton will invoke the
+      // `perform_algorithm` entry method on the present component, restarting
+      // it.
+      // Our use of the charm runtime system ensures that the return value of
+      // this iterable action will be processed before that entry method, and
+      // that the QD will not trigger when the entry method is waiting to be
+      // run.
+      Parallel::simple_action<SingletonActions::RestartMe<ParallelComponent>>(
+          Parallel::get_parallel_component<
+              SingletonParallelComponent<Metavariables>>(cache),
+          array_index);
+    }
     return std::make_tuple(
-        db::create_from<tmpl::list<Tags::Int0>>(std::move(box)),
-        terminate_algorithm);
+        db::create_from<tmpl::list<Tags::Int0>>(std::move(box)), true);
   }
 };
 
@@ -347,7 +379,7 @@ struct SendToSingleton {
     /// [receive_broadcast]
     Parallel::receive_data<Tags::IntReceiveTag>(
         singleton_parallel_component,
-        db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
+        db::get<Tags::CountActionsCalled>(box) + 1000 * array_index,
         db::get<Tags::CountActionsCalled>(box), true);
     /// [receive_broadcast]
     return std::forward_as_tuple(std::move(box));

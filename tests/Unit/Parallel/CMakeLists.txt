@@ -111,7 +111,7 @@ endfunction()
 
 # Note that we have a 'balance' here that happens 2.5e4 of times per second just
 # to be completely certain that the desired number of migrations occur during
-# the test (5). This tends to have a lot of fluctuation depending on how quickly
+# the test (2). This tends to have a lot of fluctuation depending on how quickly
 # the machine manages to execute this fairly short test, and the current balance
 # frequency has been roughly tuned to a) very consistently get at least 5
 # balances (usually gets several dozen), and b) complete the test in a
