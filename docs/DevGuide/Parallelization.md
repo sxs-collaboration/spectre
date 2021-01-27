@@ -168,8 +168,11 @@ Each %Parallel Component struct must have the following type aliases:
       a node on a supercomputer. However, for non-SMP builds nodes and cores are
       equivalent. We ensure that all entry method calls done through the
       Algorithm's `simple_action` and `receive_data` functions are
-      threadsafe. User controlled threading is possible by calling the non-entry
-      method member function `threaded_action`.
+      threadsafe. User-controlled threading is possible by calling the entry
+      method member function `threaded_action`, which is like `simple_action`
+      except it passes a node lock to the `Action`'s apply function. Note
+      that unlike `simple_action`s, multiple `threaded_action`s can be
+      executing simultaneously on the same chare.
 2. `using metavariables` is set to the Metavariables struct that stores the
    global metavariables. It is often easiest to have the %Parallel
    Component struct have a template parameter `Metavariables` that is the
