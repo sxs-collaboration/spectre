@@ -32,14 +32,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiUAtScri>("BondiUAtScri");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiUbar>("Ubar");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiW>("W");
+  TestHelpers::db::test_simple_tag<Cce::Tags::BondiJCauchyView>(
+      "BondiJCauchyView");
   TestHelpers::db::test_simple_tag<Cce::Tags::GaugeC>("GaugeC");
+  TestHelpers::db::test_simple_tag<Cce::Tags::CauchyGaugeC>("CauchyGaugeC");
   TestHelpers::db::test_simple_tag<Cce::Tags::GaugeD>("GaugeD");
+  TestHelpers::db::test_simple_tag<Cce::Tags::CauchyGaugeD>("CauchyGaugeD");
   TestHelpers::db::test_simple_tag<Cce::Tags::GaugeOmega>("GaugeOmega");
+  TestHelpers::db::test_simple_tag<Cce::Tags::CauchyGaugeOmega>(
+      "CauchyGaugeOmega");
   TestHelpers::db::test_simple_tag<Cce::Tags::News>("News");
   TestHelpers::db::test_simple_tag<Cce::Tags::CauchyAngularCoords>(
       "CauchyAngularCoords");
+  TestHelpers::db::test_simple_tag<Cce::Tags::PartiallyFlatAngularCoords>(
+      "PartiallyFlatAngularCoords");
   TestHelpers::db::test_simple_tag<Cce::Tags::CauchyCartesianCoords>(
       "CauchyCartesianCoords");
+  TestHelpers::db::test_simple_tag<Cce::Tags::PartiallyFlatCartesianCoords>(
+      "PartiallyFlatCartesianCoords");
   TestHelpers::db::test_simple_tag<Cce::Tags::InertialRetardedTime>(
       "InertialRetardedTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::ComplexInertialRetardedTime>(
@@ -65,6 +75,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi3>("Psi3");
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi4>("Psi4");
   TestHelpers::db::test_simple_tag<Cce::Tags::Strain>("Strain");
+  TestHelpers::db::test_simple_tag<Cce::Tags::Psi0Match>("Psi0Match");
   TestHelpers::db::test_simple_tag<
       Cce::Tags::InterpolationManager<ComplexDataVector, SomeTag>>(
       "InterpolationManager(SomeTag)");
@@ -73,6 +84,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dy<SomeTag>>("Dy(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Du<SomeTag>>("Du(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dr<SomeTag>>("Dr(SomeTag)");
+  TestHelpers::db::test_prefix_tag<Cce::Tags::Dlambda<SomeTag>>(
+      "Dlambda(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Integrand<SomeTag>>(
       "Integrand(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::BoundaryValue<SomeTag>>(
