@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -576,6 +577,8 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     const auto& all_mortar_data =
         db::get<evolution::dg::Tags::MortarData<volume_dim>>(box);
+    const auto& mortar_meshes =
+        get<evolution::dg::Tags::MortarMesh<volume_dim>>(box);
 
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -585,8 +588,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
         const std::pair mortar_id{direction, neighbor};
 
         std::pair<Mesh<volume_dim - 1>, std::vector<double>>
-            neighbor_boundary_data_on_mortar =
-                *all_mortar_data.at(mortar_id).local_mortar_data();
+            neighbor_boundary_data_on_mortar{};
         ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
                "The current time step id of the volume is "
                    << time_step_id
@@ -595,11 +597,16 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
                    << all_mortar_data.at(mortar_id).time_step_id());
 
         // Reorient the data to the neighbor orientation if necessary
-        if (not orientation.is_aligned()) {
-          ERROR("Currently don't support unaligned meshes");
-          // neighbor_boundary_data_on_mortar.orient_on_slice(
-          //     mortar_meshes.at(mortar_id).extents(), direction.dimension(),
-          //     orientation);
+        if (LIKELY(orientation.is_aligned())) {
+          neighbor_boundary_data_on_mortar =
+              *all_mortar_data.at(mortar_id).local_mortar_data();
+        } else {
+          const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
+          neighbor_boundary_data_on_mortar.first =
+              all_mortar_data.at(mortar_id).local_mortar_data()->first;
+          neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
+              all_mortar_data.at(mortar_id).local_mortar_data()->second,
+              slice_extents, direction.dimension(), orientation);
         }
 
         std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,

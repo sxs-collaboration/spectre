@@ -23,6 +23,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -886,16 +887,23 @@ void test_impl(const Spectral::Quadrature quadrature,
   } else if constexpr (Dim == 2) {
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}}}};
-    south_id = ElementId<Dim>{1, {{{1, 0}, {0, 0}}}};
+    south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}}}};
     neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{{south_id}, {}};
+    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{
+        {south_id},
+        OrientationMap<Dim>{std::array{Direction<Dim>::lower_xi(),
+                                       Direction<Dim>::lower_eta()}}};
   } else {
     static_assert(Dim == 3, "Only implemented tests in 1, 2, and 3d");
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
-    south_id = ElementId<Dim>{1, {{{1, 0}, {0, 0}, {0, 0}}}};
+    south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}, {0, 0}}}};
     neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{{south_id}, {}};
+    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{
+        {south_id},
+        OrientationMap<Dim>{std::array{Direction<Dim>::lower_xi(),
+                                       Direction<Dim>::lower_eta(),
+                                       Direction<Dim>::upper_zeta()}}};
   }
   const Element<Dim> element{self_id, neighbors};
   MockRuntimeSystem runner = [&dg_formulation]() noexcept {
@@ -1326,10 +1334,11 @@ void test_impl(const Spectral::Quadrature quadrature,
         mesh.number_of_grid_points()};
     get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
     const auto compute_expected_mortar_data =
-        [&face_normals, &get_tag, &mesh, &mesh_velocity, &mortar_meshes,
-         &mortar_sizes, &volume_temporaries](
-            const Direction<Dim>& local_direction,
-            const ElementId<Dim>& local_neighbor_id) noexcept {
+        [&element, &face_normals, &get_tag, &mesh, &mesh_velocity,
+         &mortar_meshes, &mortar_sizes,
+         &volume_temporaries](const Direction<Dim>& local_direction,
+                              const ElementId<Dim>& local_neighbor_id,
+                              const bool local_data) noexcept {
           const auto& face_mesh = mesh.slice_away(local_direction.dimension());
           // First project data to the face in the direction of the mortar
           Variables<
@@ -1393,17 +1402,27 @@ void test_impl(const Spectral::Quadrature quadrature,
                                             mortar_mesh, mortar_size)
                   : std::move(packaged_data);
 
-          return std::vector<double>{
+          std::vector<double> expected_data{
               boundary_data_on_mortar.data(),
               boundary_data_on_mortar.data() + boundary_data_on_mortar.size()};
+          const auto& orientation =
+              element.neighbors().at(local_direction).orientation();
+          if (local_data or orientation.is_aligned()) {
+            return expected_data;
+          } else {
+            return orient_variables_on_slice(
+                expected_data, mortar_mesh.extents(),
+                local_direction.dimension(), orientation);
+          }
         };
 
-    CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
-                              .at(mortar_id_east)
-                              .local_mortar_data()
-                              ->second,
-                          compute_expected_mortar_data(mortar_id_east.first,
-                                                       mortar_id_east.second));
+    CHECK_ITERABLE_APPROX(
+        get_tag(::evolution::dg::Tags::MortarData<Dim>{})
+            .at(mortar_id_east)
+            .local_mortar_data()
+            ->second,
+        compute_expected_mortar_data(mortar_id_east.first,
+                                     mortar_id_east.second, true));
     CHECK_ITERABLE_APPROX(
         *std::get<2>(
             ActionTesting::get_inbox_tag<
@@ -1417,17 +1436,17 @@ void test_impl(const Spectral::Quadrature quadrature,
                         .orientation()(mortar_id_east.first.opposite()),
                     element.id()})),
         compute_expected_mortar_data(mortar_id_east.first,
-                                     mortar_id_east.second));
+                                     mortar_id_east.second, false));
 
     if constexpr (Dim > 1) {
       const auto mortar_id_south =
           std::make_pair(Direction<Dim>::lower_eta(), south_id);
-      CHECK_ITERABLE_APPROX(
-          get_tag(::evolution::dg::Tags::MortarData<Dim>{})
-              .at(mortar_id_south)
-              .local_mortar_data()
-              ->second,
-          compute_expected_mortar_data(Direction<Dim>::lower_eta(), south_id));
+      CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
+                                .at(mortar_id_south)
+                                .local_mortar_data()
+                                ->second,
+                            compute_expected_mortar_data(
+                                Direction<Dim>::lower_eta(), south_id, true));
       CHECK_ITERABLE_APPROX(
           *std::get<2>(
               ActionTesting::get_inbox_tag<
@@ -1441,7 +1460,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                           .orientation()(mortar_id_south.first.opposite()),
                       element.id()})),
           compute_expected_mortar_data(mortar_id_south.first,
-                                       mortar_id_south.second));
+                                       mortar_id_south.second, false));
     }
   }
 }
@@ -1501,7 +1520,9 @@ void test() noexcept {
   //   DG values
 
   Parallel::register_derived_classes_with_charm<
-      BoundaryCorrection<Dim, use_boundary_correction>>();
+      BoundaryCorrection<Dim, true>>();
+  Parallel::register_derived_classes_with_charm<
+      BoundaryCorrection<Dim, false>>();
 
   const auto invoke_tests_with_quadrature_and_formulation =
       [](const Spectral::Quadrature quadrature,
