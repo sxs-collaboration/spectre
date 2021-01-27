@@ -19,3 +19,25 @@ def transverse_projection_operator_mixed_from_spatial_input(
     normal_vector, normal_one_form):
     return (np.eye(np.shape(normal_vector)[0]) -
             np.einsum('i,j->ij', normal_vector, normal_one_form))
+
+
+def projection_operator_transverse_to_interface(
+    spacetime_metric_or_its_inverse, normal_vector_or_one_form,
+    interface_normal_vector_or_one_form):
+    interface_normal = np.zeros(1 + len(interface_normal_vector_or_one_form))
+    interface_normal[1:] = interface_normal_vector_or_one_form
+    return (spacetime_metric_or_its_inverse + np.einsum(
+        'i,j->ij', normal_vector_or_one_form, normal_vector_or_one_form) -
+            np.einsum('i,j->ij', interface_normal, interface_normal))
+
+
+def projection_operator_transverse_to_interface_mixed(
+    normal_vector, normal_one_form, interface_normal_vector,
+    interface_normal_one_form):
+    interface_normal_vec = np.zeros(1 + len(interface_normal_vector))
+    interface_normal_1form = np.zeros(1 + len(interface_normal_one_form))
+    interface_normal_vec[1:] = interface_normal_vector
+    interface_normal_1form[1:] = interface_normal_one_form
+    return (np.eye(np.shape(normal_vector)[0]) +
+            np.einsum('i,j->ij', normal_vector, normal_one_form) -
+            np.einsum('i,j->ij', interface_normal_vec, interface_normal_1form))
