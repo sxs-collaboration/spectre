@@ -56,6 +56,7 @@ namespace Actions {
  *  - `Tags::Variables<metavariables::cce_transform_buffer_tags>`
  *  - `Tags::Variables<metavariables::cce_swsh_derivative_tags>`
  *  - `Spectral::Swsh::Tags::SwshInterpolator< Tags::CauchyAngularCoords>`
+ *  - `Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>`
  * - Removes: nothing
  *
  * \note This action relies on the `SetupDataBox` aggregated initialization
@@ -106,6 +107,7 @@ struct InitializeCharacteristicEvolutionVariables {
       volume_variables_tag, pre_swsh_derivatives_variables_tag,
       transform_buffer_variables_tag, swsh_derivative_variables_tag,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>,
       ::Tags::StepperErrorUpdated>;
   using simple_tags =
       tmpl::append<StepChoosers::step_chooser_simple_tags<Metavariables>,
@@ -150,7 +152,8 @@ struct InitializeCharacteristicEvolutionVariables {
         typename transform_buffer_variables_tag::type{transform_buffer_size,
                                                       0.0},
         typename swsh_derivative_variables_tag::type{volume_size, 0.0},
-        Spectral::Swsh::SwshInterpolator{}, false);
+        Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
+         false);
 
     return std::make_tuple(std::move(box));
   }

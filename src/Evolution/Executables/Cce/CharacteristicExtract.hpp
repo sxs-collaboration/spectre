@@ -82,8 +82,12 @@ struct EvolutionMetavars {
                      Cce::Tags::BondiW, Cce::Tags::BondiH>,
           tmpl::bind<Cce::Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
       Cce::Tags::BondiUAtScri, Cce::Tags::GaugeC, Cce::Tags::GaugeD,
-      Cce::Tags::GaugeOmega, Cce::Tags::Du<Cce::Tags::GaugeOmega>,
+      Cce::Tags::CauchyGaugeC, Cce::Tags::CauchyGaugeD, Cce::Tags::GaugeOmega,
+      Cce::Tags::CauchyGaugeOmega, Cce::Tags::Du<Cce::Tags::GaugeOmega>,
+      Cce::Tags::Du<Cce::Tags::CauchyGaugeOmega>,
       Spectral::Swsh::Tags::Derivative<Cce::Tags::GaugeOmega,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::CauchyGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Cce::all_boundary_pre_swsh_derivative_tags_for_scri,
       Cce::all_boundary_swsh_derivative_tags_for_scri>>;
@@ -119,7 +123,8 @@ struct EvolutionMetavars {
   using cce_transform_buffer_tags = Cce::all_transform_buffer_tags;
   using cce_swsh_derivative_tags = Cce::all_swsh_derivative_tags;
   using cce_angular_coordinate_tags =
-      tmpl::list<Cce::Tags::CauchyAngularCoords>;
+      tmpl::list<Cce::Tags::CauchyAngularCoords,
+                 Cce::Tags::PartiallyFlatAngularCoords>;
 
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 

@@ -95,9 +95,12 @@ struct metavariables {
                      Tags::Dr<Tags::BondiJ>, Tags::BondiBeta, Tags::BondiQ,
                      Tags::BondiU, Tags::BondiW, Tags::BondiH>,
           tmpl::bind<Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
-      Tags::BondiUAtScri, Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
+      Tags::BondiUAtScri, Tags::GaugeC, Tags::GaugeD, Cce::Tags::CauchyGaugeC,
+      Cce::Tags::CauchyGaugeD, Tags::GaugeOmega, Cce::Tags::CauchyGaugeOmega,
       Tags::Du<Tags::GaugeOmega>,
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::CauchyGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
   using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
@@ -122,7 +125,8 @@ struct metavariables {
   using cce_pre_swsh_derivatives_tags = all_pre_swsh_derivative_tags;
   using cce_transform_buffer_tags = all_transform_buffer_tags;
   using cce_swsh_derivative_tags = all_swsh_derivative_tags;
-  using cce_angular_coordinate_tags = tmpl::list<Tags::CauchyAngularCoords>;
+  using cce_angular_coordinate_tags =
+      tmpl::list<Tags::CauchyAngularCoords, Tags::PartiallyFlatAngularCoords>;
   using cce_scri_tags =
       tmpl::list<Cce::Tags::News, Cce::Tags::ScriPlus<Cce::Tags::Strain>,
                  Cce::Tags::ScriPlus<Cce::Tags::Psi0>,
