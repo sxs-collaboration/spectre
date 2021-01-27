@@ -77,6 +77,7 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
     set_tests_properties(
       "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
+      FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
       LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
@@ -131,6 +132,7 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
     set_tests_properties(
       "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
+      FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
       LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
@@ -140,6 +142,7 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
       PROPERTIES
       PASS_REGULAR_EXPRESSION
       "${REGEX_TO_MATCH}"
+      FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
       LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
