@@ -406,27 +406,6 @@ ComputeTimeDerivative<Metavariables>::apply(
       },
       make_not_null(&box));
 
-  // The below if-else and fill_mortar_data_for_internal_boundaries are for
-  // compatibility with the current boundary schemes. Once the current
-  // boundary schemes are removed the code will be refactored to reflect that
-  // change.
-  if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
-    using flux_variables_tag = ::Tags::Variables<flux_variables>;
-    using fluxes_tag =
-        db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
-                           tmpl::size_t<Metavariables::volume_dim>,
-                           Frame::Inertial>;
-
-    // We currently set the fluxes in the DataBox to interface with the
-    // boundary correction communication code.
-    db::mutate<fluxes_tag>(make_not_null(&box),
-                           [&volume_fluxes](const auto fluxes_ptr) noexcept {
-                             *fluxes_ptr = volume_fluxes;
-                           });
-  } else {
-    boundary_terms_nonconservative_products(make_not_null(&box));
-  }
-
   if constexpr (detail::has_boundary_correction_v<system>) {
     const auto& boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<system>>(box);
@@ -464,6 +443,27 @@ ComputeTimeDerivative<Metavariables>::apply(
           }
         });
   } else {
+    // The below if-else and fill_mortar_data_for_internal_boundaries are for
+    // compatibility with the current boundary schemes. Once the current
+    // boundary schemes are removed the code will be refactored to reflect that
+    // change.
+    if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
+      using flux_variables_tag = ::Tags::Variables<flux_variables>;
+      using fluxes_tag =
+          db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
+                             tmpl::size_t<Metavariables::volume_dim>,
+                             Frame::Inertial>;
+
+      // We currently set the fluxes in the DataBox to interface with the
+      // boundary correction communication code.
+      db::mutate<fluxes_tag>(make_not_null(&box),
+                             [&volume_fluxes](const auto fluxes_ptr) noexcept {
+                               *fluxes_ptr = volume_fluxes;
+                             });
+    } else {
+      boundary_terms_nonconservative_products(make_not_null(&box));
+    }
+
     // Compute internal boundary quantities
     fill_mortar_data_for_internal_boundaries<
         volume_dim, typename Metavariables::boundary_scheme>(

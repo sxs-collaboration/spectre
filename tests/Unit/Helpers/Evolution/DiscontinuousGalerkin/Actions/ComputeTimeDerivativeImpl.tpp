@@ -725,15 +725,16 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity>;
   using simple_tags = tmpl::conditional_t<
-      Metavariables::system_type == SystemType::Conservative,
-      tmpl::push_back<
-          common_simple_tags,
-          db::add_tag_prefix<
-              ::Tags::Flux, typename Metavariables::system::variables_tag,
-              tmpl::size_t<Metavariables::volume_dim>, Frame::Inertial>>,
+      Metavariables::system_type == SystemType::Nonconservative or
+          Metavariables::use_boundary_correction == UseBoundaryCorrection::Yes,
+      common_simple_tags,
       tmpl::conditional_t<
-          Metavariables::system_type == SystemType::Nonconservative,
-          common_simple_tags,
+          Metavariables::system_type == SystemType::Conservative,
+          tmpl::push_back<
+              common_simple_tags,
+              db::add_tag_prefix<
+                  ::Tags::Flux, typename Metavariables::system::variables_tag,
+                  tmpl::size_t<Metavariables::volume_dim>, Frame::Inertial>>,
           tmpl::push_back<
               common_simple_tags,
               db::add_tag_prefix<
@@ -977,6 +978,80 @@ void test_impl(const Spectral::Quadrature quadrature,
   Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>
       dt_evolved_vars{mesh.number_of_grid_points()};
 
+  // Compute expected volume fluxes
+  [[maybe_unused]] const auto expected_fluxes = [&evolved_vars, &inv_jac, &mesh,
+                                                 &mesh_velocity, &var3]() {
+    [[maybe_unused]] const auto& var1 = get<Var1>(evolved_vars);
+    [[maybe_unused]] const auto& var2 = get<Var2<Dim>>(evolved_vars);
+    Variables<db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<Dim>,
+                               Frame::Inertial>>
+        fluxes{mesh.number_of_grid_points()};
+    [[maybe_unused]] Scalar<DataVector> dt_var1{mesh.number_of_grid_points()};
+    [[maybe_unused]] tnsr::I<DataVector, Dim, Frame::Inertial> dt_var2{
+        mesh.number_of_grid_points()};
+    Scalar<DataVector> square_var3{mesh.number_of_grid_points()};
+    if constexpr (system_type == SystemType::Conservative) {
+      (void)inv_jac;
+      const auto flux_var1 = make_not_null(
+            &get<::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
+                fluxes));
+      const auto flux_var2 = make_not_null(
+          &get<::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
+              fluxes));
+      if constexpr (HasPrims) {
+        typename PrimVarsCompute<Dim>::type prims{mesh.number_of_grid_points()};
+        PrimVarsCompute<Dim>::function(make_not_null(&prims), mesh);
+        TimeDerivativeTerms<Dim, system_type, HasPrims>::apply(
+            make_not_null(&dt_var1), make_not_null(&dt_var2), flux_var1,
+            flux_var2, &square_var3, var1, var2, var3, get<PrimVar1>(prims));
+      } else {
+        TimeDerivativeTerms<Dim, system_type, HasPrims>::apply(
+            make_not_null(&dt_var1), make_not_null(&dt_var2), flux_var1,
+            flux_var2, &square_var3, var1, var2, var3);
+      }
+      if (mesh_velocity.has_value()) {
+        for (size_t i = 0; i < Dim; ++i) {
+          flux_var1->get(i) -= get(var1) * mesh_velocity->get(i);
+          for (size_t j = 0; j < Dim; ++j) {
+            flux_var2->get(i, j) -= var2.get(j) * mesh_velocity->get(i);
+          }
+        }
+      }
+    } else if constexpr (system_type == SystemType::Mixed) {
+      const auto flux_var2 = make_not_null(
+          &get<::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
+              fluxes));
+      const auto partial_derivs =
+          partial_derivatives<tmpl::list<Var1>>(evolved_vars, mesh, inv_jac);
+      const auto& d_var1 =
+          get<::Tags::deriv<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
+              partial_derivs);
+      if constexpr (HasPrims) {
+        typename PrimVarsCompute<Dim>::type prims{mesh.number_of_grid_points()};
+        PrimVarsCompute<Dim>::function(make_not_null(&prims), mesh);
+        TimeDerivativeTerms<Dim, system_type, HasPrims>::apply(
+            make_not_null(&dt_var1), make_not_null(&dt_var2), flux_var2,
+            &square_var3, d_var1, var1, var2, var3, get<PrimVar1>(prims));
+      } else {
+        TimeDerivativeTerms<Dim, system_type, HasPrims>::apply(
+            make_not_null(&dt_var1), make_not_null(&dt_var2), flux_var2,
+            &square_var3, d_var1, var1, var2, var3);
+      }
+      if (mesh_velocity.has_value()) {
+        for (size_t i = 0; i < Dim; ++i) {
+          for (size_t j = 0; j < Dim; ++j) {
+            flux_var2->get(i, j) -= var2.get(j) * mesh_velocity->get(i);
+          }
+        }
+      }
+    } else {
+      (void)inv_jac;
+      (void)mesh_velocity;
+      (void)var3;
+    }
+    return fluxes;
+  }();
+
   std::unordered_map<::Direction<Dim>,
                      Variables<tmpl::list<::Tags::NormalDotFlux<Var1>,
                                           ::Tags::NormalDotFlux<Var2<Dim>>>>>
@@ -994,7 +1069,8 @@ void test_impl(const Spectral::Quadrature quadrature,
           domain::CoordinateMaps::Identity<Dim>{});
 
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
-  if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
+  if constexpr (not std::is_same_v<tmpl::list<>, flux_variables> and
+                use_boundary_correction == UseBoundaryCorrection::No) {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
@@ -1002,7 +1078,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>{
-             2, -100.}});
+             mesh.number_of_grid_points(), -100.}});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
@@ -1014,7 +1090,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              mesh_velocity, div_mesh_velocity,
              Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                         tmpl::size_t<Dim>, Frame::Inertial>>{
-                 2, -100.}});
+                 mesh.number_of_grid_points(), -100.}});
       }
     }
   } else {
@@ -1096,7 +1172,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       }
     } else {
       if (dg_formulation == ::dg::Formulation::StrongInertial) {
-        const auto div = divergence(get_tag(fluxes_tag{}), mesh, inv_jac);
+        const auto div = divergence(expected_fluxes, mesh, inv_jac);
         const Scalar<DataVector>& div_var1_flux = get<::Tags::div<
             ::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>>(div);
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) -=
@@ -1111,8 +1187,8 @@ void test_impl(const Spectral::Quadrature quadrature,
             make_not_null(&det_jac_times_inverse_jacobian), mesh,
             inertial_coords, jacobian);
 
-        weak_divergence(make_not_null(&weak_div_fluxes), get_tag(fluxes_tag{}),
-                        mesh, det_jac_times_inverse_jacobian);
+        weak_divergence(make_not_null(&weak_div_fluxes), expected_fluxes, mesh,
+                        det_jac_times_inverse_jacobian);
         weak_div_fluxes *= get(det_inv_jacobian);
 
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
@@ -1148,7 +1224,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       }
     } else {
       if (dg_formulation == ::dg::Formulation::StrongInertial) {
-        const auto div = divergence(get_tag(fluxes_tag{}), mesh, inv_jac);
+        const auto div = divergence(expected_fluxes, mesh, inv_jac);
         const tnsr::I<DataVector, Dim>& div_var2_flux = get<::Tags::div<
             ::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(div);
         for (size_t i = 0; i < Dim; ++i) {
@@ -1165,8 +1241,8 @@ void test_impl(const Spectral::Quadrature quadrature,
             make_not_null(&det_jac_times_inverse_jacobian), mesh,
             inertial_coords, determinant_and_inverse(inv_jac).second);
 
-        weak_divergence(make_not_null(&weak_div_fluxes), get_tag(fluxes_tag{}),
-                        mesh, det_jac_times_inverse_jacobian);
+        weak_divergence(make_not_null(&weak_div_fluxes), expected_fluxes, mesh,
+                        det_jac_times_inverse_jacobian);
 
         weak_div_fluxes *= get(det_inv_jacobian);
 
@@ -1334,8 +1410,8 @@ void test_impl(const Spectral::Quadrature quadrature,
         mesh.number_of_grid_points()};
     get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
     const auto compute_expected_mortar_data =
-        [&element, &face_normals, &get_tag, &mesh, &mesh_velocity,
-         &mortar_meshes, &mortar_sizes,
+        [&element, &expected_fluxes, &face_normals, &get_tag, &mesh,
+         &mesh_velocity, &mortar_meshes, &mortar_sizes,
          &volume_temporaries](const Direction<Dim>& local_direction,
                               const ElementId<Dim>& local_neighbor_id,
                               const bool local_data) noexcept {
@@ -1350,8 +1426,10 @@ void test_impl(const Spectral::Quadrature quadrature,
               local_direction);
           if constexpr (tmpl::size<fluxes_tags>::value != 0) {
             ::evolution::dg::project_contiguous_data_to_boundary(
-                make_not_null(&fields_on_face), get_tag(fluxes_tag{}), mesh,
+                make_not_null(&fields_on_face), expected_fluxes, mesh,
                 local_direction);
+          } else {
+            (void)expected_fluxes;
           }
           ::evolution::dg::project_tensors_to_boundary<temporary_tags_for_face>(
               make_not_null(&fields_on_face), volume_temporaries, mesh,
