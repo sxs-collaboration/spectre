@@ -12,7 +12,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,8 +36,7 @@ template <typename SolverType, typename OptionsGroup>
 struct SubdomainSolver {
   using type = SolverType;
   using group = OptionsGroup;
-  static constexpr Options::String help =
-      "Options for the linear solver on subdomains";
+  static constexpr Options::String help = "The linear solver on subdomains";
 };
 
 }  // namespace OptionTags
@@ -71,7 +72,9 @@ struct SubdomainSolver : SubdomainSolverBase<OptionsGroup>, db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags =
       tmpl::list<OptionTags::SubdomainSolver<SolverType, OptionsGroup>>;
-  static type create_from_options(const type& value) noexcept { return value; }
+  static type create_from_options(const type& value) noexcept {
+    return deserialize<type>(serialize<type>(value).data());
+  }
 };
 
 /*!

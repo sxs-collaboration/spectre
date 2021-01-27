@@ -16,6 +16,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ExplicitInverse.hpp
   Gmres.hpp
   InnerProduct.hpp
   Lapack.hpp

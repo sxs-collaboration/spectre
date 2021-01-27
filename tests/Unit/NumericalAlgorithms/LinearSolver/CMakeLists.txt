@@ -4,6 +4,7 @@
 set(LIBRARY "Test_LinearSolver")
 
 set(LIBRARY_SOURCES
+  Test_ExplicitInverse.cpp
   Test_Gmres.cpp
   Test_InnerProduct.cpp
   Test_Lapack.cpp
@@ -13,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearSolver/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;LinearSolver"
+  "DataStructures;DomainStructure;LinearSolver;ParallelSchwarz;Utilities"
   )
