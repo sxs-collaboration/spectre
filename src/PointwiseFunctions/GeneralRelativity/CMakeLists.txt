@@ -15,6 +15,7 @@ spectre_target_sources(
   InverseSpacetimeMetric.cpp
   KerrSchildCoords.cpp
   Lapse.cpp
+  ProjectionOperators.cpp
   Ricci.cpp
   Shift.cpp
   SpacetimeMetric.cpp
@@ -37,6 +38,7 @@ spectre_target_headers(
   InverseSpacetimeMetric.hpp
   KerrSchildCoords.hpp
   Lapse.hpp
+  ProjectionOperators.hpp
   Ricci.hpp
   Shift.hpp
   SpacetimeMetric.hpp
