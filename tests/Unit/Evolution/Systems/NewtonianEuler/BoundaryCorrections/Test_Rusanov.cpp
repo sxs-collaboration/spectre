@@ -127,6 +127,9 @@ void test(const size_t num_pts,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.NewtonianEuler.Rusanov", "[Unit][Evolution]") {
+  PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<1>);
+  PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<2>);
+  PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<3>);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler/BoundaryCorrections"};
   test<1>(1, tuples::TaggedTuple<hydro::Tags::EquationOfState<
