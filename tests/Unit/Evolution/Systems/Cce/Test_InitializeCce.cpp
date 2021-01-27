@@ -34,9 +34,9 @@ template <typename DbTags>
 void test_initialize_j_inverse_cubic(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
     const size_t l_max, const size_t number_of_radial_points) noexcept {
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
-      InitializeJ::InverseCubic{}, box_to_initialize);
+  db::mutate_apply<InitializeJ::InitializeJ<true>::mutate_tags,
+                   InitializeJ::InitializeJ<true>::argument_tags>(
+      InitializeJ::InverseCubic<true>{}, box_to_initialize);
 
   SpinWeighted<ComplexDataVector, 2> dy_j{
       number_of_radial_points *
@@ -115,8 +115,8 @@ void test_initialize_j_zero_nonsmooth(
     const size_t /*l_max*/, const size_t /*number_of_radial_points*/) noexcept {
   // The iterative procedure can reach error levels better than 1.0e-8, but it
   // is difficult to do so reliably and quickly for randomly generated data.
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
+  db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
+                   InitializeJ::InitializeJ<false>::argument_tags>(
       InitializeJ::ZeroNonSmooth{1.0e-8, 400}, box_to_initialize);
 
   // note we want to copy here to compare against the next version of the
@@ -128,8 +128,8 @@ void test_initialize_j_zero_nonsmooth(
   const auto serialized_and_deserialized_initializer =
       serialize_and_deserialize(initializer);
 
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
+  db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
+                   InitializeJ::InitializeJ<false>::argument_tags>(
       serialized_and_deserialized_initializer, box_to_initialize);
   const auto& initialized_j_from_serialized_and_deserialized =
       db::get<Tags::BondiJ>(*box_to_initialize);
@@ -177,7 +177,7 @@ void test_initialize_j_zero_nonsmooth(
   const size_t number_of_radial_points = sdist(generator);
 
   using boundary_variables_tag =
-      ::Tags::Variables<InitializeJ::InverseCubic::boundary_tags>;
+      ::Tags::Variables<InitializeJ::InverseCubic<false>::boundary_tags>;
   using pre_swsh_derivatives_variables_tag =
       ::Tags::Variables<tmpl::list<Tags::BondiJ>>;
   using tensor_variables_tag = ::Tags::Variables<
@@ -243,8 +243,8 @@ void test_initialize_j_zero_nonsmooth(
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_r)), l_max, l_max / 2);
       });
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
+  db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
+                   InitializeJ::InitializeJ<false>::argument_tags>(
       InitializeJ::ZeroNonSmooth{1.0e-12, 1, true},
       make_not_null(&box_to_initialize));
   ERROR("Failed to trigger ERROR in an error test");
@@ -256,8 +256,8 @@ void test_initialize_j_no_radiation(
     const size_t l_max, const size_t /*number_of_radial_points*/) noexcept {
   // The iterative procedure can reach error levels better than 1.0e-8, but it
   // is difficult to do so reliably and quickly for randomly generated data.
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
+  db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
+                   InitializeJ::InitializeJ<false>::argument_tags>(
       InitializeJ::NoIncomingRadiation{1.0e-8, 400}, box_to_initialize);
 
   // note we want to copy here to compare against the next version of the
@@ -269,8 +269,8 @@ void test_initialize_j_no_radiation(
   const auto serialized_and_deserialized_initializer =
       serialize_and_deserialize(initializer);
 
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
+  db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
+                   InitializeJ::InitializeJ<false>::argument_tags>(
       serialized_and_deserialized_initializer, box_to_initialize);
   const auto& initialized_j_from_serialized_and_deserialized =
       db::get<Tags::BondiJ>(*box_to_initialize);
@@ -339,8 +339,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   const size_t number_of_radial_points = sdist(generator);
 
   using boundary_variables_tag = ::Tags::Variables<
-      tmpl::push_back<InitializeJ::InverseCubic::boundary_tags, Tags::GaugeC,
-                      Tags::GaugeD, Tags::GaugeOmega,
+      tmpl::push_back<InitializeJ::InverseCubic<true>::boundary_tags,
+                      Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
                       Spectral::Swsh::Tags::Derivative<
                           Tags::GaugeOmega, Spectral::Swsh::Tags::Eth>,
                       Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
@@ -349,7 +349,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
       Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
       Tags::BondiK, Tags::BondiR, Tags::OneMinusY, Tags::Psi0>>;
   using tensor_variables_tag = ::Tags::Variables<
-      tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords>>;
+      tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords,
+                 Tags::InertialCartesianCoords, Tags::InertialAngularCoords>>;
 
   const size_t number_of_boundary_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);

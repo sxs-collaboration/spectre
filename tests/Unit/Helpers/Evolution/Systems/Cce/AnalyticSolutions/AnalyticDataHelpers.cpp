@@ -309,7 +309,8 @@ extract_dr_bondi_scalars_from_cartesian_metric(
 void test_initialize_j(
     const size_t l_max, const size_t number_of_radial_points,
     const double extraction_radius, const double time,
-    const std::unique_ptr<InitializeJ::InitializeJ> expected_initialize_j,
+    const std::unique_ptr<InitializeJ::InitializeJ<false>>
+        expected_initialize_j,
     const std::unique_ptr<WorldtubeData> analytic_solution) noexcept {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);

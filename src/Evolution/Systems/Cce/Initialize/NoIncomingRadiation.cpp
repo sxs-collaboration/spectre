@@ -109,7 +109,8 @@ NoIncomingRadiation::NoIncomingRadiation(
       angular_coordinate_tolerance_{angular_coordinate_tolerance},
       max_iterations_{max_iterations} {}
 
-std::unique_ptr<InitializeJ> NoIncomingRadiation::get_clone() const noexcept {
+std::unique_ptr<InitializeJ<false>> NoIncomingRadiation::get_clone()
+    const noexcept {
   return std::make_unique<NoIncomingRadiation>(*this);
 }
 
