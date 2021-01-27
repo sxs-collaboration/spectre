@@ -31,6 +31,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -39,40 +40,7 @@
 
 namespace domain {
 namespace {
-template <size_t Dim>
-class TestBoundaryCondition : public BoundaryConditions::BoundaryCondition {
- public:
-  TestBoundaryCondition() = default;
-  explicit TestBoundaryCondition(Direction<Dim> direction)
-      : direction_(std::move(direction)) {}
-  TestBoundaryCondition(TestBoundaryCondition&&) noexcept = default;
-  TestBoundaryCondition& operator=(TestBoundaryCondition&&) noexcept = default;
-  TestBoundaryCondition(const TestBoundaryCondition&) = default;
-  TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
-  ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg) noexcept
-      : BoundaryConditions::BoundaryCondition(msg) {}
-
-  WRAPPED_PUPable_decl_base_template(BoundaryConditions::BoundaryCondition,
-                                     TestBoundaryCondition<Dim>);
-
-  const Direction<Dim>& direction() const noexcept { return direction_; }
-
-  auto get_clone() const noexcept
-      -> std::unique_ptr<BoundaryCondition> override {
-    return std::make_unique<TestBoundaryCondition>(*this);
-  }
-
-  void pup(PUP::er& p) override {
-    BoundaryConditions::BoundaryCondition::pup(p);
-  }
-
- private:
-  Direction<Dim> direction_;
-};
-
-template <size_t Dim>
-PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+namespace helpers = ::TestHelpers::domain::BoundaryConditions;
 
 void test_1d_domains() {
   using Translation = domain::CoordinateMaps::TimeDependent::Translation;
@@ -283,7 +251,8 @@ auto compute_boundary_conditions(
     MapType boundary_conditions_for_block{};
     for (const auto& direction : external_boundaries_of_block) {
       boundary_conditions_for_block.emplace(
-          direction, std::make_unique<TestBoundaryCondition<Dim>>(direction));
+          direction,
+          std::make_unique<helpers::TestBoundaryCondition<Dim>>(direction));
     }
     boundary_conditions[i] = std::move(boundary_conditions_for_block);
   }
@@ -313,7 +282,7 @@ void test_1d_rectilinear_domains() {
       for (const auto& direction : expected_external_boundaries[i]) {
         CAPTURE(direction);
         CHECK(direction ==
-              dynamic_cast<const TestBoundaryCondition<1>&>(
+              dynamic_cast<const helpers::TestBoundaryCondition<1>&>(
                   *domain.blocks()[i].external_boundary_conditions().at(
                       direction))
                   .direction());
@@ -346,7 +315,7 @@ void test_1d_rectilinear_domains() {
       for (const auto& direction : expected_external_boundaries[i]) {
         CAPTURE(direction);
         CHECK(direction ==
-              dynamic_cast<const TestBoundaryCondition<1>&>(
+              dynamic_cast<const helpers::TestBoundaryCondition<1>&>(
                   *domain.blocks()[i].external_boundary_conditions().at(
                       direction))
                   .direction());
@@ -398,7 +367,7 @@ void test_2d_rectilinear_domains() {
       CAPTURE(direction);
       CHECK(
           direction ==
-          dynamic_cast<const TestBoundaryCondition<2>&>(
+          dynamic_cast<const helpers::TestBoundaryCondition<2>&>(
               *domain.blocks()[i].external_boundary_conditions().at(direction))
               .direction());
     }
@@ -440,7 +409,7 @@ void test_3d_rectilinear_domains() {
       CAPTURE(direction);
       CHECK(
           direction ==
-          dynamic_cast<const TestBoundaryCondition<3>&>(
+          dynamic_cast<const helpers::TestBoundaryCondition<3>&>(
               *domain.blocks()[i].external_boundary_conditions().at(direction))
               .direction());
     }

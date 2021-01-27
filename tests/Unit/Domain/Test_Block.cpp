@@ -27,46 +27,13 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace domain {
 namespace {
-template <size_t Dim>
-class TestBoundaryCondition : public BoundaryConditions::BoundaryCondition {
- public:
-  TestBoundaryCondition() = default;
-  explicit TestBoundaryCondition(Direction<Dim> direction)
-      : direction_(std::move(direction)) {}
-  TestBoundaryCondition(TestBoundaryCondition&&) noexcept = default;
-  TestBoundaryCondition& operator=(TestBoundaryCondition&&) noexcept = default;
-  TestBoundaryCondition(const TestBoundaryCondition&) = default;
-  TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
-  ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg) noexcept
-      : BoundaryConditions::BoundaryCondition(msg) {}
-
-  WRAPPED_PUPable_decl_base_template(BoundaryConditions::BoundaryCondition,
-                                     TestBoundaryCondition<Dim>);
-
-  const Direction<Dim>& direction() const noexcept { return direction_; }
-
-  auto get_clone() const noexcept
-      -> std::unique_ptr<BoundaryCondition> override {
-    return std::make_unique<TestBoundaryCondition>(*this);
-  }
-
-  void pup(PUP::er& p) override {
-    BoundaryConditions::BoundaryCondition::pup(p);
-    p | direction_;
-  }
-
- private:
-  Direction<Dim> direction_;
-};
-
-template <size_t Dim>
-PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+namespace helpers = ::TestHelpers::domain::BoundaryConditions;
 
 template <size_t Dim>
 auto create_external_bcs() {
@@ -75,7 +42,7 @@ auto create_external_bcs() {
       external_boundary_conditions{};
   for (const auto& direction : Direction<Dim>::all_directions()) {
     external_boundary_conditions[direction] =
-        std::make_unique<TestBoundaryCondition<Dim>>(direction);
+        std::make_unique<helpers::TestBoundaryCondition<Dim>>(direction);
   }
   return external_boundary_conditions;
 }
@@ -114,7 +81,7 @@ void test_block_time_independent() {
     for (const auto& direction : Direction<Dim>::all_directions()) {
       CAPTURE(direction);
       REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      CHECK(dynamic_cast<const TestBoundaryCondition<Dim>&>(
+      CHECK(dynamic_cast<const helpers::TestBoundaryCondition<Dim>&>(
                 *block.external_boundary_conditions().at(direction))
                 .direction() == direction);
     }
@@ -231,7 +198,7 @@ void test_block_time_dependent() {
     for (const auto& direction : Direction<Dim>::all_directions()) {
       CAPTURE(direction);
       REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      CHECK(dynamic_cast<const TestBoundaryCondition<Dim>&>(
+      CHECK(dynamic_cast<const helpers::TestBoundaryCondition<Dim>&>(
                 *block.external_boundary_conditions().at(direction))
                 .direction() == direction);
     }
@@ -252,9 +219,7 @@ void test_block_time_dependent() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
-  PUPable_reg(TestBoundaryCondition<1>);
-  PUPable_reg(TestBoundaryCondition<2>);
-  PUPable_reg(TestBoundaryCondition<3>);
+  helpers::register_derived_with_charm();
 
   test_block_time_independent<1>();
   test_block_time_independent<2>();

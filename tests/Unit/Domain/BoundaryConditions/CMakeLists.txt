@@ -5,6 +5,7 @@ set(LIBRARY "Test_DomainBoundaryConditions")
 
 set(LIBRARY_SOURCES
   Test_BoundaryCondition.cpp
+  Test_GetBoundaryConditionsBase.cpp
   )
 
 add_test_library(
@@ -18,5 +19,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DomainBoundaryConditions
+  DomainBoundaryConditionsHelpers
   Utilities
   )
