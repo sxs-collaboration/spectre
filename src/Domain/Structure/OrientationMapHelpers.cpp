@@ -12,6 +12,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -350,12 +351,47 @@ std::vector<double> orient_variables(
   return oriented_variables;
 }
 
-template std::vector<double> orient_variables<1>(
-    const std::vector<double>& variables, const Index<1>& extents,
-    const OrientationMap<1>& orientation_of_neighbor) noexcept;
-template std::vector<double> orient_variables<2>(
-    const std::vector<double>& variables, const Index<2>& extents,
-    const OrientationMap<2>& orientation_of_neighbor) noexcept;
-template std::vector<double> orient_variables<3>(
-    const std::vector<double>& variables, const Index<3>& extents,
-    const OrientationMap<3>& orientation_of_neighbor) noexcept;
+template <size_t VolumeDim>
+std::vector<double> orient_variables_on_slice(
+    const std::vector<double>& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+  // Skip work (aside from a copy) if neighbor slice is aligned
+  if (orientation_of_neighbor.is_aligned()) {
+    return variables_on_slice;
+  }
+
+  const size_t number_of_grid_points = slice_extents.product();
+  ASSERT(variables_on_slice.size() % number_of_grid_points == 0,
+         "The size of the variables must be divisible by the number of grid "
+         "points. Number of grid points: "
+             << number_of_grid_points
+             << " size: " << variables_on_slice.size());
+  std::vector<double> oriented_variables(variables_on_slice.size());
+  const auto oriented_offset =
+      OrientationMapHelpers_detail::oriented_offset_on_slice(
+          slice_extents, sliced_dim, orientation_of_neighbor);
+
+  auto oriented_vars_view = gsl::make_span(oriented_variables);
+  OrientationMapHelpers_detail::orient_each_component(
+      make_not_null(&oriented_vars_view), gsl::make_span(variables_on_slice),
+      number_of_grid_points, oriented_offset);
+
+  return oriented_variables;
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                                               \
+  template std::vector<double> orient_variables<DIM(data)>(                  \
+      const std::vector<double>& variables, const Index<DIM(data)>& extents, \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor) noexcept;    \
+  template std::vector<double> orient_variables_on_slice<DIM(data)>(         \
+      const std::vector<double>& variables,                                  \
+      const Index<DIM(data) - 1>& extents, size_t sliced_dim,                \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+#undef DIM
