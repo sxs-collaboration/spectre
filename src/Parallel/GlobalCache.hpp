@@ -7,6 +7,7 @@
 #pragma once
 
 #include <charm++.h>
+#include <memory>
 #include <optional>
 #include <pup.h>
 #include <string>
@@ -15,6 +16,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -69,8 +71,9 @@ struct get_component_if_mocked_helper {
 template <typename... Tags>
 auto make_mutable_cache_tag_storage(
     tuples::TaggedTuple<Tags...>&& input) noexcept {
-  return tuples::TaggedTuple<MutableCacheTag<Tags>...>(std::make_tuple(
-      std::move(tuples::get<Tags>(input)), std::vector<CkCallback>{})...);
+  return tuples::TaggedTuple<MutableCacheTag<Tags>...>(
+      std::make_tuple(std::move(tuples::get<Tags>(input)),
+                      std::vector<std::unique_ptr<Callback>>{})...);
 }
 
 /// In order to be able to use a mock action testing framework we need to be
@@ -176,7 +179,7 @@ bool MutableGlobalCache<Metavariables>::mutable_cache_item_is_ready(
     const Function& function) noexcept {
   using tag = MutableCacheTag<GlobalCache_detail::get_matching_mutable_tag<
       GlobalCacheTag, Metavariables>>;
-  std::optional<CkCallback> optional_callback{};
+  std::unique_ptr<Callback> optional_callback{};
   if constexpr (tt::is_a_v<std::unique_ptr, typename tag::tag::type>) {
     optional_callback =
         function(*(std::get<0>(tuples::get<tag>(mutable_global_cache_))));
@@ -186,7 +189,7 @@ bool MutableGlobalCache<Metavariables>::mutable_cache_item_is_ready(
   }
   if (optional_callback) {
     std::get<1>(tuples::get<tag>(mutable_global_cache_))
-        .push_back(std::move(*optional_callback));
+        .push_back(std::move(optional_callback));
     if (std::get<1>(tuples::get<tag>(mutable_global_cache_)).size() > 20000) {
       ERROR("The number of callbacks in MutableGlobalCache for tag "
             << pretty_type::short_name<GlobalCacheTag>()
@@ -220,7 +223,7 @@ void MutableGlobalCache<Metavariables>::mutate(
 
   // Call the callbacks and clear the list of callbacks.
   for (auto& callback : std::get<1>(tuples::get<tag>(mutable_global_cache_))) {
-    callback.send(nullptr);
+    callback->invoke();
   }
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).clear();
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).shrink_to_fit();
@@ -330,9 +333,9 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// - takes one argument: a const reference to the object referred to by the
   ///   `GlobalCacheTag`.
   /// - if the data is ready, returns a default constructed
-  ///   `std::optional<CkCallBack>`
-  /// - if the data is not ready, returns a `std::optional<CkCallBack>`,
-  ///   where the `CkCallback` will re-invoke the current action on the
+  ///   `std::unique_ptr<CallBack>`
+  /// - if the data is not ready, returns a `std::unique_ptr<CallBack>`,
+  ///   where the `Callback` will re-invoke the current action on the
   ///   current parallel component.
   template <typename GlobalCacheTag, typename Function>
   bool mutable_cache_item_is_ready(const Function& function) noexcept;
@@ -570,13 +573,13 @@ auto get(const GlobalCache<Metavariables>& cache) noexcept
 /// \requires `function` is a user-defined invokable that takes one argument:
 /// a const reference to the object referred to by the
 /// `GlobalCacheTag`.  `function` returns a
-/// `std::optional<CkCallBack>` that determines the readiness. To
-/// indicate that the item is ready, the `std::optional` returned
-/// by `function` must be invalid; in this case
+/// `std::unique_ptr<CallBack>` that determines the readiness. To
+/// indicate that the item is ready, the `std::unique_ptr` returned
+/// by `function` must be nullptr; in this case
 /// `mutable_cache_item_is_ready` returns true. To indicate that the
-/// item is not ready, the `std::optional` returned by `function`
+/// item is not ready, the `std::unique_ptr` returned by `function`
 /// must be valid; in this case, `mutable_cache_item_is_ready`
-/// appends the `std::optional`'s wrapped `CkCallback` to an
+/// appends the `std::unique_ptr<Callback>` to an
 /// internal list of callbacks to be called on `mutate`, and then
 /// returns false.
 template <typename GlobalCacheTag, typename Function, typename Metavariables>

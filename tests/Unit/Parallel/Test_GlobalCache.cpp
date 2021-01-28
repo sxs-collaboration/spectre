@@ -11,6 +11,7 @@
 #include <charm++.h>
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <pup.h>
 #include <string>
@@ -21,6 +22,7 @@
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/Callback.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -211,6 +213,29 @@ struct TestMetavariables {
 
 }  // namespace
 
+// Wraps a charm CkCallback.  UseCkCallbackAsCallback is in
+// Test_GlobalCache.cpp and not in Parallel/Callback.hpp because in
+// normal usage we should use SimpleActionCallback or
+// PerformAlgorithmCallback because they can be mocked.
+class UseCkCallbackAsCallback : public Parallel::Callback {
+ public:
+  /// \cond
+  explicit UseCkCallbackAsCallback(CkMigrateMessage* /*unused*/) noexcept {}
+  WRAPPED_PUPable_decl(UseCkCallbackAsCallback);
+  /// \endcond
+  explicit UseCkCallbackAsCallback(const CkCallback& callback)
+      : callback_(callback) {}
+  void invoke() noexcept override { callback_.send(nullptr); }
+  void pup(PUP::er& /*p*/) noexcept override {
+    ERROR(
+        "Should not be pupping a UseCkCallbackAsCallback, since it is always "
+        "stored in the local MutableGlobalCache");
+  }
+
+ private:
+  CkCallback callback_;
+};
+
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_one() noexcept {
   // Test that the values are what we think they should be.
@@ -276,9 +301,12 @@ void TestArrayChare<Metavariables>::run_test_two() noexcept {
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<weight>(
           *global_cache_proxy_.ckLocalBranch(),
-          [&callback](const double& weight_l) -> std::optional<CkCallback> {
-            return weight_l == 150 ? std::optional<CkCallback>{}
-                                   : std::optional<CkCallback>(callback);
+          [&callback](
+              const double& weight_l) -> std::unique_ptr<Parallel::Callback> {
+            return weight_l == 150
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback));
           })) {
     auto& local_cache = *global_cache_proxy_.ckLocalBranch();
     SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(local_cache));
@@ -300,10 +328,12 @@ void TestArrayChare<Metavariables>::run_test_three() noexcept {
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<email>(
           *global_cache_proxy_.ckLocalBranch(),
-          [&callback](const std::string& email_l) -> std::optional<CkCallback> {
+          [&callback](const std::string& email_l)
+              -> std::unique_ptr<Parallel::Callback> {
             return email_l == "albert@einstein.de"
-                       ? std::optional<CkCallback>{}
-                       : std::optional<CkCallback>(callback);
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback));
           })) {
     auto& local_cache = *global_cache_proxy_.ckLocalBranch();
     SPECTRE_PARALLEL_REQUIRE("albert@einstein.de" ==
@@ -323,10 +353,12 @@ void TestArrayChare<Metavariables>::run_test_four() noexcept {
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<animal>(
           *global_cache_proxy_.ckLocalBranch(),
-          [&callback](const Animal& animal_l) -> std::optional<CkCallback> {
+          [&callback](
+              const Animal& animal_l) -> std::unique_ptr<Parallel::Callback> {
             return animal_l.number_of_legs() == 8
-                       ? std::optional<CkCallback>{}
-                       : std::optional<CkCallback>(callback);
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback));
           })) {
     auto& local_cache = *global_cache_proxy_.ckLocalBranch();
     SPECTRE_PARALLEL_REQUIRE(
@@ -348,10 +380,12 @@ void TestArrayChare<Metavariables>::run_test_five() noexcept {
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<animal_base>(
           *global_cache_proxy_.ckLocalBranch(),
-          [&callback](const Animal& animal_l) -> std::optional<CkCallback> {
+          [&callback](
+              const Animal& animal_l) -> std::unique_ptr<Parallel::Callback> {
             return animal_l.number_of_legs() == 30
-                       ? std::optional<CkCallback>{}
-                       : std::optional<CkCallback>(callback);
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback));
           })) {
     auto& local_cache = *global_cache_proxy_.ckLocalBranch();
     SPECTRE_PARALLEL_REQUIRE(
@@ -521,6 +555,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.MutableGlobalCache.NullptrConstructError",
 // --------- registration stuff below -------
 
 /// \cond
+PUPable_def(UseCkCallbackAsCallback)
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Triangle::my_PUP_ID = 0;   // NOLINT
