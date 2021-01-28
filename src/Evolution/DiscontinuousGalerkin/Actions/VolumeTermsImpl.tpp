@@ -7,6 +7,7 @@
 #include <optional>
 #include <ostream>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -65,17 +66,18 @@ namespace evolution::dg::Actions::detail {
  *    time derivative must be done *after* the mesh velocity is subtracted
  *    from the fluxes.
  */
-template <typename System, size_t Dim, typename... TimeDerivativeArguments,
-          typename... VariablesTags, typename... PartialDerivTags,
-          typename... FluxVariablesTags, typename... TemporaryTags>
+template <typename ComputeVolumeTimeDerivativeTerms, size_t Dim,
+          typename... TimeDerivativeArguments, typename... VariablesTags,
+          typename... PartialDerivTags, typename... FluxVariablesTags,
+          typename... TemporaryTags>
 void volume_terms(
     const gsl::not_null<Variables<tmpl::list<::Tags::dt<VariablesTags>...>>*>
         dt_vars_ptr,
-    [[maybe_unused]] const gsl::not_null<
-        Variables<tmpl::list<FluxVariablesTags...>>*>
+    [[maybe_unused]] const gsl::not_null<Variables<tmpl::list<::Tags::Flux<
+        FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>...>>*>
         volume_fluxes,
-    [[maybe_unused]] const gsl::not_null<
-        Variables<tmpl::list<PartialDerivTags...>>*>
+    [[maybe_unused]] const gsl::not_null<Variables<tmpl::list<::Tags::deriv<
+        PartialDerivTags, tmpl::size_t<Dim>, Frame::Inertial>...>>*>
         partial_derivs,
     [[maybe_unused]] const gsl::not_null<
         Variables<tmpl::list<TemporaryTags...>>*>
@@ -102,10 +104,9 @@ void volume_terms(
       "are defined, and that at least one of them is a non-empty list of "
       "tags.");
 
-  using partial_derivative_tags = typename System::gradient_variables;
-  using flux_variables = typename System::flux_variables;
-  using compute_volume_time_derivative_terms =
-      typename System::compute_volume_time_derivative_terms;
+  using partial_derivative_tags = tmpl::list<PartialDerivTags...>;
+  using flux_variables =
+      tmpl::list<FluxVariablesTags...>;
 
   // Compute d_i u_\alpha for nonconservative products
   if constexpr (has_partial_derivs) {
@@ -119,11 +120,14 @@ void volume_terms(
   dt_vars_ptr->initialize(mesh.number_of_grid_points(), 0.0);
 
   // Compute volume du/dt and fluxes
-  compute_volume_time_derivative_terms::apply(
+  ComputeVolumeTimeDerivativeTerms::apply(
       make_not_null(&get<::Tags::dt<VariablesTags>>(*dt_vars_ptr))...,
-      make_not_null(&get<FluxVariablesTags>(*volume_fluxes))...,
+      make_not_null(&get<::Tags::Flux<FluxVariablesTags, tmpl::size_t<Dim>,
+                                      Frame::Inertial>>(*volume_fluxes))...,
       make_not_null(&get<TemporaryTags>(*temporaries))...,
-      get<PartialDerivTags>(*partial_derivs)..., time_derivative_args...);
+      get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>, Frame::Inertial>>(
+          *partial_derivs)...,
+      time_derivative_args...);
 
   // Add volume terms for moving meshes
   if (mesh_velocity.has_value()) {
@@ -210,8 +214,9 @@ void volume_terms(
   // Add the flux divergence term to du_\alpha/dt, which must be done
   // after the corrections for the moving mesh are made.
   if constexpr (has_fluxes) {
-    Variables<tmpl::list<::Tags::div<FluxVariablesTags>...>> div_fluxes{
-        mesh.number_of_grid_points()};
+    Variables<tmpl::list<::Tags::div<::Tags::Flux<
+        FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>
+        div_fluxes{mesh.number_of_grid_points()};
     if (dg_formulation == ::dg::Formulation::StrongInertial) {
       divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh,
                  logical_to_inertial_inverse_jacobian);

@@ -5,13 +5,14 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
+#include "Evolution/Systems/ScalarWave/TimeDerivative.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                \
-  template void volume_terms<::ScalarWave::System<DIM(data)>>(                \
+  template void volume_terms<::ScalarWave::TimeDerivative<DIM(data)>>(        \
       const gsl::not_null<Variables<db::wrap_tags_in<                         \
           ::Tags::dt, typename ::ScalarWave::System<DIM(                      \
                           data)>::variables_tag::tags_list>>*>                \

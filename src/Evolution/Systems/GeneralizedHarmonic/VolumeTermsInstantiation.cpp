@@ -5,13 +5,15 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                \
-  template void volume_terms<::GeneralizedHarmonic::System<DIM(data)>>(       \
+  template void                                                               \
+  volume_terms<::GeneralizedHarmonic::TimeDerivative<DIM(data)>>(             \
       const gsl::not_null<Variables<db::wrap_tags_in<                         \
           ::Tags::dt, typename ::GeneralizedHarmonic::System<DIM(             \
                           data)>::variables_tag::tags_list>>*>                \

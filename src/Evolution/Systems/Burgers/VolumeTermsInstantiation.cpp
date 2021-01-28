@@ -5,9 +5,10 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/Burgers/System.hpp"
+#include "Evolution/Systems/Burgers/TimeDerivativeTerms.hpp"
 
 namespace evolution::dg::Actions::detail {
-template void volume_terms<::Burgers::System>(
+template void volume_terms<::Burgers::TimeDerivativeTerms>(
     const gsl::not_null<Variables<db::wrap_tags_in<
         ::Tags::dt, typename ::Burgers::System::variables_tag::tags_list>>*>
         dt_vars_ptr,
