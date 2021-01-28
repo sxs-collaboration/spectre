@@ -36,8 +36,8 @@ endfunction(add_elasticity_executable)
 add_elasticity_executable(
   BentBeam2D
   "Elasticity::FirstOrderSystem<2>"
-  Elasticity::Solutions::BentBeam
-  Elasticity::Solutions::BentBeam
+  Elasticity::Solutions::BentBeam<>
+  Elasticity::Solutions::BentBeam<>
   )
 target_link_libraries(
   SolveElasticBentBeam2D
@@ -49,8 +49,8 @@ target_link_libraries(
 add_elasticity_executable(
   HalfSpaceMirror
   "Elasticity::FirstOrderSystem<3>"
-  Elasticity::Solutions::HalfSpaceMirror
-  Elasticity::Solutions::HalfSpaceMirror
+  Elasticity::Solutions::HalfSpaceMirror<>
+  Elasticity::Solutions::HalfSpaceMirror<>
   )
 target_link_libraries(
   SolveElasticHalfSpaceMirror

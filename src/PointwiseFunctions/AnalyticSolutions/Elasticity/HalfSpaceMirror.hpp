@@ -6,23 +6,57 @@
 #include <cstddef>
 #include <limits>
 
+#include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Elasticity/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+namespace Elasticity::Solutions {
+
+namespace detail {
+template <typename DataType>
+struct HalfSpaceMirrorVariables {
+  using Cache = CachedTempBuffer<HalfSpaceMirrorVariables,
+                                 Tags::Displacement<3>, Tags::Strain<3>,
+                                 ::Tags::FixedSource<Tags::Displacement<3>>>;
+
+  const tnsr::I<DataType, 3>& x;
+  const double beam_width;
+  const ConstitutiveRelations::IsotropicHomogeneous<3>& constitutive_relation;
+  const size_t integration_intervals;
+  const double absolute_tolerance;
+  const double relative_tolerance;
+
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> displacement,
+                  gsl::not_null<Cache*> cache,
+                  Tags::Displacement<3> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> strain,
+                  gsl::not_null<Cache*> cache, Tags::Strain<3> /*meta*/) const
+      noexcept;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_for_displacement,
+      gsl::not_null<Cache*> cache,
+      ::Tags::FixedSource<Tags::Displacement<3>> /*meta*/) const noexcept;
+};
+}  // namespace detail
+
 /// \cond
-class DataVector;
-namespace PUP {
-class er;
-}  // namespace PUP
+template <typename Registrars>
+struct HalfSpaceMirror;
+
+namespace Registrars {
+using HalfSpaceMirror = ::Registration::Registrar<Solutions::HalfSpaceMirror>;
+}  // namespace Registrars
 /// \endcond
 
-namespace Elasticity::Solutions {
 /*!
  * \brief The solution for a half-space mirror deformed by a laser beam.
  *
@@ -75,10 +109,10 @@ namespace Elasticity::Solutions {
  * profile and \f$ \Theta = \mathrm{Tr}(S)\f$ the materials expansion.
  *
  */
-class HalfSpaceMirror {
+template <typename Registrars =
+              tmpl::list<Solutions::Registrars::HalfSpaceMirror>>
+class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
  public:
-  static constexpr size_t volume_dim = 3;
-
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>;
 
@@ -134,59 +168,67 @@ class HalfSpaceMirror {
   HalfSpaceMirror& operator=(const HalfSpaceMirror&) noexcept = default;
   HalfSpaceMirror(HalfSpaceMirror&&) noexcept = default;
   HalfSpaceMirror& operator=(HalfSpaceMirror&&) noexcept = default;
-  ~HalfSpaceMirror() noexcept = default;
+  ~HalfSpaceMirror() noexcept override = default;
+
+  /// \cond
+  explicit HalfSpaceMirror(CkMigrateMessage* /*unused*/) noexcept {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(HalfSpaceMirror);  // NOLINT
+  /// \endcond
 
   HalfSpaceMirror(double beam_width,
                   constitutive_relation_type constitutive_relation,
                   size_t integration_intervals = 350,
                   double absolute_tolerance = 1e-12,
-                  double relative_tolerance = 1e-10) noexcept;
+                  double relative_tolerance = 1e-10) noexcept
+      : beam_width_(beam_width),
+        constitutive_relation_(std::move(constitutive_relation)),
+        integration_intervals_(integration_intervals),
+        absolute_tolerance_(absolute_tolerance),
+        relative_tolerance_(relative_tolerance) {}
 
-  const constitutive_relation_type& constitutive_relation() const noexcept {
+  double beam_width() const noexcept { return beam_width_; }
+  size_t integration_intervals() const noexcept {
+    return integration_intervals_;
+  }
+  double absolute_tolerance() const noexcept { return absolute_tolerance_; }
+  double relative_tolerance() const noexcept { return relative_tolerance_; }
+
+  const constitutive_relation_type& constitutive_relation() const
+      noexcept override {
     return constitutive_relation_;
   }
 
-  // @{
-  /// Retrieve variable at coordinates `x`
-  auto variables(const tnsr::I<DataVector, 3>& x,
-                 tmpl::list<Tags::Displacement<3>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Tags::Displacement<3>>;
-
-  auto variables(const tnsr::I<DataVector, 3>& x,
-                 tmpl::list<Tags::Strain<3>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Tags::Strain<3>>;
-
-  // FixedSource in Elasticity equates to external forces
-  // (see Elasticity::FirstOrderSystem)
-  static auto variables(
-      const tnsr::I<DataVector, 3>& x,
-      tmpl::list<::Tags::FixedSource<Tags::Displacement<3>>> /*meta*/) noexcept
-      -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<3>>>;
-  // @}
-
-  /// Retrieve a collection of variables at coordinates `x`
-  template <typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataVector, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
-    static_assert(sizeof...(Tags) > 1, "An unsupported Tag was requested.");
-    for (size_t i = 0; i < get<2>(x).size(); i++) {
-      if (UNLIKELY(get<2>(x)[i] < 0)) {
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+    for (size_t i = 0; i < get_size(get<2>(x)); i++) {
+      if (UNLIKELY(get_element(get<2>(x), i) < 0)) {
         ERROR(
             "The HalfSpaceMirror solution is not defined for negative values "
             "of z.");
       }
     }
-    return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+    using VarsComputer = detail::HalfSpaceMirrorVariables<DataType>;
+    typename VarsComputer::Cache cache{
+        get_size(*x.begin()),
+        VarsComputer{x, beam_width_, constitutive_relation_,
+                     integration_intervals_, absolute_tolerance_,
+                     relative_tolerance_}};
+    return {cache.get_var(RequestedTags{})...};
   }
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+    p | beam_width_;
+    p | constitutive_relation_;
+    p | integration_intervals_;
+    p | absolute_tolerance_;
+    p | relative_tolerance_;
+  }
 
  private:
-  friend bool operator==(const HalfSpaceMirror& lhs,
-                         const HalfSpaceMirror& rhs) noexcept;
-
   double beam_width_{std::numeric_limits<double>::signaling_NaN()};
   constitutive_relation_type constitutive_relation_{};
   size_t integration_intervals_{std::numeric_limits<size_t>::max()};
@@ -194,7 +236,25 @@ class HalfSpaceMirror {
   double relative_tolerance_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-bool operator!=(const HalfSpaceMirror& lhs,
-                const HalfSpaceMirror& rhs) noexcept;
+/// \cond
+template <typename Registrars>
+PUP::able::PUP_ID HalfSpaceMirror<Registrars>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
+
+template <typename Registrars>
+bool operator==(const HalfSpaceMirror<Registrars>& lhs,
+                const HalfSpaceMirror<Registrars>& rhs) noexcept {
+  return lhs.beam_width() == rhs.beam_width() and
+         lhs.constitutive_relation() == rhs.constitutive_relation() and
+         lhs.integration_intervals() == rhs.integration_intervals() and
+         lhs.absolute_tolerance() == rhs.absolute_tolerance() and
+         lhs.relative_tolerance() == rhs.relative_tolerance();
+}
+
+template <typename Registrars>
+bool operator!=(const HalfSpaceMirror<Registrars>& lhs,
+                const HalfSpaceMirror<Registrars>& rhs) noexcept {
+  return not(lhs == rhs);
+}
 
 }  // namespace Elasticity::Solutions

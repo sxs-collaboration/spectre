@@ -5,87 +5,75 @@
 
 #include <algorithm>
 #include <array>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
-#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
+/// \cond
+namespace Elasticity::Solutions::detail {
 
-namespace Elasticity::Solutions {
-
-BentBeam::BentBeam(double length, double height, double bending_moment,
-                   constitutive_relation_type constitutive_relation) noexcept
-    : length_(length),
-      height_(height),
-      bending_moment_(bending_moment),
-      constitutive_relation_(std::move(constitutive_relation)) {}
-
-tuples::TaggedTuple<Tags::Displacement<2>> BentBeam::variables(
-    const tnsr::I<DataVector, 2>& x,
-    tmpl::list<Tags::Displacement<2>> /*meta*/) const noexcept {
-  const double youngs_modulus = constitutive_relation_.youngs_modulus();
-  const double poisson_ratio = constitutive_relation_.poisson_ratio();
+template <typename DataType>
+void BentBeamVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 2>*> displacement,
+    const gsl::not_null<Cache*> /*cache*/, Tags::Displacement<2> /*meta*/) const
+    noexcept {
+  const double youngs_modulus = constitutive_relation.youngs_modulus();
+  const double poisson_ratio = constitutive_relation.poisson_ratio();
   const double prefactor =
-      12. * bending_moment_ / (youngs_modulus * cube(height_));
-  return {tnsr::I<DataVector, 2>{
-      {{-prefactor * get<0>(x) * get<1>(x),
-        prefactor / 2. *
-            (square(get<0>(x)) + poisson_ratio * square(get<1>(x)) -
-             square(length_) / 4.)}}}};
+      12. * bending_moment / (youngs_modulus * cube(height));
+  get<0>(*displacement) = -prefactor * get<0>(x) * get<1>(x);
+  get<1>(*displacement) =
+      prefactor / 2. *
+      (square(get<0>(x)) + poisson_ratio * square(get<1>(x)) -
+       square(length) / 4.);
 }
 
-tuples::TaggedTuple<Tags::Strain<2>> BentBeam::variables(
-    const tnsr::I<DataVector, 2>& x, tmpl::list<Tags::Strain<2>> /*meta*/) const
+template <typename DataType>
+void BentBeamVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 2>*> strain,
+    const gsl::not_null<Cache*> /*cache*/, Tags::Strain<2> /*meta*/) const
     noexcept {
-  const double youngs_modulus = constitutive_relation_.youngs_modulus();
-  const double poisson_ratio = constitutive_relation_.poisson_ratio();
+  const double youngs_modulus = constitutive_relation.youngs_modulus();
+  const double poisson_ratio = constitutive_relation.poisson_ratio();
   const double prefactor =
-      12. * bending_moment_ / (youngs_modulus * cube(height_));
-  auto result = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.);
-  get<0, 0>(result) = -prefactor * get<1>(x);
-  get<1, 1>(result) = prefactor * poisson_ratio * get<1>(x);
-  return {std::move(result)};
+      12. * bending_moment / (youngs_modulus * cube(height));
+  get<0, 0>(*strain) = -prefactor * get<1>(x);
+  get<1, 1>(*strain) = prefactor * poisson_ratio * get<1>(x);
+  get<0, 1>(*strain) = 0.;
 }
 
-tuples::TaggedTuple<Tags::Stress<2>> BentBeam::variables(
-    const tnsr::I<DataVector, 2>& x, tmpl::list<Tags::Stress<2>> /*meta*/) const
+template <typename DataType>
+void BentBeamVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::II<DataType, 2>*> stress,
+    const gsl::not_null<Cache*> /*cache*/, Tags::Stress<2> /*meta*/) const
     noexcept {
-  auto result = make_with_value<tnsr::II<DataVector, 2>>(x, 0.);
-  get<0, 0>(result) = 12. * bending_moment_ / cube(height_) * get<1>(x);
-  return {std::move(result)};
+  get<0, 0>(*stress) = 12. * bending_moment / cube(height) * get<1>(x);
+  get<1, 1>(*stress) = 0.;
+  get<0, 1>(*stress) = 0.;
 }
 
-double BentBeam::potential_energy() const {
-  return 6. * length_ * square(bending_moment_) /
-         (cube(height_) * constitutive_relation_.youngs_modulus());
+template <typename DataType>
+void BentBeamVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 2>*> fixed_source_for_displacement,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const noexcept {
+  std::fill(fixed_source_for_displacement->begin(),
+            fixed_source_for_displacement->end(), 0.);
 }
 
-tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>
-BentBeam::variables(
-    const tnsr::I<DataVector, 2>& x,
-    tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/)
-    noexcept {
-  return {make_with_value<tnsr::I<DataVector, 2>>(x, 0.)};
-}
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-void BentBeam::pup(PUP::er& p) noexcept {
-  p | length_;
-  p | height_;
-  p | bending_moment_;
-  p | constitutive_relation_;
-}
+#define INSTANTIATE(_, data) template class BentBeamVariables<DTYPE(data)>;
 
-bool operator==(const BentBeam& lhs, const BentBeam& rhs) noexcept {
-  return lhs.length_ == rhs.length_ and lhs.height_ == rhs.height_ and
-         lhs.bending_moment_ == rhs.bending_moment_ and
-         lhs.constitutive_relation_ == rhs.constitutive_relation_;
-}
+GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 
-bool operator!=(const BentBeam& lhs, const BentBeam& rhs) noexcept {
-  return not(lhs == rhs);
-}
+#undef DTYPE
+#undef INSTANTIATE
 
-}  // namespace Elasticity::Solutions
+}  // namespace Elasticity::Solutions::detail
+/// \endcond

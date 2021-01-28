@@ -36,6 +36,11 @@ class CachedTempBuffer {
   /// Obtain a value from the buffer, computing it if necessary.
   template <typename Tag>
   const typename Tag::type& get_var(Tag /*meta*/) noexcept {
+    static_assert(tmpl::list_contains_v<tmpl::list<Tags...>, Tag>,
+                  "The requested tag is not available. See the template "
+                  "parameters of 'CachedTempBuffer' for the computer type and "
+                  "the available tags, and the template parameter of the "
+                  "'get_var' function for the requested tag.");
     // This function can't be called "get" because that interferes
     // with the ADL needed to access data_.
     if (not get<Computed<Tag>>(computed_flags_)) {

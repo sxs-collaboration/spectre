@@ -17,10 +17,10 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AnalyticSolution.hpp
   Lorentzian.hpp
   Moustache.hpp
   ProductOfSinusoids.hpp
-  Solutions.hpp
   )
 
 target_link_libraries(
@@ -29,5 +29,6 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Options
+  Poisson
   Utilities
   )

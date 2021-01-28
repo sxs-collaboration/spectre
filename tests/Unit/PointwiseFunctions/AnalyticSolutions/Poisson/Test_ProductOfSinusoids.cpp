@@ -74,6 +74,7 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
           "WaveNumbers: " + options);
   CHECK(created_solution == solution);
   test_serialization(solution);
+  test_copy_semantics(solution);
 }
 
 }  // namespace

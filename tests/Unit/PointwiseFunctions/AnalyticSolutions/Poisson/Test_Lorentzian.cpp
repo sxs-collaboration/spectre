@@ -66,6 +66,7 @@ void test_solution() {
       TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>("");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
+  test_copy_semantics(check_solution);
 }
 
 }  // namespace

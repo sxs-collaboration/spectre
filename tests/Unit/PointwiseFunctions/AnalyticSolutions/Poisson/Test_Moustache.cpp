@@ -66,6 +66,7 @@ void test_solution() {
       TestHelpers::test_creation<Poisson::Solutions::Moustache<Dim>>("");
   CHECK(created_solution == solution);
   test_serialization(solution);
+  test_copy_semantics(solution);
 }
 
 }  // namespace
