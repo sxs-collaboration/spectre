@@ -87,8 +87,8 @@ template <size_t Dim>
 struct TimeDerivative {
  public:
   using temporary_tags = tmpl::list<
-      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
       Tags::Gamma1Gamma2, Tags::PiTwoNormals, Tags::NormalDotOneIndexConstraint,
       Tags::Gamma1Plus1, Tags::PiOneNormal<Dim>,
       Tags::GaugeConstraint<Dim, Frame::Inertial>, Tags::PhiTwoNormals<Dim>,

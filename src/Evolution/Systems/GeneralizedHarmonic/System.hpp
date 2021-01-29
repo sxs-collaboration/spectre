@@ -8,6 +8,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -48,5 +49,8 @@ struct System {
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+
+  using inverse_spatial_metric_tag =
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>;
 };
 }  // namespace GeneralizedHarmonic

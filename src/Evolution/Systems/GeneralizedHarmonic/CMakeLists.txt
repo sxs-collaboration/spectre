@@ -44,5 +44,6 @@ target_link_libraries(
   Domain
   )
 
-add_subdirectory(GaugeSourceFunctions)
+add_subdirectory(BoundaryCorrections)
 add_subdirectory(ConstraintDamping)
+add_subdirectory(GaugeSourceFunctions)
