@@ -105,8 +105,8 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   }
 
  private:
-  const T1 t1_;
-  const T2 t2_;
+  T1 t1_;
+  T2 t2_;
 };
 }  // namespace TensorExpressions
 

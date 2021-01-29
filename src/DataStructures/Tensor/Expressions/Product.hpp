@@ -194,8 +194,8 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   }
 
  private:
-  const T1 t1_;
-  const T2 t2_;
+  T1 t1_;
+  T2 t2_;
 };
 
 }  // namespace TensorExpressions
