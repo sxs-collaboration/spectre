@@ -1,6 +1,37 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# We can't do the instantiations for NewtonianEuler in the NewtonianEuler
+# library because the TimeDerivativeTerms and system depend on the analytic
+# solution/data being used, which causes a cyclic dependency since the solutions
+# depend on the system for the tags. This cyclic dependency is already present
+# in the code, but currently only through header files. The same cyclic
+# dependency exists between NewtonianEulerSources and NewtonianEuler. To resolve
+# these, we will need to factor the NewtonianEuler tags into a separate library.
+# fter the NewtonianEuler tags are factored in this way, the instantiation
+# source file should be moved to the NewtonianEuler library.
+set(LIBRARY NewtonianEulerInstantiations)
+
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  VolumeTermsInstantiation.cpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  DataStructures
+  Evolution
+  NewtonianEuler
+  NewtonianEulerAnalyticData
+  NewtonianEulerSolutions
+  NewtonianEulerSources
+  Utilities
+  )
+
 set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
@@ -14,6 +45,7 @@ set(LIBS_TO_LINK
   MathFunctions
   NewtonianEuler
   NewtonianEulerAnalyticData
+  NewtonianEulerInstantiations
   NewtonianEulerNumericalFluxes
   NewtonianEulerSolutions
   NewtonianEulerSources

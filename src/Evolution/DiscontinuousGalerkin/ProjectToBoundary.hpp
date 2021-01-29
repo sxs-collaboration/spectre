@@ -81,16 +81,13 @@ void project_contiguous_data_to_boundary(
   constexpr const size_t number_of_independent_components =
       Variables<VolumeVarsTagsList>::number_of_independent_components;
   using first_volume_tag = tmpl::front<VolumeVarsTagsList>;
-
-  const Mesh<Dim> uniform_gauss_mesh(volume_mesh.extents(0),
-                                     volume_mesh.basis(0),
-                                     Spectral::Quadrature::Gauss);
-  if (volume_mesh == uniform_gauss_mesh) {
+  const size_t sliced_dim = direction.dimension();
+  if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
     const Matrix identity{};
     auto interpolation_matrices = make_array<Dim>(std::cref(identity));
     const auto& matrix = Spectral::boundary_interpolation_matrices(
-        volume_mesh.slice_through(direction.dimension()));
-    gsl::at(interpolation_matrices, direction.dimension()) =
+        volume_mesh.slice_through(sliced_dim));
+    gsl::at(interpolation_matrices, sliced_dim) =
         direction.side() == Side::Upper ? matrix.second : matrix.first;
 
     auto& first_face_field = get<first_volume_tag>(*face_fields);
@@ -111,12 +108,6 @@ void project_contiguous_data_to_boundary(
                                   number_of_independent_components},
                    volume_mesh.extents());
   } else {
-    ASSERT(Mesh<Dim>(volume_mesh.extents(0), volume_mesh.basis(0),
-                     Spectral::Quadrature::GaussLobatto) == volume_mesh,
-           "The current implementation assumes the mesh be either a uniform "
-           "Gauss or Gauss-Lobatto mesh, but got "
-               << volume_mesh << ".");
-    const size_t sliced_dim = direction.dimension();
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
                                    : 0;
@@ -177,16 +168,14 @@ void project_tensors_to_boundary(
       tmpl::size<tmpl::list_difference<TagsToProjectList,
                                        VolumeVarsTagsList>>::value == 0,
       "All of the tags in TagsToProjectList must be in VolumeVarsTagsList");
-  const Mesh<Dim> uniform_gauss_mesh(volume_mesh.extents(0),
-                                     volume_mesh.basis(0),
-                                     Spectral::Quadrature::Gauss);
-  if (volume_mesh.quadrature() == uniform_gauss_mesh.quadrature()) {
+  const size_t sliced_dim = direction.dimension();
+  if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
     const Matrix identity{};
     auto interpolation_matrices = make_array<Dim>(std::cref(identity));
     const std::pair<Matrix, Matrix>& matrices =
         Spectral::boundary_interpolation_matrices(
-            volume_mesh.slice_through(direction.dimension()));
-    gsl::at(interpolation_matrices, direction.dimension()) =
+            volume_mesh.slice_through(sliced_dim));
+    gsl::at(interpolation_matrices, sliced_dim) =
         direction.side() == Side::Upper ? matrices.second : matrices.first;
     tmpl::for_each<TagsToProjectList>([&face_fields, &interpolation_matrices,
                                        &volume_fields,
@@ -203,13 +192,6 @@ void project_tensors_to_boundary(
                      volume_mesh.extents());
     });
   } else {
-    ASSERT(Mesh<Dim>(volume_mesh.extents(0), volume_mesh.basis(0),
-                     Spectral::Quadrature::GaussLobatto) == volume_mesh,
-           "The current implementation assumes the mesh be either a uniform "
-           "Gauss or Gauss-Lobatto mesh, but got "
-               << volume_mesh);
-
-    const size_t sliced_dim = direction.dimension();
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
                                    : 0;
@@ -241,6 +223,50 @@ void project_tensors_to_boundary(
               vars_data[si.volume_offset() + i * volume_grid_points];  // NOLINT
         }
       });
+    }
+  }
+}
+
+/*!
+ * \brief Projects a tensor to the face
+ *
+ * \note This function works for both Gauss and Gauss-Lobatto uniform meshes.
+ */
+template <typename Symm, typename IndexList, size_t Dim>
+void project_tensor_to_boundary(
+    const gsl::not_null<Tensor<DataVector, Symm, IndexList>*> face_field,
+    const Tensor<DataVector, Symm, IndexList>& volume_field,
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) noexcept {
+  const size_t sliced_dim = direction.dimension();
+  if (volume_mesh.quadrature(sliced_dim) ==
+      Spectral::Quadrature::Gauss) {
+    const Matrix identity{};
+    auto interpolation_matrices = make_array<Dim>(std::cref(identity));
+    const std::pair<Matrix, Matrix>& matrices =
+        Spectral::boundary_interpolation_matrices(
+            volume_mesh.slice_through(sliced_dim));
+    gsl::at(interpolation_matrices, sliced_dim) =
+        direction.side() == Side::Upper ? matrices.second : matrices.first;
+    for (size_t tensor_storage_index = 0;
+         tensor_storage_index < volume_field.size(); ++tensor_storage_index) {
+      apply_matrices(make_not_null(&(*face_field)[tensor_storage_index]),
+                     interpolation_matrices, volume_field[tensor_storage_index],
+                     volume_mesh.extents());
+    }
+  } else {
+    const size_t fixed_index = direction.side() == Side::Upper
+                                   ? volume_mesh.extents(sliced_dim) - 1
+                                   : 0;
+
+    // Run the SliceIterator as the outer-most loop since incrementing the slice
+    // iterator is surprisingly expensive.
+    for (SliceIterator si(volume_mesh.extents(), sliced_dim, fixed_index); si;
+         ++si) {
+      for (size_t tensor_storage_index = 0;
+           tensor_storage_index < volume_field.size(); ++tensor_storage_index) {
+        (*face_field)[tensor_storage_index][si.slice_offset()] =
+            volume_field[tensor_storage_index][si.volume_offset()];
+      }
     }
   }
 }

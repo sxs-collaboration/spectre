@@ -12,7 +12,7 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace evolution::dg::Tags::InternalFace {
+namespace evolution::dg::Tags {
 namespace {
 template <size_t Dim>
 void test() {
@@ -28,4 +28,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.InternalFaceTags", "[Unit][Evolution]") {
   test<2>();
   test<3>();
 }
-}  // namespace evolution::dg::Tags::InternalFace
+}  // namespace evolution::dg::Tags

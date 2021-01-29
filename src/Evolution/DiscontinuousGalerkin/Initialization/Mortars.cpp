@@ -21,31 +21,27 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg::Initialization {
-template <size_t Dim, bool AddFluxBoundaryConditionMortars>
-auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
+template <size_t Dim>
+auto Mortars<Dim>::apply_impl(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Spectral::Quadrature quadrature, const Element<Dim>& element,
     const TimeStepId& next_temporal_id,
-    const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>& interface_meshes,
     const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
-        boundary_meshes) noexcept
+        interface_meshes) noexcept
     -> std::tuple<
         MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
         MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
         MortarMap<TimeStepId>,
-        DirectionMap<
-            Dim,
-            std::optional<Variables<tmpl::list<
-                evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>> {
+        DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                              evolution::dg::Tags::MagnitudeOfNormal,
+                              evolution::dg::Tags::NormalCovector<Dim>>>>>> {
   MortarMap<evolution::dg::MortarData<Dim>> mortar_data{};
   MortarMap<Mesh<Dim - 1>> mortar_meshes{};
   MortarMap<std::array<Spectral::MortarSize, Dim - 1>> mortar_sizes{};
   MortarMap<TimeStepId> mortar_next_temporal_ids{};
-  DirectionMap<Dim,
-               std::optional<Variables<tmpl::list<
-                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>
+  DirectionMap<Dim, std::optional<Variables<
+                        tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                   evolution::dg::Tags::NormalCovector<Dim>>>>>
       normal_covector_quantities{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     normal_covector_quantities[direction] = std::nullopt;
@@ -70,19 +66,8 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
     }
   }
 
-  // In a future update, we will update the logic below to also check the actual
-  // boundary condition being imposed.
-  if constexpr (AddFluxBoundaryConditionMortars) {
-    for (const auto& direction : element.external_boundaries()) {
-      const auto mortar_id =
-          std::make_pair(direction, ElementId<Dim>::external_boundary_id());
-      mortar_data[mortar_id];  // Default initialize data
-      mortar_meshes.emplace(mortar_id, boundary_meshes.at(direction));
-      mortar_sizes.emplace(mortar_id,
-                           make_array<Dim - 1>(Spectral::MortarSize::Full));
-    }
-  } else {
-    (void)boundary_meshes;
+  for (const auto& direction : element.external_boundaries()) {
+    normal_covector_quantities[direction] = std::nullopt;
   }
 
   return {std::move(mortar_data), std::move(mortar_meshes),
@@ -91,14 +76,11 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define ADD_BOUNDARY_FLUX(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data) \
-  template class Mortars<DIM(data), ADD_BOUNDARY_FLUX(data)>;
+#define INSTANTIATION(r, data) template class Mortars<DIM(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
-#undef ADD_BOUNDARY_FLUX
 #undef DIM
 }  // namespace evolution::dg::Initialization

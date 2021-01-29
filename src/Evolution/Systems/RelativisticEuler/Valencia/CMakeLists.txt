@@ -15,6 +15,7 @@ spectre_target_sources(
   PrimitiveFromConservative.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
+  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(

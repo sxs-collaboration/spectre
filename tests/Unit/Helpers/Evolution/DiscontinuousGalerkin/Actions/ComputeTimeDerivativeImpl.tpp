@@ -25,9 +25,9 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
@@ -50,6 +50,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -1287,25 +1288,35 @@ void test_impl(const Spectral::Quadrature quadrature,
                                          tmpl::size_t<Dim>, Frame::Inertial>;
     using mortar_tags_list =
         typename BoundaryTerms<Dim, HasPrims>::dg_package_field_tags;
-    const auto& face_meshes =
-        get_tag(domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
-                                        domain::Tags::Mesh<Dim - 1>>{});
-    const auto& unnormalized_face_normals =
-        get_tag(domain::Tags::Interface<
-                domain::Tags::InternalDirections<Dim>,
-                domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>{});
-    auto face_normals = unnormalized_face_normals;
-    for (auto& direction_and_normal : face_normals) {
-      // GCC-7 gives unused direction warnings if we use structured bindings.
-      const auto normal_magnitude = magnitude(direction_and_normal.second);
+    std::unordered_map<Direction<Dim>,
+                       tnsr::i<DataVector, Dim, Frame::Inertial>>
+        face_normals{};
+    for (const auto& direction : element.internal_boundaries()) {
+      tnsr::i<DataVector, Dim, Frame::Inertial> volume_inv_jac_in_direction{
+          inv_jac[0].size()};
+      for (size_t inertial_index = 0; inertial_index < Dim; ++inertial_index) {
+        volume_inv_jac_in_direction.get(inertial_index) =
+            inv_jac.get(direction.dimension(), inertial_index);
+      }
+
+      const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
+      face_normals[direction] = tnsr::i<DataVector, Dim, Frame::Inertial>{
+          face_mesh.number_of_grid_points()};
+      ::evolution::dg::project_tensor_to_boundary(
+          make_not_null(&face_normals[direction]), volume_inv_jac_in_direction,
+          mesh, direction);
+      for (auto& component : face_normals[direction]) {
+        component *= direction.sign();
+      }
+
+      // GCC-7 gives unused direction warnings if we use structured
+      // bindings.
+      const auto normal_magnitude = magnitude(face_normals.at(direction));
       for (size_t i = 0; i < Dim; ++i) {
-        direction_and_normal.second.get(i) /= get(normal_magnitude);
+        face_normals[direction].get(i) /= get(normal_magnitude);
       }
     }
-    const auto& face_mesh_velocities =
-        get_tag(domain::Tags::Interface<
-                domain::Tags::InternalDirections<Dim>,
-                domain::Tags::MeshVelocity<Dim, Frame::Inertial>>{});
+
     const auto& mortar_meshes =
         get_tag(::evolution::dg::Tags::MortarMesh<Dim>{});
     const auto& mortar_sizes =
@@ -1315,11 +1326,11 @@ void test_impl(const Spectral::Quadrature quadrature,
         mesh.number_of_grid_points()};
     get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
     const auto compute_expected_mortar_data =
-        [&face_mesh_velocities, &face_meshes, &face_normals, &get_tag, &mesh,
-         &mortar_meshes, &mortar_sizes, &volume_temporaries](
+        [&face_normals, &get_tag, &mesh, &mesh_velocity, &mortar_meshes,
+         &mortar_sizes, &volume_temporaries](
             const Direction<Dim>& local_direction,
             const ElementId<Dim>& local_neighbor_id) noexcept {
-          const auto& face_mesh = face_meshes.at(local_direction);
+          const auto& face_mesh = mesh.slice_away(local_direction.dimension());
           // First project data to the face in the direction of the mortar
           Variables<
               tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
@@ -1343,22 +1354,29 @@ void test_impl(const Spectral::Quadrature quadrature,
                 get_tag(typename system::primitive_variables_tag{}), mesh,
                 local_direction);
           }
+          std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
+          if (UseMovingMesh) {
+            face_mesh_velocity =
+                tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
+            ::evolution::dg::project_tensor_to_boundary(
+                make_not_null(&*face_mesh_velocity), *mesh_velocity, mesh,
+                local_direction);
+          }
 
           // Compute the normal dot mesh velocity and then the packaged data
           Variables<mortar_tags_list> packaged_data{
               face_mesh.number_of_grid_points()};
           std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
-          if (face_mesh_velocities.at(local_direction).has_value()) {
-            normal_dot_mesh_velocity =
-                dot_product(*face_mesh_velocities.at(local_direction),
-                            face_normals.at(local_direction));
+          if (face_mesh_velocity.has_value()) {
+            normal_dot_mesh_velocity = dot_product(
+                *face_mesh_velocity, face_normals.at(local_direction));
           }
           const double max_char_speed_on_face = dg_package_data(
               make_not_null(&packaged_data), BoundaryTerms<Dim, HasPrims>{},
               fields_on_face, face_normals.at(local_direction),
-              face_mesh_velocities.at(local_direction),
-              normal_dot_mesh_velocity, get_tag, volume_tags{});
+              face_mesh_velocity, normal_dot_mesh_velocity, get_tag,
+              volume_tags{});
 
           CHECK(max_char_speed_on_face ==
                 max(get(

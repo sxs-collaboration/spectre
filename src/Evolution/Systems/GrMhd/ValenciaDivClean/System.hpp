@@ -63,7 +63,7 @@ struct System {
   template <typename OrderedListOfPrimitiveRecoverySchemes>
   using primitive_from_conservative =
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
-                                EquationOfStateType::thermodynamic_dim>;
+                                thermodynamic_dim>;
 
   using char_speeds_compute_tag =
       Tags::CharacteristicSpeedsCompute<EquationOfStateType>;

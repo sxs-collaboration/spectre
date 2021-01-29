@@ -7,5 +7,10 @@ spectre_target_headers(
   HEADERS
   ApplyBoundaryCorrections.hpp
   ComputeTimeDerivative.hpp
+  ComputeTimeDerivativeHelpers.hpp
+  InternalMortarDataImpl.hpp
   NormalCovectorAndMagnitude.hpp
+  PackageDataImpl.hpp
+  VolumeTermsImpl.hpp
+  VolumeTermsImpl.tpp
   )

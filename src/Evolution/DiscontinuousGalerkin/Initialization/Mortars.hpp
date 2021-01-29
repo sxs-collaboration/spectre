@@ -47,11 +47,6 @@ namespace evolution::dg::Initialization {
  * \brief Initialize mortars between elements for exchanging boundary correction
  * terms.
  *
- * If the template parameter `AddFluxBoundaryConditionMortars`
- * is set to `false` then the mortar data for flux boundary conditions are not
- * initialized and other boundary conditions can be applied. In this case, the
- * `Tags::Mortar*` tags have no entries for external boundary directions.
- *
  * Uses:
  * - DataBox:
  *   - `Tags::Element<Dim>`
@@ -70,7 +65,7 @@ namespace evolution::dg::Initialization {
  * - Removes: nothing
  * - Modifies: nothing
  */
-template <size_t Dim, bool AddFluxBoundaryConditionMortars = true>
+template <size_t Dim>
 struct Mortars {
   using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
 
@@ -81,10 +76,10 @@ struct Mortars {
   using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>,
                                          evolution::dg::Tags::Quadrature>;
 
-  using simple_tags = tmpl::list<
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
-      Tags::MortarNextTemporalId<Dim>,
-      evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<Dim>>;
+  using simple_tags =
+      tmpl::list<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
+                 Tags::MortarSize<Dim>, Tags::MortarNextTemporalId<Dim>,
+                 evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -105,9 +100,6 @@ struct Mortars {
                      db::get<::Tags::TimeStepId>(box),
                      db::get<::domain::Tags::Interface<
                          ::domain::Tags::InternalDirections<Dim>,
-                         ::domain::Tags::Mesh<Dim - 1>>>(box),
-                     db::get<::domain::Tags::Interface<
-                         ::domain::Tags::BoundaryDirectionsInterior<Dim>,
                          ::domain::Tags::Mesh<Dim - 1>>>(box));
       ::Initialization::mutate_assign<simple_tags>(
           make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
@@ -128,16 +120,13 @@ struct Mortars {
       MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
       MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
       MortarMap<TimeStepId>,
-      DirectionMap<
-          Dim, std::optional<Variables<tmpl::list<
-                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>>
-  apply_impl(
-      const std::vector<std::array<size_t, Dim>>& initial_extents,
-      Spectral::Quadrature quadrature, const Element<Dim>& element,
-      const TimeStepId& next_temporal_id,
-      const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>& interface_meshes,
-      const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
-          boundary_meshes) noexcept;
+      DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                            evolution::dg::Tags::MagnitudeOfNormal,
+                            evolution::dg::Tags::NormalCovector<Dim>>>>>>
+  apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
+             Spectral::Quadrature quadrature, const Element<Dim>& element,
+             const TimeStepId& next_temporal_id,
+             const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
+                 interface_meshes) noexcept;
 };
 }  // namespace evolution::dg::Initialization
