@@ -143,10 +143,9 @@ To build with the docker image:
          SPECTRE_ROOT
    ```
    When cmake configuration is done, you are ready to build target executables.
-   Compile the code with `make -jN` where `N` is the number of cores to build on
-   in parallel (e.g. `make -j4`).
-   * By default, `make -jN` without any specification will build all possible
-     targets. You can see the list of available targets by running `make list`.
+   Compile unit tests with `make unit-tests -jN` where `N` is the number of
+   cores to build on in parallel (e.g. `-j4`).
+   * You can see the list of available targets by running `make list`.
    * Run `make test-executables -jN` to compile the test executables, and
      `ctest` to run the tests.
 
@@ -238,10 +237,9 @@ To build SpECTRE with Singularity you must:
           -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
           SPECTRE_ROOT
    ```
-   Compile the code with `make -jN` where `N` is the number of cores to build on
-   in parallel (e.g. `make -j4`).
-   * By default, `make -jN` without any specification will build all possible
-     targets. You can see the list of available targets by running `make list`.
+   Compile unit tests with `make unit-tests -jN` where `N` is the number of
+   cores to build on in parallel (e.g. `-j4`).
+   * You can see the list of available targets by running `make list`.
    * Run `make test-executables -jN` to compile the test executables, and
      `ctest` to run the tests.
 
