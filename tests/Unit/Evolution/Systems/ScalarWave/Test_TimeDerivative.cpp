@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -31,6 +32,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+struct ConstraintGamma2Copy : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 template <size_t Dim>
 auto add_scalar_to_tensor_components(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& input,
@@ -65,13 +70,14 @@ void check_du_dt(const size_t npts, const double time) {
   auto local_check_du_dt = [&npts, &time, &solution, &x](
                                const double gamma2, const double constraint) {
     auto box = db::create<db::AddSimpleTags<
-        ScalarWave::Tags::ConstraintGamma2, Tags::dt<ScalarWave::Pi>,
-        Tags::dt<ScalarWave::Phi<Dim>>, Tags::dt<ScalarWave::Psi>,
-        ScalarWave::Pi, ScalarWave::Phi<Dim>,
+        ScalarWave::Tags::ConstraintGamma2, ConstraintGamma2Copy,
+        Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+        Tags::dt<ScalarWave::Psi>, ScalarWave::Pi, ScalarWave::Phi<Dim>,
         Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
         Tags::deriv<ScalarWave::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
         Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(
         Scalar<DataVector>(pow<Dim>(npts), gamma2),
+        Scalar<DataVector>(pow<Dim>(npts), 0.0),
         Scalar<DataVector>(pow<Dim>(npts), 0.0),
         tnsr::i<DataVector, Dim, Frame::Inertial>(pow<Dim>(npts), 0.0),
         Scalar<DataVector>(pow<Dim>(npts), 0.0),
@@ -100,7 +106,7 @@ void check_du_dt(const size_t npts, const double time) {
 
     db::mutate_apply<
         tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-                   Tags::dt<ScalarWave::Psi>>,
+                   Tags::dt<ScalarWave::Psi>, ConstraintGamma2Copy>,
         tmpl::push_front<
             typename ScalarWave::TimeDerivative<Dim>::argument_tags,
             Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,

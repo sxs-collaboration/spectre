@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ScalarWave")
 
 set(LIBRARY_SOURCES
+  BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_Equations.cpp

@@ -17,12 +17,23 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
     const gsl::not_null<Scalar<DataVector>*> dt_psi,
 
+    const gsl::not_null<Scalar<DataVector>*> result_gamma2,
+
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
     const Scalar<DataVector>& gamma2) noexcept {
+  // The constraint damping parameter gamma2 is needed for boundary corrections,
+  // which means we need it as a temporary tag in order to project it to the
+  // boundary. We prevent slicing/projecting directly from the volume to prevent
+  // people from adding many compute tags to the DataBox, instead preferring
+  // quantities be computed inside the TimeDerivative/Flux/Source structs. This
+  // keeps related code together and makes figuring out where something is
+  // computed a lot easier.
+  *result_gamma2 = gamma2;
+
   get(*dt_psi) = -get(pi);
   get(*dt_pi) = -get<0, 0>(d_phi);
   for (size_t d = 1; d < Dim; ++d) {

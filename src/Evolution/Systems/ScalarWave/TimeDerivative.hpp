@@ -24,7 +24,7 @@ namespace ScalarWave {
  */
 template <size_t Dim>
 struct TimeDerivative {
-  using temporary_tags = tmpl::list<>;
+  using temporary_tags = tmpl::list<Tags::ConstraintGamma2>;
   using argument_tags = tmpl::list<Pi, Phi<Dim>, Tags::ConstraintGamma2>;
 
   static void apply(
@@ -33,6 +33,8 @@ struct TimeDerivative {
       gsl::not_null<Scalar<DataVector>*> dt_pi,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
       gsl::not_null<Scalar<DataVector>*> dt_psi,
+
+      gsl::not_null<Scalar<DataVector>*> result_gamma2,
 
       // Partial derivative arguments. Listed in the system struct as
       // gradient_variables.
