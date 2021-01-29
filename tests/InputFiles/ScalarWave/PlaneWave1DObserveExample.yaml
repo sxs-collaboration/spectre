@@ -18,7 +18,8 @@ AnalyticSolution:
         Phase: 0.0
 
 Evolution:
-  InitialTime: 0.0
+  InitialTime: &InitialTime
+    0.0
   InitialTimeStep: 0.001
   InitialSlabSize: 0.01
   TimeStepper:
@@ -39,7 +40,12 @@ DomainCreator:
     IsPeriodicIn: [true]
     InitialRefinement: [2]
     InitialGridPoints: [7]
-    TimeDependence: None
+    TimeDependence:
+      UniformTranslation:
+        InitialTime: *InitialTime
+        InitialExpirationDeltaT: Auto
+        Velocity: [0.5]
+        FunctionOfTimeNames: ["Translation"]
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
