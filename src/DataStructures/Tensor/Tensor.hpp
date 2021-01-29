@@ -262,11 +262,17 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       get(const Tensor<Args...>& t) noexcept;  // NOLINT
   // @}
 
+  template <typename... TensorIndices>
+  auto operator()(TensorIndices...) && = delete;
+
+  template <typename... TensorIndices>
+  auto operator()(TensorIndices...) const&& = delete;
+
   // @{
   /// Retrieve a TensorExpression object with the index structure passed in
   template <typename... TensorIndices>
   SPECTRE_ALWAYS_INLINE constexpr auto operator()(
-      TensorIndices... /*meta*/) const noexcept {
+      TensorIndices... /*meta*/) const& noexcept {
     static_assert((... and tt::is_tensor_index<TensorIndices>::value),
                   "The tensor expression must be created using TensorIndex "
                   "objects to represent generic indices, e.g. ti_a, ti_b, "
