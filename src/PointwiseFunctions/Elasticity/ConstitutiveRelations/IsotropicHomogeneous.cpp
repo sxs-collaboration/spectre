@@ -10,11 +10,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-// IWYU pragma: no_forward_declare Tensor
 
-namespace Elasticity {
-namespace ConstitutiveRelations {
+namespace Elasticity::ConstitutiveRelations {
 
 template <size_t Dim>
 IsotropicHomogeneous<Dim>::IsotropicHomogeneous(double bulk_modulus,
@@ -22,46 +21,44 @@ IsotropicHomogeneous<Dim>::IsotropicHomogeneous(double bulk_modulus,
     : bulk_modulus_(bulk_modulus), shear_modulus_(shear_modulus) {}
 
 template <>
-tnsr::II<DataVector, 3> IsotropicHomogeneous<3>::stress(
+void IsotropicHomogeneous<3>::stress(
+    const gsl::not_null<tnsr::II<DataVector, 3>*> stress,
     const tnsr::ii<DataVector, 3>& strain,
     const tnsr::I<DataVector, 3>& /*x*/) const noexcept {
-  auto result = make_with_value<tnsr::II<DataVector, 3>>(strain, 0.);
-  for (size_t i = 0; i < 3; i++) {
-    for (size_t j = 0; j <= i; j++) {
-      result.get(i, j) = -2. * shear_modulus_ * strain.get(i, j);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      stress->get(i, j) = -2. * shear_modulus_ * strain.get(i, j);
     }
   }
   auto trace_term = make_with_value<DataVector>(strain, 0.);
-  for (size_t i = 0; i < 3; i++) {
+  for (size_t i = 0; i < 3; ++i) {
     trace_term += strain.get(i, i);
   }
   trace_term *= lame_parameter();
-  for (size_t i = 0; i < 3; i++) {
-    result.get(i, i) -= trace_term;
+  for (size_t i = 0; i < 3; ++i) {
+    stress->get(i, i) -= trace_term;
   }
-  return result;
 }
 
 template <>
-tnsr::II<DataVector, 2> IsotropicHomogeneous<2>::stress(
+void IsotropicHomogeneous<2>::stress(
+    const gsl::not_null<tnsr::II<DataVector, 2>*> stress,
     const tnsr::ii<DataVector, 2>& strain,
     const tnsr::I<DataVector, 2>& /*x*/) const noexcept {
-  auto result = make_with_value<tnsr::II<DataVector, 2>>(strain, 0.);
-  for (size_t i = 0; i < 2; i++) {
-    for (size_t j = 0; j <= i; j++) {
-      result.get(i, j) = -2. * shear_modulus_ * strain.get(i, j);
+  for (size_t i = 0; i < 2; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      stress->get(i, j) = -2. * shear_modulus_ * strain.get(i, j);
     }
   }
   auto trace_term = make_with_value<DataVector>(strain, 0.);
-  for (size_t i = 0; i < 2; i++) {
+  for (size_t i = 0; i < 2; ++i) {
     trace_term += strain.get(i, i);
   }
   trace_term *= 2. * (3. * bulk_modulus_ - 2. * shear_modulus_) *
                 shear_modulus_ / (3. * bulk_modulus_ + 4. * shear_modulus_);
-  for (size_t i = 0; i < 2; i++) {
-    result.get(i, i) -= trace_term;
+  for (size_t i = 0; i < 2; ++i) {
+    stress->get(i, i) -= trace_term;
   }
-  return result;
 }
 
 template <size_t Dim>
@@ -128,5 +125,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 /// \endcond
 
-}  // namespace ConstitutiveRelations
-}  // namespace Elasticity
+}  // namespace Elasticity::ConstitutiveRelations

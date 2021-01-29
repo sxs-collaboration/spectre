@@ -90,7 +90,8 @@ SPECTRE_TEST_CASE(
     INFO("1D");
     test_solution<1>({{0.5}}, "[0.5]");
 
-    using system = Poisson::FirstOrderSystem<1, Poisson::Geometry::Euclidean>;
+    using system =
+        Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<1> solution{{{0.5}}};
     const typename system::fluxes fluxes_computer{};
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
@@ -103,7 +104,8 @@ SPECTRE_TEST_CASE(
     INFO("2D");
     test_solution<2>({{0.5, 1.}}, "[0.5, 1.]");
 
-    using system = Poisson::FirstOrderSystem<2, Poisson::Geometry::Euclidean>;
+    using system =
+        Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<2> solution{{{0.5, 0.5}}};
     const typename system::fluxes fluxes_computer{};
     using AffineMap2D =
@@ -118,7 +120,8 @@ SPECTRE_TEST_CASE(
     INFO("3D");
     test_solution<3>({{1., 0.5, 1.5}}, "[1., 0.5, 1.5]");
 
-    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Euclidean>;
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<3> solution{{{0.5, 0.5, 0.5}}};
     const typename system::fluxes fluxes_computer{};
     using AffineMap3D =

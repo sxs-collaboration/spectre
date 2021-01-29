@@ -113,9 +113,9 @@ class CubicCrystal : public ConstitutiveRelation<3> {
 
   /// The constitutive relation that characterizes the elastic properties of a
   /// material
-  tnsr::II<DataVector, 3> stress(const tnsr::ii<DataVector, 3>& strain,
-                                 const tnsr::I<DataVector, 3>& x) const
-      noexcept override;
+  void stress(gsl::not_null<tnsr::II<DataVector, 3>*> stress,
+              const tnsr::ii<DataVector, 3>& strain,
+              const tnsr::I<DataVector, 3>& x) const noexcept override;
 
   /// The 1st group parameter \f$c_{11} = \frac{1 - \nu}{\nu} \lambda\f$
   double c_11() const noexcept;

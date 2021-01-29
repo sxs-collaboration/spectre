@@ -11,6 +11,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -128,9 +129,9 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
 
   /// The constitutive relation that characterizes the elastic properties of a
   /// material
-  tnsr::II<DataVector, Dim> stress(const tnsr::ii<DataVector, Dim>& strain,
-                                   const tnsr::I<DataVector, Dim>& x) const
-      noexcept override;
+  void stress(gsl::not_null<tnsr::II<DataVector, Dim>*> stress,
+              const tnsr::ii<DataVector, Dim>& strain,
+              const tnsr::I<DataVector, Dim>& x) const noexcept override;
 
   /// The bulk modulus (or incompressibility) \f$K\f$
   double bulk_modulus() const noexcept;

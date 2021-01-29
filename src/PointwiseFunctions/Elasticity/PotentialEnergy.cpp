@@ -27,14 +27,14 @@ void potential_energy_density(
         constitutive_relation) noexcept {
   destructive_resize_components(potential_energy_density,
                                 coordinates.begin()->size());
+  tnsr::II<DataVector, Dim> stress{coordinates.begin()->size()};
+  constitutive_relation.stress(make_not_null(&stress), strain, coordinates);
   get(*potential_energy_density) = 0.;
-  const auto stress = constitutive_relation.stress(strain, coordinates);
-  for (size_t i = 0; i < Dim; i++) {
-    for (size_t j = 0; j < Dim; j++) {
-      get(*potential_energy_density) -=
-          0.5 * stress.get(i, j) * strain.get(i, j);
-    }
+  for (size_t i = 0; i < stress.size(); ++i) {
+    get(*potential_energy_density) -=
+        stress.multiplicity(i) * stress[i] * strain[i];
   }
+  get(*potential_energy_density) *= 0.5;
 }
 
 template <size_t Dim>

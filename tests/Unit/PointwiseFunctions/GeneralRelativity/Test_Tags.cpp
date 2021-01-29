@@ -61,6 +61,9 @@ void test_simple_tags() {
       gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame, Type>>(
       "TraceSpatialChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
+      gr::Tags::SpatialChristoffelSecondKindContracted<Dim, Frame, Type>>(
+      "SpatialChristoffelSecondKindContracted");
+  TestHelpers::db::test_simple_tag<
       gr::Tags::ExtrinsicCurvature<Dim, Frame, Type>>("ExtrinsicCurvature");
   TestHelpers::db::test_simple_tag<gr::Tags::TraceExtrinsicCurvature<Type>>(
       "TraceExtrinsicCurvature");

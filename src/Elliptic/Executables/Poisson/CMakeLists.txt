@@ -35,7 +35,7 @@ endfunction(add_poisson_executable)
 # The solution is only implemented in 3D so far
 add_poisson_executable(
   Lorentzian3D
-  "Poisson::FirstOrderSystem<3, Poisson::Geometry::Euclidean>"
+  "Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>"
   Poisson::Solutions::Lorentzian<3>
   Poisson::Solutions::Lorentzian<3>
   )
@@ -50,7 +50,7 @@ target_link_libraries(
 function(add_poisson_moustache_executable DIM)
   add_poisson_executable(
     Moustache${DIM}D
-    "Poisson::FirstOrderSystem<${DIM}, Poisson::Geometry::Euclidean>"
+    "Poisson::FirstOrderSystem<${DIM}, Poisson::Geometry::FlatCartesian>"
     Poisson::Solutions::Moustache<${DIM}>
     Poisson::Solutions::Moustache<${DIM}>
     "PoissonSolutions"
@@ -68,7 +68,7 @@ add_poisson_moustache_executable(2)
 function(add_poisson_product_of_sinusoids_executable DIM)
   add_poisson_executable(
     ProductOfSinusoids${DIM}D
-    "Poisson::FirstOrderSystem<${DIM}, Poisson::Geometry::Euclidean>"
+    "Poisson::FirstOrderSystem<${DIM}, Poisson::Geometry::FlatCartesian>"
     Poisson::Solutions::ProductOfSinusoids<${DIM}>
     Poisson::Solutions::ProductOfSinusoids<${DIM}>
     "PoissonSolutions"

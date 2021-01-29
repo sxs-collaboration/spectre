@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -16,6 +17,12 @@ class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace Poisson {
+template <size_t Dim, Geometry BackgroundGeometry>
+struct Fluxes;
+template <size_t Dim, Geometry BackgroundGeometry>
+struct Sources;
+}  // namespace Poisson
 /// \endcond
 
 namespace Poisson {
@@ -25,19 +32,31 @@ namespace Poisson {
  * equation on a flat spatial metric in Cartesian coordinates.
  */
 template <size_t Dim>
-void euclidean_fluxes(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-                      const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+void flat_cartesian_fluxes(
+    gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
 
 /*!
- * \brief Compute the fluxes \f$F^i=\sqrt{\gamma}\gamma^{ij}\partial_j u(x)\f$
+ * \brief Compute the fluxes \f$F^i=\gamma^{ij}\partial_j u(x)\f$
  * for the curved-space Poisson equation on a spatial metric \f$\gamma_{ij}\f$.
  */
 template <size_t Dim>
-void non_euclidean_fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
-    const Scalar<DataVector>& det_spatial_metric,
-    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+void curved_fluxes(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                   const tnsr::II<DataVector, Dim>& inv_spatial_metric,
+                   const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+
+/*!
+ * \brief Add the sources \f$S=-\Gamma^i_{ij}v^j\f$
+ * for the curved-space Poisson equation on a spatial metric \f$\gamma_{ij}\f$.
+ *
+ * These sources arise from the non-principal part of the Laplacian on a
+ * non-Euclidean background.
+ */
+template <size_t Dim>
+void add_curved_sources(
+    gsl::not_null<Scalar<DataVector>*> source_for_field,
+    const tnsr::i<DataVector, Dim>& christoffel_contracted,
+    const tnsr::I<DataVector, Dim>& flux_for_field) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i_j=\delta^i_j u(x)\f$ for the auxiliary
@@ -57,12 +76,12 @@ void auxiliary_fluxes(
  * \see Poisson::FirstOrderSystem
  */
 template <size_t Dim>
-struct EuclideanFluxes {
+struct Fluxes<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
       const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
-    euclidean_fluxes(flux_for_field, field_gradient);
+    flat_cartesian_fluxes(flux_for_field, field_gradient);
   }
   static void apply(
       const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
@@ -80,22 +99,18 @@ struct EuclideanFluxes {
  * \see Poisson::FirstOrderSystem
  */
 template <size_t Dim>
-struct NonEuclideanFluxes {
+struct Fluxes<Dim, Geometry::Curved> {
   using argument_tags = tmpl::list<
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::DetSpatialMetric<DataVector>>;
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
       const tnsr::II<DataVector, Dim>& inv_spatial_metric,
-      const Scalar<DataVector>& det_spatial_metric,
       const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
-    non_euclidean_fluxes(flux_for_field, inv_spatial_metric, det_spatial_metric,
-                         field_gradient);
+    curved_fluxes(flux_for_field, inv_spatial_metric, field_gradient);
   }
   static void apply(
       const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
       const tnsr::II<DataVector, Dim>& /*inv_spatial_metric*/,
-      const Scalar<DataVector>& /*det_spatial_metric*/,
       const Scalar<DataVector>& field) noexcept {
     auxiliary_fluxes(flux_for_gradient, field);
   }
@@ -104,13 +119,14 @@ struct NonEuclideanFluxes {
 };
 
 /*!
- * \brief Compute the sources \f$S_A\f$ for the Poisson equation.
+ * \brief Compute the sources \f$S_A\f$ for the Poisson equation on a flat
+ * metric in Cartesian coordinates.
  *
  * \see Poisson::FirstOrderSystem
  */
-struct Sources {
+template <size_t Dim>
+struct Sources<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
-  template <size_t Dim>
   static void apply(
       const gsl::not_null<Scalar<DataVector>*> source_for_field,
       const gsl::not_null<
@@ -118,6 +134,29 @@ struct Sources {
       const Scalar<DataVector>& /*field*/,
       const tnsr::I<DataVector, Dim>& /*field_flux*/) noexcept {
     get(*source_for_field) = 0.;
+  }
+};
+
+/*!
+ * \brief Compute the sources \f$S_A\f$ for the curved-space Poisson equation
+ * on a spatial metric \f$\gamma_{ij}\f$.
+ *
+ * \see Poisson::FirstOrderSystem
+ */
+template <size_t Dim>
+struct Sources<Dim, Geometry::Curved> {
+  using argument_tags =
+      tmpl::list<gr::Tags::SpatialChristoffelSecondKindContracted<
+          Dim, Frame::Inertial, DataVector>>;
+  static void apply(
+      const gsl::not_null<Scalar<DataVector>*> source_for_field,
+      const gsl::not_null<
+          tnsr::i<DataVector, Dim>*> /*source_for_field_gradient*/,
+      const tnsr::i<DataVector, Dim>& christoffel_contracted,
+      const Scalar<DataVector>& /*field*/,
+      const tnsr::I<DataVector, Dim>& field_flux) noexcept {
+    get(*source_for_field) = 0.;
+    add_curved_sources(source_for_field, christoffel_contracted, field_flux);
   }
 };
 

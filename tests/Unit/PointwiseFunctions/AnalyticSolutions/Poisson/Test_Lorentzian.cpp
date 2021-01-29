@@ -82,7 +82,8 @@ SPECTRE_TEST_CASE(
   {
     // Verify that the solution numerically solves the system and that the
     // discretization error decreases exponentially with polynomial order
-    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Euclidean>;
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Lorentzian<3> solution{};
     const typename system::fluxes fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
@@ -99,8 +100,7 @@ SPECTRE_TEST_CASE(
   {
     // Verify that the solution also solves the non-euclidean system with a
     // Euclidean metric. This is more a test of the system than of the solution.
-    using system =
-        Poisson::FirstOrderSystem<3, Poisson::Geometry::NonEuclidean>;
+    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
     const Poisson::Solutions::Lorentzian<3> solution{};
     const typename system::fluxes fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
@@ -117,10 +117,11 @@ SPECTRE_TEST_CASE(
     get<0, 0>(inv_spatial_metric) = 1.;
     get<1, 1>(inv_spatial_metric) = 1.;
     get<2, 2>(inv_spatial_metric) = 1.;
-    const auto det_spatial_metric =
-        make_with_value<Scalar<DataVector>>(used_for_size, 1.);
+    const auto spatial_christoffel_contracted =
+        make_with_value<tnsr::i<DataVector, 3>>(used_for_size, 0.);
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, fluxes_computer, mesh, coord_map, 0.1,
-        std::make_tuple(inv_spatial_metric, det_spatial_metric));
+        std::make_tuple(inv_spatial_metric),
+        std::make_tuple(spatial_christoffel_contracted));
   }
 }

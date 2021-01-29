@@ -21,13 +21,26 @@ namespace helpers = TestHelpers::elliptic;
 namespace {
 
 template <size_t Dim>
+void add_curved_sources(
+    const gsl::not_null<Scalar<DataVector>*> source_for_field,
+    const tnsr::i<DataVector, Dim>& christoffel_contracted,
+    const tnsr::I<DataVector, Dim>& flux_for_field) {
+  std::fill(source_for_field->begin(), source_for_field->end(), 0.);
+  Poisson::add_curved_sources(source_for_field, christoffel_contracted,
+                              flux_for_field);
+}
+
+template <size_t Dim>
 void test_equations(const DataVector& used_for_size) {
-  pypp::check_with_random_values<1>(&Poisson::euclidean_fluxes<Dim>,
-                                    "Equations", {"euclidean_fluxes"},
+  pypp::check_with_random_values<1>(&Poisson::flat_cartesian_fluxes<Dim>,
+                                    "Equations", {"flat_cartesian_fluxes"},
                                     {{{0., 1.}}}, used_for_size);
-  pypp::check_with_random_values<1>(&Poisson::non_euclidean_fluxes<Dim>,
-                                    "Equations", {"non_euclidean_fluxes"},
-                                    {{{0., 1.}}}, used_for_size);
+  pypp::check_with_random_values<1>(&Poisson::curved_fluxes<Dim>, "Equations",
+                                    {"curved_fluxes"}, {{{0., 1.}}},
+                                    used_for_size);
+  pypp::check_with_random_values<1>(&add_curved_sources<Dim>, "Equations",
+                                    {"add_curved_sources"}, {{{0., 1.}}},
+                                    used_for_size);
   pypp::check_with_random_values<1>(
       &Poisson::auxiliary_fluxes<Dim>, "Equations",
       {MakeString{} << "auxiliary_fluxes_" << Dim << "d"}, {{{0., 1.}}},
@@ -53,5 +66,5 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson", "[Unit][Elliptic]") {
   CHECK_FOR_DATAVECTORS(test_equations, (1, 2, 3));
   CHECK_FOR_DATAVECTORS(
       test_computers, (1, 2, 3),
-      (Poisson::Geometry::Euclidean, Poisson::Geometry::NonEuclidean));
+      (Poisson::Geometry::FlatCartesian, Poisson::Geometry::Curved));
 }

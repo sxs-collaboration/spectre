@@ -105,6 +105,12 @@ template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpatialChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
+/// Contraction of the first two indices of the spatial Christoffel symbols:
+/// \f$\Gamma^i_{ij}\f$. Useful for covariant divergences.
+template <size_t Dim, typename Frame, typename DataType>
+struct SpatialChristoffelSecondKindContracted : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
 
 template <size_t Dim, typename Frame, typename DataType>
 struct ExtrinsicCurvature : db::SimpleTag {

@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -67,17 +68,20 @@ class ConstitutiveRelation : public PUP::able {
 
   WRAPPED_PUPable_abstract(ConstitutiveRelation);  // NOLINT
 
+  // @{
   /// The constitutive relation that characterizes the elastic properties of a
   /// material
-  virtual tnsr::II<DataVector, Dim> stress(
-      const tnsr::ii<DataVector, Dim>& strain,
-      const tnsr::I<DataVector, Dim>& x) const noexcept = 0;
+  virtual void stress(gsl::not_null<tnsr::II<DataVector, Dim>*> stress,
+                      const tnsr::ii<DataVector, Dim>& strain,
+                      const tnsr::I<DataVector, Dim>& x) const noexcept = 0;
 
-  /// Symmmetrize the displacement gradient to compute the strain, then pass it
-  /// to the constitutive relation
-  tnsr::II<DataVector, Dim> stress(
-      const tnsr::iJ<DataVector, Dim>& grad_displacement,
-      const tnsr::I<DataVector, Dim>& x) const noexcept;
+  // This overload is provided for the situation where the `stress` variable
+  // holds a non-symmetric tensor, as is currently the case when it is held in a
+  // `Tags::Flux`. The overload can be removed once it is no longer used.
+  void stress(gsl::not_null<tnsr::IJ<DataVector, Dim>*> stress,
+              const tnsr::ii<DataVector, Dim>& strain,
+              const tnsr::I<DataVector, Dim>& x) const noexcept;
+  // @}
 };
 
 }  // namespace ConstitutiveRelations

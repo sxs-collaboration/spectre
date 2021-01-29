@@ -29,8 +29,8 @@ class ConstitutiveRelation;
 namespace Elasticity {
 
 /*!
- * \brief Compute the fluxes \f$F^{ij}=Y^{ijkl}(x) S_{kl}(x)\f$ for
- * the Elasticity equation on a flat spatial metric in Cartesian coordinates.
+ * \brief Compute the fluxes \f$F^{ij}=Y^{ijkl}(x) S_{kl}(x)=-T^{ij}\f$ for
+ * the Elasticity equation.
  */
 template <size_t Dim>
 void primal_fluxes(
@@ -41,14 +41,56 @@ void primal_fluxes(
     const tnsr::I<DataVector, Dim>& coordinates) noexcept;
 
 /*!
+ * \brief Add the contribution \f$-\Gamma^i_{ik}T^{kj} - \Gamma^j_{ik}T^{ik}\f$
+ * to the displacement source for the curved-space elasticity equations on a
+ * metric \f$\gamma_{ij}\f$.
+ *
+ * These sources arise from the non-principal part of the divergence on a
+ * curved background.
+ */
+template <size_t Dim>
+void add_curved_sources(
+    gsl::not_null<tnsr::I<DataVector, Dim>*> source_for_displacement,
+    const tnsr::Ijj<DataVector, Dim>& christoffel_second_kind,
+    const tnsr::i<DataVector, Dim>& christoffel_contracted,
+    const tnsr::II<DataVector, Dim>& stress) noexcept;
+
+/*!
  * \brief Compute the fluxes \f$F^i_{jk}=\delta^{i}_{(j} \xi_{k)}\f$ for the
- * auxiliary field in the first-order formulation of the Elasticity equation.
+ * auxiliary (strain) field in the first-order formulation of the Elasticity
+ * equation.
  *
  * \see Elasticity::FirstOrderSystem
  */
 template <size_t Dim>
 void auxiliary_fluxes(
     gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
+    const tnsr::I<DataVector, Dim>& displacement) noexcept;
+
+/*!
+ * \brief Compute the fluxes \f$F^i_{jk}=\delta^{i}_{(j}\gamma_{k)l}\xi^l\f$
+ * for the auxiliary (strain) field in the first-order formulation of the
+ * curved-space elasticity equations on a metric \f$\gamma_{ij}\f$.
+ *
+ * \see Elasticity::FirstOrderSystem
+ */
+template <size_t Dim>
+void curved_auxiliary_fluxes(
+    gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
+    const tnsr::ii<DataVector, Dim>& metric,
+    const tnsr::I<DataVector, Dim>& displacement) noexcept;
+
+/*!
+ * \brief Add the contribution \f$\Gamma_{ijk}\xi^i\f$ to the strain source for
+ * the curved-space elasticity equations on a metric \f$\gamma_{ij}\f$.
+ *
+ * These sources arise from the non-principal part of the divergence on a
+ * curved background.
+ */
+template <size_t Dim>
+void add_curved_auxiliary_sources(
+    gsl::not_null<tnsr::ii<DataVector, Dim>*> source_for_strain,
+    const tnsr::ijj<DataVector, Dim>& christoffel_first_kind,
     const tnsr::I<DataVector, Dim>& displacement) noexcept;
 
 /*!
