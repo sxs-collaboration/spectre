@@ -155,4 +155,35 @@ struct PrefixTag {};
  * \see DataBoxGroup SimpleTag
  */
 struct ComputeTag {};
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Mark a struct as a reference tag by inheriting from this.
+ *
+ * \details
+ * A reference tag is used to identify an item in a DataBox that is a const
+ * reference to a sub-item of another item (such as a Variables or GlobalCache)
+ * in the DataBox
+ *
+ * \derivedrequires
+ * - type alias `base` that is the simple tag from which the reference tag is
+ *   derived
+ * - type alias `parent_tag` that is the tag for the item from which the
+ *   reference item is retrieved
+ * - static function `get` that, given the item fetched by `parent_tag`, returns
+ *   a const reference to the sub-item
+ * - type alias `argument_tags` that is `tmpl::list<parent_tag>`
+ *
+ * A reference tag may optionally specify a static `std::string name()` method
+ * to override the default name produced by db::tag_name.
+ *
+ * \warning A reference tag should only be derived from a simple tag and
+ * db::ReferenceTag.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp databox_reference_tag_example
+ *
+ * \see DataBoxGroup SimpleTag
+ */
+struct ReferenceTag {};
 }  // namespace db

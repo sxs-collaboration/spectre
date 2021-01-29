@@ -2653,6 +2653,27 @@ void serialization_of_pointers() noexcept {
   check(box);
   check(serialize_and_deserialize(box));  // after compute items evaluated
 }
+
+namespace test_databox_tags {
+/// [databox_reference_tag_example]
+template <typename... Tags>
+struct TaggedTuple : db::SimpleTag {
+  using type = tuples::TaggedTuple<Tags...>;
+};
+
+template <typename Tag, typename ParentTag>
+struct FromTaggedTuple : Tag, db::ReferenceTag {
+  using base = Tag;
+  using parent_tag = ParentTag;
+
+  static const auto& get(const typename parent_tag::type& tagged_tuple) {
+    return tuples::get<Tag>(tagged_tuple);
+  }
+
+  using argument_tags = tmpl::list<parent_tag>;
+};
+/// [databox_reference_tag_example]
+}  // namespace test_databox_tags
 }  // namespace
 
 void test_serialization() noexcept {
