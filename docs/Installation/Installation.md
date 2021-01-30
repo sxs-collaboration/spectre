@@ -25,7 +25,7 @@ environment differently, read on!
 * [Charm++](http://charm.cs.illinois.edu/) 6.10.2
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
-* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.5
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.7
 * [Boost](http://www.boost.org/) 1.60.0 or later
 * [Brigand](https://github.com/edouarda/brigand)
 * [Catch](https://github.com/philsquared/Catch) 2.8.0 or later
@@ -186,8 +186,8 @@ To use Singularity you must:
    source, and build directories, let's call it WORKDIR. The WORKDIR must be
    somewhere in your home directory. If this does not work for you, follow the
    Singularity instructions on setting up additional [bind
-   points](https://sylabs.io/guides/3.7/user-guide/bind_paths_and_mounts.html) 
-   (version 3.7. For other versions, see the [docs](https://sylabs.io/docs/)). 
+   points](https://sylabs.io/guides/3.7/user-guide/bind_paths_and_mounts.html)
+   (version 3.7. For other versions, see the [docs](https://sylabs.io/docs/)).
    Once inside the WORKDIR, clone SpECTRE into `WORKDIR/SPECTRE_ROOT`.
 3. Run `sudo singularity build spectre.img
    docker://sxscollaboration/spectrebuildenv:latest`.
@@ -268,7 +268,7 @@ To use modules with Spack, enable Spack's shell support by adding
 Once you have Spack installed and configured with OpenSSL and LMod, you can
 install the SpECTRE dependencies using
 ```
-spack install blaze@3.2
+spack install blaze@3.7
 spack install brigand@master
 spack install libsharp -openmp -mpi
 spack install catch2
