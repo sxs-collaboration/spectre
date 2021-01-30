@@ -24,7 +24,9 @@ struct IntegerList : db::SimpleTag {
   using type = std::array<int, 3>;
 };
 
-struct UniquePtrIntegerList : db::BaseTag {
+struct UniquePtrIntegerListBase : db::BaseTag {};
+
+struct UniquePtrIntegerList : UniquePtrIntegerListBase, db::SimpleTag {
   using type = std::unique_ptr<std::array<int, 3>>;
 };
 }  // namespace Tags
@@ -54,10 +56,14 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
+  CHECK(std::array<int, 3>{{1, 5, -8}} ==
+        db::get<Tags::UniquePtrIntegerListBase>(box));
   CHECK(&Parallel::get<Tags::IntegerList>(cache) ==
         &db::get<Tags::IntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache) ==
         &db::get<Tags::UniquePtrIntegerList>(box));
+  CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache) ==
+        &db::get<Tags::UniquePtrIntegerListBase>(box));
 
   tuples::TaggedTuple<Tags::IntegerList, Tags::UniquePtrIntegerList> tuple2{};
   tuples::get<Tags::IntegerList>(tuple2) = std::array<int, 3>{{10, -3, 700}};
@@ -76,10 +82,14 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(std::array<int, 3>{{10, -3, 700}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{100, -7, -300}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
+  CHECK(std::array<int, 3>{{100, -7, -300}} ==
+        db::get<Tags::UniquePtrIntegerListBase>(box));
   CHECK(&Parallel::get<Tags::IntegerList>(cache2) ==
         &db::get<Tags::IntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache2) ==
         &db::get<Tags::UniquePtrIntegerList>(box));
+  CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache2) ==
+        &db::get<Tags::UniquePtrIntegerListBase>(box));
 
   TestHelpers::db::test_base_tag<Tags::GlobalCache>("GlobalCache");
   TestHelpers::db::test_simple_tag<Tags::GlobalCacheImpl<Metavars>>(

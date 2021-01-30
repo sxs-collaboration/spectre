@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagTraits.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -660,6 +661,7 @@ struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
 /// recommended way for compute tags to retrieve data out of the global cache.
 template <class CacheTag>
 struct FromGlobalCache : CacheTag, db::ComputeTag {
+  static_assert(db::is_simple_tag_v<CacheTag>);
   static std::string name() noexcept {
     return "FromGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
   }
