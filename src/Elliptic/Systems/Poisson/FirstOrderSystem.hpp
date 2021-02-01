@@ -87,8 +87,9 @@ struct FirstOrderSystem {
   using fields_tag =
       ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
 
-  using fluxes = Fluxes<Dim, BackgroundGeometry>;
-  using sources = Sources<Dim, BackgroundGeometry>;
+  // The system equations formulated as fluxes and sources
+  using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
+  using sources_computer = Sources<Dim, BackgroundGeometry>;
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element

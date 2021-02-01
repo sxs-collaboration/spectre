@@ -85,7 +85,7 @@ SPECTRE_TEST_CASE(
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Lorentzian<3> solution{};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -102,7 +102,7 @@ SPECTRE_TEST_CASE(
     // Euclidean metric. This is more a test of the system than of the solution.
     using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
     const Poisson::Solutions::Lorentzian<3> solution{};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;

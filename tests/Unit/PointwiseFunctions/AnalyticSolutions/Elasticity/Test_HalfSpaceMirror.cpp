@@ -132,7 +132,7 @@ SPECTRE_TEST_CASE(
     INFO("Test elasticity system with half-space mirror");
     // Verify that the solution numerically solves the system
     using system = Elasticity::FirstOrderSystem<3>;
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;

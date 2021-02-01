@@ -65,7 +65,7 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
   using primal_fields = tmpl::list<ScalarFieldTag>;
-  using fluxes = Fluxes<Dim>;
+  using fluxes_computer = Fluxes<Dim>;
   template <typename Tag>
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };

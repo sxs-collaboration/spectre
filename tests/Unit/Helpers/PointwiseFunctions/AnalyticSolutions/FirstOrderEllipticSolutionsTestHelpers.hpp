@@ -42,7 +42,7 @@ template <typename System, typename SolutionType, typename... Maps,
           typename... FluxesArgs, typename... SourcesArgs>
 void verify_solution(
     const SolutionType& solution,
-    const typename System::fluxes& fluxes_computer,
+    const typename System::fluxes_computer& fluxes_computer,
     const Mesh<System::volume_dim>& mesh,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
         coord_map,
@@ -74,10 +74,10 @@ void verify_solution(
       divergence(fluxes, mesh, coord_map.inv_jacobian(logical_coords));
   auto sources = std::apply(
       [&solution_fields, &fluxes](const auto&... expanded_sources_args) {
-        return ::elliptic::first_order_sources<System::volume_dim,
-                                               primal_fields, auxiliary_fields,
-                                               typename System::sources>(
-            solution_fields, fluxes, expanded_sources_args...);
+        return ::elliptic::first_order_sources<
+            System::volume_dim, primal_fields, auxiliary_fields,
+            typename System::sources_computer>(solution_fields, fluxes,
+                                               expanded_sources_args...);
       },
       sources_args);
   Variables<db::wrap_tags_in<Tags::OperatorAppliedTo, all_fields>>
@@ -142,7 +142,7 @@ template <typename System, typename SolutionType,
           typename PackageFluxesArgs>
 void verify_smooth_solution(
     const SolutionType& solution,
-    const typename System::fluxes& fluxes_computer,
+    const typename System::fluxes_computer& fluxes_computer,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
         coord_map,
     const double tolerance_offset, const double tolerance_scaling,
@@ -183,7 +183,7 @@ template <typename System, typename SolutionType,
           size_t Dim = System::volume_dim, typename... Maps>
 void verify_solution_with_power_law_convergence(
     const SolutionType& solution,
-    const typename System::fluxes& fluxes_computer,
+    const typename System::fluxes_computer& fluxes_computer,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
         coord_map,
     const double tolerance_offset, const double tolerance_pow) {
