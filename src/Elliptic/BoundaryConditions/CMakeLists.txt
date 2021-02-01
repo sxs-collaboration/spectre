@@ -11,6 +11,7 @@ spectre_target_headers(
   Elliptic
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AnalyticSolution.hpp
   ApplyBoundaryCondition.hpp
   BoundaryCondition.hpp
   BoundaryConditionType.hpp
