@@ -74,17 +74,14 @@ double effective_difference_to_neighbor(
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   const auto dir = Direction<VolumeDim>(dim, side);
-  const bool has_neighbors = element.neighbors().contains(dir);
-  if (has_neighbors) {
-    const double neighbor_mean = effective_neighbor_means.at(dir);
-    const double neighbor_size = effective_neighbor_sizes.at(dir);
-    const double distance_factor =
-        0.5 * (1.0 + neighbor_size / gsl::at(element_size, dim));
-    return (side == Side::Lower ? -1.0 : 1.0) * (neighbor_mean - u_mean) /
-           distance_factor;
-  } else {
-    return 0.0;
-  }
+  ASSERT(element.neighbors().contains(dir),
+         "Minmod helper found no neighbors in direction: " << dir);
+  const double neighbor_mean = effective_neighbor_means.at(dir);
+  const double neighbor_size = effective_neighbor_sizes.at(dir);
+  const double distance_factor =
+      0.5 * (1.0 + neighbor_size / gsl::at(element_size, dim));
+  return (side == Side::Lower ? -1.0 : 1.0) * (neighbor_mean - u_mean) /
+         distance_factor;
 }
 
 // Explicit instantiations

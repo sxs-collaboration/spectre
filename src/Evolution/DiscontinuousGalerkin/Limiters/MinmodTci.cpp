@@ -53,6 +53,16 @@ bool tvb_minmod_indicator(
       };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
+    const bool has_lower_neighbors =
+        element.neighbors().contains(Direction<VolumeDim>(d, Side::Lower));
+    const bool has_upper_neighbors =
+        element.neighbors().contains(Direction<VolumeDim>(d, Side::Upper));
+    // If there are no neighbors on either side, then there isn't enough data
+    // to even check if the limiter needs to be applied. Skip this case.
+    if (UNLIKELY(not has_lower_neighbors and not has_upper_neighbors)) {
+      continue;
+    }
+
     double u_lower = 0.;
     double u_upper = 0.;
     auto& boundary_buffers_d = gsl::at(buffer->boundary_buffers, d);
@@ -87,8 +97,23 @@ bool tvb_minmod_indicator(
       u_upper = mean_value(boundary_buffers_d, boundary_mesh);
     }
 
-    const double diff_lower = difference_to_neighbor(d, Side::Lower);
-    const double diff_upper = difference_to_neighbor(d, Side::Upper);
+    // If one side is an external boundary, we can't define a mean-to-mean
+    // difference on that side. We reuse the value of the difference from the
+    // internal side, so that the external side has no effect on the result of
+    // the minmod function. One alternative implementation would be to use a
+    // two-argument minmod function without any arguments corresponding to the
+    // external side, but this requires writing more code. Note that we already
+    // excluded above the case where both sides are external boundaries.
+    double diff_lower = 0.0;
+    double diff_upper = 0.0;
+    if (LIKELY(has_lower_neighbors)) {
+      diff_lower = difference_to_neighbor(d, Side::Lower);
+      diff_upper = (has_upper_neighbors ? difference_to_neighbor(d, Side::Upper)
+                                        : diff_lower);
+    } else {
+      diff_upper = difference_to_neighbor(d, Side::Upper);
+      diff_lower = diff_upper;  // no lower neighbors in this branch
+    }
 
     // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used
     // tvb_corrected_minmod(..., 0.0), rather than

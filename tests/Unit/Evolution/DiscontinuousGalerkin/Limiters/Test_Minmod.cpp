@@ -633,23 +633,43 @@ void test_minmod_slopes_at_boundary(
   // Test with element that has external lower-xi boundary
   const auto element_at_lower_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
-  for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_minmod_activates(
-        minmod_type, tvb_constant, input, mesh, element_at_lower_xi_boundary,
-        element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
-        {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}},
-        make_array<1>(0.0));
+  for (const double neighbor : {-1.21, -1.19, 0.0, 1.19, 1.21}) {
+    const double expected_slope =
+        std::min(std::max(0.0, neighbor), 1.2) * muscl_slope_factor;
+    if (neighbor > 1.2) {
+      test_minmod_does_not_activate(
+          minmod_type, tvb_constant, input, mesh, element_at_lower_xi_boundary,
+          element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
+          {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}},
+          make_array<1>(expected_slope));
+    } else {
+      test_minmod_activates(
+          minmod_type, tvb_constant, input, mesh, element_at_lower_xi_boundary,
+          element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
+          {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}},
+          make_array<1>(expected_slope));
+    }
   }
 
   // Test with element that has external upper-xi boundary
   const auto element_at_upper_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
-  for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_minmod_activates(
-        minmod_type, tvb_constant, input, mesh, element_at_upper_xi_boundary,
-        element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
-        {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}},
-        make_array<1>(0.0));
+  for (const double neighbor : {-1.21, -1.19, 0.0, 1.19, 1.21}) {
+    const double expected_slope =
+        std::min(std::max(0.0, -neighbor), 1.2) * muscl_slope_factor;
+    if (neighbor < -1.2) {
+      test_minmod_does_not_activate(
+          minmod_type, tvb_constant, input, mesh, element_at_upper_xi_boundary,
+          element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
+          {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}},
+          make_array<1>(expected_slope));
+    } else {
+      test_minmod_activates(
+          minmod_type, tvb_constant, input, mesh, element_at_upper_xi_boundary,
+          element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
+          {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}},
+          make_array<1>(expected_slope));
+    }
   }
 }
 

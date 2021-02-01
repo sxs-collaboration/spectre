@@ -95,6 +95,16 @@ bool minmod_limited_slopes(
 
   linearize(u_lin_buffer, u, mesh);
   for (size_t d = 0; d < VolumeDim; ++d) {
+    const bool has_lower_neighbors =
+        element.neighbors().contains(Direction<VolumeDim>(d, Side::Lower));
+    const bool has_upper_neighbors =
+        element.neighbors().contains(Direction<VolumeDim>(d, Side::Upper));
+    // If there are no neighbors on either side, then there isn't enough data
+    // to apply the limiter. Skip this case.
+    if (UNLIKELY(not has_lower_neighbors and not has_upper_neighbors)) {
+      continue;
+    }
+
     auto& boundary_buffer_d = gsl::at(buffer->boundary_buffers, d);
     const auto& volume_and_slice_indices_d =
         gsl::at(buffer->volume_and_slice_indices, d);
@@ -116,11 +126,28 @@ bool minmod_limited_slopes(
              : fabs(Spectral::collocation_points(mesh.slice_through(d))[0]));
     const double local_slope = (u_upper - u_lower) / first_to_last_distance;
 
+    // If one side is an external boundary, we can't define a mean-to-mean
+    // difference on that side. We reuse the value of the difference from the
+    // internal side, so that the external side has no effect on the result of
+    // the minmod function. One alternative implementation would be to use a
+    // two-argument minmod function without any arguments corresponding to the
+    // external side, but this requires writing more code. Note that we already
+    // excluded above the case where both sides are external boundaries.
+    //
     // For the effective slopes to neighboring elements, we don't care about the
     // grid point distribution, only the element's width in logical coordinates,
     // which will always be 2.0.
-    const double upper_slope = 0.5 * difference_to_neighbor(d, Side::Upper);
-    const double lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
+    double lower_slope = 0.0;
+    double upper_slope = 0.0;
+    if (LIKELY(has_lower_neighbors)) {
+      lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
+      upper_slope =
+          (has_upper_neighbors ? 0.5 * difference_to_neighbor(d, Side::Upper)
+                               : lower_slope);
+    } else {
+      upper_slope = 0.5 * difference_to_neighbor(d, Side::Upper);
+      lower_slope = upper_slope;  // no lower neighbors in this branch
+    }
 
     const MinmodResult result =
         tvb_corrected_minmod(local_slope, max_slope_factor * upper_slope,
