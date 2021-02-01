@@ -63,11 +63,11 @@ auto divergence(
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
-template <typename FluxTags, size_t Dim, typename DerivativeFrame>
+template <typename... DivTags, typename... FluxTags, size_t Dim,
+          typename DerivativeFrame>
 void divergence(
-    gsl::not_null<Variables<db::wrap_tags_in<Tags::div, FluxTags>>*>
-        divergence_of_F,
-    const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
+    gsl::not_null<Variables<tmpl::list<DivTags...>>*> divergence_of_F,
+    const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept;
 // @}
@@ -127,11 +127,9 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  public:
   using base = db::add_tag_prefix<div, Tag>;
   using return_type = typename base::type;
-  static constexpr void (*function)(const gsl::not_null<return_type*>,
-                                    const typename Tag::type&, const Mesh<dim>&,
-                                    const typename InverseJacobianTag::type&) =
-      divergence<typename Tag::type::tags_list, dim,
-                 typename tmpl::back<inv_jac_indices>::Frame>;
+  static constexpr void (*function)(
+      const gsl::not_null<return_type*>, const typename Tag::type&,
+      const Mesh<dim>&, const typename InverseJacobianTag::type&) = divergence;
   using argument_tags =
       tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;
 };
