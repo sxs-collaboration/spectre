@@ -84,15 +84,20 @@ struct InitializeMortars {
  public:
   using initialization_tags = tmpl::list<domain::Tags::InitialExtents<dim>>;
 
+  // We don't need to initialize the "next" temporal id on mortars if data is
+  // communicated synchronously
+  static constexpr bool need_next_temporal_id_on_mortars =
+      not std::is_same_v<typename BoundaryScheme::temporal_id_tag,
+                         typename BoundaryScheme::receive_temporal_id_tag>;
   using next_temporal_id_tag = typename BoundaryScheme::receive_temporal_id_tag;
   using mortars_next_temporal_id_tag =
       ::Tags::Mortars<next_temporal_id_tag, dim>;
 
-  using simple_tags =
-      tmpl::list<mortar_data_tag,
-                 ::Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>,
-                 ::Tags::Mortars<::Tags::MortarSize<dim - 1>, dim>,
-                 mortars_next_temporal_id_tag>;
+  using simple_tags = tmpl::flatten<tmpl::list<
+      mortar_data_tag, ::Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>,
+      ::Tags::Mortars<::Tags::MortarSize<dim - 1>, dim>,
+      tmpl::conditional_t<need_next_temporal_id_on_mortars,
+                          mortars_next_temporal_id_tag, tmpl::list<>>>>;
 
   using compute_tags = tmpl::list<>;
 
@@ -153,12 +158,7 @@ struct InitializeMortars {
       }
     }
 
-    // We don't need to initialize the "next" temporal id on mortars if data is
-    // communicated synchronously
-    using need_next_temporal_id_on_mortars = std::negation<
-        std::is_same<typename BoundaryScheme::temporal_id_tag,
-                     typename BoundaryScheme::receive_temporal_id_tag>>;
-    if constexpr (need_next_temporal_id_on_mortars::value) {
+    if constexpr (need_next_temporal_id_on_mortars) {
       initialize_next_temporal_id_on_mortars(make_not_null(&box));
     }
     ::Initialization::mutate_assign<tmpl::list<
