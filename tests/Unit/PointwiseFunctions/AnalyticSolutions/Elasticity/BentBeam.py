@@ -27,8 +27,18 @@ def strain(x, length, height, bending_moment, bulk_modulus, shear_modulus):
     return result
 
 
-def stress(x, length, height, bending_moment, bulk_modulus, shear_modulus):
-    return np.array([[12. * bending_moment / height**3 * x[1], 0], [0, 0]])
+def minus_stress(x, length, height, bending_moment, bulk_modulus,
+                 shear_modulus):
+    return -np.array([[12. * bending_moment / height**3 * x[1], 0], [0, 0]])
+
+
+def potential_energy_density(x, length, height, bending_moment, bulk_modulus,
+                             shear_modulus):
+    local_strain = strain(x, length, height, bending_moment, bulk_modulus,
+                          shear_modulus)
+    local_minus_stress = minus_stress(x, length, height, bending_moment,
+                                      bulk_modulus, shear_modulus)
+    return 0.5 * np.einsum('ij,ij', local_strain, local_minus_stress)
 
 
 def source(x):

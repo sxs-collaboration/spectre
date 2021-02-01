@@ -38,8 +38,10 @@ namespace {
 struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror<> {
   using Elasticity::Solutions::HalfSpaceMirror<>::HalfSpaceMirror;
 
-  using field_tags = tmpl::list<Elasticity::Tags::Displacement<3>,
-                                Elasticity::Tags::Strain<3>>;
+  using field_tags =
+      tmpl::list<Elasticity::Tags::Displacement<3>, Elasticity::Tags::Strain<3>,
+                 Elasticity::Tags::MinusStress<3>,
+                 Elasticity::Tags::PotentialEnergyDensity<3>>;
   using source_tags =
       tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<3>>>;
 
@@ -92,7 +94,8 @@ SPECTRE_TEST_CASE(
     pypp::check_with_random_values<1>(
         &HalfSpaceMirrorProxy::field_variables, solution,
         "AnalyticSolutions.Elasticity.HalfSpaceMirror",
-        {"displacement", "strain"}, {{{0., 3.}}},
+        {"displacement", "strain", "minus_stress", "potential_energy_density"},
+        {{{0., 3.}}},
         std::make_tuple(0.177, 36.36363636363637, 30.76923076923077),
         DataVector(5), eps);
     pypp::check_with_random_values<1>(

@@ -49,12 +49,22 @@ void BentBeamVariables<DataType>::operator()(
 
 template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::II<DataType, 2>*> stress,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Stress<2> /*meta*/) const
-    noexcept {
-  get<0, 0>(*stress) = 12. * bending_moment / cube(height) * get<1>(x);
-  get<1, 1>(*stress) = 0.;
-  get<0, 1>(*stress) = 0.;
+    const gsl::not_null<tnsr::II<DataType, 2>*> minus_stress,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::MinusStress<2> /*meta*/) const noexcept {
+  get<0, 0>(*minus_stress) = -12. * bending_moment / cube(height) * get<1>(x);
+  get<1, 1>(*minus_stress) = 0.;
+  get<0, 1>(*minus_stress) = 0.;
+}
+
+template <typename DataType>
+void BentBeamVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> potential_energy_density,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::PotentialEnergyDensity<2> /*meta*/) const noexcept {
+  get(*potential_energy_density) = 72. * square(bending_moment) /
+                                   constitutive_relation.youngs_modulus() /
+                                   pow<6>(height) * square(get<1>(x));
 }
 
 template <typename DataType>
