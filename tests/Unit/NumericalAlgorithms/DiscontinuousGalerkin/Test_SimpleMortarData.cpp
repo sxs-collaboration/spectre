@@ -20,6 +20,8 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
   data.local_insert(0, "string 1");
   data = serialize_and_deserialize(data);
   data.remote_insert(0, 1.234);
+  CHECK(data.local_data(0) == "string 1");
+  CHECK(data.remote_data(0) == 1.234);
   CHECK(data.extract() == std::make_pair("string 1"s, 1.234));
   data = serialize_and_deserialize(data);
   data.remote_insert(1, 2.345);
