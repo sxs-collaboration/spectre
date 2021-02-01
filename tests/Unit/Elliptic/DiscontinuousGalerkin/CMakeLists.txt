@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ImposeBoundaryConditions.cpp
   Test_ImposeInhomogeneousBoundaryConditionsOnSource.cpp
   Test_InitializeFirstOrderOperator.cpp
+  Test_Penalty.cpp
   Test_Tags.cpp
   )
 
@@ -16,10 +17,17 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;DomainStructure;EllipticDg;ErrorHandling;Parallel;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  DataStructures
+  Domain
+  DomainStructure
+  EllipticDg
+  ErrorHandling
+  Parallel
+  Utilities
   )

@@ -15,6 +15,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Penalty.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
@@ -33,25 +34,6 @@ struct Normalized;
 
 /// Numerical fluxes for elliptic systems
 namespace elliptic::dg::NumericalFluxes {
-
-/*!
- * \brief The penalty factor in internal penalty fluxes
- *
- * The penalty factor is computed as
- *
- * \f{equation}
- * \sigma = C \frac{N_\text{points}^2}{h}
- * \f}
- *
- * where \f$N_\text{points} = 1 + N_p\f$ is the number of points (or one plus
- * the polynomial degree) and \f$h\f$ is a measure of the element size. Both
- * quantities are taken perpendicular to the face of the DG element that the
- * penalty is being computed on. \f$C\f$ is the *penalty parameter*.
- *
- * \see `elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty` for details
- */
-DataVector penalty(const DataVector& element_size, size_t num_points,
-                   double penalty_parameter) noexcept;
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -325,7 +307,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           AuxiliaryFieldTags>::type&... ndot_ndot_aux_flux_exteriors,
       const Scalar<DataVector>& element_size_exterior,
       const size_t perpendicular_num_points_exterior) const noexcept {
-    const auto penalty = ::elliptic::dg::NumericalFluxes::penalty(
+    const auto penalty = ::elliptic::dg::penalty(
         min(get(element_size_interior), get(element_size_exterior)),
         std::max(perpendicular_num_points_interior,
                  perpendicular_num_points_exterior),
@@ -389,7 +371,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
       const Scalar<DataVector>& face_normal_magnitude,
       const FluxesComputer& fluxes_computer,
       const FluxesArgs&... fluxes_args) const noexcept {
-    const auto penalty = ::elliptic::dg::NumericalFluxes::penalty(
+    const auto penalty = ::elliptic::dg::penalty(
         2. / get(face_normal_magnitude),
         volume_mesh.extents(direction.dimension()), penalty_parameter_);
 

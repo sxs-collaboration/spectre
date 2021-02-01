@@ -5,6 +5,12 @@ set(LIBRARY EllipticDg)
 
 add_spectre_library(${LIBRARY})
 
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Penalty.cpp
+)
+
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
@@ -13,6 +19,7 @@ spectre_target_headers(
   ImposeBoundaryConditions.hpp
   ImposeInhomogeneousBoundaryConditionsOnSource.hpp
   InitializeFirstOrderOperator.hpp
+  Penalty.hpp
   Tags.hpp
   )
 
