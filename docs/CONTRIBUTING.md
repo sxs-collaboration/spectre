@@ -283,9 +283,12 @@ following manner:
   and may either also fix final suggested changes, or create an issue
   with the suggested changes, which will be addressed in a subsequent
   pull request by the author.
-- The SpECTRE core developer will merge the pull request once all
-  comments have been addressed, the code passes CI, and all pull
-  requests the pull request depends on have been merged.
+- The SpECTRE core developer will merge the pull request once all comments have
+  been addressed, all reviewers have approved the PR, the code passes CI and all
+  pull requests the pull request depends on have been merged. When approvals are
+  dismissed by minor changes, such as rebasing, squashing fixup commits or
+  adding a missing include, the core developer may merge the PR without waiting
+  for all reviewers to re-approve the PR.
 
 Critical bug fixes (i.e. the code is broken) can be merged after two
 expedited reviews by SpECTRE core developers.  If necessary, an issue
