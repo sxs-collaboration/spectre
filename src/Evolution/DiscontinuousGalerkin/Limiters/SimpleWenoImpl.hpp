@@ -55,6 +55,18 @@ void simple_weno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
+  // Check that basis is LGL or LG
+  // Note that the SimpleWeno implementation should generalize well to other
+  // bases beyond LGL or LG, once the oscillation_indicator function has been
+  // generalized.
+  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+         "Unsupported basis: " << mesh);
+  ASSERT(mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
+             mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+         "Unsupported quadrature: " << mesh);
+
   ASSERT(
       modified_neighbor_solution_buffer->size() == neighbor_data.size(),
       "modified_neighbor_solution_buffer->size() = "
