@@ -495,7 +495,10 @@ T tensor_conversion_impl(PyObject* p) {
   }
   // clang-tidy: c-style casts. (Expanded from macro)
   if (not PyArray_CheckExact(p)) {  // NOLINT
-    throw std::runtime_error{"Cannot convert non-array type to Tensor."};
+    const std::string python_type{Py_TYPE(p)->tp_name};
+    throw std::runtime_error{
+        "Cannot convert non-array type (" + python_type +
+        ") to Tensor. Must be a NumPy array to convert to a Tensor."};
   }
   // clang-tidy: reinterpret_cast
   const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
