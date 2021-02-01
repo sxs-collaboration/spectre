@@ -353,14 +353,14 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 
 template <typename T, typename VectorType>
 void VectorImpl<T, VectorType>::pup(PUP::er& p) noexcept {  // NOLINT
+  ASSERT(owning_, "Cannot pup a non-owning vector!");
   auto my_size = size();
   p | my_size;
   if (my_size > 0) {
     if (p.isUnpacking()) {
       owning_ = true;
-      owned_data_.reset(my_size > 0 ? static_cast<value_type*>(
-                                          malloc(my_size * sizeof(value_type)))
-                                    : nullptr);
+      owned_data_.reset(
+          static_cast<value_type*>(malloc(my_size * sizeof(value_type))));
       reset_pointer_vector(my_size);
     }
     PUParray(p, data(), size());

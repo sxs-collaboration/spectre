@@ -155,20 +155,6 @@ void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
   CHECK(serialized_vector_test.is_owning());
   CHECK(serialized_vector_test.data() != vector_test.data());
   CHECK(vector_test.is_owning());
-  // checks serialization for reference
-  vector_ref.set_data_ref(&vector_test);
-  CHECK(vector_test.is_owning());
-  CHECK_FALSE(vector_ref.is_owning());
-  CHECK(vector_ref == vector_test);
-  const VectorType serialized_vector_ref =
-      serialize_and_deserialize(vector_ref);
-  CHECK(vector_test.is_owning());
-  CHECK(vector_test == vector_control);
-  CHECK(vector_ref == vector_test);
-  CHECK(serialized_vector_ref == vector_test);
-  CHECK(serialized_vector_ref.is_owning());
-  CHECK(serialized_vector_ref.data() != vector_ref.data());
-  CHECK_FALSE(vector_ref.is_owning());
 }
 
 /// \ingroup TestingFrameworkGroup
