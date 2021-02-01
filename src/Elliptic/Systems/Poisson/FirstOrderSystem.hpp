@@ -9,6 +9,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
@@ -86,6 +87,12 @@ struct FirstOrderSystem {
   using auxiliary_fields = tmpl::list<field_gradient>;
   using fields_tag =
       ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
+
+  // Tags for the first-order fluxes
+  using primal_fluxes =
+      tmpl::list<::Tags::Flux<field, tmpl::size_t<Dim>, Frame::Inertial>>;
+  using auxiliary_fluxes = tmpl::list<
+      ::Tags::Flux<field_gradient, tmpl::size_t<Dim>, Frame::Inertial>>;
 
   // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
