@@ -13,6 +13,7 @@ spectre_target_headers(
   ImposeBoundaryConditions.hpp
   ImposeInhomogeneousBoundaryConditionsOnSource.hpp
   InitializeFirstOrderOperator.hpp
+  Tags.hpp
   )
 
 target_link_libraries(

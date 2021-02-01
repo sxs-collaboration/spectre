@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ImposeBoundaryConditions.cpp
   Test_ImposeInhomogeneousBoundaryConditionsOnSource.cpp
   Test_InitializeFirstOrderOperator.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
