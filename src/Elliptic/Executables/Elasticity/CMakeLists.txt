@@ -8,7 +8,7 @@ set(LIBS_TO_LINK
   DiscontinuousGalerkin
   DomainCreators
   Elasticity
-  ElasticPotentialEnergy
+  ElasticityPointwiseFunctions
   Elliptic
   EllipticDg
   Events
