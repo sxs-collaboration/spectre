@@ -102,6 +102,10 @@ void forward_to_time_deriv(
       make_not_null(&get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              EnthalpyTimesDensityWSquaredPlusBSquared>(temp)),
 
+      make_not_null(&get<gr::Tags::Lapse<>>(temp)),
+      make_not_null(&get<gr::Tags::Shift<3>>(temp)),
+      make_not_null(&get<gr::Tags::InverseSpatialMetric<3>>(temp)),
+
       tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
       sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, d_lapse,
       d_shift, d_spatial_metric, pressure, spatial_velocity, lorentz_factor,
@@ -109,6 +113,10 @@ void forward_to_time_deriv(
 
       rest_mass_density, specific_enthalpy, extrinsic_curvature,
       constraint_damping_parameter);
+
+  CHECK(get<gr::Tags::Lapse<>>(temp) == lapse);
+  CHECK(get<gr::Tags::Shift<3>>(temp) == shift);
+  CHECK(get<gr::Tags::InverseSpatialMetric<3>>(temp) == inv_spatial_metric);
 }
 }  // namespace
 

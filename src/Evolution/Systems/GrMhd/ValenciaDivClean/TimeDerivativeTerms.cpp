@@ -121,6 +121,11 @@ void TimeDerivativeTerms::apply(
         trace_spatial_christoffel_second,
     const gsl::not_null<Scalar<DataVector>*> h_rho_w_squared_plus_b_squared,
 
+    const gsl::not_null<Scalar<DataVector>*> temp_lapse,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> temp_shift,
+    const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+        temp_inverse_spatial_metric,
+
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
@@ -141,6 +146,12 @@ void TimeDerivativeTerms::apply(
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) noexcept {
+  // Note that if the temp_lapse and lapse arguments point to the same object
+  // then the copy is elided internally.
+  *temp_lapse = lapse;
+  *temp_shift = shift;
+  *temp_inverse_spatial_metric = inv_spatial_metric;
+
   raise_or_lower_index(spatial_velocity_one_form, spatial_velocity,
                        spatial_metric);
   raise_or_lower_index(magnetic_field_one_form, magnetic_field, spatial_metric);
