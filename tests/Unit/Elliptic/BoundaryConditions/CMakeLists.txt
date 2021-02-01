@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EllipticBoundaryConditions")
 
 set(LIBRARY_SOURCES
+  Test_AnalyticSolution.cpp
   Test_BoundaryCondition.cpp
   Test_BoundaryConditionType.cpp
   Test_Tags.cpp
@@ -26,5 +27,6 @@ target_link_libraries(
   Elliptic
   Options
   Parallel
+  Spectral
   Utilities
   )
