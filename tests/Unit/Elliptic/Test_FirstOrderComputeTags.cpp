@@ -63,15 +63,18 @@ struct Fluxes {
 struct Sources {
   using argument_tags = tmpl::list<AnArgument, BaseArgumentTag>;
   template <size_t Dim>
-  static void apply(
-      const gsl::not_null<Scalar<DataVector>*> source_for_field,
-      const gsl::not_null<tnsr::i<DataVector, Dim>*> /*source_for_aux_field*/,
-      const double an_argument, const double base_tag_argument,
-      const Scalar<DataVector>& field,
-      const tnsr::I<DataVector, Dim>& /*field_flux*/) {
-    get(*source_for_field) =
+  static void apply(const gsl::not_null<Scalar<DataVector>*> equation_for_field,
+                    const double an_argument, const double base_tag_argument,
+                    const Scalar<DataVector>& field,
+                    const tnsr::I<DataVector, Dim>& /*field_flux*/) {
+    get(*equation_for_field) +=
         get(field) * square(an_argument) + base_tag_argument;
   }
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<tnsr::i<DataVector, Dim>*> /*equation_for_aux_field*/,
+      const double /*an_argument*/, const double /*base_tag_argument*/,
+      const Scalar<DataVector>& /*field*/) {}
 };
 
 template <size_t Dim>

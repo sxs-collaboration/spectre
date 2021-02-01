@@ -106,28 +106,22 @@ struct Fluxes {
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
   using volume_tags = tmpl::list<Tags::ConstitutiveRelationBase>;
   static void apply(
-      const gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
+      gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
       const ConstitutiveRelations::ConstitutiveRelation<Dim>&
           constitutive_relation,
       const tnsr::I<DataVector, Dim>& coordinates,
-      const tnsr::ii<DataVector, Dim>& strain) noexcept {
-    primal_fluxes(flux_for_displacement, strain, constitutive_relation,
-                  coordinates);
-  }
-  static void apply(
-      const gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
-      const ConstitutiveRelations::ConstitutiveRelation<
-          Dim>& /*constitutive_relation*/,
-      const tnsr::I<DataVector, Dim>& /*coordinates*/,
-      const tnsr::I<DataVector, Dim>& displacement) noexcept {
-    auxiliary_fluxes(flux_for_strain, displacement);
-  }
+      const tnsr::ii<DataVector, Dim>& strain) noexcept;
+  static void apply(gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
+                    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
+                        constitutive_relation,
+                    const tnsr::I<DataVector, Dim>& coordinates,
+                    const tnsr::I<DataVector, Dim>& displacement) noexcept;
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 /*!
- * \brief Compute the sources \f$S_A\f$ for the Elasticity equation.
+ * \brief Add the sources \f$S_A\f$ for the Elasticity equation.
  *
  * \see Elasticity::FirstOrderSystem
  */
@@ -135,14 +129,12 @@ template <size_t Dim>
 struct Sources {
   using argument_tags = tmpl::list<>;
   static void apply(
-      const gsl::not_null<tnsr::I<DataVector, Dim>*> source_for_displacement,
-      const gsl::not_null<tnsr::ii<DataVector, Dim>*> /*source_for_strain*/,
-      const tnsr::I<DataVector, Dim>& /*displacement*/,
-      const tnsr::IJ<DataVector, Dim>& /*stress*/) noexcept {
-    for (size_t d = 0; d < Dim; d++) {
-      source_for_displacement->get(d) = 0.;
-    }
-  }
+      gsl::not_null<tnsr::I<DataVector, Dim>*> equation_for_displacement,
+      const tnsr::I<DataVector, Dim>& displacement,
+      const tnsr::IJ<DataVector, Dim>& minus_stress) noexcept;
+  static void apply(
+      gsl::not_null<tnsr::ii<DataVector, Dim>*> equation_for_strain,
+      const tnsr::I<DataVector, Dim>& displacement) noexcept;
 };
 
 }  // namespace Elasticity

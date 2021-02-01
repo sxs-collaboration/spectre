@@ -60,9 +60,19 @@ struct FirstOrderSourcesImpl<Dim, tmpl::list<PrimalFields...>,
       const Variables<db::wrap_tags_in<
           ::Tags::Flux, VarsTags, tmpl::size_t<Dim>, Frame::Inertial>>& fluxes,
       const SourcesArgs&... sources_args) noexcept {
+    // Compute primal sources. They may depend on the auxiliary variables in
+    // addition to the primal variables. However, we pass the fluxes instead of
+    // the auxiliary variables to the source computer as an optimization so they
+    // don't have to be re-computed.
+    sources->initialize(vars.number_of_grid_points(), 0.);
+    SourcesComputer::apply(
+        make_not_null(&get<::Tags::Source<PrimalFields>>(*sources))...,
+        sources_args..., get<PrimalFields>(vars)...,
+        get<::Tags::Flux<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>>(
+            fluxes)...);
     // Set auxiliary field sources to the auxiliary field values to begin with.
     // This is the standard choice, since the auxiliary equations define the
-    // auxiliary variables. Source computers can adjust or add to these sources.
+    // auxiliary variables. Source computers can add to these sources.
     tmpl::for_each<tmpl::list<AuxiliaryFields...>>(
         [&sources, &vars](const auto auxiliary_field_tag_v) noexcept {
           using auxiliary_field_tag =
@@ -70,17 +80,9 @@ struct FirstOrderSourcesImpl<Dim, tmpl::list<PrimalFields...>,
           get<::Tags::Source<auxiliary_field_tag>>(*sources) =
               get<auxiliary_field_tag>(vars);
         });
-    // Call into the sources computer to set primal field sources and possibly
-    // adjust auxiliary field sources. The sources depend on the primal and the
-    // auxiliary variables. However, we pass the volume fluxes instead of the
-    // auxiliary variables to the source computer as an optimization so they
-    // don't have to be re-computed.
     SourcesComputer::apply(
-        make_not_null(&get<::Tags::Source<PrimalFields>>(*sources))...,
         make_not_null(&get<::Tags::Source<AuxiliaryFields>>(*sources))...,
-        sources_args..., get<PrimalFields>(vars)...,
-        get<::Tags::Flux<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>>(
-            fluxes)...);
+        sources_args..., get<PrimalFields>(vars)...);
   }
 };
 

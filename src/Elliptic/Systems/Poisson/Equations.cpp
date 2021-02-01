@@ -51,25 +51,90 @@ void auxiliary_fluxes(
   }
 }
 
+/// \cond
+template <size_t Dim>
+void Fluxes<Dim, Geometry::FlatCartesian>::apply(
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+    const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
+  flat_cartesian_fluxes(flux_for_field, field_gradient);
+}
+
+template <size_t Dim>
+void Fluxes<Dim, Geometry::Curved>::apply(
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
+    const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
+  curved_fluxes(flux_for_field, inv_spatial_metric, field_gradient);
+}
+
+template <size_t Dim>
+void Fluxes<Dim, Geometry::FlatCartesian>::apply(
+    const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
+    const Scalar<DataVector>& field) noexcept {
+  auxiliary_fluxes(flux_for_gradient, field);
+}
+
+template <size_t Dim>
+void Fluxes<Dim, Geometry::Curved>::apply(
+    const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
+    const tnsr::II<DataVector, Dim>& /*inv_spatial_metric*/,
+    const Scalar<DataVector>& field) noexcept {
+  auxiliary_fluxes(flux_for_gradient, field);
+}
+
+template <size_t Dim>
+void Sources<Dim, Geometry::FlatCartesian>::apply(
+    const gsl::not_null<Scalar<DataVector>*> /*equation_for_field*/,
+    const Scalar<DataVector>& /*field*/,
+    const tnsr::I<DataVector, Dim>& /*field_flux*/) noexcept {}
+
+template <size_t Dim>
+void Sources<Dim, Geometry::Curved>::apply(
+    const gsl::not_null<Scalar<DataVector>*> equation_for_field,
+    const tnsr::i<DataVector, Dim>& christoffel_contracted,
+    const Scalar<DataVector>& /*field*/,
+    const tnsr::I<DataVector, Dim>& field_flux) noexcept {
+  add_curved_sources(equation_for_field, christoffel_contracted, field_flux);
+}
+
+template <size_t Dim>
+void Sources<Dim, Geometry::FlatCartesian>::apply(
+    const gsl::not_null<
+        tnsr::i<DataVector, Dim>*> /*equation_for_field_gradient*/,
+    const Scalar<DataVector>& /*field*/) noexcept {}
+
+template <size_t Dim>
+void Sources<Dim, Geometry::Curved>::apply(
+    const gsl::not_null<
+        tnsr::i<DataVector, Dim>*> /*equation_for_field_gradient*/,
+    const tnsr::i<DataVector, Dim>& /*christoffel_contracted*/,
+    const Scalar<DataVector>& /*field*/) noexcept {}
+/// \endcond
+
 }  // namespace Poisson
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                \
-  template void Poisson::flat_cartesian_fluxes<DIM(data)>(  \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>, \
-      const tnsr::i<DataVector, DIM(data)>&) noexcept;      \
-  template void Poisson::curved_fluxes<DIM(data)>(          \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>, \
-      const tnsr::II<DataVector, DIM(data)>&,               \
-      const tnsr::i<DataVector, DIM(data)>&) noexcept;      \
-  template void Poisson::add_curved_sources<DIM(data)>(     \
-      const gsl::not_null<Scalar<DataVector>*>,             \
-      const tnsr::i<DataVector, DIM(data)>&,                \
-      const tnsr::I<DataVector, DIM(data)>&) noexcept;      \
-  template void Poisson::auxiliary_fluxes<DIM(data)>(       \
-      gsl::not_null<tnsr::Ij<DataVector, DIM(data)>*>,      \
-      const Scalar<DataVector>&) noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template void Poisson::flat_cartesian_fluxes<DIM(data)>(                     \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                    \
+      const tnsr::i<DataVector, DIM(data)>&) noexcept;                         \
+  template void Poisson::curved_fluxes<DIM(data)>(                             \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                    \
+      const tnsr::II<DataVector, DIM(data)>&,                                  \
+      const tnsr::i<DataVector, DIM(data)>&) noexcept;                         \
+  template void Poisson::add_curved_sources<DIM(data)>(                        \
+      const gsl::not_null<Scalar<DataVector>*>,                                \
+      const tnsr::i<DataVector, DIM(data)>&,                                   \
+      const tnsr::I<DataVector, DIM(data)>&) noexcept;                         \
+  template void Poisson::auxiliary_fluxes<DIM(data)>(                          \
+      gsl::not_null<tnsr::Ij<DataVector, DIM(data)>*>,                         \
+      const Scalar<DataVector>&) noexcept;                                     \
+  template class Poisson::Fluxes<DIM(data), Poisson::Geometry::FlatCartesian>; \
+  template class Poisson::Fluxes<DIM(data), Poisson::Geometry::Curved>;        \
+  template class Poisson::Sources<DIM(data),                                   \
+                                  Poisson::Geometry::FlatCartesian>;           \
+  template class Poisson::Sources<DIM(data), Poisson::Geometry::Curved>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

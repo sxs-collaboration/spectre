@@ -162,8 +162,7 @@ void test_first_order_sources_computer(const DataVector& used_for_size) {
             tmpl::append<db::AddSimpleTags<vars_tag, fluxes_tag, sources_tag>,
                          argument_tags>>(
             vars, fluxes,
-            make_with_value<typename sources_tag::type>(
-                used_for_size, std::numeric_limits<double>::signaling_NaN()),
+            make_with_value<typename sources_tag::type>(used_for_size, 0.),
             expanded_args...);
       },
       args);
@@ -175,12 +174,14 @@ void test_first_order_sources_computer(const DataVector& used_for_size) {
   });
 
   // Apply the sources computer to the DataBox
-  db::mutate_apply<
-      db::wrap_tags_in<::Tags::Source, typename vars_tag::tags_list>,
-      tmpl::append<
-          argument_tags, primal_fields,
-          db::wrap_tags_in<::Tags::Flux, primal_fields,
-                           tmpl::size_t<volume_dim>, Frame::Inertial>>>(
+  db::mutate_apply<db::wrap_tags_in<::Tags::Source, auxiliary_fields>,
+                   tmpl::append<argument_tags, primal_fields>>(
+      SourcesComputer{}, make_not_null(&box));
+  db::mutate_apply<db::wrap_tags_in<::Tags::Source, primal_fields>,
+                   tmpl::append<argument_tags, primal_fields,
+                                db::wrap_tags_in<::Tags::Flux, primal_fields,
+                                                 tmpl::size_t<volume_dim>,
+                                                 Frame::Inertial>>>(
       SourcesComputer{}, make_not_null(&box));
   CHECK(expected_sources == get<sources_tag>(box));
 }
