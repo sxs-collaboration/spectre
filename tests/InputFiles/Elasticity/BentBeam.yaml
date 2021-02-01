@@ -26,9 +26,9 @@ DomainCreator:
     InitialGridPoints: [3, 3]
     TimeDependence: None
 
-NumericalFlux:
-  InternalPenalty:
-    PenaltyParameter: 20.
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
 
 Observers:
   VolumeFileName: "ElasticBentBeam2DVolume"
@@ -37,9 +37,9 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 1
-      AbsoluteResidual: 0.
-      RelativeResidual: 0.
+      MaxIterations: 100
+      AbsoluteResidual: 1.e-14
+      RelativeResidual: 1.e-8
     Verbosity: Verbose
 
 EventsAndTriggers:
@@ -50,5 +50,5 @@ EventsAndTriggers:
         SubfileName: "element_data"
     - ObserveFields:
         SubfileName: "element_data"
-        VariablesToObserve: [Displacement, Strain]
+        VariablesToObserve: [Displacement, Strain, PotentialEnergyDensity]
         InterpolateToMesh: None

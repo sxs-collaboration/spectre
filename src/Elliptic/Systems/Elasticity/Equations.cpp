@@ -19,7 +19,7 @@ namespace Elasticity {
 
 template <size_t Dim>
 void primal_fluxes(
-    const gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
+    const gsl::not_null<tnsr::II<DataVector, Dim>*> flux_for_displacement,
     const tnsr::ii<DataVector, Dim>& strain,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
@@ -98,7 +98,7 @@ void add_curved_auxiliary_sources(
 /// \cond
 template <size_t Dim>
 void Fluxes<Dim>::apply(
-    const gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
+    const gsl::not_null<tnsr::II<DataVector, Dim>*> flux_for_displacement,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
     const tnsr::I<DataVector, Dim>& coordinates,
@@ -122,7 +122,7 @@ void Sources<Dim>::apply(
     const gsl::not_null<
         tnsr::I<DataVector, Dim>*> /*equation_for_displacement*/,
     const tnsr::I<DataVector, Dim>& /*displacement*/,
-    const tnsr::IJ<DataVector, Dim>& /*minus_stress*/) noexcept {}
+    const tnsr::II<DataVector, Dim>& /*minus_stress*/) noexcept {}
 
 template <size_t Dim>
 void Sources<Dim>::apply(
@@ -136,7 +136,7 @@ void Sources<Dim>::apply(
 
 #define INSTANTIATE(_, data)                                             \
   template void Elasticity::primal_fluxes<DIM(data)>(                    \
-      gsl::not_null<tnsr::IJ<DataVector, DIM(data)>*>,                   \
+      gsl::not_null<tnsr::II<DataVector, DIM(data)>*>,                   \
       const tnsr::ii<DataVector, DIM(data)>&,                            \
       const Elasticity::ConstitutiveRelations::ConstitutiveRelation<DIM( \
           data)>&,                                                       \

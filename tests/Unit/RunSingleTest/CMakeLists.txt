@@ -32,7 +32,7 @@ add_spectre_executable(
 
   # The following lines list the source files with tests in them to be
   # compiled into the executable.
-  ../DataStructures/Test_DataVector.cpp
+  ../Elliptic/DiscontinuousGalerkin/Test_DgOperator.cpp
   )
 
 # Modify which libraries to link for your test case.
@@ -40,6 +40,9 @@ target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
   DataStructures
+  Domain
+  EllipticDg
+  Poisson
   )
 
 # Core required libraries

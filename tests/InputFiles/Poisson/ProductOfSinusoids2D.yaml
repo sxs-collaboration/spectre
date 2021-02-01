@@ -17,11 +17,11 @@ DomainCreator:
     UpperBound: [3.141592653589793, 3.141592653589793]
     IsPeriodicIn: [false, false]
     InitialRefinement: [1, 1]
-    InitialGridPoints: [3, 3]
+    InitialGridPoints: [4, 4]
     TimeDependence: None
 
-NumericalFlux:
-  InternalPenalty:
+Discretization:
+  DiscontinuousGalerkin:
     PenaltyParameter: 1.
 
 Observers:
@@ -30,9 +30,9 @@ Observers:
 
 LinearSolver:
   ConvergenceCriteria:
-    MaxIterations: 1
-    AbsoluteResidual: 0
-    RelativeResidual: 0
+    MaxIterations: 100
+    AbsoluteResidual: 1e-14
+    RelativeResidual: 1e-8
   Verbosity: Verbose
 
 EventsAndTriggers:
@@ -43,5 +43,5 @@ EventsAndTriggers:
         SubfileName: Errors
     - ObserveFields:
         SubfileName: VolumeData
-        VariablesToObserve: [Field, deriv(Field)]
+        VariablesToObserve: [Field]
         InterpolateToMesh: None

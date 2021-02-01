@@ -6,6 +6,7 @@ add_subdirectory(NumericalFluxes)
 set(LIBRARY "Test_EllipticDG")
 
 set(LIBRARY_SOURCES
+  Test_DgOperator.cpp
   Test_ImposeBoundaryConditions.cpp
   Test_ImposeInhomogeneousBoundaryConditionsOnSource.cpp
   Test_InitializeFirstOrderOperator.cpp

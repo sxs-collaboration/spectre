@@ -31,9 +31,9 @@ DomainCreator:
     RadialPartitioning: []
     HeightPartitioning: []
 
-NumericalFlux:
-  InternalPenalty:
-    PenaltyParameter: 1
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
 
 Observers:
   VolumeFileName: "ElasticHalfSpaceMirrorVolume"
@@ -42,7 +42,7 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 1
+      MaxIterations: 1000
       RelativeResidual: 1e-8
       AbsoluteResidual: 1e-12
     Verbosity: Verbose
@@ -56,9 +56,9 @@ EventsAndTriggers:
     - ObserveVolumeIntegrals:
         SubfileName: VolumeIntegrals
   ? EveryNIterations:
-      N: 10
+      N: 1
       Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData
-        VariablesToObserve: [Displacement, Strain]
+        VariablesToObserve: [Displacement, Strain, PotentialEnergyDensity]
         InterpolateToMesh: None

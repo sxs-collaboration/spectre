@@ -13,26 +13,26 @@ AnalyticSolution:
 
 DomainCreator:
   Interval:
-    LowerBound: [0]
-    UpperBound: [3.141592653589793]
+    LowerBound: [1.570796326794896]
+    UpperBound: [6.283185307179586]
     IsPeriodicIn: [false]
-    InitialRefinement: [1]
-    InitialGridPoints: [3]
+    InitialRefinement: [2]
+    InitialGridPoints: [4]
     TimeDependence: None
 
-NumericalFlux:
-  InternalPenalty:
-    PenaltyParameter: 1.
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.5
 
 Observers:
-  VolumeFileName: "PoissonProductOfSinusoids1DVolume"
-  ReductionFileName: "PoissonProductOfSinusoids1DReductions"
+  VolumeFileName: "PoissonProductOfSinusoids1DVolume2"
+  ReductionFileName: "PoissonProductOfSinusoids1DReductions2"
 
 LinearSolver:
   ConvergenceCriteria:
-    MaxIterations: 1
-    AbsoluteResidual: 0
-    RelativeResidual: 0
+    MaxIterations: 100
+    AbsoluteResidual: 1e-14
+    RelativeResidual: 1e-8
   Verbosity: Verbose
 
 EventsAndTriggers:
@@ -43,5 +43,5 @@ EventsAndTriggers:
         SubfileName: Errors
     - ObserveFields:
         SubfileName: VolumeData
-        VariablesToObserve: [Field, deriv(Field)]
+        VariablesToObserve: [Field]
         InterpolateToMesh: None

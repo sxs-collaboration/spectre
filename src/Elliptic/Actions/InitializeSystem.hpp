@@ -49,9 +49,8 @@ namespace Actions {
  */
 template <typename System>
 struct InitializeSystem {
-  using fields_tag = typename System::fields_tag;
-  using fixed_sources_tag =
-      db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using fields_tag = ::Tags::Variables<typename System::primal_fields>;
+  using fixed_sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
 
   using simple_tags = tmpl::list<fields_tag, fixed_sources_tag>;
   using compute_tags = tmpl::list<>;
