@@ -10,6 +10,7 @@
 
 /// \cond
 namespace Burgers::BoundaryConditions {
+class DirichletAnalytic;
 class Outflow;
 }  // namespace Burgers::BoundaryConditions
 /// \endcond
@@ -19,7 +20,7 @@ namespace Burgers::BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<Outflow>;
+  using creatable_classes = tmpl::list<DirichletAnalytic, Outflow>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
