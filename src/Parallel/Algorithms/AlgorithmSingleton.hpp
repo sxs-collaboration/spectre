@@ -52,6 +52,4 @@ class AlgorithmSingleton
       typename ParallelComponent::phase_dependent_action_list>::AlgorithmImpl;
 };
 
-#define CK_TEMPLATES_ONLY
-#include "Algorithms/AlgorithmSingleton.def.h"
-#undef CK_TEMPLATES_ONLY
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
