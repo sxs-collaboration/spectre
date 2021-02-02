@@ -7,7 +7,6 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// Functionality related to elliptic discontinuous Galerkin schemes
 namespace elliptic::dg {
 /// Option tags related to elliptic discontinuous Galerkin schemes
 namespace OptionTags {

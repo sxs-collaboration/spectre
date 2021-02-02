@@ -16,6 +16,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DgElementArray.hpp
+  DiscontinuousGalerkin.hpp
   ImposeBoundaryConditions.hpp
   ImposeInhomogeneousBoundaryConditionsOnSource.hpp
   InitializeFirstOrderOperator.hpp
