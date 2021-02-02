@@ -33,4 +33,5 @@ target_link_libraries(
   INTERFACE ErrorHandling
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
