@@ -4,6 +4,7 @@
 #include "Evolution/Systems/Burgers/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/Burgers/BoundaryConditions/Dirichlet.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Outflow.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
