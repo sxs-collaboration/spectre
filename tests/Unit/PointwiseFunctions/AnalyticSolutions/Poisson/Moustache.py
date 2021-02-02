@@ -23,6 +23,10 @@ def field_gradient(x):
         ])
 
 
+def field_flux(x):
+    return field_gradient(x)
+
+
 def source(x):
     if len(x) == 1:
         return np.abs(x[0] - 0.5) * (20. * (x[0] - 0.5)**2 - 1.5)

@@ -40,7 +40,8 @@ struct ProductOfSinusoidsProxy : Poisson::Solutions::ProductOfSinusoids<Dim> {
 
   using field_tags = tmpl::list<
       Poisson::Tags::Field,
-      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
+      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
   using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
@@ -62,8 +63,8 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
   const ProductOfSinusoidsProxy<Dim> solution(wave_numbers);
   pypp::check_with_random_values<1>(
       &ProductOfSinusoidsProxy<Dim>::field_variables, solution,
-      "ProductOfSinusoids", {"field", "field_gradient"}, {{{0., 2. * M_PI}}},
-      std::make_tuple(wave_numbers), DataVector(5));
+      "ProductOfSinusoids", {"field", "field_gradient", "field_flux"},
+      {{{0., 2. * M_PI}}}, std::make_tuple(wave_numbers), DataVector(5));
   pypp::check_with_random_values<1>(
       &ProductOfSinusoidsProxy<Dim>::source_variables, solution,
       "ProductOfSinusoids", {"source"}, {{{0., 2. * M_PI}}},

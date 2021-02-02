@@ -20,6 +20,10 @@ def field_gradient(x, wave_numbers):
                   for d in range(dim)])
 
 
+def field_flux(x, wave_numbers):
+    return field_gradient(x, wave_numbers)
+
+
 def source(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)
     return np.sum(wave_numbers**2) * field(x, wave_numbers)

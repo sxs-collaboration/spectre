@@ -26,6 +26,7 @@ struct LorentzianVariables {
   using Cache = CachedTempBuffer<
       LorentzianVariables, Tags::Field,
       ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::FixedSource<Tags::Field>>;
 
   const tnsr::I<DataType, Dim>& x;
@@ -37,6 +38,10 @@ struct LorentzianVariables {
                   gsl::not_null<Cache*> cache,
                   ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
                                 Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>,
+                               Frame::Inertial> /*meta*/) const noexcept;
   void operator()(gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
                   gsl::not_null<Cache*> cache,
                   ::Tags::FixedSource<Tags::Field> /*meta*/) const noexcept;

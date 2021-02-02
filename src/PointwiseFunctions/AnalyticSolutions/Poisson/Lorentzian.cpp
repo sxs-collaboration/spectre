@@ -40,6 +40,19 @@ void LorentzianVariables<DataType, Dim>::operator()(
 
 template <typename DataType, size_t Dim>
 void LorentzianVariables<DataType, Dim>::operator()(
+    const gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
+    const noexcept {
+  const auto& field_gradient = cache->get_var(
+      ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
+  for (size_t d = 0; d < Dim; ++d) {
+    flux_for_field->get(d) = field_gradient.get(d);
+  }
+}
+
+template <typename DataType, size_t Dim>
+void LorentzianVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::FixedSource<Tags::Field> /*meta*/) const noexcept {
