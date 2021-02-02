@@ -94,4 +94,41 @@ struct get_primitive_vars_tags_from_system_impl<System, false> {
 template <typename System>
 using get_primitive_vars_tags_from_system =
     typename get_primitive_vars_tags_from_system_impl<System>::type;
+
+template <typename BoundaryCondition, typename = std::void_t<>>
+struct get_dt_vars_from_boundary_condition_impl {
+  using type = tmpl::list<>;
+};
+
+template <typename BoundaryCondition>
+struct get_dt_vars_from_boundary_condition_impl<
+    BoundaryCondition,
+    std::void_t<typename BoundaryCondition::dg_interior_dt_vars_tags>> {
+  using type = typename BoundaryCondition::dg_interior_dt_vars_tags;
+};
+
+/// Returns the `dg_interior_dt_vars_tags` if the boundary condition specifies
+/// them, otherwise returns an empty list.
+template <typename BoundaryCondition>
+using get_dt_vars_from_boundary_condition =
+    typename get_dt_vars_from_boundary_condition_impl<BoundaryCondition>::type;
+
+template <typename BoundaryCondition, typename = std::void_t<>>
+struct get_deriv_vars_from_boundary_condition_impl {
+  using type = tmpl::list<>;
+};
+
+template <typename BoundaryCondition>
+struct get_deriv_vars_from_boundary_condition_impl<
+    BoundaryCondition,
+    std::void_t<typename BoundaryCondition::dg_interior_deriv_vars_tags>> {
+  using type = typename BoundaryCondition::dg_interior_deriv_vars_tags;
+};
+
+/// Returns the `dg_interior_deriv_vars_tags` if the boundary condition
+/// specifies them, otherwise returns an empty list.
+template <typename BoundaryCondition>
+using get_deriv_vars_from_boundary_condition =
+    typename get_deriv_vars_from_boundary_condition_impl<
+        BoundaryCondition>::type;
 }  // namespace evolution::dg::Actions::detail
