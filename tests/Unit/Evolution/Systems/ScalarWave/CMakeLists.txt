@@ -4,6 +4,7 @@
 set(LIBRARY Test_ScalarWave)
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_SphericalRadiation.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
