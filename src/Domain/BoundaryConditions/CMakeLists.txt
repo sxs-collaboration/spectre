@@ -3,7 +3,13 @@
 
 set(LIBRARY DomainBoundaryConditions)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Periodic.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -11,6 +17,7 @@ spectre_target_headers(
   HEADERS
   BoundaryCondition.hpp
   GetBoundaryConditionsBase.hpp
+  Periodic.hpp
   )
 
 target_link_libraries(

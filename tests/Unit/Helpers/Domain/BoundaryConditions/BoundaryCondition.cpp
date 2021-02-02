@@ -91,7 +91,26 @@ bool operator!=(const TestBoundaryCondition<Dim>& lhs,
 }
 
 template <size_t Dim>
+TestPeriodicBoundaryCondition<Dim>::TestPeriodicBoundaryCondition(
+    CkMigrateMessage* const msg) noexcept
+    : BoundaryConditionBase<Dim>(msg) {}
+
+template <size_t Dim>
+auto TestPeriodicBoundaryCondition<Dim>::get_clone() const noexcept
+    -> std::unique_ptr<::domain::BoundaryConditions::BoundaryCondition> {
+  return std::make_unique<TestPeriodicBoundaryCondition<Dim>>(*this);
+}
+
+template <size_t Dim>
+void TestPeriodicBoundaryCondition<Dim>::pup(PUP::er& p) {
+  BoundaryConditionBase<Dim>::pup(p);
+}
+
+template <size_t Dim>
 PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+
+template <size_t Dim>
+PUP::able::PUP_ID TestPeriodicBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
 
 void register_derived_with_charm() noexcept {
   Parallel::register_derived_classes_with_charm<BoundaryConditionBase<1>>();
@@ -104,6 +123,7 @@ void register_derived_with_charm() noexcept {
 #define INSTANTIATION(r, data)                               \
   template class BoundaryConditionBase<DIM(data)>;           \
   template class TestBoundaryCondition<DIM(data)>;           \
+  template class TestPeriodicBoundaryCondition<DIM(data)>;   \
   template bool operator==(                                  \
       const TestBoundaryCondition<DIM(data)>& lhs,           \
       const TestBoundaryCondition<DIM(data)>& rhs) noexcept; \
