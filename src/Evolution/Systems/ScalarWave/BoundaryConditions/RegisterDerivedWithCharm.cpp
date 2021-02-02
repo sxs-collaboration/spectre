@@ -5,6 +5,7 @@
 
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/DirichletAnalytic.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryConditions/SphericalRadiation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace ScalarWave::BoundaryConditions {

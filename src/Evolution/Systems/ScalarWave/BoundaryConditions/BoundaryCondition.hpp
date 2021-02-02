@@ -12,6 +12,8 @@
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 class DirichletAnalytic;
+template <size_t Dim>
+class SphericalRadiation;
 }  // namespace ScalarWave::BoundaryConditions
 /// \endcond
 
@@ -21,7 +23,8 @@ namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<DirichletAnalytic<Dim>>;
+  using creatable_classes =
+      tmpl::list<DirichletAnalytic<Dim>, SphericalRadiation<Dim>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
