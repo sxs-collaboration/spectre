@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Lorentzian.cpp
   Test_Moustache.cpp
   Test_ProductOfSinusoids.cpp
+  Test_Zero.cpp
   )
 
 add_test_library(

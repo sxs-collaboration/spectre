@@ -19,6 +19,7 @@ spectre_target_headers(
   AnalyticSolution.hpp
   BentBeam.hpp
   HalfSpaceMirror.hpp
+  Zero.hpp
   )
 
 target_link_libraries(
