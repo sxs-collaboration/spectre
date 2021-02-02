@@ -99,7 +99,7 @@ class DummyLimiterForTest {
   void pup(const PUP::er& /*p*/) const noexcept {}
 };
 
-struct LimiterTag {
+struct LimiterTag : db::SimpleTag {
   using type = DummyLimiterForTest;
 };
 

@@ -59,7 +59,7 @@ struct System {
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
 };
 
-struct LimiterTag {
+struct LimiterTag : db::SimpleTag {
   using type = Limiters::Minmod<2, tmpl::list<Var>>;
 };
 

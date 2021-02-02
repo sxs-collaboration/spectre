@@ -56,7 +56,7 @@ struct BoundaryCondition : MarkAsAnalyticSolution {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-struct BoundaryConditionTag {
+struct BoundaryConditionTag : db::SimpleTag {
   using type = BoundaryCondition;
 };
 
