@@ -1,9 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_ScalarWave")
+set(LIBRARY Test_ScalarWave)
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
@@ -15,5 +16,17 @@ set(LIBRARY_SOURCES
 add_test_library(
   ${LIBRARY}
   "Evolution/Systems/ScalarWave/"
-  "${LIBRARY_SOURCES}" "ScalarWave;MathFunctions;WaveEquationSolutions"
+  "${LIBRARY_SOURCES}"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  MathFunctions
+  ScalarWave
+  Time
+  Utilities
+  WaveEquationSolutions
   )

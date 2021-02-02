@@ -39,4 +39,5 @@ target_link_libraries(
   Options
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
