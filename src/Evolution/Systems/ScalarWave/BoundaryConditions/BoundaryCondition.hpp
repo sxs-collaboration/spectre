@@ -6,6 +6,7 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -27,7 +28,9 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   using creatable_classes =
       tmpl::list<ConstraintPreservingSphericalRadiation<Dim>,
-                 DirichletAnalytic<Dim>, SphericalRadiation<Dim>>;
+                 DirichletAnalytic<Dim>,
+                 domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>,
+                 SphericalRadiation<Dim>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
