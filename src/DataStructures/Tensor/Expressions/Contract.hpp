@@ -401,7 +401,7 @@ struct TensorContract
   }
 
  private:
-  const T t_;
+  T t_;
 };
 
 /*!
