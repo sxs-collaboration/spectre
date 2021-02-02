@@ -16,17 +16,21 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
@@ -35,6 +39,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
+#include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
@@ -58,6 +63,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -665,6 +671,80 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 template <size_t Dim, bool HasPrims>
 PUP::able::PUP_ID BoundaryTerms<Dim, HasPrims>::my_PUP_ID = 0;
 
+// We only use an Outflow boundary condition with a static member variable that
+// we set to verify the call went through. The actual boundary condition
+// implementation is tested elsewhere.
+template <size_t Dim>
+class Outflow;
+
+template <size_t Dim>
+class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+ public:
+  using creatable_classes = tmpl::list<Outflow<Dim>>;
+
+  BoundaryCondition() = default;
+  BoundaryCondition(BoundaryCondition&&) noexcept = default;
+  BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
+  BoundaryCondition(const BoundaryCondition&) = default;
+  BoundaryCondition& operator=(const BoundaryCondition&) = default;
+  ~BoundaryCondition() override = default;
+  explicit BoundaryCondition(CkMigrateMessage* msg) noexcept
+      : domain::BoundaryConditions::BoundaryCondition(msg) {}
+
+  void pup(PUP::er& p) override {
+    domain::BoundaryConditions::BoundaryCondition::pup(p);
+  }
+};
+
+template <size_t Dim>
+class Outflow : public BoundaryCondition<Dim> {
+ public:
+  Outflow() = default;
+  Outflow(Outflow&&) noexcept = default;
+  Outflow& operator=(Outflow&&) noexcept = default;
+  Outflow(const Outflow&) = default;
+  Outflow& operator=(const Outflow&) = default;
+  ~Outflow() override = default;
+
+  explicit Outflow(CkMigrateMessage* msg) noexcept
+      : BoundaryCondition<Dim>(msg) {}
+
+  WRAPPED_PUPable_decl_base_template(
+      domain::BoundaryConditions::BoundaryCondition, Outflow);
+
+  auto get_clone() const noexcept -> std::unique_ptr<
+      domain::BoundaryConditions::BoundaryCondition> override {
+    return std::make_unique<Outflow<Dim>>(*this);
+  }
+
+  static constexpr ::evolution::BoundaryConditions::Type bc_type =
+      ::evolution::BoundaryConditions::Type::Outflow;
+
+  void pup(PUP::er& p) override { BoundaryCondition<Dim>::pup(p); }
+
+  using dg_interior_evolved_variables_tags = tmpl::list<>;
+  using dg_interior_primitive_variables_tags = tmpl::list<>;
+  using dg_interior_temporary_tags = tmpl::list<>;
+  using dg_gridless_tags = tmpl::list<>;
+
+  static std::optional<std::string> dg_outflow(
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      /*face_mesh_velocity*/,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      /*outward_directed_normal_covector*/) noexcept {
+    Outflow<Dim>::number_of_times_called += 1;
+    return std::nullopt;
+  }
+
+  static size_t number_of_times_called;
+};
+
+template <size_t Dim>
+PUP::able::PUP_ID Outflow<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
+size_t Outflow<Dim>::number_of_times_called = 0;
+
 struct NoBoundaryCorrection {};
 template <size_t Dim, bool HasPrims>
 struct HaveBoundaryCorrection {
@@ -681,6 +761,8 @@ struct System : public tmpl::conditional_t<
   static constexpr bool has_primitive_and_conservative_vars =
       HasPrimitiveVariables;
   static constexpr size_t volume_dim = Dim;
+
+  using boundary_conditions_base = BoundaryCondition<Dim>;
 
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
   using flux_variables = tmpl::conditional_t<
@@ -714,13 +796,15 @@ struct component {
 
   using common_simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::evolution::dg::Tags::Quadrature,
+      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+      ::evolution::dg::Tags::Quadrature,
       typename Metavariables::system::variables_tag,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       ::Tags::HistoryEvolvedVariables<
           typename Metavariables::system::variables_tag>,
       Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
+      ::domain::Tags::FunctionsOfTime,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
                                                   Frame::Grid, Frame::Inertial>,
       domain::Tags::Interface<
@@ -733,7 +817,8 @@ struct component {
       domain::Tags::InverseJacobian<Metavariables::volume_dim, Frame::Logical,
                                     Frame::Inertial>,
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
-      domain::Tags::DivMeshVelocity>;
+      domain::Tags::DivMeshVelocity,
+      domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>>;
   using simple_tags = tmpl::conditional_t<
       Metavariables::system_type == SystemType::Nonconservative or
           Metavariables::use_boundary_correction == UseBoundaryCorrection::Yes,
@@ -827,7 +912,8 @@ struct Metavariables {
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::InitialExtents<Dim>, normal_dot_numerical_flux>;
+      tmpl::list<domain::Tags::InitialExtents<Dim>, normal_dot_numerical_flux,
+                 domain::Tags::Domain<Dim>>;
   using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
 
   using component_list = tmpl::list<component<Metavariables>>;
@@ -925,10 +1011,62 @@ void test_impl(const Spectral::Quadrature quadrature,
                                        Direction<Dim>::lower_eta(),
                                        Direction<Dim>::upper_zeta()}}};
   }
+
+  const auto grid_to_inertial_map =
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<Dim>{});
+
   const Element<Dim> element{self_id, neighbors};
-  MockRuntimeSystem runner = [&dg_formulation]() noexcept {
+  MockRuntimeSystem runner = [&dg_formulation, &element,
+                              &grid_to_inertial_map]() noexcept {
+    std::vector<DirectionMap<
+        Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        boundary_conditions{2};
+    std::vector<Block<Dim>> blocks{2};
+    DirectionMap<Dim, BlockNeighbor<Dim>> neighbors_block0{};
+    DirectionMap<Dim, BlockNeighbor<Dim>> neighbors_block1{};
+    if constexpr (Dim > 1) {
+      neighbors_block0[Direction<Dim>::lower_eta()] = BlockNeighbor<Dim>{
+          1, element.neighbors().at(Direction<Dim>::lower_eta()).orientation()};
+      neighbors_block1[element.neighbors()
+                           .at(Direction<Dim>::lower_eta())
+                           .orientation()(Direction<Dim>::lower_eta())] =
+          BlockNeighbor<Dim>{0, element.neighbors()
+                                    .at(Direction<Dim>::lower_eta())
+                                    .orientation()
+                                    .inverse_map()};
+      for (const auto& direction : Direction<Dim>::all_directions()) {
+        if (direction != Direction<Dim>::lower_eta()) {
+          boundary_conditions[0][direction] = std::make_unique<Outflow<Dim>>();
+        }
+        if (direction != element.neighbors()
+                             .at(Direction<Dim>::lower_eta())
+                             .orientation()(Direction<Dim>::lower_eta())) {
+          boundary_conditions[1][direction] = std::make_unique<Outflow<Dim>>();
+        }
+      }
+    } else {
+      (void)element;
+      for (const auto& direction : Direction<Dim>::all_directions()) {
+        boundary_conditions[0][direction] = std::make_unique<Outflow<Dim>>();
+        boundary_conditions[1][direction] = std::make_unique<Outflow<Dim>>();
+      }
+    }
+    blocks[0] = Block<Dim>{
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            domain::CoordinateMaps::Identity<Dim>{}),
+        0, neighbors_block0, std::move(boundary_conditions[0])};
+    blocks[1] = Block<Dim>{
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            domain::CoordinateMaps::Identity<Dim>{}),
+        1, neighbors_block1, std::move(boundary_conditions[1])};
+    Domain<Dim> domain{std::move(blocks)};
+    domain.inject_time_dependent_map_for_block(
+        0, grid_to_inertial_map->get_clone());
+    domain.inject_time_dependent_map_for_block(
+        1, grid_to_inertial_map->get_clone());
     if constexpr (use_boundary_correction == UseBoundaryCorrection::No) {
-      if constexpr(metavars::local_time_stepping) {
+      if constexpr (metavars::local_time_stepping) {
         std::vector<
             std::unique_ptr<StepChooser<typename metavars::step_choosers>>>
             step_choosers;
@@ -939,7 +1077,7 @@ void test_impl(const Spectral::Quadrature quadrature,
             {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
                                                   make_array<Dim>(3_st)},
              typename metavars::normal_dot_numerical_flux::type{},
-             dg_formulation, std::move(step_choosers),
+             std::move(domain), dg_formulation, std::move(step_choosers),
              static_cast<std::unique_ptr<StepController>>(
                  std::make_unique<StepControllers::SplitRemaining>()),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
@@ -949,10 +1087,10 @@ void test_impl(const Spectral::Quadrature quadrature,
             {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
                                                   make_array<Dim>(3_st)},
              typename metavars::normal_dot_numerical_flux::type{},
-             dg_formulation}};
+             std::move(domain), dg_formulation}};
       }
     } else {
-      if constexpr(metavars::local_time_stepping) {
+      if constexpr (metavars::local_time_stepping) {
         std::vector<
             std::unique_ptr<StepChooser<typename metavars::step_choosers>>>
             step_choosers;
@@ -963,7 +1101,8 @@ void test_impl(const Spectral::Quadrature quadrature,
             {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
                                                   make_array<Dim>(3_st)},
              typename metavars::normal_dot_numerical_flux::type{},
-             dg_formulation, std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+             std::move(domain), dg_formulation,
+             std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
              std::move(step_choosers),
              static_cast<std::unique_ptr<StepController>>(
                  std::make_unique<StepControllers::SplitRemaining>()),
@@ -974,7 +1113,8 @@ void test_impl(const Spectral::Quadrature quadrature,
             {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
                                                   make_array<Dim>(3_st)},
              typename metavars::normal_dot_numerical_flux::type{},
-             dg_formulation, std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
+             std::move(domain), dg_formulation,
+             std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
       }
     }
   }();
@@ -1053,8 +1193,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     if constexpr (system_type == SystemType::Conservative) {
       (void)inv_jac;
       const auto flux_var1 = make_not_null(
-            &get<::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
-                fluxes));
+          &get<::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(fluxes));
       const auto flux_var2 = make_not_null(
           &get<::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
               fluxes));
@@ -1124,24 +1263,47 @@ void test_impl(const Spectral::Quadrature quadrature,
                                                       0.0);
   }
 
-  const auto grid_to_inertial_map =
-      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-          domain::CoordinateMaps::Identity<Dim>{});
-
   const Slab time_slab{0.2, 3.4};
   const TimeDelta time_step{time_slab, {4, 100}};
   const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 100}}};
   const TimeStepId next_time_step_id{time_step_id.time_runs_forward(),
                                      time_step_id.slab_number(),
                                      time_step_id.step_time() + time_step};
+  // Our moving mesh map doesn't actually move (we set a mesh velocity, etc.
+  // separately), but we need the FunctionsOfTime tag for boundary conditions.
+  // When checking boundary conditions we just test that the boundary condition
+  // function is called, not that the resulting code is correct, and so we just
+  // use an Outflow condition, which doesn't actually need the coordinate maps.
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
   if constexpr (not std::is_same_v<tmpl::list<>, flux_variables> and
                 use_boundary_correction == UseBoundaryCorrection::No) {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, next_time_step_id, time_step, time_step, quadrature,
-         evolved_vars, dt_evolved_vars, history, var3, mesh,
-         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
-         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity,
+        {time_step_id,
+         next_time_step_id,
+         time_step,
+         time_step,
+         time_step_id.step_time().value(),
+         quadrature,
+         evolved_vars,
+         dt_evolved_vars,
+         history,
+         var3,
+         mesh,
+         clone_unique_ptrs(functions_of_time),
+         grid_to_inertial_map->get_clone(),
+         normal_dot_fluxes_interface,
+         element,
+         inertial_coords,
+         inv_jac,
+         mesh_velocity,
+         div_mesh_velocity,
+         ElementMap<Dim, Frame::Grid>{
+             self_id,
+             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                 domain::CoordinateMaps::Identity<Dim>{})},
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>{
              mesh.number_of_grid_points(), -100.}});
@@ -1150,11 +1312,29 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, next_time_step_id, time_step, time_step, quadrature,
-             evolved_vars, dt_evolved_vars, history, var3, mesh,
-             grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
-             element, inertial_coords, inv_jac, mesh_velocity,
+            {time_step_id,
+             next_time_step_id,
+             time_step,
+             time_step,
+             time_step_id.step_time().value(),
+             quadrature,
+             evolved_vars,
+             dt_evolved_vars,
+             history,
+             var3,
+             mesh,
+             clone_unique_ptrs(functions_of_time),
+             grid_to_inertial_map->get_clone(),
+             normal_dot_fluxes_interface,
+             element,
+             inertial_coords,
+             inv_jac,
+             mesh_velocity,
              div_mesh_velocity,
+             ElementMap<Dim, Frame::Grid>{
+                 neighbor_id,
+                 domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                     domain::CoordinateMaps::Identity<Dim>{})},
              Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                         tmpl::size_t<Dim>, Frame::Inertial>>{
                  mesh.number_of_grid_points(), -100.}});
@@ -1163,20 +1343,57 @@ void test_impl(const Spectral::Quadrature quadrature,
   } else {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, next_time_step_id, time_step, time_step, quadrature,
-         evolved_vars, dt_evolved_vars, history, var3, mesh,
-         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
-         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity});
+        {time_step_id,
+         next_time_step_id,
+         time_step,
+         time_step,
+         time_step_id.step_time().value(),
+         quadrature,
+         evolved_vars,
+         dt_evolved_vars,
+         history,
+         var3,
+         mesh,
+         clone_unique_ptrs(functions_of_time),
+         grid_to_inertial_map->get_clone(),
+         normal_dot_fluxes_interface,
+         element,
+         inertial_coords,
+         inv_jac,
+         mesh_velocity,
+         div_mesh_velocity,
+         ElementMap<Dim, Frame::Grid>{
+             self_id,
+             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                 domain::CoordinateMaps::Identity<Dim>{})}});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, next_time_step_id, time_step, time_step, quadrature,
-             evolved_vars, dt_evolved_vars, history, var3, mesh,
-             grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
-             element, inertial_coords, inv_jac, mesh_velocity,
-             div_mesh_velocity});
+            {time_step_id,
+             next_time_step_id,
+             time_step,
+             time_step,
+             time_step_id.step_time().value(),
+             quadrature,
+             evolved_vars,
+             dt_evolved_vars,
+             history,
+             var3,
+             mesh,
+             clone_unique_ptrs(functions_of_time),
+             grid_to_inertial_map->get_clone(),
+             normal_dot_fluxes_interface,
+             element,
+             inertial_coords,
+             inv_jac,
+             mesh_velocity,
+             div_mesh_velocity,
+             ElementMap<Dim, Frame::Grid>{
+                 neighbor_id,
+                 domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                     domain::CoordinateMaps::Identity<Dim>{})}});
       }
     }
   }
@@ -1194,9 +1411,14 @@ void test_impl(const Spectral::Quadrature quadrature,
   const auto variables_before_compute_time_derivatives =
       get_tag(variables_tag{});
   // Start testing the actual dg::ComputeTimeDerivative action
+  Outflow<Dim>::number_of_times_called = 0;
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
+  if constexpr (use_boundary_correction == UseBoundaryCorrection::Yes) {
+    CHECK(Outflow<Dim>::number_of_times_called ==
+          element.external_boundaries().size());
+  }
 
   Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>
       expected_dt_evolved_vars{mesh.number_of_grid_points()};
@@ -1600,8 +1822,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         const Mesh<Dim - 1> face_mesh =
             mesh.slice_away(mortar_id.first.dimension());
         const intrp::Irregular<Dim> interpolator{
-            mesh,
-            interface_logical_coordinates(face_mesh, mortar_id.first)};
+            mesh, interface_logical_coordinates(face_mesh, mortar_id.first)};
         Variables<tmpl::list<::Tags::TempScalar<0>>> volume_det_jacobian{
             mesh.number_of_grid_points()};
         get(get<::Tags::TempScalar<0>>(volume_det_jacobian)) =
@@ -1710,8 +1931,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
 }
 
-template <SystemType system_type,
-          UseBoundaryCorrection use_boundary_correction, size_t Dim>
+template <SystemType system_type, UseBoundaryCorrection use_boundary_correction,
+          size_t Dim>
 void test() noexcept {
   // The test impl is structured in the following way:
   // - the static mesh volume contributions are computed "by-hand" and used more
@@ -1768,6 +1989,7 @@ void test() noexcept {
       BoundaryCorrection<Dim, true>>();
   Parallel::register_derived_classes_with_charm<
       BoundaryCorrection<Dim, false>>();
+  Parallel::register_derived_classes_with_charm<BoundaryCondition<Dim>>();
 
   const auto invoke_tests_with_quadrature_and_formulation =
       [](const Spectral::Quadrature quadrature,

@@ -6,6 +6,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ApplyBoundaryCorrections.hpp
+  BoundaryConditionsImpl.hpp
   ComputeTimeDerivative.hpp
   ComputeTimeDerivativeHelpers.hpp
   InternalMortarDataImpl.hpp
