@@ -6,7 +6,6 @@
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementActions.hpp"
-#include "ParallelAlgorithms/LinearSolver/Schwarz/Protocols.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -150,8 +149,6 @@ struct Schwarz {
   using fields_tag = FieldsTag;
   using source_tag = SourceTag;
   using options_group = OptionsGroup;
-  static_assert(
-      tt::assert_conforms_to<SubdomainOperator, protocols::SubdomainOperator>);
 
   using component_list = tmpl::list<>;
   using observed_reduction_data_tags = observers::make_reduction_data_tags<

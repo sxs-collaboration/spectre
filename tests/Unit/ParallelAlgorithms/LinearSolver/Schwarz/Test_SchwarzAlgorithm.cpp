@@ -26,11 +26,10 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
-#include "ParallelAlgorithms/LinearSolver/Schwarz/Protocols.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/SubdomainOperator.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
@@ -41,18 +40,6 @@ namespace {
 struct SchwarzSmoother {
   static constexpr Options::String help =
       "Options for the iterative Schwarz smoother";
-};
-
-template <typename DirectionsTag>
-struct DoNothing {
-  using argument_tags = tmpl::list<>;
-  template <typename SubdomainData, typename ResultData,
-            typename SubdomainOperator>
-  static void apply(
-      const SubdomainData& /*subdomain_data*/,
-      const gsl::not_null<ResultData*> /*result*/,
-      const gsl::not_null<SubdomainOperator*> /*subdomain_operator*/) noexcept {
-  }
 };
 
 DenseMatrix<double> combine_matrix_slices(
@@ -132,60 +119,49 @@ void restrict_to_subdomain(
 //
 // We assume all elements have the same extents so we can use the element's
 // intruding overlap extents instead of initializing extruding overlap extents.
-struct SubdomainElementOperator {
-  using argument_tags = tmpl::list<
-      helpers_distributed::LinearOperator, domain::Tags::Element<1>,
-      LinearSolver::Schwarz::Tags::IntrudingExtents<1, SchwarzSmoother>>;
+struct SubdomainOperator : LinearSolver::Schwarz::SubdomainOperator<1> {
+  // The operator can by non-const and can also mutate the DataBox to modify
+  // temporary and persistent memory buffers
+  template <typename ResultTags, typename OperandTags, typename DbTagsList>
+  void operator()(
+      const gsl::not_null<
+          LinearSolver::Schwarz::ElementCenteredSubdomainData<1, ResultTags>*>
+          result,
+      const LinearSolver::Schwarz::ElementCenteredSubdomainData<1, OperandTags>&
+          operand,
+      db::DataBox<DbTagsList>& box) noexcept {
+    // Retrieve arguments from the DataBox
+    const auto& matrix_slices =
+        db::get<helpers_distributed::LinearOperator>(box);
+    const auto& element = db::get<domain::Tags::Element<1>>(box);
+    const auto& overlap_extents = db::get<
+        LinearSolver::Schwarz::Tags::IntrudingExtents<1, SchwarzSmoother>>(box);
 
-  template <typename Tag, typename ResultData, typename SubdomainOperator>
-  static void apply(
-      const std::vector<DenseMatrix<double>>& matrix_slices,
-      const Element<1>& element, const std::array<size_t, 1>& overlap_extents,
-      const LinearSolver::Schwarz::ElementCenteredSubdomainData<
-          1, tmpl::list<Tag>>& subdomain_data,
-      const gsl::not_null<ResultData*> result,
-      const gsl::not_null<SubdomainOperator*> /*subdomain_operator*/) noexcept {
     const size_t element_index = helpers_distributed::get_index(element.id());
     const size_t num_elements = matrix_slices.size();
     const size_t num_points_per_element = matrix_slices.begin()->columns();
 
     // Re-size the result buffer if necessary
-    result->destructive_resize(subdomain_data);
+    result->destructive_resize(operand);
 
     // Assemble full operator matrix
     const auto operator_matrix = combine_matrix_slices(matrix_slices);
 
     // Extend subdomain data with zeros outside the subdomain
-    const auto extended_subdomain_data =
-        extend_subdomain_data(subdomain_data, element_index, num_elements,
+    const auto extended_operand =
+        extend_subdomain_data(operand, element_index, num_elements,
                               num_points_per_element, overlap_extents[0]);
 
     // Apply matrix to extended subdomain data
     const DenseVector<double> extended_result =
-        operator_matrix * extended_subdomain_data;
+        operator_matrix * extended_operand;
 
     // Restrict the result back to the subdomain
     restrict_to_subdomain(result, extended_result, element_index,
                           num_points_per_element, overlap_extents[0]);
   }
 };
-
-struct SubdomainOperator
-    : tt::ConformsTo<LinearSolver::Schwarz::protocols::SubdomainOperator> {
-  static constexpr size_t volume_dim = 1;
-
-  using element_operator = SubdomainElementOperator;
-
-  template <typename DirectionsTag>
-  using face_operator = DoNothing<DirectionsTag>;
-
-  explicit SubdomainOperator(const size_t /*element_num_points*/) noexcept {}
-};
 // [subdomain_operator]
-
-static_assert(tt::assert_conforms_to<
-              SubdomainOperator,
-              LinearSolver::Schwarz::protocols::SubdomainOperator>);
 
 struct Metavariables {
   static constexpr const char* const help{
