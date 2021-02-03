@@ -12,9 +12,7 @@
 
 namespace py = pybind11;
 
-namespace domain {
-namespace creators {
-namespace py_bindings {
+namespace domain::creators::py_bindings {
 void bind_interval(py::module& m) {  // NOLINT
   py::class_<Interval, DomainCreator<1>>(m, "Interval")
       .def(
@@ -37,6 +35,4 @@ void bind_interval(py::module& m) {  // NOLINT
           py::arg("initial_number_of_grid_points_in_x"),
           py::arg("is_periodic_in_x"));
 }
-}  // namespace py_bindings
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::py_bindings

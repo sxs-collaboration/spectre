@@ -70,6 +70,7 @@ struct MockContributeReductionData {
     double volume;
     std::vector<double> volume_integrals{};
   };
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static Results results;
 
   template <typename ParallelComponent, typename... DbTags,
@@ -91,6 +92,7 @@ struct MockContributeReductionData {
   }
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 MockContributeReductionData::Results MockContributeReductionData::results{};
 
 template <typename Metavariables>
