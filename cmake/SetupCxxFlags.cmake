@@ -24,12 +24,15 @@ if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
   set_property(TARGET SpectreFlags
       APPEND PROPERTY
       INTERFACE_COMPILE_OPTIONS
-      $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH}>)
+      # The -mno-avx512f flag is necessary to avoid a Blaze 3.8 bug. The flag
+      # should be re-enabled when we can insist on Blaze 3.9 which will include
+      # a fix that allows this vectorization flag again.
+      $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH} -mno-avx512f>)
 else()
   set_property(TARGET SpectreFlags
       APPEND PROPERTY
       INTERFACE_COMPILE_OPTIONS
-      $<$<COMPILE_LANGUAGE:CXX>:-march=native>)
+      $<$<COMPILE_LANGUAGE:CXX>:-march=native -mno-avx512f>)
 endif()
 
 # We always want a detailed backtrace of template errors to make debugging them

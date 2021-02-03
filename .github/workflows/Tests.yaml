@@ -279,10 +279,6 @@ jobs:
         build_type: [Debug, Release]
         use_pch: [ON]
         include:
-          # Prevent random failures of Debug builds.
-          # See issue https://github.com/sxs-collaboration/spectre/issues/1807
-          - build_type: Debug
-            EXTRA_CXX_FLAGS: "-DBLAZE_USE_VECTORIZATION=0"
           # Test with ASAN
           - compiler: clang-8
             build_type: Debug
@@ -628,3 +624,87 @@ jobs:
           python3 .github/scripts/Release.py publish -vv \
             --zenodo-token ${{ secrets.ZENODO_PUBLISH_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }}
+
+  arch_datastructures_tests:
+    name: Archs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc-7
+          - gcc-10
+          - clang-8
+          - clang-11
+        include:
+          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
+              "-skl;skylake")
+            compiler: gcc-7
+          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
+              "-skl;skylake" "-icx;icelake-server")
+            compiler: gcc-10
+          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
+              "-skl;skylake" "-icx;icelake-server")
+            compiler: clang-8
+          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
+              "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
+            compiler: clang-11
+    container:
+      image: sxscollaboration/spectrebuildenv:latest
+      env:
+        # See the unit test job for the reasons for these configuration choices
+        CXXFLAGS: "-Werror"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Configure, build, and run tests
+        working-directory: /work
+        # Notes on the build configuration:
+        # - We don't need debug symbols during CI, so we turn them off to reduce
+        #   memory usage.
+        run: >
+          ARCH_PARAM_LIST=${{ matrix.sde_arch }}
+
+          for ARCH_PARAM in ${ARCH_PARAM_LIST[@]}; do
+            OVERRIDE_ARCH=`echo ${ARCH_PARAM} | cut -d";" -f2`
+            SDE_FLAG=`echo ${ARCH_PARAM} | cut -d";" -f1`
+            echo "CMake arch flag: $OVERRIDE_ARCH"
+            echo "Intel SDE arch flag: $SDE_FLAG"
+            cd /work
+            BUILD_DIR=build$OVERRIDE_ARCH
+            mkdir $BUILD_DIR && cd $BUILD_DIR
+            if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
+              CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
+              CHARM_CC=${BASH_REMATCH[1]};
+              if [[ ${BASH_REMATCH[1]} = gcc ]]; then
+                CXX=g++-${BASH_REMATCH[2]};
+                FC=gfortran-${BASH_REMATCH[2]};
+              else
+                CXX=clang++-${BASH_REMATCH[2]};
+                FC=gfortran-8;
+              fi
+            fi
+
+            cmake\
+            -D CMAKE_C_COMPILER=${CC}\
+            -D CMAKE_CXX_COMPILER=${CXX}\
+            -D CMAKE_Fortran_COMPILER=${FC}\
+            -D CMAKE_CXX_FLAGS="${CXXFLAGS}"\
+            -D OVERRIDE_ARCH=${OVERRIDE_ARCH}\
+            -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}\
+            -D CMAKE_BUILD_TYPE=Debug\
+            -D DEBUG_SYMBOLS=OFF\
+            -D STRIP_SYMBOLS=ON\
+            -D STUB_EXECUTABLE_OBJECT_FILES=ON\
+            -D STUB_LIBRARY_OBJECT_FILES=ON\
+            -D USE_PCH=ON\
+            -D USE_CCACHE=ON\
+            $GITHUB_WORKSPACE
+
+            make -j2 TestArchitectureVectorization
+
+            /work/sde/sde ${SDE_FLAG}\
+            -- ./bin/TestArchitectureVectorization [Unit]
+          done
+
+        shell: bash

@@ -14,7 +14,13 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
-// IWYU pragma: no_forward_declare ConstantExpressions_detail::pow
+/// \cond
+class ComplexDataVector;
+/// \endcond
+
+namespace blaze {
+DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(ComplexDataVector);
+}  // namespace blaze
 
 /*!
  * \ingroup DataStructuresGroup
@@ -154,9 +160,12 @@ namespace blaze {
 // ComplexDataVector. This does *not* prevent taking the norm of the square (or
 // some other math expression) of a ComplexDataVector.
 template <typename Abs, typename Power>
-struct DVecNormHelper<PointerVector<std::complex<double>, blaze_unaligned,
-                                    blaze_unpadded, false, ComplexDataVector>,
-                      Abs, Power> {};
+struct DVecNormHelper<
+    blaze::CustomVector<std::complex<double>, blaze::AlignmentFlag::unaligned,
+                        blaze::PaddingFlag::unpadded,
+                        blaze::defaultTransposeFlag, blaze_default_group,
+                        ComplexDataVector>,
+    Abs, Power> {};
 }  // namespace blaze
 /// \endcond
 

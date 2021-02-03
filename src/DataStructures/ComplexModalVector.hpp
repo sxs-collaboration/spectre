@@ -4,15 +4,16 @@
 #pragma once
 
 #include "DataStructures/VectorImpl.hpp"
-#include "Utilities/PointerVector.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
-// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 
 /// \cond
 class ModalVector;
+class ComplexModalVector;
 /// \endcond
+
+namespace blaze {
+DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(ComplexModalVector);
+}  // namespace blaze
 
 /*!
  * \ingroup DataStructuresGroup
@@ -52,8 +53,6 @@ class ComplexModalVector
 
 namespace blaze {
 template <>
-struct IsVector<ComplexModalVector> : std::true_type {};
-template <>
 struct TransposeFlag<ComplexModalVector>
     : BoolConstant<ComplexModalVector::transpose_flag> {};
 template <>
@@ -85,23 +84,24 @@ struct DivTrait<ComplexModalVector, double> {
   using Type = ComplexModalVector;
 };
 
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename Operator>
 struct MapTrait<ComplexModalVector, Operator> {
   // Selectively allow unary operations for spectral coefficients
-  static_assert(
-      tmpl::list_contains_v<
-          tmpl::list<blaze::Conj,
-                     // Following 3 reqd. by operator(+,+=), (-,-=),
-                     // (-) w/doubles
-                     blaze::AddScalar<ComplexModalVector::ElementType>,
-                     blaze::SubScalarRhs<ComplexModalVector::ElementType>,
-                     blaze::SubScalarLhs<ComplexModalVector::ElementType>,
-                     blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
-                     blaze::SubScalarLhs<double>>,
-          Operator>,
-      "Only unary operations permitted on a ComplexModalVector are:"
-      " conj, imag, and real");
+  static_assert(tmpl::list_contains_v<
+                    tmpl::list<blaze::Conj,
+                               // Following 3 reqd. by operator(+,+=), (-,-=),
+                               // (-) w/doubles
+                               blaze::Bind1st<blaze::Add, std::complex<double>>,
+                               blaze::Bind2nd<blaze::Add, std::complex<double>>,
+                               blaze::Bind1st<blaze::Sub, std::complex<double>>,
+                               blaze::Bind2nd<blaze::Sub, std::complex<double>>,
+                               blaze::Bind1st<blaze::Add, double>,
+                               blaze::Bind2nd<blaze::Add, double>,
+                               blaze::Bind1st<blaze::Sub, double>,
+                               blaze::Bind2nd<blaze::Sub, double>>,
+                    Operator>,
+                "Only unary operations permitted on a ComplexModalVector are:"
+                " conj, imag, and real");
   using Type = ComplexModalVector;
 };
 template <>
@@ -131,61 +131,6 @@ struct MapTrait<ComplexModalVector, ComplexModalVector, Operator> {
       "This binary operation is not permitted on a ComplexModalVector.");
   using Type = ComplexModalVector;
 };
-#else
-template <typename Operator>
-struct MapTrait<ComplexModalVector, Operator> {
-  // Selectively allow unary operations for spectral coefficients
-  static_assert(
-      tmpl::list_contains_v<
-          tmpl::list<blaze::Conj,
-                     // Following 3 reqd. by operator(+,+=), (-,-=),
-                     // (-) w/doubles
-                     blaze::AddScalar<ComplexModalVector::ElementType>,
-                     blaze::SubScalarRhs<ComplexModalVector::ElementType>,
-                     blaze::SubScalarLhs<ComplexModalVector::ElementType>,
-                     blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
-                     blaze::SubScalarLhs<double>,
-                     blaze::Bind1st<blaze::Add, std::complex<double>>,
-                     blaze::Bind2nd<blaze::Add, std::complex<double>>,
-                     blaze::Bind1st<blaze::Sub, std::complex<double>>,
-                     blaze::Bind2nd<blaze::Sub, std::complex<double>>,
-                     blaze::Bind1st<blaze::Add, double>,
-                     blaze::Bind2nd<blaze::Add, double>,
-                     blaze::Bind1st<blaze::Sub, double>,
-                     blaze::Bind2nd<blaze::Sub, double>>,
-          Operator>,
-      "Only unary operations permitted on a ComplexModalVector are:"
-      " conj, imag, and real");
-  using Type = ComplexModalVector;
-};
-template <>
-struct MapTrait<ComplexModalVector, blaze::Imag> {
-  using Type = ModalVector;
-};
-template <>
-struct MapTrait<ComplexModalVector, blaze::Real> {
-  using Type = ModalVector;
-};
-template <>
-struct MapTrait<ModalVector, blaze::Imag> {
-  using Type = ModalVector;
-};
-template <>
-struct MapTrait<ModalVector, blaze::Real> {
-  using Type = ModalVector;
-};
-
-template <typename Operator>
-struct MapTrait<ComplexModalVector, ComplexModalVector, Operator> {
-  // Forbid math operations in this specialization of BinaryMap traits for
-  // ComplexModalVector that are unlikely to be used on spectral coefficients.
-  // Currently no non-arithmetic binary operations are supported.
-  static_assert(
-      tmpl::list_contains_v<tmpl::list<>, Operator>,
-      "This binary operation is not permitted on a ComplexModalVector.");
-  using Type = ComplexModalVector;
-};
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 }  // namespace blaze
 
 /// \cond
@@ -203,9 +148,12 @@ namespace blaze {
 // ComplexModalVector. This does *not* prevent taking the norm of the square (or
 // some other math expression) of a ComplexModalVector.
 template <typename Abs, typename Power>
-struct DVecNormHelper<PointerVector<std::complex<double>, blaze_unaligned,
-                                    blaze_unpadded, false, ComplexModalVector>,
-                      Abs, Power> {};
+struct DVecNormHelper<
+    blaze::CustomVector<std::complex<double>, blaze::AlignmentFlag::unaligned,
+                        blaze::PaddingFlag::unpadded,
+                        blaze::defaultTransposeFlag, blaze_default_group,
+                        ComplexModalVector>,
+    Abs, Power> {};
 }  // namespace blaze
 /// \endcond
 MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(ComplexModalVector)

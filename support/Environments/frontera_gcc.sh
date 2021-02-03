@@ -64,7 +64,7 @@ EOF
         echo "Installing Blaze..."
         mkdir -p $dep_dir/blaze/
         cd $dep_dir/blaze/
-        wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O blaze.tar.gz
+        wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O blaze.tar.gz
         tar -xzf blaze.tar.gz
         mv blaze-* include
         echo "Installed Blaze into $dep_dir/blaze"

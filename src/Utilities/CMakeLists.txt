@@ -52,7 +52,6 @@ spectre_target_headers(
   Numeric.hpp
   OptimizerHacks.hpp
   Overloader.hpp
-  PointerVector.hpp
   PrettyType.hpp
   PrintHelpers.hpp
   ProtocolHelpers.hpp
