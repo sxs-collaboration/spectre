@@ -77,6 +77,57 @@ struct NamedSimpleWithNamedBaseCompute : NamedSimpleWithNamedBase,
   using base = NamedSimpleWithNamedBase;
 };
 
+struct SimpleNamedReference : TestHelpers::db::Tags::Simple, db::ReferenceTag {
+  static std::string name() noexcept { return "NameOfSimpleReference"; }
+};
+
+struct NamedSimpleNamedReference : NamedSimple, db::ReferenceTag {
+  static std::string name() noexcept { return "NameOfNamedSimpleReference"; }
+};
+
+struct NamedSimpleReference : NamedSimple, db::ReferenceTag {
+  using base = NamedSimple;
+};
+
+struct SimpleWithBaseNamedReference : TestHelpers::db::Tags::SimpleWithBase,
+                                      db::ReferenceTag {
+  static std::string name() noexcept { return "NameOfSimpleWithBaseReference"; }
+};
+
+struct NamedSimpleWithBaseNamedReference : NamedSimpleWithBase,
+                                           db::ReferenceTag {
+  static std::string name() noexcept {
+    return "NameOfNamedSimpleWithBaseReference";
+  }
+};
+
+struct NamedSimpleWithBaseReference : NamedSimpleWithBase, db::ReferenceTag {
+  using base = NamedSimpleWithBase;
+};
+
+struct SimpleWithNamedBaseNamedReference : SimpleWithNamedBase,
+                                           db::ReferenceTag {
+  static std::string name() noexcept {
+    return "NameOfSimpleWithNamedBaseReference";
+  }
+};
+
+struct SimpleWithNamedBaseReference : SimpleWithNamedBase, db::ReferenceTag {
+  using base = SimpleWithNamedBase;
+};
+
+struct NamedSimpleWithNamedBaseNamedReference : NamedSimpleWithNamedBase,
+                                                db::ReferenceTag {
+  static std::string name() noexcept {
+    return "NameOfNamedSimpleWithNamedBaseReference";
+  }
+};
+
+struct NamedSimpleWithNamedBaseReference : NamedSimpleWithNamedBase,
+                                           db::ReferenceTag {
+  using base = NamedSimpleWithNamedBase;
+};
+
 template <typename Tag>
 struct NamedLabel : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
@@ -118,6 +169,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<TestHelpers::db::Tags::SimpleCompute>() == "Simple");
   CHECK(db::tag_name<TestHelpers::db::Tags::SimpleWithBaseCompute>() ==
         "SimpleWithBase");
+  CHECK(db::tag_name<TestHelpers::db::Tags::SimpleReference>() == "Simple");
+  CHECK(db::tag_name<TestHelpers::db::Tags::SimpleWithBaseReference>() ==
+        "SimpleWithBase");
   CHECK(db::tag_name<NamedSimple>() == "NameOfSimple");
   CHECK(db::tag_name<NamedBase>() == "NameOfBase");
   CHECK(db::tag_name<NamedSimpleWithBase>() == "NameOfSimpleWithBase");
@@ -138,6 +192,22 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<NamedSimpleWithNamedBaseNamedCompute>() ==
         "NameOfNamedSimpleWithNamedBaseCompute");
   CHECK(db::tag_name<NamedSimpleWithNamedBaseCompute>() ==
+        "NameOfSimpleWithNamedBase");
+  CHECK(db::tag_name<SimpleNamedReference>() == "NameOfSimpleReference");
+  CHECK(db::tag_name<NamedSimpleNamedReference>() ==
+        "NameOfNamedSimpleReference");
+  CHECK(db::tag_name<NamedSimpleReference>() == "NameOfSimple");
+  CHECK(db::tag_name<SimpleWithBaseNamedReference>() ==
+        "NameOfSimpleWithBaseReference");
+  CHECK(db::tag_name<NamedSimpleWithBaseNamedReference>() ==
+        "NameOfNamedSimpleWithBaseReference");
+  CHECK(db::tag_name<NamedSimpleWithBaseReference>() == "NameOfSimpleWithBase");
+  CHECK(db::tag_name<SimpleWithNamedBaseNamedReference>() ==
+        "NameOfSimpleWithNamedBaseReference");
+  CHECK(db::tag_name<SimpleWithNamedBaseReference>() == "NameOfBase");
+  CHECK(db::tag_name<NamedSimpleWithNamedBaseNamedReference>() ==
+        "NameOfNamedSimpleWithNamedBaseReference");
+  CHECK(db::tag_name<NamedSimpleWithNamedBaseReference>() ==
         "NameOfSimpleWithNamedBase");
 
   CHECK(db::tag_name<
