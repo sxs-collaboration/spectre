@@ -48,6 +48,7 @@ target_link_libraries(
   INTERFACE Hydro
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(Limiters)
 add_subdirectory(NumericalFluxes)
