@@ -271,7 +271,8 @@ struct ContainerPackAndUnpack<std::optional<T>, ConversionClassList,
 template <typename T, typename ConversionClassList>
 struct ContainerPackAndUnpack<
     T, ConversionClassList,
-    Requires<std::is_floating_point_v<T> or std::is_integral_v<T>>> {
+    Requires<std::is_floating_point_v<T> or std::is_integral_v<T> or
+             std::is_same_v<T, std::string>>> {
   using unpacked_container = T;
   using packed_container = T;
   using packed_type = packed_container;
