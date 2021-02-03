@@ -6,6 +6,7 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,7 +22,9 @@ namespace Burgers::BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<Dirichlet, DirichletAnalytic, Outflow>;
+  using creatable_classes =
+      tmpl::list<Dirichlet, DirichletAnalytic, Outflow,
+                 domain::BoundaryConditions::Periodic<BoundaryCondition>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
