@@ -71,7 +71,7 @@ template <typename Metavariables>
 struct ImposeInhomogeneousBoundaryConditionsOnSource {
   using system = typename Metavariables::system;
   static constexpr size_t volume_dim = system::volume_dim;
-  using FluxesType = typename system::fluxes;
+  using FluxesType = typename system::fluxes_computer;
   using fluxes_computer_tag = elliptic::Tags::FluxesComputer<FluxesType>;
 
   using fixed_sources_tag =

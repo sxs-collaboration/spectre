@@ -84,7 +84,7 @@ struct Metavariables {
       "Find the solution to a linear elasticity problem."};
 
   using fluxes_computer_tag =
-      elliptic::Tags::FluxesComputer<typename system::fluxes>;
+      elliptic::Tags::FluxesComputer<typename system::fluxes_computer>;
 
   // Only Dirichlet boundary conditions are currently supported, and they are
   // are all imposed by analytic solutions right now.
@@ -178,8 +178,9 @@ struct Metavariables {
           Metavariables>,
       dg::Actions::InitializeMortars<boundary_scheme>,
       elliptic::dg::Actions::InitializeFirstOrderOperator<
-          volume_dim, typename system::fluxes, typename system::sources,
-          linear_operand_tag, primal_variables, auxiliary_variables>,
+          volume_dim, typename system::fluxes_computer,
+          typename system::sources_computer, linear_operand_tag,
+          primal_variables, auxiliary_variables>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using build_linear_operator_actions = tmpl::list<

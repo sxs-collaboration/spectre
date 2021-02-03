@@ -139,7 +139,7 @@ SPECTRE_TEST_CASE(
   {
     INFO("Test elasticity system with bent beam");
     using system = Elasticity::FirstOrderSystem<2>;
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     // Verify that the solution numerically solves the system
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, fluxes_computer, mesh, coord_map,

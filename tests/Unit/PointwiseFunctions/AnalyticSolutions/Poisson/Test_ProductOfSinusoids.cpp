@@ -93,7 +93,7 @@ SPECTRE_TEST_CASE(
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<1> solution{{{0.5}}};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
         coord_map{{-1., 1., 0., M_PI}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
@@ -107,7 +107,7 @@ SPECTRE_TEST_CASE(
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<2> solution{{{0.5, 0.5}}};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
@@ -123,7 +123,7 @@ SPECTRE_TEST_CASE(
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<3> solution{{{0.5, 0.5, 0.5}}};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>

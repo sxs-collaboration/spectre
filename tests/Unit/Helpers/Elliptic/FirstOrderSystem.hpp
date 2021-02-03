@@ -33,19 +33,20 @@ namespace TestHelpers {
 namespace elliptic {
 
 /*!
- * \brief Test the `System::fluxes` are functional
+ * \brief Test the `System::fluxes_computer` is functional
  *
- * This function tests the following properties of the `System::fluxes`:
+ * This function tests the following properties of the
+ * `System::fluxes_computer`:
  *
- * - They work with the `elliptic::first_order_fluxes` function.
- * - They can be applied to a DataBox, i.e. their argument tags are consistent
- *   with their apply function.
+ * - It works with the `elliptic::first_order_fluxes` function.
+ * - It can be applied to a DataBox, i.e. its argument tags are consistent with
+ *   its apply function.
  */
 template <typename System>
 void test_first_order_fluxes_computer(
-    const typename System::fluxes& fluxes_computer,
+    const typename System::fluxes_computer& fluxes_computer,
     const DataVector& used_for_size) {
-  using FluxesComputer = typename System::fluxes;
+  using FluxesComputer = typename System::fluxes_computer;
   static constexpr size_t volume_dim = System::volume_dim;
   using vars_tag = typename System::fields_tag;
   using primal_fields = typename System::primal_fields;
@@ -104,17 +105,18 @@ void test_first_order_fluxes_computer(
 }
 
 /*!
- * \brief Test the `System::sources` are functional
+ * \brief Test the `System::sources_computer` is functional
  *
- * This function tests the following properties of the `System::sources`:
+ * This function tests the following properties of the
+ * `System::sources_computer`:
  *
- * - They work with the `elliptic::first_order_sources` function.
- * - They can be applied to a DataBox, i.e. their argument tags are consistent
- *   with their apply function.
+ * - It works with the `elliptic::first_order_sources` function.
+ * - It can be applied to a DataBox, i.e. its argument tags are consistent with
+ *   its apply function.
  */
 template <typename System>
 void test_first_order_sources_computer(const DataVector& used_for_size) {
-  using SourcesComputer = typename System::sources;
+  using SourcesComputer = typename System::sources_computer;
   static constexpr size_t volume_dim = System::volume_dim;
   using vars_tag = typename System::fields_tag;
   using primal_fields = typename System::primal_fields;

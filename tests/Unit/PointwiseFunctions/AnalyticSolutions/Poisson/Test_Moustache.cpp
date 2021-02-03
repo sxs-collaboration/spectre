@@ -84,7 +84,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Moustache<1> solution{};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
         coord_map{{-1., 1., 0., 1.}};
     FirstOrderEllipticSolutionsTestHelpers::
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Moustache<2> solution{};
-    const typename system::fluxes fluxes_computer{};
+    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
