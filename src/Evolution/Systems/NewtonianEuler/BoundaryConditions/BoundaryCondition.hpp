@@ -6,6 +6,7 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,7 +22,9 @@ namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<DirichletAnalytic<Dim>>;
+  using creatable_classes =
+      tmpl::list<DirichletAnalytic<Dim>,
+                 domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
