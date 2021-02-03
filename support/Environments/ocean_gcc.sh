@@ -18,21 +18,22 @@ spectre_setup_modules() {
 
 spectre_unload_modules() {
     module unload ohpc
+    module unload llvm/10.0.1
     module unload gnu7/7.3.0
     module unload openmpi/1.10.7
     module unload prun/1.2
-    module unload cmake-3.13.1-gcc-7.3.0-r7qr3qo
+    module unload cmake/3.18.5
     module unload git-2.19.2-gcc-7.3.0-jfnpgdh
-    module unload blaze-3.5-gcc-7.3.0-dtnocst
+    module unload blaze/3.8
     module unload brigand-master-gcc-7.3.0-3m5ibui
     module unload libsharp-2018-01-17-gcc-7.3.0-4xamgaw
-    module unload cmake/3.18.5
+    module unload catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module unload gsl-2.5-gcc-7.3.0-i7icadp
     module unload jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
-    module unload libxsmm-1.10-gcc-7.3.0-sjh5yzv
+    module unload libxsmm/1.16.1
     module unload yaml-cpp-develop-gcc-7.3.0-qcfbbll
     module unload boost-1.68.0-gcc-7.3.0-vgl6ofr
-    module unload hdf5-1.10.4-gcc-7.3.0-ytt4j54
+    module unload hdf5-1.12.0-gcc-7.3.0-mknp6xv
     module unload openblas-0.3.4-gcc-7.3.0-tt2coe7
     module unload python/3.7.0
     module unload charm-6.10.2-libs
@@ -44,19 +45,20 @@ spectre_load_modules() {
     module load gnu7/7.3.0
     module load openmpi/1.10.7
     module load prun/1.2
+    module load llvm/10.0.1
     source /opt/ohpc/pub/apps/spack/0.12.0/share/spack/setup-env.sh
-    module load cmake-3.13.1-gcc-7.3.0-r7qr3qo
+    module load cmake/3.18.5
     module load git-2.19.2-gcc-7.3.0-jfnpgdh
-    module load blaze-3.5-gcc-7.3.0-dtnocst
+    module load blaze/3.8
     module load brigand-master-gcc-7.3.0-3m5ibui
     module load libsharp-2018-01-17-gcc-7.3.0-4xamgaw
-    module load cmake/3.18.5
+    module load catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module load gsl-2.5-gcc-7.3.0-i7icadp
     module load jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
-    module load libxsmm-1.10-gcc-7.3.0-sjh5yzv
+    module load libxsmm/1.16.1
     module load yaml-cpp-develop-gcc-7.3.0-qcfbbll
     module load boost-1.68.0-gcc-7.3.0-vgl6ofr
-    module load hdf5-1.10.4-gcc-7.3.0-ytt4j54
+    module load hdf5-1.12.0-gcc-7.3.0-mknp6xv
     module load openblas-0.3.4-gcc-7.3.0-tt2coe7
     module load charm-6.10.2-libs
 }
@@ -69,6 +71,9 @@ spectre_run_cmake() {
     spectre_load_modules
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_C_COMPILER=gcc \
+          -D CMAKE_CXX_COMPILER=g++ \
+          -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
           "$@" \
           $SPECTRE_HOME
 }
