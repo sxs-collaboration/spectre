@@ -78,16 +78,10 @@ void auxiliary_fluxes(
 template <size_t Dim>
 struct Fluxes<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
-  static void apply(
-      const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-      const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
-    flat_cartesian_fluxes(flux_for_field, field_gradient);
-  }
-  static void apply(
-      const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
-      const Scalar<DataVector>& field) noexcept {
-    auxiliary_fluxes(flux_for_gradient, field);
-  }
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+  static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
+                    const Scalar<DataVector>& field) noexcept;
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
@@ -102,24 +96,18 @@ template <size_t Dim>
 struct Fluxes<Dim, Geometry::Curved> {
   using argument_tags = tmpl::list<
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
-  static void apply(
-      const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-      const tnsr::II<DataVector, Dim>& inv_spatial_metric,
-      const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
-    curved_fluxes(flux_for_field, inv_spatial_metric, field_gradient);
-  }
-  static void apply(
-      const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
-      const tnsr::II<DataVector, Dim>& /*inv_spatial_metric*/,
-      const Scalar<DataVector>& field) noexcept {
-    auxiliary_fluxes(flux_for_gradient, field);
-  }
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
+                    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+  static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
+                    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
+                    const Scalar<DataVector>& field) noexcept;
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 /*!
- * \brief Compute the sources \f$S_A\f$ for the Poisson equation on a flat
+ * \brief Add the sources \f$S_A\f$ for the Poisson equation on a flat
  * metric in Cartesian coordinates.
  *
  * \see Poisson::FirstOrderSystem
@@ -127,18 +115,16 @@ struct Fluxes<Dim, Geometry::Curved> {
 template <size_t Dim>
 struct Sources<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
+  static void apply(gsl::not_null<Scalar<DataVector>*> equation_for_field,
+                    const Scalar<DataVector>& field,
+                    const tnsr::I<DataVector, Dim>& field_flux) noexcept;
   static void apply(
-      const gsl::not_null<Scalar<DataVector>*> source_for_field,
-      const gsl::not_null<
-          tnsr::i<DataVector, Dim>*> /*source_for_field_gradient*/,
-      const Scalar<DataVector>& /*field*/,
-      const tnsr::I<DataVector, Dim>& /*field_flux*/) noexcept {
-    get(*source_for_field) = 0.;
-  }
+      gsl::not_null<tnsr::i<DataVector, Dim>*> equation_for_field_gradient,
+      const Scalar<DataVector>& field) noexcept;
 };
 
 /*!
- * \brief Compute the sources \f$S_A\f$ for the curved-space Poisson equation
+ * \brief Add the sources \f$S_A\f$ for the curved-space Poisson equation
  * on a spatial metric \f$\gamma_{ij}\f$.
  *
  * \see Poisson::FirstOrderSystem
@@ -148,16 +134,14 @@ struct Sources<Dim, Geometry::Curved> {
   using argument_tags =
       tmpl::list<gr::Tags::SpatialChristoffelSecondKindContracted<
           Dim, Frame::Inertial, DataVector>>;
+  static void apply(gsl::not_null<Scalar<DataVector>*> equation_for_field,
+                    const tnsr::i<DataVector, Dim>& christoffel_contracted,
+                    const Scalar<DataVector>& field,
+                    const tnsr::I<DataVector, Dim>& field_flux) noexcept;
   static void apply(
-      const gsl::not_null<Scalar<DataVector>*> source_for_field,
-      const gsl::not_null<
-          tnsr::i<DataVector, Dim>*> /*source_for_field_gradient*/,
+      gsl::not_null<tnsr::i<DataVector, Dim>*> equation_for_field_gradient,
       const tnsr::i<DataVector, Dim>& christoffel_contracted,
-      const Scalar<DataVector>& /*field*/,
-      const tnsr::I<DataVector, Dim>& field_flux) noexcept {
-    get(*source_for_field) = 0.;
-    add_curved_sources(source_for_field, christoffel_contracted, field_flux);
-  }
+      const Scalar<DataVector>& field) noexcept;
 };
 
 }  // namespace Poisson

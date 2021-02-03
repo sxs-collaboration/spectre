@@ -136,23 +136,26 @@ void test_computers(const DataVector& used_for_size) {
     INFO("Sources" << Dim << "D");
     auto box =
         db::create<db::AddSimpleTags<field_source_tag, auxiliary_source_tag>>(
-            tnsr::I<DataVector, Dim>{
-                num_points, std::numeric_limits<double>::signaling_NaN()},
-            tnsr::ii<DataVector, Dim>{
-                num_points, std::numeric_limits<double>::signaling_NaN()});
+            tnsr::I<DataVector, Dim>{num_points, 0.},
+            tnsr::ii<DataVector, Dim>{num_points, 0.});
 
     const Elasticity::Sources<Dim> sources_computer{};
     using argument_tags = typename Elasticity::Sources<Dim>::argument_tags;
 
-    db::mutate_apply<tmpl::list<field_source_tag, auxiliary_source_tag>,
-                     argument_tags>(
+    db::mutate_apply<tmpl::list<auxiliary_source_tag>, argument_tags>(
+        sources_computer, make_not_null(&box),
+        tnsr::I<DataVector, Dim>{num_points,
+                                 std::numeric_limits<double>::signaling_NaN()});
+    db::mutate_apply<tmpl::list<field_source_tag>, argument_tags>(
         sources_computer, make_not_null(&box),
         tnsr::I<DataVector, Dim>{num_points,
                                  std::numeric_limits<double>::signaling_NaN()},
         tnsr::IJ<DataVector, Dim>{
             num_points, std::numeric_limits<double>::signaling_NaN()});
     auto expected_field_source = tnsr::I<DataVector, Dim>{num_points, 0.};
+    auto expected_auxiliary_source = tnsr::ii<DataVector, Dim>{num_points, 0.};
     CHECK(get<field_source_tag>(box) == expected_field_source);
+    CHECK(get<auxiliary_source_tag>(box) == expected_auxiliary_source);
   }
 }
 
