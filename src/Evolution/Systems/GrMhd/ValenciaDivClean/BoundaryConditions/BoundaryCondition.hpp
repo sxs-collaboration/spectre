@@ -6,6 +6,7 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -19,7 +20,9 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<DirichletAnalytic>;
+  using creatable_classes =
+      tmpl::list<DirichletAnalytic,
+                 domain::BoundaryConditions::Periodic<BoundaryCondition>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
