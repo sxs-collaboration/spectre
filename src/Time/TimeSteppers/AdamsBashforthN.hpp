@@ -403,7 +403,6 @@ bool AdamsBashforthN::update_u(
       history->end() -
       static_cast<typename decltype(history->end())::difference_type>(
           history->integration_order()));
-  *u_error = *u;
   update_u_impl(u, *history, time_step, history->integration_order());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
@@ -434,6 +433,14 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
   ASSERT(order <= order_,
          "Requested integration order higher than integrator order");
 
+  const size_t update_order = std::min(history.size(), order);
+  // note that the order-0 version should only be called when determining
+  // error estimates -- it is not useful for actual integration
+  if(update_order == 0) {
+    *u = (history.end() - 1).value();
+    return;
+  }
+
   const auto& coefficients = get_coefficients(
       history.end() -
           static_cast<typename History<Vars, DerivVars>::difference_type>(
@@ -442,9 +449,10 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 
   const auto do_update = [u, &time_step, &coefficients,
                           &history](auto local_order) noexcept {
-    *u += time_step.value() *
-          constexpr_sum<local_order>([local_order, &coefficients,
-                                      &history](auto i) noexcept {
+    *u = (history.end() - 1).value() +
+         time_step.value() *
+             constexpr_sum<local_order>([local_order, &coefficients,
+                                         &history](auto i) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
             return coefficients[local_order - 1 - i] *
@@ -455,11 +463,7 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 #pragma GCC diagnostic pop
           });
   };
-  switch (order) {
-    // note that the order-0 version should only be called when determining
-    // error estimates -- it is not useful for actual integration
-    case 0:
-      break;
+  switch (update_order) {
     case 1:
       do_update(std::integral_constant<size_t, 1>{});
       break;

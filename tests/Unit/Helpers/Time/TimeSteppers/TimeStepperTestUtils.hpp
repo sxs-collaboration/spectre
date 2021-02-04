@@ -18,7 +18,7 @@ void check_substep_properties(const TimeStepper& stepper) noexcept;
 
 void integrate_test(const TimeStepper& stepper, size_t order,
                     size_t number_of_past_steps, double integration_time,
-                    double epsilon) noexcept;
+                    double epsilon, bool test_apply_twice = false) noexcept;
 
 void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
                                              size_t order,
@@ -32,8 +32,8 @@ void integrate_variable_test(const TimeStepper& stepper, size_t order,
 
 void integrate_error_test(const TimeStepper& stepper, size_t order,
                           size_t number_of_past_steps, double integration_time,
-                          double epsilon, size_t num_steps,
-                          double error_factor) noexcept;
+                          double epsilon, size_t num_steps, double error_factor,
+                          bool test_apply_twice = false) noexcept;
 
 void stability_test(const TimeStepper& stepper) noexcept;
 

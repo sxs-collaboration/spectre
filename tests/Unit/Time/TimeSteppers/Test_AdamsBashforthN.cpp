@@ -36,7 +36,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
       TimeStepperTestUtils::integrate_test(stepper, start_points + 1,
-                                           start_points, 1., epsilon);
+                                           start_points, 1., epsilon, true);
       TimeStepperTestUtils::integrate_test_explicit_time_dependence(
           stepper, start_points + 1, start_points, 1., epsilon);
       if (start_points > 0) {
@@ -45,10 +45,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
             std::max(1.0e3 * std::pow(2.0e-2, start_points + 1), 1e-14);
         TimeStepperTestUtils::integrate_error_test(
             stepper, start_points + 1, start_points, 1.0, large_step_epsilon,
-            20, 1.0e-4);
+            20, 1.0e-4, true);
         TimeStepperTestUtils::integrate_error_test(
             stepper, start_points + 1, start_points, -1.0, large_step_epsilon,
-            20, 1.0e-4);
+            20, 1.0e-4, true);
       }
     }
     TimeStepperTestUtils::check_convergence_order(stepper);
@@ -117,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
       TimeStepperTestUtils::integrate_test(
           TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
-          -1., epsilon);
+          -1., epsilon, true);
       TimeStepperTestUtils::integrate_test_explicit_time_dependence(
           TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
           -1., epsilon);
