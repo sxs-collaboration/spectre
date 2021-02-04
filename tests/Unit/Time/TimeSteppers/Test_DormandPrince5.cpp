@@ -8,6 +8,7 @@
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Literals.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   const TimeSteppers::DormandPrince5 stepper{};
@@ -26,6 +27,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   // Note: For DP5, dense output with no additional function evaluations
   // is fourth-order accurate.
   TimeStepperTestUtils::check_dense_output(stepper, 4);
+
+  CHECK(stepper.order() == 5_st);
 
   TestHelpers::test_factory_creation<TimeStepper>("DormandPrince5");
   test_serialization(stepper);

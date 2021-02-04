@@ -12,6 +12,8 @@
 
 namespace TimeSteppers {
 
+size_t DormandPrince5::order() const noexcept { return 5; }
+
 uint64_t DormandPrince5::number_of_substeps() const noexcept { return 6; }
 
 uint64_t DormandPrince5::number_of_substeps_for_error() const noexcept {

@@ -84,6 +84,8 @@ class RungeKutta4 : public TimeStepper::Inherit {
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
+  size_t order() const noexcept override;
+
   uint64_t number_of_substeps() const noexcept override;
 
   uint64_t number_of_substeps_for_error() const noexcept override;
