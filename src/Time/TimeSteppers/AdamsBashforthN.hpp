@@ -118,8 +118,8 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
-  template <typename Vars, typename DerivVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+  template <typename Vars, typename ErrVars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
@@ -294,8 +294,9 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   // constant-time-step case, while the latter are necessary for dense
   // output.
 
-  template <typename Vars, typename DerivVars, typename Delta>
-  void update_u_impl(gsl::not_null<Vars*> u,
+  template <typename UpdateVars, typename Vars, typename DerivVars,
+            typename Delta>
+  void update_u_impl(gsl::not_null<UpdateVars*> u,
                      const History<Vars, DerivVars>& history,
                      const Delta& time_step, size_t order) const noexcept;
 
@@ -389,9 +390,9 @@ void AdamsBashforthN::update_u(
   update_u_impl(u, *history, time_step, history->integration_order());
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars, typename ErrVars, typename DerivVars>
 bool AdamsBashforthN::update_u(
-    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+    const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(history->size() >= history->integration_order(),
@@ -421,8 +422,9 @@ void AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
   update_u_impl(u, history, time_step, order_);
 }
 
-template <typename Vars, typename DerivVars, typename Delta>
-void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
+template <typename UpdateVars, typename Vars, typename DerivVars,
+          typename Delta>
+void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
                                     const History<Vars, DerivVars>& history,
                                     const Delta& time_step,
                                     const size_t order) const noexcept {

@@ -54,8 +54,8 @@ class RungeKutta3 : public TimeStepper::Inherit {
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
-  template <typename Vars, typename DerivVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+  template <typename Vars, typename ErrVars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
@@ -162,9 +162,9 @@ void RungeKutta3::update_u(
   }
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars, typename ErrVars, typename DerivVars>
 bool RungeKutta3::update_u(
-    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+    const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(history->integration_order() == 3,
