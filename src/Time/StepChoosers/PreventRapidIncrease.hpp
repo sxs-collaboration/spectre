@@ -6,6 +6,7 @@
 #include <cmath>  // IWYU pragma: keep  // for abs
 #include <limits>
 #include <pup.h>
+#include <utility>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -60,11 +61,11 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
   using argument_tags = tmpl::list<Tags::HistoryEvolvedVariables<>>;
 
   template <typename Metavariables, typename History>
-  double operator()(const History& history, const double last_step_magnitude,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/)
-      const noexcept {
+  std::pair<double, bool> operator()(
+      const History& history, const double last_step_magnitude,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
     if (history.size() < 2) {
-      return std::numeric_limits<double>::infinity();
+      return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
 
     const double sloppiness = slab_rounding_error(history[0]);
@@ -73,12 +74,12 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
       // slabs exactly the same length.
       if (abs(abs(*(step + 1) - *step).value() - last_step_magnitude) >
           sloppiness) {
-        return last_step_magnitude;
+        return std::make_pair(last_step_magnitude, true);
       }
     }
     // Request that the step size be at most infinity.  This imposes
     // no restriction on the chosen step.
-    return std::numeric_limits<double>::infinity();
+    return std::make_pair(std::numeric_limits<double>::infinity(), true);
   }
 };
 

@@ -86,7 +86,8 @@ struct ChangeStepSize {
     double desired_step = std::numeric_limits<double>::infinity();
     for (const auto& step_chooser : step_choosers) {
       desired_step = std::min(
-          desired_step, step_chooser->desired_step(last_step_size, box, cache));
+          desired_step,
+          step_chooser->desired_step(last_step_size, box, cache).first);
     }
     if (not current_step.is_positive()) {
       desired_step = -desired_step;

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <pup.h>
+#include <utility>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -54,10 +55,10 @@ class Increase : public StepChooser<StepChooserRegistrars> {
   using argument_tags = tmpl::list<>;
 
   template <typename Metavariables>
-  double operator()(const double last_step_magnitude,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/)
-      const noexcept {
-    return last_step_magnitude * factor_;
+  std::pair<double, bool> operator()(
+      const double last_step_magnitude,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+    return std::make_pair(last_step_magnitude * factor_, true);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

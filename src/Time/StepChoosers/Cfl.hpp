@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <pup.h>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/Options.hpp"
@@ -70,7 +71,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
                                    Tags::DataBox, Tags::TimeStepper<>>;
 
   template <typename Metavariables, typename DbTags>
-  double operator()(
+  std::pair<double, bool> operator()(
       const double minimum_grid_spacing, const db::DataBox<DbTags>& box,
       const typename Metavariables::time_stepper_tag::type::element_type&
           time_stepper,
@@ -82,8 +83,9 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
     const double speed = db::apply<compute_largest_characteristic_speed>(box);
     const double time_stepper_stability_factor = time_stepper.stable_step();
 
-    return safety_factor_ * time_stepper_stability_factor *
-           minimum_grid_spacing / speed;
+    return std::make_pair(safety_factor_ * time_stepper_stability_factor *
+                              minimum_grid_spacing / speed,
+                          true);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

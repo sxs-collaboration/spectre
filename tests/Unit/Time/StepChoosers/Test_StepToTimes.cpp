@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <pup.h>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -57,17 +58,19 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
       const Parallel::GlobalCache<Metavariables> cache{};
       const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(now_id);
 
-      const double answer = step_to_times(now_id, step, cache);
+      const auto answer = step_to_times(now_id, step, cache);
       if (result == -1.0) {
-        result = answer;
+        result = answer.first;
       } else {
-        CHECK(result == answer);
+        CHECK(result == answer.first);
       }
-      CHECK(step_to_times_base->desired_step(step, box, cache) == result);
+      CHECK(step_to_times_base->desired_step(step, box, cache) ==
+            std::make_pair(result, true));
       CHECK(serialize_and_deserialize(step_to_times)(now_id, step, cache) ==
-            result);
+            std::make_pair(result, true));
       CHECK(serialize_and_deserialize(step_to_times_base)
-                ->desired_step(step, box, cache) == result);
+                ->desired_step(step, box, cache) ==
+            std::make_pair(result, true));
     };
     impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times);
     alg::for_each(times, [](double& x) noexcept { return x = -x; });

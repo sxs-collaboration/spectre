@@ -5,6 +5,7 @@
 
 #include <initializer_list>  // IWYU pragma: keep
 #include <memory>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
@@ -40,11 +41,14 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
     const std::unique_ptr<StepChooserType> increase_base =
         std::make_unique<Increase>(increase);
 
-    CHECK(increase(step, cache) == expected);
-    CHECK(increase_base->desired_step(step, box, cache) == expected);
-    CHECK(serialize_and_deserialize(increase)(step, cache) == expected);
+    CHECK(increase(step, cache) == std::make_pair(expected, true));
+    CHECK(increase_base->desired_step(step, box, cache) ==
+          std::make_pair(expected, true));
+    CHECK(serialize_and_deserialize(increase)(step, cache) ==
+          std::make_pair(expected, true));
     CHECK(serialize_and_deserialize(increase_base)
-              ->desired_step(step, box, cache) == expected);
+              ->desired_step(step, box, cache) ==
+          std::make_pair(expected, true));
   };
   check(0.25, 1.25);
   check(std::numeric_limits<double>::infinity(),

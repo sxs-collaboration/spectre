@@ -70,7 +70,7 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
 
   template <typename Metavariables>
-  double operator()(
+  std::pair<double, bool> operator()(
       const Element<Dim>& element, const double /*last_step_magnitude*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const
       noexcept {
@@ -78,7 +78,7 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
     if (block >= sizes_.size()) {
       ERROR("Step size not specified for block " << block);
     }
-    return sizes_[block];
+    return std::make_pair(sizes_[block], true);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

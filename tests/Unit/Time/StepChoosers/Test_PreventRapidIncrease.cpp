@@ -108,12 +108,15 @@ void check_case(const Frac& expected_frac,
           history.size() > 0 ? abs(current_time - history.back()).value()
                              : std::numeric_limits<double>::infinity();
 
-      CHECK(relax(history, current_step, cache) == expected);
-      CHECK(relax_base->desired_step(current_step, box, cache) == expected);
+      CHECK(relax(history, current_step, cache) ==
+            std::make_pair(expected, true));
+      CHECK(relax_base->desired_step(current_step, box, cache) ==
+            std::make_pair(expected, true));
       CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
-            expected);
+            std::make_pair(expected, true));
       CHECK(serialize_and_deserialize(relax_base)
-                ->desired_step(current_step, box, cache) == expected);
+                ->desired_step(current_step, box, cache) ==
+            std::make_pair(expected, true));
     };
 
     {
