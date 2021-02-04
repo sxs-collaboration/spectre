@@ -173,7 +173,8 @@ void DormandPrince5::update_u(
   };
 
   if (substep == 0) {
-    *u += (a2_ * dt) * history->begin().derivative();
+    *u = (history->end() - 1).value() +
+         (a2_ * dt) * history->begin().derivative();
   } else if (substep < 6) {
     *u = u0;
     if (substep == 1) {
@@ -214,7 +215,8 @@ bool DormandPrince5::update_u(
     }
   };
   if (substep == 0) {
-    *u += (a2_ * dt) * history->begin().derivative();
+    *u = (history->end() - 1).value() +
+         (a2_ * dt) * history->begin().derivative();
   } else if (substep < 7) {
     *u = u0;
     if (substep == 1) {

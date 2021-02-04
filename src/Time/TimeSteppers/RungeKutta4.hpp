@@ -142,7 +142,7 @@ void RungeKutta4::update_u(
       // v^(1) = u^n + dt * \mathcal{L}(u^n,t^n)/2
       // On entry V = u^n, u0 = u^n, rhs0 = \mathcal{L}(u^n, t^n),
       // time = t^n
-      *u += 0.5 * time_step.value() * dt_vars;
+      *u = (history->end() - 1).value() + 0.5 * time_step.value() * dt_vars;
       // On exit v = v^(1), time = t^n + (1/2)*dt
       break;
     }

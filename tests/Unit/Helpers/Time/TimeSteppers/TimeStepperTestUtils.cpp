@@ -31,12 +31,10 @@ namespace TimeStepperTestUtils {
 namespace {
 template <typename F>
 void take_step(
-    const gsl::not_null<Time*> time,
-    const gsl::not_null<double*> y,
+    const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
     const gsl::not_null<TimeSteppers::History<double, double>*> history,
-    const TimeStepper& stepper,
-    F&& rhs,
-    const TimeDelta& step_size) noexcept {
+    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size,
+    bool apply_stepper_twice = false) noexcept {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0;
        substep < stepper.number_of_substeps();
@@ -55,7 +53,8 @@ void take_step_and_check_error(
     const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
     const gsl::not_null<double*> y_error,
     const gsl::not_null<TimeSteppers::History<double, double>*> history,
-    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) noexcept {
+    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size,
+    const bool apply_stepper_twice = false) noexcept {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
@@ -169,7 +168,9 @@ void integrate_test(const TimeStepper& stepper,
                      number_of_past_steps);
 
   for (uint64_t i = 0; i < num_steps; ++i) {
-    take_step(&time, &y, &history, stepper, rhs, step_size);
+    // last parameter: check that we can apply the stepper sometime in the
+    // middle of the evolution without messing anything up.
+    take_step(&time, &y, &history, stepper, rhs, step_size, i == num_steps / 2);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
@@ -241,9 +242,11 @@ void integrate_error_test(const TimeStepper& stepper,
   double previous_y = std::numeric_limits<double>::signaling_NaN();
   double previous_time = std::numeric_limits<double>::signaling_NaN();
   for (uint64_t i = 0; i < num_steps; ++i) {
+    // last parameter: check that we can apply the stepper sometime in the
+    // middle of the evolution without messing anything up.
     take_step_and_check_error(make_not_null(&time), make_not_null(&y),
                               make_not_null(&y_error), make_not_null(&history),
-                              stepper, rhs, step_size);
+                              stepper, rhs, step_size, i == num_steps / 2);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
 

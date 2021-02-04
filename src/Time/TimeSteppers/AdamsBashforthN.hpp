@@ -386,7 +386,6 @@ bool AdamsBashforthN::update_u(
   ASSERT(
       history->size() > 0,
       "Cannot meaningfully update the evolved variables with an empty history");
-  *u_error = *u;
   update_u_impl(u, *history, time_step, history->size());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
@@ -410,11 +409,17 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
                                     const History<Vars, DerivVars>& history,
                                     const Delta& time_step,
                                     const size_t order) const noexcept {
-  ASSERT(history.size() <= order_,
+  ASSERT(history.size() <= order_ + 1,
          "Length of history (" << history.size() << ") "
-         << "should not exceed target order (" << order_ << ")");
+         << "should not exceed target order (" << order_ << ") by more than 1");
 
   const size_t update_order = std::min(history.size(), order);
+  // note that the order-0 version should only be called when determining
+  // error estimates -- it is not useful for actual integration
+  if(update_order == 0) {
+    *u = (history.end() - 1).value();
+    return;
+  }
   const auto& coefficients = get_coefficients(
       history.end() -
           static_cast<typename History<Vars, DerivVars>::difference_type>(
@@ -423,9 +428,10 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
 
   const auto do_update = [u, &time_step, &coefficients,
                           &history](auto local_order) noexcept {
-    *u += time_step.value() *
-          constexpr_sum<local_order>([local_order, &coefficients,
-                                      &history](auto i) noexcept {
+    *u = (history.end() - 1).value() +
+         time_step.value() *
+             constexpr_sum<local_order>([local_order, &coefficients,
+                                         &history](auto i) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
             return coefficients[local_order - 1 - i] *
@@ -437,10 +443,6 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
           });
   };
   switch (update_order) {
-    // note that the order-0 version should only be called when determining
-    // error estimates -- it is not useful for actual integration
-    case 0:
-      break;
     case 1:
       do_update(std::integral_constant<size_t, 1>{});
       break;
