@@ -6,6 +6,6 @@
 #include <cstddef>
 
 /// \cond
-template <size_t Dim>
+template <size_t Dim, bool EnableTimeDependence>
 struct Metavariables;
 /// \endcond

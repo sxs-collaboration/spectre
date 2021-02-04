@@ -1,0 +1,75 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: ExportTimeDependentCoordinates3D
+# Check: parse;execute
+# ExpectedOutput:
+#   ExportTimeDependentCoordinates3DVolume0.h5
+
+DomainCreator:
+  # Parameters are chosen for an equal-mass, non-spinning binary black hole
+  # using superposed-Kerr-Schild initial data created with the
+  # Spectral Einstein Code (SpEC). The time-dependent maps are given
+  # arbitrary time-dependence.
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.4409
+      OuterRadius: 6.0
+      XCoord: -10.0
+      ExciseInterior: true
+      UseLogarithmicMap: false
+      AdditionToRadialRefinementLevel: 1
+    ObjectB:
+      InnerRadius: 0.4409
+      OuterRadius: 6.0
+      XCoord: 10.0
+      ExciseInterior: true
+      UseLogarithmicMap: false
+      AdditionToRadialRefinementLevel: 1
+    EnvelopingCube:
+      Radius: 100.0
+    OuterSphere:
+      Radius: 590.0
+      UseLogarithmicMap: false
+      AdditionToRadialRefinementLevel: 0
+    InitialRefinement: 0
+    InitialGridPoints: 3
+    UseProjectiveMap: true
+    TimeDependentMaps:
+      InitialTime: 0.0
+      InitialExpirationDeltaT: Auto
+      ExpansionMap:
+        OuterBoundary: 590.0
+        InitialExpansion: [1.0, 1.0]
+        InitialExpansionVelocity: [0.01, 0.02]
+        FunctionOfTimeNames: ['ExpansionFactor',  'Unity']
+      RotationAboutZAxisMap:
+        InitialRotationAngle: 0.0
+        InitialAngularVelocity: 0.0
+        FunctionOfTimeName: RotationAngle
+      SizeMap:
+        InitialValues: [0.0, 0.0]
+        InitialVelocities: [-0.1, -0.1]
+        InitialAccelerations: [-0.2, -0.2]
+        FunctionOfTimeNames: ['LambdaFactorA0',  'LambdaFactorB0']
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 1
+
+EventsAndTriggers:
+  ? TimeCompares:
+      Comparison: GreaterThanOrEqualTo
+      Value: 0.08
+  : - Completion
+
+Observers:
+  VolumeFileName: "ExportTimeDependentCoordinates3DVolume"
+  ReductionFileName: "ExportTimeDependentCoordinates3DReductions"
