@@ -8,6 +8,7 @@
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/RungeKutta4.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Literals.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta4", "[Unit][Time]") {
   const TimeSteppers::RungeKutta4 stepper{};
@@ -24,6 +25,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta4", "[Unit][Time]") {
   TimeStepperTestUtils::check_convergence_order(stepper, 4);
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_dense_output(stepper, 4);
+
+  CHECK(stepper.order() == 4_st);
 
   TestHelpers::test_factory_creation<TimeStepper>("RungeKutta4");
   test_serialization(stepper);

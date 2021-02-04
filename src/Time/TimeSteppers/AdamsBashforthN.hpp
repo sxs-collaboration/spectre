@@ -260,6 +260,8 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       double time) const noexcept;
 
+  size_t order() const noexcept override;
+
   size_t number_of_past_steps() const noexcept override;
 
   double stable_step() const noexcept override;

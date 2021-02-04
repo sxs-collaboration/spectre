@@ -50,6 +50,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
     }
     TimeStepperTestUtils::check_convergence_order(stepper, order);
     TimeStepperTestUtils::check_dense_output(stepper, order);
+
+    CHECK(stepper.order() == order);
   }
 
   const Slab slab(0., 1.);
