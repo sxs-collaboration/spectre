@@ -33,7 +33,7 @@ namespace TensorExpressions {
  * \endcode
  * \metareturns Tensor
  *
- * This represents evaluating: \f$L_{ba} = \R_{ab} + S_{ab}\f$
+ * This represents evaluating: \f$L_{ba} = R_{ab} + S_{ab}\f$
  *
  * Note: `LhsTensorIndices` must be passed by reference because non-type
  * template parameters cannot be class types until C++20.
