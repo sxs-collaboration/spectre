@@ -22,6 +22,7 @@
 #include "Evolution/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -170,18 +171,20 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
   const ::dg::Formulation dg_formulation =
       db::get<::dg::Tags::Formulation>(*box);
 
-  const std::unordered_map<Direction<volume_dim>, Scalar<DataVector>>&
-      face_normal_magnitudes_internal = db::get<domain::Tags::Interface<
-          domain::Tags::InternalDirections<volume_dim>,
-          ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
-          *box);
+  const DirectionMap<volume_dim,
+                     std::optional<Variables<tmpl::list<
+                         evolution::dg::Tags::MagnitudeOfNormal,
+                         evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
+      face_normal_covector_and_magnitude =
+          db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
+              *box);
 
   using variables_tag = typename Metavariables::system::variables_tag;
   using variables_tags = typename variables_tag::tags_list;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   const auto compute_and_lift_boundary_corrections =
-      [&dg_formulation, &face_normal_magnitudes_internal, &mortar_meshes,
+      [&dg_formulation, &face_normal_covector_and_magnitude, &mortar_meshes,
        &mortar_sizes, using_gauss_lobatto_points, &volume_det_inv_jacobian,
        &volume_det_jacobian,
        &volume_mesh](const auto dt_variables_ptr, const auto mortar_data_ptr,
@@ -198,8 +201,8 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
         for (auto& [mortar_id, mortar_data] : *mortar_data_ptr) {
           const auto& direction = mortar_id.first;
           const size_t dimension = direction.dimension();
-          if (mortar_id.second ==
-              ElementId<volume_dim>::external_boundary_id()) {
+          if (UNLIKELY(mortar_id.second ==
+                       ElementId<volume_dim>::external_boundary_id())) {
             ERROR(
                 "Cannot impose boundary conditions on external boundary in "
                 "direction "
@@ -265,8 +268,14 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
             return dt_boundary_correction_on_mortar;
           }();
 
+          ASSERT(
+              face_normal_covector_and_magnitude.count(direction) == 1 and
+                  face_normal_covector_and_magnitude.at(direction).has_value(),
+              "Face normal covector and magnitude not set in direction: "
+                  << direction);
           const auto& magnitude_of_face_normal =
-              face_normal_magnitudes_internal.at(direction);
+              get<evolution::dg::Tags::MagnitudeOfNormal>(
+                  *face_normal_covector_and_magnitude.at(direction));
           if (using_gauss_lobatto_points) {
             // The lift_flux function lifts only on the slice, it does not add
             // the contribution to the volume.

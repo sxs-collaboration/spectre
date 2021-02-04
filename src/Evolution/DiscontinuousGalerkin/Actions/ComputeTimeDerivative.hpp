@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -271,11 +272,24 @@ namespace evolution::dg::Actions {
  */
 template <typename Metavariables>
 struct ComputeTimeDerivative {
+ private:
+  template <typename LocalMetaVars, typename = std::void_t<>>
+  struct GetFluxInboxTag {
+    using type = tmpl::list<>;
+  };
+
+  template <typename LocalMetaVars>
+  struct GetFluxInboxTag<LocalMetaVars,
+                         std::void_t<typename LocalMetaVars::boundary_scheme>> {
+    using type = tmpl::list<
+        ::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>>;
+  };
+
  public:
-  using inbox_tags =
-      tmpl::list<::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>,
-                 evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                     Metavariables::volume_dim>>;
+  using inbox_tags = tmpl::append<
+      typename GetFluxInboxTag<Metavariables>::type,
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Metavariables::volume_dim>>>;
   using const_global_cache_tags = tmpl::conditional_t<
       detail::has_boundary_correction_v<typename Metavariables::system>,
       tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection<
@@ -392,27 +406,6 @@ ComputeTimeDerivative<Metavariables>::apply(
       },
       make_not_null(&box));
 
-  // The below if-else and fill_mortar_data_for_internal_boundaries are for
-  // compatibility with the current boundary schemes. Once the current
-  // boundary schemes are removed the code will be refactored to reflect that
-  // change.
-  if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
-    using flux_variables_tag = ::Tags::Variables<flux_variables>;
-    using fluxes_tag =
-        db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
-                           tmpl::size_t<Metavariables::volume_dim>,
-                           Frame::Inertial>;
-
-    // We currently set the fluxes in the DataBox to interface with the
-    // boundary correction communication code.
-    db::mutate<fluxes_tag>(make_not_null(&box),
-                           [&volume_fluxes](const auto fluxes_ptr) noexcept {
-                             *fluxes_ptr = volume_fluxes;
-                           });
-  } else {
-    boundary_terms_nonconservative_products(make_not_null(&box));
-  }
-
   if constexpr (detail::has_boundary_correction_v<system>) {
     const auto& boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<system>>(box);
@@ -450,6 +443,27 @@ ComputeTimeDerivative<Metavariables>::apply(
           }
         });
   } else {
+    // The below if-else and fill_mortar_data_for_internal_boundaries are for
+    // compatibility with the current boundary schemes. Once the current
+    // boundary schemes are removed the code will be refactored to reflect that
+    // change.
+    if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
+      using flux_variables_tag = ::Tags::Variables<flux_variables>;
+      using fluxes_tag =
+          db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
+                             tmpl::size_t<Metavariables::volume_dim>,
+                             Frame::Inertial>;
+
+      // We currently set the fluxes in the DataBox to interface with the
+      // boundary correction communication code.
+      db::mutate<fluxes_tag>(make_not_null(&box),
+                             [&volume_fluxes](const auto fluxes_ptr) noexcept {
+                               *fluxes_ptr = volume_fluxes;
+                             });
+    } else {
+      boundary_terms_nonconservative_products(make_not_null(&box));
+    }
+
     // Compute internal boundary quantities
     fill_mortar_data_for_internal_boundaries<
         volume_dim, typename Metavariables::boundary_scheme>(
@@ -563,6 +577,8 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     const auto& all_mortar_data =
         db::get<evolution::dg::Tags::MortarData<volume_dim>>(box);
+    const auto& mortar_meshes =
+        get<evolution::dg::Tags::MortarMesh<volume_dim>>(box);
 
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -572,8 +588,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
         const std::pair mortar_id{direction, neighbor};
 
         std::pair<Mesh<volume_dim - 1>, std::vector<double>>
-            neighbor_boundary_data_on_mortar =
-                *all_mortar_data.at(mortar_id).local_mortar_data();
+            neighbor_boundary_data_on_mortar{};
         ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
                "The current time step id of the volume is "
                    << time_step_id
@@ -582,11 +597,16 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
                    << all_mortar_data.at(mortar_id).time_step_id());
 
         // Reorient the data to the neighbor orientation if necessary
-        if (not orientation.is_aligned()) {
-          ERROR("Currently don't support unaligned meshes");
-          // neighbor_boundary_data_on_mortar.orient_on_slice(
-          //     mortar_meshes.at(mortar_id).extents(), direction.dimension(),
-          //     orientation);
+        if (LIKELY(orientation.is_aligned())) {
+          neighbor_boundary_data_on_mortar =
+              *all_mortar_data.at(mortar_id).local_mortar_data();
+        } else {
+          const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
+          neighbor_boundary_data_on_mortar.first =
+              all_mortar_data.at(mortar_id).local_mortar_data()->first;
+          neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
+              all_mortar_data.at(mortar_id).local_mortar_data()->second,
+              slice_extents, direction.dimension(), orientation);
         }
 
         std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,

@@ -52,9 +52,6 @@ namespace evolution::dg::Initialization {
  *   - `Tags::Element<Dim>`
  *   - `Tags::Mesh<Dim>`
  *   - `BoundaryScheme::receive_temporal_id`
- *   - `Tags::Interface<Tags::InternalDirections<Dim>, Tags::Mesh<Dim - 1>>`
- *   - `Tags::Interface<
- *   Tags::BoundaryDirectionsInterior<Dim>, Tags::Mesh<Dim - 1>>`
  *
  * DataBox changes:
  * - Adds:
@@ -62,6 +59,7 @@ namespace evolution::dg::Initialization {
  *   - `Tags::MortarMesh<Dim>`
  *   - `Tags::MortarSize<Dim>`
  *   - `Tags::MortarNextTemporalId<Dim>`
+ *   - `evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>`
  * - Removes: nothing
  * - Modifies: nothing
  */
@@ -98,9 +96,7 @@ struct Mortars {
                      db::get<evolution::dg::Tags::Quadrature>(box),
                      db::get<::domain::Tags::Element<Dim>>(box),
                      db::get<::Tags::TimeStepId>(box),
-                     db::get<::domain::Tags::Interface<
-                         ::domain::Tags::InternalDirections<Dim>,
-                         ::domain::Tags::Mesh<Dim - 1>>>(box));
+                     db::get<::domain::Tags::Mesh<Dim>>(box));
       ::Initialization::mutate_assign<simple_tags>(
           make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
           std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
@@ -126,7 +122,6 @@ struct Mortars {
   apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
              Spectral::Quadrature quadrature, const Element<Dim>& element,
              const TimeStepId& next_temporal_id,
-             const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
-                 interface_meshes) noexcept;
+             const Mesh<Dim>& volume_mesh) noexcept;
 };
 }  // namespace evolution::dg::Initialization
