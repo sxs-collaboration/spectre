@@ -27,6 +27,7 @@ target_link_libraries(
   PUBLIC
   ConstitutiveRelations
   DataStructures
+  ElasticPotentialEnergy
   Elasticity
   ErrorHandling
   Options

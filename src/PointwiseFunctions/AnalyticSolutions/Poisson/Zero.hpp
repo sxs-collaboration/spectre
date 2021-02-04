@@ -65,6 +65,7 @@ class Zero : public AnalyticSolution<Dim, Registrars> {
     using supported_tags = tmpl::list<
         Tags::Field,
         ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
+        ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
         ::Tags::FixedSource<Tags::Field>>;
     static_assert(tmpl::size<tmpl::list_difference<tmpl::list<RequestedTags...>,
                                                    supported_tags>>::value == 0,

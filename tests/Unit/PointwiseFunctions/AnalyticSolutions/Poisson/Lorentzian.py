@@ -12,5 +12,9 @@ def field_gradient(x):
     return -np.asarray(x) / np.sqrt(1. + np.dot(x, x))**3
 
 
+def field_flux(x):
+    return field_gradient(x)
+
+
 def source(x):
     return 3. / np.sqrt(1. + np.dot(x, x))**5

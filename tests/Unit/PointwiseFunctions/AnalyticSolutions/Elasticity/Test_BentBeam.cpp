@@ -43,7 +43,8 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam<> {
 
   using field_tags =
       tmpl::list<Elasticity::Tags::Displacement<2>, Elasticity::Tags::Strain<2>,
-                 Elasticity::Tags::Stress<2>>;
+                 Elasticity::Tags::MinusStress<2>,
+                 Elasticity::Tags::PotentialEnergyDensity<2>>;
   using source_tags =
       tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<2>>>;
 
@@ -88,14 +89,9 @@ SPECTRE_TEST_CASE(
   const BentBeamProxy solution{5., 1., 0.5, constitutive_relation};
 
   tnsr::I<DataVector, 2> x{{{{1., 2.}, {2., 1.}}}};
-  const auto solution_vars = variables_from_tagged_tuple(solution.variables(
-      x,
-      tmpl::list<Elasticity::Tags::Displacement<2>, Elasticity::Tags::Strain<2>,
-                 Elasticity::Tags::Stress<2>>{}));
-  Variables<
-      tmpl::list<Elasticity::Tags::Displacement<2>, Elasticity::Tags::Strain<2>,
-                 Elasticity::Tags::Stress<2>>>
-      expected_vars{2};
+  const auto solution_vars =
+      variables_from_tagged_tuple(solution.field_variables(x));
+  Variables<typename BentBeamProxy::field_tags> expected_vars{2};
   auto& expected_displacement =
       get<Elasticity::Tags::Displacement<2>>(expected_vars);
   get<0>(expected_displacement) = DataVector{-0.12, -0.12};
@@ -104,17 +100,21 @@ SPECTRE_TEST_CASE(
   get<0, 0>(expected_strain) = DataVector{-0.12, -0.06};
   get<1, 0>(expected_strain) = DataVector{0., 0.};
   get<1, 1>(expected_strain) = DataVector{0.0348, 0.0174};
-  auto& expected_stress = get<Elasticity::Tags::Stress<2>>(expected_vars);
-  get<0, 0>(expected_stress) = DataVector{12., 6.};
+  auto& expected_stress = get<Elasticity::Tags::MinusStress<2>>(expected_vars);
+  get<0, 0>(expected_stress) = DataVector{-12., -6.};
   get<1, 0>(expected_stress) = DataVector{0., 0.};
   get<1, 1>(expected_stress) = DataVector{0., 0.};
+  auto& expected_potential_energy_density =
+      get<Elasticity::Tags::PotentialEnergyDensity<2>>(expected_vars);
+  get(expected_potential_energy_density) = DataVector{0.72, 0.18};
   CHECK_VARIABLES_APPROX(solution_vars, expected_vars);
   CHECK(solution.potential_energy() == approx(0.075));
 
   pypp::check_with_random_values<1>(
       &BentBeamProxy::field_variables, solution,
       "AnalyticSolutions.Elasticity.BentBeam",
-      {"displacement", "strain", "stress"}, {{{-5., 5.}}},
+      {"displacement", "strain", "minus_stress", "potential_energy_density"},
+      {{{-5., 5.}}},
       std::make_tuple(5., 1., 0.5, 79.36507936507935, 38.75968992248062),
       DataVector(5));
   pypp::check_with_random_values<1>(&BentBeamProxy::source_variables, solution,

@@ -4,8 +4,8 @@
 import numpy as np
 import scipy.integrate as integrate
 from scipy.special import jv
-from Elasticity.ConstitutiveRelations.IsotropicHomogeneous import (
-    lame_parameter)
+from Elasticity.ConstitutiveRelations import IsotropicHomogeneous
+from Elasticity import PotentialEnergy
 
 
 def beam_profile(k, beam_width):
@@ -43,7 +43,8 @@ def integrand_strain_zz(k, w, z, lame_parameter, shear_modulus, beam_width):
 
 
 def displacement(r, beam_width, bulk_modulus, shear_modulus):
-    local_lame_parameter = lame_parameter(bulk_modulus, shear_modulus)
+    local_lame_parameter = IsotropicHomogeneous.lame_parameter(
+        bulk_modulus, shear_modulus)
     x = r[0]
     y = r[1]
     z = r[2]
@@ -69,7 +70,8 @@ def displacement(r, beam_width, bulk_modulus, shear_modulus):
 
 
 def strain(r, beam_width, bulk_modulus, shear_modulus):
-    local_lame_parameter = lame_parameter(bulk_modulus, shear_modulus)
+    local_lame_parameter = IsotropicHomogeneous.lame_parameter(
+        bulk_modulus, shear_modulus)
 
     x = r[0]
     y = r[1]
@@ -121,6 +123,19 @@ def strain(r, beam_width, bulk_modulus, shear_modulus):
                  strain_pp + (y / radius)**2 * (strain_rr - strain_pp),
                  y / radius * strain_rz
              ], [x / radius * strain_rz, y / radius * strain_rz, strain_zz]])
+
+
+def minus_stress(r, beam_width, bulk_modulus, shear_modulus):
+    local_strain = strain(r, beam_width, bulk_modulus, shear_modulus)
+    return -IsotropicHomogeneous.stress(local_strain, r, bulk_modulus,
+                                        shear_modulus)
+
+
+def potential_energy_density(r, beam_width, bulk_modulus, shear_modulus):
+    local_strain = strain(r, beam_width, bulk_modulus, shear_modulus)
+    return PotentialEnergy.potential_energy_density(local_strain, r,
+                                                    bulk_modulus,
+                                                    shear_modulus)
 
 
 def source(r):

@@ -69,6 +69,7 @@ class Zero : public ::AnalyticData<Dim, Registrars> {
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
     using supported_tags =
         tmpl::list<Tags::Displacement<Dim>, Tags::Strain<Dim>,
+                   Tags::MinusStress<Dim>, Tags::PotentialEnergyDensity<Dim>,
                    ::Tags::FixedSource<Tags::Displacement<Dim>>>;
     static_assert(tmpl::size<tmpl::list_difference<tmpl::list<RequestedTags...>,
                                                    supported_tags>>::value == 0,

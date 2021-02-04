@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Integration/GslQuadAdaptive.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
+#include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -181,6 +182,28 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
                "smaller.\n");
     }
   }
+}
+
+template <typename DataType>
+void HalfSpaceMirrorVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::II<DataType, 3>*> minus_stress,
+    const gsl::not_null<Cache*> cache,
+    Tags::MinusStress<3> /*meta*/) const noexcept {
+  const auto& strain = cache->get_var(Tags::Strain<3>{});
+  constitutive_relation.stress(minus_stress, strain, x);
+  for (auto& component : *minus_stress) {
+    component *= -1.;
+  }
+}
+
+template <typename DataType>
+void HalfSpaceMirrorVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> potential_energy_density,
+    const gsl::not_null<Cache*> cache,
+    Tags::PotentialEnergyDensity<3> /*meta*/) const noexcept {
+  const auto& strain = cache->get_var(Tags::Strain<3>{});
+  Elasticity::potential_energy_density(potential_energy_density, strain, x,
+                                       constitutive_relation);
 }
 
 template <typename DataType>

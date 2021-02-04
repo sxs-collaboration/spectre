@@ -24,9 +24,11 @@ namespace Elasticity::Solutions {
 namespace detail {
 template <typename DataType>
 struct HalfSpaceMirrorVariables {
-  using Cache = CachedTempBuffer<HalfSpaceMirrorVariables,
-                                 Tags::Displacement<3>, Tags::Strain<3>,
-                                 ::Tags::FixedSource<Tags::Displacement<3>>>;
+  using Cache =
+      CachedTempBuffer<HalfSpaceMirrorVariables, Tags::Displacement<3>,
+                       Tags::Strain<3>, Tags::MinusStress<3>,
+                       Tags::PotentialEnergyDensity<3>,
+                       ::Tags::FixedSource<Tags::Displacement<3>>>;
 
   const tnsr::I<DataType, 3>& x;
   const double beam_width;
@@ -39,8 +41,14 @@ struct HalfSpaceMirrorVariables {
                   gsl::not_null<Cache*> cache,
                   Tags::Displacement<3> /*meta*/) const noexcept;
   void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> strain,
-                  gsl::not_null<Cache*> cache, Tags::Strain<3> /*meta*/) const
-      noexcept;
+                  gsl::not_null<Cache*> cache,
+                  Tags::Strain<3> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::II<DataType, 3>*> minus_stress,
+                  gsl::not_null<Cache*> cache,
+                  Tags::MinusStress<3> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<Scalar<DataType>*> potential_energy_density,
+                  gsl::not_null<Cache*> cache,
+                  Tags::PotentialEnergyDensity<3> /*meta*/) const noexcept;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_for_displacement,
       gsl::not_null<Cache*> cache,

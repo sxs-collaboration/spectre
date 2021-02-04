@@ -24,7 +24,8 @@ namespace detail {
 template <typename DataType>
 struct BentBeamVariables {
   using Cache = CachedTempBuffer<BentBeamVariables, Tags::Displacement<2>,
-                                 Tags::Strain<2>, Tags::Stress<2>,
+                                 Tags::Strain<2>, Tags::MinusStress<2>,
+                                 Tags::PotentialEnergyDensity<2>,
                                  ::Tags::FixedSource<Tags::Displacement<2>>>;
 
   const tnsr::I<DataType, 2>& x;
@@ -39,9 +40,12 @@ struct BentBeamVariables {
   void operator()(gsl::not_null<tnsr::ii<DataType, 2>*> strain,
                   gsl::not_null<Cache*> cache, Tags::Strain<2> /*meta*/) const
       noexcept;
-  void operator()(gsl::not_null<tnsr::II<DataType, 2>*> stress,
-                  gsl::not_null<Cache*> cache, Tags::Stress<2> /*meta*/) const
-      noexcept;
+  void operator()(gsl::not_null<tnsr::II<DataType, 2>*> minus_stress,
+                  gsl::not_null<Cache*> cache,
+                  Tags::MinusStress<2> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<Scalar<DataType>*> potential_energy_density,
+                  gsl::not_null<Cache*> cache,
+                  Tags::PotentialEnergyDensity<2> /*meta*/) const noexcept;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 2>*> fixed_source_for_displacement,
       gsl::not_null<Cache*> cache,
