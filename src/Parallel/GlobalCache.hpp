@@ -105,17 +105,8 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
                               get_mutable_global_cache_tags<Metavariables>>
                                   mutable_global_cache) noexcept;
   explicit MutableGlobalCache(CkMigrateMessage* msg)
-      : CBase_MutableGlobalCache<Metavariables>(msg) {
-    if (UNLIKELY(msg == nullptr)) {
-      ERROR(
-          "The MutableGlobalCache has been constructed with a nullptr as a "
-          "CkMigrateMessage* -- most likely this indicates that a constructor "
-          "is being used incorrectly, as the CkMigrateMessage* constructor "
-          "should only be used by the charm framework when migrating. "
-          "Constructing with a nullptr CkMigrateMessage* is dangerous and can "
-          "cause segfaults.");
-    }
-  }
+      : CBase_MutableGlobalCache<Metavariables>(msg) {}
+
   ~MutableGlobalCache() noexcept override {
     (void)Parallel::charmxx::RegisterChare<
         MutableGlobalCache<Metavariables>,
@@ -310,17 +301,8 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
                   mutable_global_cache_proxy) noexcept;
 
   explicit GlobalCache(CkMigrateMessage* msg)
-      : CBase_GlobalCache<Metavariables>(msg) {
-    if (UNLIKELY(msg == nullptr)) {
-      ERROR(
-          "The GlobalCache has been constructed with a nullptr as a "
-          "CkMigrateMessage* -- most likely this indicates that a constructor "
-          "is being used incorrectly, as the CkMigrateMessage* constructor "
-          "should only be used by the charm framework when migrating. "
-          "Constructing with a nullptr CkMigrateMessage* is dangerous and can "
-          "cause segfaults.");
-    }
-  }
+      : CBase_GlobalCache<Metavariables>(msg) {}
+
   ~GlobalCache() noexcept override {
     (void)Parallel::charmxx::RegisterChare<
         GlobalCache<Metavariables>,

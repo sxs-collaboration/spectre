@@ -77,6 +77,7 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
     set_tests_properties(
       "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
+      FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
       LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
@@ -111,7 +112,7 @@ endfunction()
 
 # Note that we have a 'balance' here that happens 2.5e4 of times per second just
 # to be completely certain that the desired number of migrations occur during
-# the test (5). This tends to have a lot of fluctuation depending on how quickly
+# the test (2). This tends to have a lot of fluctuation depending on how quickly
 # the machine manages to execute this fairly short test, and the current balance
 # frequency has been roughly tuned to a) very consistently get at least 5
 # balances (usually gets several dozen), and b) complete the test in a
@@ -131,6 +132,7 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
     set_tests_properties(
       "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
+      FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
       LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
@@ -140,6 +142,7 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
       PROPERTIES
       PASS_REGULAR_EXPRESSION
       "${REGEX_TO_MATCH}"
+      FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
       LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
