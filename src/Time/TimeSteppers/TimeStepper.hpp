@@ -98,6 +98,9 @@ class TimeStepper : public PUP::able {
   /// The convergence order of the stepper
   virtual size_t order() const noexcept = 0;
 
+  /// The convergence order of the stepper error measure
+  virtual size_t error_estimate_order() const noexcept = 0;
+
   /// Number of substeps in this TimeStepper
   virtual uint64_t number_of_substeps() const noexcept = 0;
 

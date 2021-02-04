@@ -66,6 +66,8 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   size_t order() const noexcept override;
 
+  size_t error_estimate_order() const noexcept override;
+
   uint64_t number_of_substeps() const noexcept override;
 
   uint64_t number_of_substeps_for_error() const noexcept override;

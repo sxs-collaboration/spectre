@@ -55,6 +55,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
     TimeStepperTestUtils::check_dense_output(stepper);
 
     CHECK(stepper.order() == order);
+    CHECK(stepper.error_estimate_order() == order - 1);
   }
 
   const Slab slab(0., 1.);

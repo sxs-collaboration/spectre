@@ -29,6 +29,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   //TimeStepperTestUtils::check_dense_output(stepper);
 
   CHECK(stepper.order() == 5_st);
+  CHECK(stepper.error_estimate_order() == 4_st);
 
   TestHelpers::test_factory_creation<TimeStepper>("DormandPrince5");
   test_serialization(stepper);

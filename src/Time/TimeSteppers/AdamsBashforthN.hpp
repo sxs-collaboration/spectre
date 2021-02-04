@@ -262,6 +262,8 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
 
   size_t order() const noexcept override;
 
+  size_t error_estimate_order() const noexcept override;
+
   size_t number_of_past_steps() const noexcept override;
 
   double stable_step() const noexcept override;

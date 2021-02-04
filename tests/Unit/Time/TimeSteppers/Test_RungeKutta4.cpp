@@ -27,6 +27,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta4", "[Unit][Time]") {
   TimeStepperTestUtils::check_dense_output(stepper);
 
   CHECK(stepper.order() == 4_st);
+  CHECK(stepper.error_estimate_order() == 3_st);
 
   TestHelpers::test_factory_creation<TimeStepper>("RungeKutta4");
   test_serialization(stepper);

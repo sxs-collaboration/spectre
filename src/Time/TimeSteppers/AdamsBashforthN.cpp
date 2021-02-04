@@ -18,6 +18,10 @@ AdamsBashforthN::AdamsBashforthN(const size_t order) noexcept : order_(order) {
 
 size_t AdamsBashforthN::order() const noexcept { return order_; }
 
+size_t AdamsBashforthN::error_estimate_order() const noexcept {
+  return order_ - 1;
+}
+
 size_t AdamsBashforthN::number_of_past_steps() const noexcept {
   return order_ - 1;
 }
