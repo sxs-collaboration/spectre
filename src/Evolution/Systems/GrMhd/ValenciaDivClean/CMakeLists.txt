@@ -54,4 +54,5 @@ target_link_libraries(
   VariableFixing
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
