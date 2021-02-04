@@ -8,6 +8,7 @@ set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_DirichletAnalytic.cpp
+  BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
