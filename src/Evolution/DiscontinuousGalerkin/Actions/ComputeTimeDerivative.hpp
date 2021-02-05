@@ -328,7 +328,7 @@ struct ComputeTimeDerivative {
   template <typename ParallelComponent, typename DbTagsList>
   static void send_data_for_fluxes(
       gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      const db::DataBox<DbTagsList>& box) noexcept;
+      gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
 };
 
 template <typename Metavariables>
@@ -470,7 +470,8 @@ ComputeTimeDerivative<Metavariables>::apply(
         make_not_null(&box));
   }
 
-  send_data_for_fluxes<ParallelComponent>(make_not_null(&cache), box);
+  send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
+                                          make_not_null(&box));
   return {std::move(box)};
 }
 
@@ -566,19 +567,19 @@ template <typename Metavariables>
 template <typename ParallelComponent, typename DbTagsList>
 void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const db::DataBox<DbTagsList>& box) noexcept {
+    const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
   using system = typename Metavariables::system;
   constexpr size_t volume_dim = Metavariables::volume_dim;
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
-  const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
+  const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
 
   if constexpr (detail::has_boundary_correction_v<system>) {
-    const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
+    const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
     const auto& all_mortar_data =
-        db::get<evolution::dg::Tags::MortarData<volume_dim>>(box);
+        db::get<evolution::dg::Tags::MortarData<volume_dim>>(*box);
     const auto& mortar_meshes =
-        get<evolution::dg::Tags::MortarMesh<volume_dim>>(box);
+        get<evolution::dg::Tags::MortarMesh<volume_dim>>(*box);
 
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -609,14 +610,20 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
               slice_extents, direction.dimension(), orientation);
         }
 
+        const TimeStepId& next_time_step_id = [&box]() noexcept {
+          if (Metavariables::local_time_stepping) {
+            return db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+          } else {
+            return db::get<::Tags::TimeStepId>(*box);
+          }
+        }();
+
         std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
                    std::optional<std::vector<double>>, ::TimeStepId>
             data{neighbor_boundary_data_on_mortar.first,
                  {},
                  {std::move(neighbor_boundary_data_on_mortar.second)},
-                 db::get<tmpl::conditional_t<Metavariables::local_time_stepping,
-                                             ::Tags::Next<::Tags::TimeStepId>,
-                                             ::Tags::TimeStepId>>(box)};
+                 next_time_step_id};
 
         // Send mortar data (the `std::tuple` named `data`) to neighbor
         Parallel::receive_data<
@@ -627,6 +634,123 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
                            data));
       }
     }
+
+    if constexpr (Metavariables::local_time_stepping) {
+      using variables_tag = typename Metavariables::system::variables_tag;
+      using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+      // We assume isotropic quadrature, i.e. the quadrature is the same in
+      // all directions.
+      const bool using_gauss_points =
+          db::get<domain::Tags::Mesh<volume_dim>>(*box).quadrature() ==
+          make_array<volume_dim>(Spectral::Quadrature::Gauss);
+
+      const Scalar<DataVector> volume_det_inv_jacobian{};
+      if (using_gauss_points) {
+        // NOLINTNEXTLINE
+        const_cast<DataVector&>(get(volume_det_inv_jacobian))
+            .set_data_ref(make_not_null(&const_cast<DataVector&>(  // NOLINT
+                get(db::get<domain::Tags::DetInvJacobian<
+                        Frame::Logical, Frame::Inertial>>(*box)))));
+      }
+
+      // Add face normal and Jacobian determinants to the local mortar data. We
+      // only need the Jacobians if we are using Gauss points. Then copy over
+      // into the boundary history, since that's what the LTS steppers use.
+      //
+      // The boundary history coupling computation (which computes the _lifted_
+      // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
+      // using the `NormalDotNumericalFlux` prefix tag. This is because the
+      // returned quantity is more a `dt` quantity than a
+      // `NormalDotNormalDotFlux` since it's been lifted to the volume.
+      using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
+      db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
+                 evolution::dg::Tags::MortarDataHistory<
+                     volume_dim, typename dt_variables_tag::type>>(
+          box,
+          [&element, &time_step_id, using_gauss_points,
+           &volume_det_inv_jacobian](
+              const gsl::not_null<
+                  std::unordered_map<Key, evolution::dg::MortarData<volume_dim>,
+                                     boost::hash<Key>>*>
+                  mortar_data,
+              const gsl::not_null<
+                  std::unordered_map<Key,
+                                     TimeSteppers::BoundaryHistory<
+                                         evolution::dg::MortarData<volume_dim>,
+                                         evolution::dg::MortarData<volume_dim>,
+                                         typename dt_variables_tag::type>,
+                                     boost::hash<Key>>*>
+                  boundary_data_history,
+              const Mesh<volume_dim>& volume_mesh,
+              const DirectionMap<
+                  volume_dim,
+                  std::optional<Variables<tmpl::list<
+                      evolution::dg::Tags::MagnitudeOfNormal,
+                      evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
+                  normal_covector_and_magnitude) noexcept {
+            Scalar<DataVector> volume_det_jacobian{};
+            Scalar<DataVector> face_det_jacobian{};
+            if (using_gauss_points) {
+              get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+            }
+            for (const auto& [direction, neighbors_in_direction] :
+                 element.neighbors()) {
+              // We can perform projections once for all neighbors in the
+              // direction because we care about the _face_ mesh, not the mortar
+              // mesh.
+              ASSERT(
+                  normal_covector_and_magnitude.at(direction).has_value(),
+                  "The normal covector and magnitude have not been computed.");
+              const Scalar<DataVector>& face_normal_magnitude =
+                  get<evolution::dg::Tags::MagnitudeOfNormal>(
+                      *normal_covector_and_magnitude.at(direction));
+              if (using_gauss_points) {
+                const Matrix identity{};
+                auto interpolation_matrices =
+                    make_array<Metavariables::volume_dim>(std::cref(identity));
+                const std::pair<Matrix, Matrix>& matrices =
+                    Spectral::boundary_interpolation_matrices(
+                        volume_mesh.slice_through(direction.dimension()));
+                gsl::at(interpolation_matrices, direction.dimension()) =
+                    direction.side() == Side::Upper ? matrices.second
+                                                    : matrices.first;
+                if (get(face_det_jacobian).size() !=
+                    get(face_normal_magnitude).size()) {
+                  get(face_det_jacobian) =
+                      DataVector{get(face_normal_magnitude).size()};
+                }
+                apply_matrices(make_not_null(&get(face_det_jacobian)),
+                               interpolation_matrices, get(volume_det_jacobian),
+                               volume_mesh.extents());
+              }
+
+              for (const auto& neighbor : neighbors_in_direction) {
+                const std::pair mortar_id{direction, neighbor};
+                if (using_gauss_points) {
+                  mortar_data->at(mortar_id).insert_local_geometric_quantities(
+                      volume_det_inv_jacobian, face_det_jacobian,
+                      face_normal_magnitude);
+                } else {
+                  mortar_data->at(mortar_id).insert_local_face_normal_magnitude(
+                      face_normal_magnitude);
+                }
+                ASSERT(boundary_data_history->count(mortar_id) != 0,
+                       "Could not insert the mortar data for "
+                           << mortar_id
+                           << " because the unordered map has not been "
+                              "initialized "
+                              "to have the mortar id.");
+                boundary_data_history->at(mortar_id).local_insert(
+                    time_step_id, std::move(mortar_data->at(mortar_id)));
+                mortar_data->at(mortar_id) =
+                    MortarData<Metavariables::volume_dim>{};
+              }
+            }
+          },
+          db::get<domain::Tags::Mesh<volume_dim>>(*box),
+          db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
+              *box));
+    }
   } else {
     using BoundaryScheme = typename Metavariables::boundary_scheme;
     using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
@@ -636,11 +760,11 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     using all_mortar_data_tag =
         ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
 
-    const auto& all_mortar_data = get<all_mortar_data_tag>(box);
-    const auto& temporal_id = db::get<temporal_id_tag>(box);
-    const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(box);
+    const auto& all_mortar_data = get<all_mortar_data_tag>(*box);
+    const auto& temporal_id = db::get<temporal_id_tag>(*box);
+    const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(*box);
     const auto& mortar_meshes = db::get<
-        ::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(box);
+        ::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(*box);
 
     // Iterate over neighbors
     for (const auto& direction_and_neighbors : element.neighbors()) {

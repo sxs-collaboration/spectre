@@ -33,6 +33,7 @@ target_link_libraries(
   DiscontinuousGalerkin
   Domain
   DomainStructure
+  Interpolation
   Spectral
   Time
   Utilities
