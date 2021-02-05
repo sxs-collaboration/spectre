@@ -113,27 +113,6 @@ struct Metavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-template <size_t Dim, typename GetTag>
-void test_next_temporal_ids(
-    GetTag&& get_tag,
-    const dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
-    std::true_type /* times_are_asynchronous */) {
-  const auto& mortar_next_temporal_ids =
-      get_tag(Tags::Mortars<Tags::Next<TemporalIdTag>, Dim>{});
-  for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
-    const auto& mortar_id = mortar_id_and_mesh.first;
-    if (mortar_id.second != ElementId<Dim>::external_boundary_id()) {
-      CHECK(mortar_next_temporal_ids.at(mortar_id) == 0);
-    }
-  }
-}
-
-template <size_t Dim, typename GetTag>
-void test_next_temporal_ids(
-    GetTag&& /* get_tag */,
-    const dg::MortarMap<Dim, Mesh<Dim - 1>>& /* expected_mortar_meshes */,
-    std::false_type /* times_are_asynchronous */) {}
-
 template <bool Asynchronous, size_t Dim>
 void test_initialize_mortars(
     const ElementId<Dim>& element_id, const DomainCreator<Dim>& domain_creator,
@@ -176,8 +155,20 @@ void test_initialize_mortars(
     // Just make sure this exists, it is not expected to hold any data
     CHECK(mortar_data.find(mortar_id_and_mesh.first) != mortar_data.end());
   }
-  test_next_temporal_ids(get_tag, expected_mortar_meshes,
-                         std::integral_constant<bool, Asynchronous>{});
+  if constexpr (Asynchronous) {
+    const auto& mortar_next_temporal_ids =
+        get_tag(Tags::Mortars<Tags::Next<TemporalIdTag>, Dim>{});
+    for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
+      const auto& mortar_id = mortar_id_and_mesh.first;
+      if (mortar_id.second != ElementId<Dim>::external_boundary_id()) {
+        CHECK(mortar_next_temporal_ids.at(mortar_id) == 0);
+      }
+    }
+  } else {
+    CHECK_FALSE(ActionTesting::tag_is_retrievable<
+                element_array, Tags::Mortars<Tags::Next<TemporalIdTag>, Dim>>(
+        runner, element_id));
+  }
 }
 
 }  // namespace

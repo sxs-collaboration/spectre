@@ -112,7 +112,7 @@ struct InitializeDomain {
     }
     ElementMap<Dim, Frame::Inertial> element_map{
         element_id, my_block.stationary_map().get_clone()};
-    Initialization::mutate_assign<simple_tags>(
+    ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mesh), std::move(element),
         std::move(element_map));
 
