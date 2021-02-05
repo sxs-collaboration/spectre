@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   KhInstability.cpp
   ShuOsherTube.cpp
+  SodExplosion.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   AnalyticData.hpp
   KhInstability.hpp
   ShuOsherTube.hpp
+  SodExplosion.hpp
   )
 
 target_link_libraries(
