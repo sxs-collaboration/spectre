@@ -7,6 +7,7 @@ add_subdirectory(ConstraintDamping)
 set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
+  BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_DuDt.cpp
