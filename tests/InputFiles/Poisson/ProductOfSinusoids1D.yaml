@@ -35,6 +35,14 @@ LinearSolver:
     RelativeResidual: 1e-8
   Verbosity: Verbose
 
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 1
+    Verbosity: Verbose
+    SubdomainSolver:
+      ExplicitInverse:
+        EnableResets: True
+
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1

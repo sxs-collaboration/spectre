@@ -16,7 +16,7 @@ DomainCreator:
     LowerBound: [0, 0]
     UpperBound: [3.141592653589793, 3.141592653589793]
     IsPeriodicIn: [false, false]
-    InitialRefinement: [1, 1]
+    InitialRefinement: [3, 3]
     InitialGridPoints: [4, 4]
     TimeDependence: None
 
@@ -34,6 +34,14 @@ LinearSolver:
     AbsoluteResidual: 1e-14
     RelativeResidual: 1e-8
   Verbosity: Verbose
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Quiet
+    SubdomainSolver:
+      ExplicitInverse:
+        EnableResets: True
 
 EventsAndTriggers:
   ? EveryNIterations:

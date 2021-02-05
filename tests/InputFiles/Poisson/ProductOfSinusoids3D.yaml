@@ -7,6 +7,8 @@
 #   PoissonProductOfSinusoids3DReductions.h5
 #   PoissonProductOfSinusoids3DVolume0.h5
 
+# 542s on 12 cores
+
 AnalyticSolution:
   ProductOfSinusoids:
     WaveNumbers: [1, 1, 1]
@@ -34,6 +36,14 @@ LinearSolver:
     AbsoluteResidual: 1e-14
     RelativeResidual: 1e-10
   Verbosity: Verbose
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Verbose
+    SubdomainSolver:
+      ExplicitInverse:
+        EnableResets: True
 
 EventsAndTriggers:
   ? EveryNIterations:

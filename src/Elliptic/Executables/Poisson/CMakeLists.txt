@@ -16,6 +16,7 @@ set(LIBS_TO_LINK
   Options
   Parallel
   ParallelLinearSolver
+  ParallelSchwarz
   Poisson
   Utilities
   )
