@@ -14,6 +14,7 @@ spectre_target_headers(
   ByBlock.hpp
   Cfl.hpp
   Constant.hpp
+  ErrorControl.hpp
   Increase.hpp
   PreventRapidIncrease.hpp
   StepChooser.hpp
