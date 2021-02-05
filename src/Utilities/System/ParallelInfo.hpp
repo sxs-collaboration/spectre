@@ -3,7 +3,9 @@
 
 /// \file
 /// Defines functions that provide low-level system information such as number
-/// of nodes and processors.
+/// of nodes and processors.  When working with distributed objects, one should
+/// use the corresponding functions in Parallel/Info.hpp instead of the
+/// low-level functions here.
 
 #pragma once
 
