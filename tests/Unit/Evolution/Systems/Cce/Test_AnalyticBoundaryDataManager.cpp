@@ -58,8 +58,9 @@ struct TestCallWriteNews {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
-    db::get<Tags::AnalyticBoundaryDataManager>(box).write_news(
-        cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
+    db::get<Tags::AnalyticBoundaryDataManager>(box)
+        .template write_news<ParallelComponent>(
+            cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
   }
 };
 

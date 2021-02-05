@@ -11,10 +11,10 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace observers {
@@ -34,7 +34,7 @@ struct WriteSimpleData {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::GlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const std::vector<std::string>& file_legend,
@@ -54,8 +54,13 @@ struct WriteSimpleData {
     // scoped to close file
     {
       const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
+      auto& my_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
       h5::H5File<h5::AccessType::ReadWrite> h5file(
-          file_prefix + std::to_string(sys::my_node()) + ".h5", true);
+          file_prefix +
+              std::to_string(Parallel::my_node(*my_proxy.ckLocalBranch())) +
+              ".h5",
+          true);
       const size_t version_number = 0;
       auto& output_dataset =
           h5file.try_insert<h5::Dat>(subfile_name, file_legend, version_number);

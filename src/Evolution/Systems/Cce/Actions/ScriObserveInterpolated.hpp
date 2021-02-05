@@ -171,7 +171,7 @@ struct ScriObserveInterpolated {
                               typename Metavariables::scri_values_to_observe,
                               tag>) {
               ScriObserveInterpolated::transform_and_write<
-                  tag, tag::type::type::spin>(
+                  tag, tag::type::type::spin, ParallelComponent>(
                   get(get<tag>(corrected_scri_plus_weyl)).data(),
                   interpolation_time, make_not_null(&goldberg_modes),
                   make_not_null(&data_to_write), file_legend, l_max,
@@ -196,8 +196,8 @@ struct ScriObserveInterpolated {
                   interpolation =
                       interpolation_manager->interpolate_and_pop_first_time();
                 });
-            ScriObserveInterpolated::transform_and_write<tag,
-                                                         tag::type::type::spin>(
+            ScriObserveInterpolated::transform_and_write<
+                tag, tag::type::type::spin, ParallelComponent>(
                 interpolation.second, interpolation.first,
                 make_not_null(&goldberg_modes), make_not_null(&data_to_write),
                 file_legend, l_max, observation_l_max, cache);
@@ -207,7 +207,8 @@ struct ScriObserveInterpolated {
   }
 
  private:
-  template <typename Tag, int Spin, typename Metavariables>
+  template <typename Tag, int Spin, typename ParallelComponent,
+            typename Metavariables>
   static void transform_and_write(
       const ComplexDataVector& data, const double time,
       const gsl::not_null<ComplexModalVector*> goldberg_mode_buffer,
@@ -228,12 +229,15 @@ struct ScriObserveInterpolated {
       (*data_to_write_buffer)[2 * i + 1] = real(goldberg_modes.data()[i]);
       (*data_to_write_buffer)[2 * i + 2] = imag(goldberg_modes.data()[i]);
     }
-    auto observer_proxy =
-        Parallel::get_parallel_component<ObserverWriterComponent>(
-            cache)[static_cast<size_t>(sys::my_node())];
-    Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
-        observer_proxy, legend, *data_to_write_buffer,
-        "/" + detail::ScriOutput<Tag>::name());
+     auto& my_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
+     auto observer_proxy =
+         Parallel::get_parallel_component<ObserverWriterComponent>(
+             cache)[static_cast<size_t>(
+             Parallel::my_node(*my_proxy.ckLocal()))];
+     Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
+         observer_proxy, legend, *data_to_write_buffer,
+         "/" + detail::ScriOutput<Tag>::name());
   }
 };
 }  // namespace Actions

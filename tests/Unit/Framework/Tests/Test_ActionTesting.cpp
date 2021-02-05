@@ -11,13 +11,13 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare db::DataBox
@@ -570,35 +570,35 @@ struct ComponentA {
 struct MyProc {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::my_proc(*my_proxy[array_index].ckLocal());
+    return Parallel::my_proc(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct MyNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::my_node(*my_proxy[array_index].ckLocal());
+    return Parallel::my_node(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct LocalRank {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::my_local_rank(*my_proxy[array_index].ckLocal());
+    return Parallel::my_local_rank(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct NumProcs {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::number_of_procs(*my_proxy[array_index].ckLocal());
+    return Parallel::number_of_procs(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct NumNodes {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::number_of_nodes(*my_proxy[array_index].ckLocal());
+    return Parallel::number_of_nodes(*my_proxy[array_index].ckLocal());
   }
 };
 
@@ -606,7 +606,7 @@ template<int NodeIndex>
 struct ProcsOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::procs_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::procs_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
   }
 };
 
@@ -614,7 +614,8 @@ template<int NodeIndex>
 struct FirstProcOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::first_proc_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::first_proc_on_node(NodeIndex,
+                                        *my_proxy[array_index].ckLocal());
   }
 };
 
@@ -622,7 +623,7 @@ template <int ProcIndex>
 struct NodeOf {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::node_of(ProcIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::node_of(ProcIndex, *my_proxy[array_index].ckLocal());
   }
 };
 
@@ -630,7 +631,7 @@ template <int ProcIndex>
 struct LocalRankOf {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return sys::local_rank_of(ProcIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::local_rank_of(ProcIndex, *my_proxy[array_index].ckLocal());
   }
 };
 

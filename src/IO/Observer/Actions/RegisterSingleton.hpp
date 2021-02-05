@@ -13,9 +13,10 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace observers::Actions {
@@ -55,10 +56,12 @@ struct RegisterSingletonWithObserverWriter {
 
     // We call only on node 0; the observation call will occur only
     // on node 0.
+    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     Parallel::simple_action<Actions::RegisterReductionNodeWithWritingNode>(
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
-        observation_key, static_cast<size_t>(sys::my_node()));
+        observation_key,
+        static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())));
     return {std::move(box), true};
   }
 };
