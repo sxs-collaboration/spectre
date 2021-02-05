@@ -180,6 +180,8 @@ template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = false;
+  // A placeholder system for the domain creators
+  struct system {};
 
   using triggers = Triggers::time_triggers;
   using events = tmpl::list<>;

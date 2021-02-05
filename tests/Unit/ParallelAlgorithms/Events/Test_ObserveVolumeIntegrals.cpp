@@ -70,6 +70,7 @@ struct MockContributeReductionData {
     double volume;
     std::vector<double> volume_integrals{};
   };
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static Results results;
 
   template <typename ParallelComponent, typename... DbTags,
@@ -91,6 +92,7 @@ struct MockContributeReductionData {
   }
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 MockContributeReductionData::Results MockContributeReductionData::results{};
 
 template <typename Metavariables>
@@ -153,7 +155,8 @@ std::unique_ptr<DomainCreator<SpatialDim>> domain_creator() noexcept;
 template <>
 std::unique_ptr<DomainCreator<1>> domain_creator() noexcept {
   return std::make_unique<domain::creators::Interval>(
-      domain::creators::Interval({{-0.5}}, {{0.5}}, {{false}}, {{0}}, {{4}}));
+      domain::creators::Interval({{-0.5}}, {{0.5}}, {{0}}, {{4}}, {{false}},
+                                 nullptr));
 }
 
 template <>

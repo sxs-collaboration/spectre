@@ -26,5 +26,16 @@ add_test_library(
   ${LIBRARY}
   "Domain/Creators"
   "${LIBRARY_SOURCES}"
-  "DomainCreators;Domain;DomainHelpers;Test_Domain"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Domain
+  DomainBoundaryConditions
+  DomainBoundaryConditionsHelpers
+  DomainCreators
+  DomainHelpers
+  Test_Domain
   )

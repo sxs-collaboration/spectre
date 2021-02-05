@@ -70,6 +70,7 @@ function(add_distributed_linear_solver_algorithm_test TEST_NAME)
     Test_${TEST_NAME}
     PRIVATE
     Domain
+    DomainBoundaryConditionsHelpers
     DomainCreators
     )
 endfunction()

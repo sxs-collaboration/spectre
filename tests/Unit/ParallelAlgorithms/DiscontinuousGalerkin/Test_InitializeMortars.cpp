@@ -181,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
     // [X| | | ]-> xi
     const ElementId<1> element_id{0, {{{2, 0}}}};
     const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
+        {{-0.5}}, {{1.5}}, {{2}}, {{4}}, {{false}}, nullptr};
     // We are working with 2 mortars here: a domain boundary at lower xi
     // and an interface at upper xi.
     const auto boundary_mortar_id = std::make_pair(

@@ -237,7 +237,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFirstOrderOperator",
     // [X| | | ]-> xi
     const ElementId<1> element_id{0, {{{2, 0}}}};
     const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
+        {{-0.5}}, {{1.5}}, {{2}}, {{4}}, {{false}}, nullptr};
 
     test_initialize_fluxes(domain_creator, element_id);
   }

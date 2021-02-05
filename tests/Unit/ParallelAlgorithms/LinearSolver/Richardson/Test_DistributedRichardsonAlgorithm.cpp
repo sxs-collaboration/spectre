@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -28,6 +29,9 @@ struct Metavariables {
   static constexpr const char* const help{
       "Test the Richardson linear solver algorithm on multiple elements"};
   static constexpr size_t volume_dim = 1;
+  using system =
+      TestHelpers::domain::BoundaryConditions::SystemWithoutBoundaryConditions<
+          volume_dim>;
 
   using linear_solver = LinearSolver::Richardson::Richardson<
       typename helpers_distributed::fields_tag, ParallelRichardson>;
@@ -45,7 +49,8 @@ struct Metavariables {
 }  // namespace
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm};
+    &setup_error_handling, &domain::creators::register_derived_with_charm,
+    &TestHelpers::domain::BoundaryConditions::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 
