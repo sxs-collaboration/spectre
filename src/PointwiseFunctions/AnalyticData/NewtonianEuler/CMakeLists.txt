@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   KhInstability.cpp
+  ShuOsherTube.cpp
   )
 
 spectre_target_headers(
@@ -17,6 +18,7 @@ spectre_target_headers(
   HEADERS
   AnalyticData.hpp
   KhInstability.hpp
+  ShuOsherTube.hpp
   )
 
 target_link_libraries(
