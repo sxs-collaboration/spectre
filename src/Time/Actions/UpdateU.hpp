@@ -26,6 +26,29 @@ class GlobalCache;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
+/// Perform variable updates for one substep for a substep method, or one step
+/// for an LMM method.
+///
+/// \note This is a free function version of `Actions::UpdateU`. This free
+/// function alternative permits the inclusion of the time step procedure in
+/// the middle of another action.
+template <typename System, typename VariablesTag = NoSuchType, typename DbTags>
+void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+  using variables_tag =
+      tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
+                          typename System::variables_tag, VariablesTag>;
+  using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
+
+  db::mutate<variables_tag, history_tag>(
+      box,
+      [](const gsl::not_null<typename variables_tag::type*> vars,
+         const gsl::not_null<typename history_tag::type*> history,
+         const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
+        time_stepper.update_u(vars, history, time_step);
+      },
+      db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+}
+
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
@@ -55,21 +78,7 @@ struct UpdateU {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
-    using variables_tag =
-        tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
-                            typename Metavariables::system::variables_tag,
-                            VariablesTag>;
-    using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
-
-    db::mutate<variables_tag, history_tag>(
-        make_not_null(&box),
-        [](const gsl::not_null<typename variables_tag::type*> vars,
-           const gsl::not_null<typename history_tag::type*> history,
-           const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
-          time_stepper.update_u(vars, history, time_step);
-        },
-        db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
-
+    update_u<typename Metavariables::system, VariablesTag>(make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
