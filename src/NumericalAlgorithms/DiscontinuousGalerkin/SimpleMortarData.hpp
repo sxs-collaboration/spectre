@@ -43,6 +43,15 @@ class SimpleMortarData {
     return *local_data_;
   };
 
+  /// Retrieve the remote data at `temporal_id`
+  const RemoteVars& remote_data(const TemporalId& temporal_id) const noexcept {
+    ASSERT(remote_data_, "Remote data not available.");
+    ASSERT(temporal_id == temporal_id_,
+           "Only have remote data at temporal_id "
+               << temporal_id_ << ", but requesting at " << temporal_id);
+    return *remote_data_;
+  };
+
  private:
   TemporalId temporal_id_{};
   std::optional<LocalVars> local_data_{};
