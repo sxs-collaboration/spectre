@@ -117,7 +117,7 @@ struct NegateCompute : Negate, db::ComputeTag {
 template <typename Metavariables>
 struct MockObserverWriter {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
   using const_global_cache_tags =
       tmpl::list<observers::Tags::ReductionFileName>;
@@ -156,7 +156,7 @@ struct MockInterpolationTarget {
 
  public:
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<

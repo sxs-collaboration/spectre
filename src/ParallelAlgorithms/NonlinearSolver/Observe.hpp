@@ -46,7 +46,8 @@ struct Registration {
 /*!
  * \brief Contributes data from the residual monitor to the reduction observer
  */
-template <typename OptionsGroup, typename Metavariables>
+template <typename OptionsGroup, typename ParallelComponent,
+          typename Metavariables>
 void contribute_to_reduction_observer(
     const size_t iteration_id, const size_t globalization_iteration_id,
     const double residual_magnitude, const double step_length,
@@ -55,10 +56,12 @@ void contribute_to_reduction_observer(
       iteration_id, pretty_type::get_name<OptionsGroup>());
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
+  auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
       // Node 0 is always the writer, so directly call the component on that
       // node
-      reduction_writer[0], observation_id, static_cast<size_t>(sys::my_node()),
+      reduction_writer[0], observation_id,
+      static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())),
       std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "GlobalizationStep", "Residual",
                                "StepLength"},

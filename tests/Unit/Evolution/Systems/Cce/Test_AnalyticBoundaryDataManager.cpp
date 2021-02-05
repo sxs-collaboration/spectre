@@ -58,8 +58,9 @@ struct TestCallWriteNews {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
-    db::get<Tags::AnalyticBoundaryDataManager>(box).write_news(
-        cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
+    db::get<Tags::AnalyticBoundaryDataManager>(box)
+        .template write_news<ParallelComponent>(
+            cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
   }
 };
 
@@ -85,7 +86,7 @@ struct mock_boundary {
   using simple_tags =
       tmpl::list<Tags::AnalyticBoundaryDataManager, ::Tags::TimeStepId>;
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
   using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
 

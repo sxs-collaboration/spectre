@@ -38,6 +38,61 @@ void emplace_component(
                                                 std::forward<Options>(opts)...);
 }
 
+/// Emplaces a distributed array object with index `array_index` into
+/// the parallel component `Component`. The options `opts` are
+/// forwarded to be used in a call to
+/// `detail::ForwardAllOptionsToDataBox::apply`.
+template <typename Component, typename... Options>
+void emplace_array_component(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    const NodeId node_id, const LocalCoreId local_core_id,
+    const typename Component::array_index& array_index,
+    Options&&... opts) noexcept {
+  runner->template emplace_array_component<Component>(
+      node_id, local_core_id, array_index, std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed singleton object into
+/// the parallel component `Component`. The options `opts` are
+/// forwarded to be used in a call to
+/// `detail::ForwardAllOptionsToDataBox::apply`.
+template <typename Component, typename... Options>
+void emplace_singleton_component(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    const NodeId node_id, const LocalCoreId local_core_id,
+    Options&&... opts) noexcept {
+  runner->template emplace_singleton_component<Component>(
+      node_id, local_core_id, std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed group object into
+/// the parallel component `Component`. The options `opts` are
+/// forwarded to be used in a call to
+/// `detail::ForwardAllOptionsToDataBox::apply`.
+template <typename Component, typename... Options>
+void emplace_group_component(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    Options&&... opts) noexcept {
+  runner->template emplace_group_component<Component>(
+      std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed nodegroup object into
+/// the parallel component `Component`. The options `opts` are
+/// forwarded to be used in a call to
+/// `detail::ForwardAllOptionsToDataBox::apply`.
+template <typename Component, typename... Options>
+void emplace_nodegroup_component(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    Options&&... opts) noexcept {
+  runner->template emplace_nodegroup_component<Component>(
+      std::forward<Options>(opts)...);
+}
+
 /// Emplaces a distributed object with index `array_index` into the parallel
 /// component `Component`. The options `opts` are forwarded to be used in a call
 /// to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the simple tags
@@ -54,6 +109,82 @@ void emplace_component_and_initialize(
     Options&&... opts) noexcept {
   runner->template emplace_component_and_initialize<Component>(
       array_index, initial_values, std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed array object with index `array_index` into the
+/// parallel component `Component`. The options `opts` are forwarded to be used
+/// in a call to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the
+/// simple tags in the DataBox are initialized from the values set in
+/// `initial_values`.
+template <typename Component, typename... Options,
+          typename Metavars = typename Component::metavariables,
+          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+void emplace_array_component_and_initialize(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    const NodeId node_id, const LocalCoreId local_core_id,
+    const typename Component::array_index& array_index,
+    const typename detail::get_initialization<Component>::InitialValues&
+        initial_values,
+    Options&&... opts) noexcept {
+  runner->template emplace_array_component_and_initialize<Component>(
+      node_id, local_core_id, array_index, initial_values,
+      std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed singleton object into the parallel
+/// component `Component`. The options `opts` are forwarded to be used
+/// in a call to `detail::ForwardAllOptionsToDataBox::apply`
+/// Additionally, the simple tags in the DataBox are initialized from
+/// the values set in `initial_values`.
+template <typename Component, typename... Options,
+          typename Metavars = typename Component::metavariables,
+          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+void emplace_singleton_component_and_initialize(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    const NodeId node_id, const LocalCoreId local_core_id,
+    const typename detail::get_initialization<Component>::InitialValues&
+        initial_values,
+    Options&&... opts) noexcept {
+  runner->template emplace_singleton_component_and_initialize<Component>(
+      node_id, local_core_id, initial_values, std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed group object into the
+/// parallel component `Component`. The options `opts` are forwarded to be used
+/// in a call to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the
+/// simple tags in the DataBox are initialized from the values set in
+/// `initial_values`.
+template <typename Component, typename... Options,
+          typename Metavars = typename Component::metavariables,
+          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+void emplace_group_component_and_initialize(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    const typename detail::get_initialization<Component>::InitialValues&
+        initial_values,
+    Options&&... opts) noexcept {
+  runner->template emplace_group_component_and_initialize<Component>(
+      initial_values, std::forward<Options>(opts)...);
+}
+
+/// Emplaces a distributed nodegroup object into the
+/// parallel component `Component`. The options `opts` are forwarded to be used
+/// in a call to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the
+/// simple tags in the DataBox are initialized from the values set in
+/// `initial_values`.
+template <typename Component, typename... Options,
+          typename Metavars = typename Component::metavariables,
+          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+void emplace_nodegroup_component_and_initialize(
+    const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
+        runner,
+    const typename detail::get_initialization<Component>::InitialValues&
+        initial_values,
+    Options&&... opts) noexcept {
+  runner->template emplace_nodegroup_component_and_initialize<Component>(
+      initial_values, std::forward<Options>(opts)...);
 }
 
 // @{

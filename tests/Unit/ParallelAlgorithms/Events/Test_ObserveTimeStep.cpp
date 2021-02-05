@@ -107,7 +107,7 @@ struct MockObserverComponent {
       tmpl::list<MockContributeReductionData<Metavariables>>;
 
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
@@ -141,7 +141,7 @@ void test_observe(const Observer& observer,
   results.reset();
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
-  ActionTesting::emplace_component<observer_component>(&runner, 0);
+  ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const double observation_time = 2.0;
   const Slab slab(1.23, 4.56);

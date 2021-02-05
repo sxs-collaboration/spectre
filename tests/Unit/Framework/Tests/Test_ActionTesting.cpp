@@ -11,6 +11,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -542,4 +543,415 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
   /// [component b mock checks]
 }
 }  // namespace TestComponentMocking
+
+namespace TestNodesAndCores {
+
+struct ValueTag : db::SimpleTag {
+  using type = int;
+};
+
+template <typename Metavariables>
+struct ComponentA {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+
+  using component_being_mocked = void;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+};
+
+struct MyProc {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::my_proc(*my_proxy[array_index].ckLocal());
+  }
+};
+
+struct MyNode {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::my_node(*my_proxy[array_index].ckLocal());
+  }
+};
+
+struct LocalRank {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::my_local_rank(*my_proxy[array_index].ckLocal());
+  }
+};
+
+struct NumProcs {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::number_of_procs(*my_proxy[array_index].ckLocal());
+  }
+};
+
+struct NumNodes {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::number_of_nodes(*my_proxy[array_index].ckLocal());
+  }
+};
+
+template<int NodeIndex>
+struct ProcsOnNode {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::procs_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
+  }
+};
+
+template<int NodeIndex>
+struct FirstProcOnNode {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::first_proc_on_node(NodeIndex,
+                                        *my_proxy[array_index].ckLocal());
+  }
+};
+
+template <int ProcIndex>
+struct NodeOf {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::node_of(ProcIndex, *my_proxy[array_index].ckLocal());
+  }
+};
+
+template <int ProcIndex>
+struct LocalRankOf {
+  template <typename MyProxy, typename ArrayIndex>
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+    return Parallel::local_rank_of(ProcIndex, *my_proxy[array_index].ckLocal());
+  }
+};
+
+template <typename Functor>
+struct ActionSetValueTo {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index) noexcept {
+    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+    auto function_value = Functor::f(my_proxy, array_index);
+    db::mutate<ValueTag>(
+        make_not_null(&box),
+        [&function_value](const gsl::not_null<int*> value) noexcept {
+          *value = function_value;
+        });
+  }
+};
+
+struct MetavariablesOneComponent {
+  using component_list = tmpl::list<ComponentA<MetavariablesOneComponent>>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+void test_parallel_info_functions() noexcept {
+  using metavars = MetavariablesOneComponent;
+  using component_a = ComponentA<metavars>;
+
+  // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
+
+  // Choose array indices by hand, not in simple order, and choose
+  // arbitrary initial values.
+  ActionTesting::emplace_array_component_and_initialize<component_a>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
+      {-1});
+  ActionTesting::emplace_array_component_and_initialize<component_a>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{1}, 2,
+      {-2});
+  ActionTesting::emplace_array_component_and_initialize<component_a>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{2}, 4,
+      {-3});
+  ActionTesting::emplace_array_component_and_initialize<component_a>(
+      &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{0}, 1,
+      {-4});
+  ActionTesting::emplace_array_component_and_initialize<component_a>(
+      &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{1}, 3,
+      {-5});
+
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+
+  // Check that initial values are correct.
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == -1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == -4);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == -2);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == -5);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == -3);
+
+  for(size_t i=0;i<5;++i) {
+    ActionTesting::simple_action<component_a, ActionSetValueTo<MyProc>>(
+        make_not_null(&runner), i);
+  }
+  // Should all be set to proc (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 3);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 4);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 2);
+
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component_a, ActionSetValueTo<MyNode>>(
+        make_not_null(&runner), i);
+  }
+  // Should all be set to node (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 0);
+
+  for(size_t i=0;i<5;++i) {
+    ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRank>>(
+        make_not_null(&runner), i);
+  }
+  // Should all be set to local rank (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 2);
+
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component_a, ActionSetValueTo<NumProcs>>(
+        make_not_null(&runner), i);
+    CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, i) ==
+          5);
+  }
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component_a, ActionSetValueTo<NumNodes>>(
+        make_not_null(&runner), i);
+    CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, i) ==
+          2);
+  }
+
+  // procs_on_node for the 2 nodes.
+  ActionTesting::simple_action<component_a, ActionSetValueTo<ProcsOnNode<0>>>(
+      make_not_null(&runner), 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 3);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<ProcsOnNode<1>>>(
+      make_not_null(&runner), 2);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 2);
+
+  // first_proc_on_node for the 2 nodes.
+  ActionTesting::simple_action<component_a,
+                               ActionSetValueTo<FirstProcOnNode<0>>>(
+      make_not_null(&runner), 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 0);
+  ActionTesting::simple_action<component_a,
+                               ActionSetValueTo<FirstProcOnNode<1>>>(
+      make_not_null(&runner), 3);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 3);
+
+  // node_of
+  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<0>>>(
+      make_not_null(&runner), 0);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<1>>>(
+      make_not_null(&runner), 1);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<2>>>(
+      make_not_null(&runner), 2);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<3>>>(
+      make_not_null(&runner), 3);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<4>>>(
+      make_not_null(&runner), 4);
+  // Check if set to values that Mark computed by hand.
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
+
+  // local_rank_of
+  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<0>>>(
+      make_not_null(&runner), 0);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<1>>>(
+      make_not_null(&runner), 1);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<2>>>(
+      make_not_null(&runner), 2);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<3>>>(
+      make_not_null(&runner), 3);
+  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<4>>>(
+      make_not_null(&runner), 4);
+  // Check if set to values that Mark computed by hand.
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 1);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 2);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 0);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
+}
+
+
+template <typename Metavariables>
+struct GroupComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockGroupChare;
+  using array_index = size_t;
+
+  using component_being_mocked = void;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+};
+
+struct MetavariablesGroupComponent {
+  using component_list =
+      tmpl::list<GroupComponent<MetavariablesGroupComponent>>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+void test_group_emplace() noexcept {
+  using metavars = MetavariablesGroupComponent;
+  using component = GroupComponent<metavars>;
+
+  // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
+  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+
+  ActionTesting::emplace_group_component_and_initialize<component>(&runner,
+                                                                   {-3});
+
+  // Check initial values for all components of the group.
+  for (size_t i = 0; i < 5; ++i) {
+    CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == -3);
+  }
+
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+
+  // Number of procs should be 5 for all indices.
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<NumProcs>>(
+        make_not_null(&runner), i);
+    CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 5);
+  }
+
+  // Number of nodes should be 2 for all indices.
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<NumNodes>>(
+        make_not_null(&runner), i);
+    CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 2);
+  }
+
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<MyProc>>(
+        make_not_null(&runner), i);
+  }
+
+  // Should all be set to proc (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 1) == 1);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 2) == 2);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 3) == 3);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 4) == 4);
+
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<MyNode>>(
+        make_not_null(&runner), i);
+  }
+  // Should all be set to node (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 1) == 0);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 2) == 0);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 3) == 1);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 4) == 1);
+}
+
+template <typename Metavariables>
+struct NodeGroupComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using array_index = size_t;
+
+  using component_being_mocked = void;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+};
+
+struct MetavariablesNodeGroupComponent {
+  using component_list =
+      tmpl::list<NodeGroupComponent<MetavariablesNodeGroupComponent>>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+void test_nodegroup_emplace() noexcept {
+  using metavars = MetavariablesNodeGroupComponent;
+  using component = NodeGroupComponent<metavars>;
+
+  // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
+  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+
+  ActionTesting::emplace_nodegroup_component_and_initialize<component>(&runner,
+                                                                       {-3});
+
+  // Check initial values for all components of the nodegroup.
+  for (size_t i = 0; i < 2; ++i) {
+    CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == -3);
+  }
+
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+
+  // Number of procs should be 5 for all indices.
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<NumProcs>>(
+        make_not_null(&runner), i);
+    CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 5);
+  }
+
+  // Number of nodes should be 2 for all indices.
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<NumNodes>>(
+        make_not_null(&runner), i);
+    CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 2);
+  }
+
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<MyProc>>(
+        make_not_null(&runner), i);
+  }
+
+  // Should all be set to proc (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 1) == 3);
+
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::simple_action<component, ActionSetValueTo<MyNode>>(
+        make_not_null(&runner), i);
+  }
+  // Should all be set to node (which Mark computed by hand)
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 1) == 1);
+}
+
+SPECTRE_TEST_CASE("Unit.ActionTesting.NodesAndCores", "[Unit]") {
+  test_parallel_info_functions();
+  test_group_emplace();
+  test_nodegroup_emplace();
+}
+
+}  // namespace TestNodesAndCores
 }  // namespace

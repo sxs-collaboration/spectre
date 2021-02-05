@@ -77,7 +77,7 @@ template <typename Metavariables>
 struct MockVolumeDataReader {
   using component_being_mocked = importers::ElementDataReader<Metavariables>;
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -102,7 +102,8 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
       {"TestVolumeData.h5", "element_data", 0.}};
 
   // Setup mock data file reader
-  ActionTesting::emplace_component<reader_component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_nodegroup_component<reader_component>(
+      make_not_null(&runner));
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<reader_component>(make_not_null(&runner), 0);
   }

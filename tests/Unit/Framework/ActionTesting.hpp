@@ -72,9 +72,12 @@ struct get_array_index;
  * \snippet Test_TerminatePhase.cpp component
  *
  * Just like with the standard parallel code, a `metavariables` type alias must
- * be present. The chare type is always `ActionTesting::MockArrayChare` since
- * singletons may be treated during action testing as just a one-element array
- * component. The `index_type` must be whatever the actions will use to index
+ * be present. The chare type should be `ActionTesting::MockArrayChare`,
+ * `ActionTesting::MockGroupChare`, `ActionTesting::MockNodeGroupChare`, or
+ * `ActionTesting::MockSingletonChare`. Currently many groups, nodegroups, and
+ * singletons are treated during action testing as a one-element array
+ * component, but that usage is deprecated and will eventually be removed.
+ * The `index_type` must be whatever the actions will use to index
  * the array. In the case of a singleton `int` is recommended. Finally, the
  * `phase_dependent_action_list` must be specified just as in the cases for
  * parallel executables. In this case only the `Testing` phase is used and only
@@ -88,10 +91,30 @@ struct get_array_index;
  * the amount of typing needed. The ATF provides a
  * `ActionTesting::MockRuntimeSystem` class, which is the code that takes the
  * place of the parallel runtime system (RTS) (e.g. Charm++) that manages the
- * actions and components. Components are added to the RTS using the
- * `ActionTesting::emplace_component()` function, which takes the runner by
- * `not_null`, the array index of the component being inserted (`0` in the above
- * example, but this is arbitrary), and optionally a parameter pack of
+ * actions and components. The constructor of
+ * `ActionTesting::MockRuntimeSystem` takes a `std::vector<size_t>` whose
+ * length is the number of (mocked) nodes and whose values are the number of
+ * (mocked) cores on each node; the RTS runs only on a single core, but it
+ * keeps track of which components are on which (mocked) nodes and cores
+ * so that one can test some of the functionality of multiple cores/nodes.
+ * Components are added to the RTS using the functions
+ * `ActionTesting::emplace_array_component()`,
+ * `ActionTesting::emplace_singleton_component()`,
+ * `ActionTesting::emplace_group_component()`, and
+ * `ActionTesting::emplace_nodegroup_component()`.  Currently there is a
+ * deprecated `ActionTesting::emplace_component()` function that is the same as
+ * `ActionTesting::emplace_array_component()` and can be used for the
+ * deprecated usage of treating singletons, groups, and nodegroups as
+ * single-element arrays.  The emplace functions take the runner by
+ * `not_null`.  The array emplace function take the array index of the
+ * component being inserted (`0` in the above example, but this is arbitrary),
+ * and the array and singleton emplace functions take the (mocked) node and
+ * core on which the component lives.  The emplace function for groups places
+ * its object on all (mocked) cores and the array index is the same as the
+ * global core index; the emplace function for
+ * nodegroups places its object on a single (mocked) core on each
+ * (mocked) node, and the array index is the same as the node index.
+ * All emplace functions optionally take a parameter pack of
  * additional arguments that are forwarded to the constructor of the component.
  * These additional arguments are how input options (set in the
  * `initialization_tags` type alias of the parallel component) get passed to
@@ -136,7 +159,7 @@ struct get_array_index;
  * `ActionTesting::InitializeDataBox`, which takes simple tags and compute tags
  * that will be added to the DataBox in the initial phase. How the values for
  * the simple tags are set will be made clear below when we discuss the
- * `ActionTesting::emplace_component_and_initialize()` function. The action
+ * `ActionTesting::emplace_component_and_initialize()` functions. The action
  * lists for the `TestGoto` and `TestRepeatUntil` phases are fairly simple and
  * not the focus of this discussion.
  *
@@ -148,14 +171,20 @@ struct get_array_index;
  * Just as for the `TerminatePhase` test we have some type aliases to reduce the
  * amount of typing needed and to make the test easier to read. The runner is
  * again created with the default constructor. However, the component is now
- * inserted using the `ActionTesting::emplace_component_and_initialize()`
- * function. The third argument to
- * `ActionTesting::emplace_component_and_initialize()` is a
+ * inserted using the functions
+ * `ActionTesting::emplace_array_component_and_initialize()`,
+ * `ActionTesting::emplace_singleton_component_and_initialize()`,
+ * `ActionTesting::emplace_group_component_and_initialize()`,
+ * and `ActionTesting::emplace_nodegroup_component_and_initialize()`.
+ * There is a deprecated function
+ * `ActionTesting::emplace_component_and_initialize()` that is used when one
+ * treats groups, nodegroups, and singletons as arrays. The third argument to
+ * the `ActionTesting::emplace_component_and_initialize()` functions is a
  * `tuples::TaggedTuple` of the simple tags, which is to be populated with the
  * initial values for the component. Note that there is no call to
  * `ActionTesting::set_phase (&runner, Metavariables::Phase::Initialization)`:
- * this and the required action invocation is handled internally by
- * `ActionTesting::emplace_component_and_initialize()`.
+ * this and the required action invocation is handled internally by the
+ * `ActionTesting::emplace_component_and_initialize()` functions.
  *
  * Once the phase is set the next action to be executed is set to be
  * `Actions::Label<Label1>` by calling the
@@ -309,6 +338,13 @@ namespace ActionTesting {}
 
 namespace ActionTesting {
 
+/// \cond
+struct MockArrayChare;
+struct MockGroupChare;
+struct MockNodeGroupChare;
+struct MockSingletonChare;
+/// \endcond
+
 // Initializes the DataBox values not set via the GlobalCache. This is
 // done as part of an `Initialization` phase and is triggered using the
 // `emplace_component_and_initialize` function.
@@ -391,8 +427,12 @@ class MockDistributedObjectProxy {
   using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
   MockDistributedObjectProxy(
+      size_t mock_node, size_t mock_local_core,
       MockDistributedObject<Component>& mock_distributed_object, Inbox& inbox)
-      : mock_distributed_object_(mock_distributed_object), inbox_(inbox) {}
+      : mock_node_(mock_node),
+        mock_local_core_(mock_local_core),
+        mock_distributed_object_(mock_distributed_object),
+        inbox_(inbox) {}
 
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id, Data&& data,
@@ -435,18 +475,31 @@ class MockDistributedObjectProxy {
   void perform_algorithm(const bool /*restart_if_terminated*/) noexcept {}
 
   MockDistributedObject<Component>* ckLocal() {
-    return &mock_distributed_object_;
+    return (mock_distributed_object_.my_node() ==
+                static_cast<int>(mock_node_) and
+            mock_distributed_object_.my_local_rank() ==
+                static_cast<int>(mock_local_core_))
+               ? &mock_distributed_object_
+               : nullptr;
   }
 
  private:
+  // mock_node_ and mock_local_core_ are the (mocked) node and core
+  // that this MockDistributedObjectProxy lives on.  This is different
+  // than the (mock) node and core that the referred-to MockDistributedObject
+  // lives on.
+  size_t mock_node_{0};
+  size_t mock_local_core_{0};
   MockDistributedObject<Component>& mock_distributed_object_;
   Inbox& inbox_;
 };
 
-// A mock class for the Charm++ generated CProxy_AlgorithmArray (we
-// use an array for everything, so no need to mock groups, nodegroups,
-// singletons).
-template <typename Component, typename Index, typename InboxTagList>
+// A mock class for the Charm++ generated CProxy_AlgorithmArray or
+// CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup. (for singletons, just
+// use an array with a single element).
+// Here ChareType is MockArrayChare or MockGroupChare or MockNodeGroupChare.
+template <typename Component, typename Index, typename InboxTagList,
+          typename ChareType>
 class MockCollectionOfDistributedObjectsProxy {
  public:
   using Inboxes =
@@ -460,8 +513,11 @@ class MockCollectionOfDistributedObjectsProxy {
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
                     const bool enable_if_disabled = false) {
+    // Create (and call) a proxy on the local node and core that references
+    // each of the mock_distributed_objects.
     for (const auto& key_value_pair : *mock_distributed_objects_) {
       MockDistributedObjectProxy<Component, InboxTagList>(
+          mock_node_, mock_local_core_,
           mock_distributed_objects_->at(key_value_pair.first),
           inboxes_->operator[](key_value_pair.first))
           .template receive_data<InboxTag>(id, data, enable_if_disabled);
@@ -469,9 +525,13 @@ class MockCollectionOfDistributedObjectsProxy {
   }
 
   void set_data(CollectionOfMockDistributedObjects* mock_distributed_objects,
-                Inboxes* inboxes) {
+                Inboxes* inboxes, const size_t mock_node,
+                const size_t mock_local_core, const size_t mock_global_core) {
     mock_distributed_objects_ = mock_distributed_objects;
     inboxes_ = inboxes;
+    mock_node_ = mock_node;
+    mock_local_core_ = mock_local_core;
+    mock_global_core_ = mock_global_core;
   }
 
   MockDistributedObjectProxy<Component, InboxTagList> operator[](
@@ -485,17 +545,46 @@ class MockCollectionOfDistributedObjectsProxy {
                   "constructing "
                   "the MockRuntimeSystem?");
     return MockDistributedObjectProxy<Component, InboxTagList>(
-        mock_distributed_objects_->at(index), inboxes_->operator[](index));
+        mock_node_, mock_local_core_, mock_distributed_objects_->at(index),
+        inboxes_->operator[](index));
   }
 
+  // ckLocalBranch should never be called on an array or singleton
+  // chare, because there is probably not a local branch on this processor.
+  // We include it here to mock groups and nodegroups.  For a mocked group,
+  // there is always one element per global core, so the index of the array
+  // is the same as the global core index.
+  // For a mocked nodegroup, there is one element per node, so the index
+  // of the array is the node index.
   MockDistributedObject<Component>* ckLocalBranch() noexcept {
-    ASSERT(mock_distributed_objects_->size() == 1,
-           "Can only have one mock distributed object when getting the "
-           "ckLocalBranch, but have "
-               << mock_distributed_objects_->size());
-    // We always retrieve the 0th local branch because we are assuming running
-    // on a single core.
-    return std::addressof(mock_distributed_objects_->at(0));
+    if constexpr (std::is_same_v<ChareType, MockGroupChare>) {
+      return std::addressof(mock_distributed_objects_->at(mock_global_core_));
+    } else if constexpr (std::is_same_v<ChareType, MockNodeGroupChare>) {
+      return std::addressof(mock_distributed_objects_->at(mock_node_));
+    } else {
+      static_assert(std::is_same_v<Component, NoSuchType>,
+                  "Do not call ckLocalBranch for arrays or singletons");
+    }
+  }
+
+  // ckLocal_enabled is used by Parallel/Invoke.hpp to allow or
+  // prevent compilation of ckLocal (the idea is to prevent
+  // compilation in cases where it will static_assert).
+  // ckLocal_enabled can be eliminated if we replace the static_assert
+  // in ckLocal() by an 'if constexpr' that returns nullptr when
+  // ChareType is not a singleton, but that comes at the expense of a
+  // compile-time check.
+  using ckLocal_enabled = std::is_same<ChareType, MockSingletonChare>;
+
+  // ckLocal should be called only on a singleton.
+  MockDistributedObject<Component>* ckLocal() noexcept {
+    static_assert(std::is_same_v<ChareType, MockSingletonChare>,
+                  "Do not call ckLocal for other than a Singleton");
+    auto& object = mock_distributed_objects_->at(0);
+    return (object.my_node() == static_cast<int>(mock_node_) and
+            object.my_local_rank() == static_cast<int>(mock_local_core_))
+               ? std::addressof(object)
+               : nullptr;
   }
 
   template <typename Action, typename... Args>
@@ -518,37 +607,47 @@ class MockCollectionOfDistributedObjectsProxy {
 
   template <typename Action, typename... Args>
   void threaded_action(std::tuple<Args...> args) noexcept {
-    if (mock_distributed_objects_->size() != 1) {
-      ERROR("NodeGroups must have exactly one element during testing, but have "
-            << mock_distributed_objects_->size());
-    }
-    mock_distributed_objects_->begin()->second.template threaded_action<Action>(
-        std::move(args));
+    static_assert(std::is_same_v<ChareType, MockNodeGroupChare>,
+                  "Do not call threaded_action for other than a Nodegroup");
+    alg::for_each(*mock_distributed_objects_,
+                  [&args](auto& index_and_mock_distributed_object) noexcept {
+                    index_and_mock_distributed_object.second
+                        .template threaded_action<Action>(args);
+                  });
   }
 
   template <typename Action>
   void threaded_action() noexcept {
-    if (mock_distributed_objects_->size() != 1) {
-      ERROR("NodeGroups must have exactly one element during testing, but have "
-            << mock_distributed_objects_->size());
-    }
-    mock_distributed_objects_->begin()
-        ->second.template threaded_action<Action>();
+    static_assert(std::is_same_v<ChareType, MockNodeGroupChare>,
+                  "Do not call threaded_action for other than a Nodegroup");
+    alg::for_each(*mock_distributed_objects_,
+                  [](auto& index_and_mock_distributed_object) noexcept {
+                    index_and_mock_distributed_object.second
+                        .template threaded_action<Action>();
+                  });
   }
 
   // clang-tidy: no non-const references
   void pup(PUP::er& /*p*/) noexcept {  // NOLINT
     ERROR(
-        "Should not try to serialize the mock proxy. If you encountered this "
-        "error you are using the mocking framework in a way that it was not "
-        "intended to be used. It may be possible to extend it to more use "
-        "cases but it is recommended you file an issue to discuss before "
-        "modifying the mocking framework.");
+        "Should not try to serialize the CollectionOfMockDistributedObjects. "
+        "If you encountered this error you are using the mocking framework "
+        "in a way that it was not intended to be used. It may be possible "
+        "to extend it to more use cases but it is recommended you file an "
+        "issue to discuss before modifying the mocking framework.");
   }
 
  private:
   CollectionOfMockDistributedObjects* mock_distributed_objects_;
   Inboxes* inboxes_;
+  // mock_node_, mock_local_core_, and mock_global_core_ are the
+  // (mock) node and core that the
+  // MockCollectionOfDistributedObjectsProxy lives on.  This is
+  // different than the (mock) nodes and cores that each element ofthe
+  // referred-to CollectionOfMockDistributedObjects lives on.
+  size_t mock_node_{0};
+  size_t mock_local_core_{0};
+  size_t mock_global_core_{0};
 };
 }  // namespace ActionTesting_detail
 
@@ -557,7 +656,32 @@ struct MockArrayChare {
   template <typename Component, typename Index>
   using cproxy = ActionTesting_detail::MockCollectionOfDistributedObjectsProxy<
       Component, Index,
-      typename MockDistributedObject<Component>::inbox_tags_list>;
+      typename MockDistributedObject<Component>::inbox_tags_list,
+      MockArrayChare>;
+};
+/// A mock class for the CMake-generated `Parallel::Algorithms::Group`
+struct MockGroupChare {
+  template <typename Component, typename Index>
+  using cproxy = ActionTesting_detail::MockCollectionOfDistributedObjectsProxy<
+      Component, Index,
+      typename MockDistributedObject<Component>::inbox_tags_list,
+      MockGroupChare>;
+};
+/// A mock class for the CMake-generated `Parallel::Algorithms::NodeGroup`
+struct MockNodeGroupChare {
+  template <typename Component, typename Index>
+  using cproxy = ActionTesting_detail::MockCollectionOfDistributedObjectsProxy<
+      Component, Index,
+      typename MockDistributedObject<Component>::inbox_tags_list,
+      MockNodeGroupChare>;
+};
+/// A mock class for the CMake-generated `Parallel::Algorithms::Singleton`
+struct MockSingletonChare {
+  template <typename Component, typename Index>
+  using cproxy = ActionTesting_detail::MockCollectionOfDistributedObjectsProxy<
+      Component, Index,
+      typename MockDistributedObject<Component>::inbox_tags_list,
+      MockSingletonChare>;
 };
 }  // namespace ActionTesting
 
@@ -565,6 +689,21 @@ struct MockArrayChare {
 namespace Parallel {
 template <>
 struct get_array_index<ActionTesting::MockArrayChare> {
+  template <typename Component>
+  using f = typename Component::array_index;
+};
+template <>
+struct get_array_index<ActionTesting::MockGroupChare> {
+  template <typename Component>
+  using f = typename Component::array_index;
+};
+template <>
+struct get_array_index<ActionTesting::MockNodeGroupChare> {
+  template <typename Component>
+  using f = typename Component::array_index;
+};
+template <>
+struct get_array_index<ActionTesting::MockSingletonChare> {
   template <typename Component>
   using f = typename Component::array_index;
 };

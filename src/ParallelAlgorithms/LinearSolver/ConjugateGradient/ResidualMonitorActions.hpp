@@ -67,7 +67,8 @@ struct InitializeResidual {
         });
 
     LinearSolver::observe_detail::contribute_to_reduction_observer<
-        OptionsGroup>(iteration_id, residual_magnitude, cache);
+        OptionsGroup, ParallelComponent>(iteration_id, residual_magnitude,
+                                         cache);
 
     // Determine whether the linear solver has converged
     Convergence::HasConverged has_converged{
@@ -159,7 +160,8 @@ struct UpdateResidual {
     const size_t completed_iterations = iteration_id + 1;
     const double residual_magnitude = sqrt(residual_square);
     LinearSolver::observe_detail::contribute_to_reduction_observer<
-        OptionsGroup>(completed_iterations, residual_magnitude, cache);
+        OptionsGroup, ParallelComponent>(completed_iterations,
+                                         residual_magnitude, cache);
 
     // Determine whether the linear solver has converged
     Convergence::HasConverged has_converged{

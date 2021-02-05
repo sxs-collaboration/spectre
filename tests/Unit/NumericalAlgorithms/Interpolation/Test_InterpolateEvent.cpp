@@ -113,7 +113,7 @@ struct mock_interpolator {
       tmpl::list<MockInterpolatorReceiveVolumeData>;
 
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -190,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
-  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::emplace_group_component<interp_component>(&runner);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<interp_target_component>(&runner, 0);
   ActionTesting::next_action<interp_target_component>(make_not_null(&runner),

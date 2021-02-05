@@ -45,8 +45,11 @@ std::ostream& operator<<(std::ostream& os, const TestEnum& t) noexcept {
 // 2 3 abf a o e u Value 2]]
 SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   OUTPUT_TEST();
-  const char c_string0[40] = {"test 1 2 3"};
-  auto* c_string1 = new char[80];
+  // clang-tidy doesn't want c-style arrays, but here we are trying
+  // to test them explicitly.
+  const char c_string0[40] = {"test 1 2 3"}; // NOLINT
+  // clang-tidy doesn't want raw pointers, wants gsl::owner<>.
+  auto* c_string1 = new char[80]; // NOLINT
   // clang-tidy: do not use pointer arithmetic
   c_string1[0] = 'a';   // NOLINT
   c_string1[1] = 'b';   // NOLINT
@@ -55,7 +58,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   constexpr const char* const c_string2 = {"a o e u"};
   Parallel::printf("%d %lld %s %s %s %s %s\n", -100, 3000000000, TestStream{},
                    c_string0, c_string1, c_string2, TestEnum::Value2);
-  delete[] c_string1;
+  // clang-tidy doesn't want delete on anything without gsl::owner<>.
+  delete[] c_string1; // NOLINT
 }
 /// [output_test_example]
 

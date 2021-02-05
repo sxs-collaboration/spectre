@@ -19,12 +19,12 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -300,8 +300,13 @@ struct ContributeVolumeDataToWriter {
         {
           // Scoping is for closing HDF5 file before we release the lock.
           const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
+          auto& my_proxy =
+              Parallel::get_parallel_component<ParallelComponent>(cache);
           h5::H5File<h5::AccessType::ReadWrite> h5file(
-              file_prefix + std::to_string(sys::my_node()) + ".h5", true);
+              file_prefix +
+                  std::to_string(Parallel::my_node(*my_proxy.ckLocalBranch())) +
+                  ".h5",
+              true);
           constexpr size_t version_number = 0;
           auto& volume_file =
               h5file.try_insert<h5::VolumeData>(subfile_name, version_number);

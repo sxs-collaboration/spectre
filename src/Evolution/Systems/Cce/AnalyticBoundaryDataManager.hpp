@@ -62,7 +62,7 @@ class AnalyticBoundaryDataManager {
 
   /// Use `observers::ThreadedActions::WriteSimpleData` to output the expected
   /// news at `time` from the analytic data to dataset `/expected_news.dat`.
-  template <typename Metavariables>
+  template <typename ParallelComponent, typename Metavariables>
   void write_news(Parallel::GlobalCache<Metavariables>& cache,
                   double time) const noexcept;
 
@@ -78,7 +78,7 @@ class AnalyticBoundaryDataManager {
   double extraction_radius_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-template <typename Metavariables>
+template <typename ParallelComponent, typename Metavariables>
 void AnalyticBoundaryDataManager::write_news(
     Parallel::GlobalCache<Metavariables>& cache,
     const double time) const noexcept {
@@ -104,9 +104,10 @@ void AnalyticBoundaryDataManager::write_news(
     data_to_write[2 * i + 1] = real(goldberg_modes[i]);
     data_to_write[2 * i + 2] = imag(goldberg_modes[i]);
   }
+  auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   auto observer_proxy = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(
-      cache)[static_cast<size_t>(sys::my_node())];
+      cache)[static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal()))];
   Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
       observer_proxy, file_legend, data_to_write, "/News_expected"s);
 }

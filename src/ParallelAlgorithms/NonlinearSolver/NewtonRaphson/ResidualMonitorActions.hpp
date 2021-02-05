@@ -50,7 +50,7 @@ struct CheckResidualMagnitude {
                     Args&&... args) noexcept {
     if constexpr (db::tag_is_retrievable_v<residual_magnitude_square_tag,
                                            DataBox>) {
-      apply_impl(box, cache, std::forward<Args>(args)...);
+      apply_impl<ParallelComponent>(box, cache, std::forward<Args>(args)...);
     } else {
       ERROR(
           "The residual monitor is not yet initialized. This is a bug, so "
@@ -59,7 +59,8 @@ struct CheckResidualMagnitude {
   }
 
  private:
-  template <typename DbTagsList, typename Metavariables>
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables>
   static void apply_impl(db::DataBox<DbTagsList>& box,
                          Parallel::GlobalCache<Metavariables>& cache,
                          const size_t iteration_id,
@@ -69,8 +70,9 @@ struct CheckResidualMagnitude {
     const double residual_magnitude = sqrt(next_residual_magnitude_square);
 
     NonlinearSolver::observe_detail::contribute_to_reduction_observer<
-        OptionsGroup>(iteration_id, globalization_iteration_id,
-                      residual_magnitude, step_length, cache);
+        OptionsGroup, ParallelComponent>(
+        iteration_id, globalization_iteration_id, residual_magnitude,
+        step_length, cache);
 
     if (UNLIKELY(iteration_id == 0)) {
       db::mutate<initial_residual_magnitude_tag>(

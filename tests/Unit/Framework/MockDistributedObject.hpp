@@ -114,6 +114,21 @@ using item_type_if_contained_t =
     typename item_type_if_contained<Tag, DataBoxType>::type;
 }  // namespace detail
 
+/// Wraps a size_t representing the node number.  This is so the user
+/// can write things like `emplace_array_component(NodeId{3},...)`  instead of
+/// `emplace_array_component(3,...)`.
+struct NodeId {
+  size_t value;
+};
+
+/// Wraps a size_t representing the local core number. This is so the
+/// user can write things like
+/// `emplace_array_component(NodeId{3},LocalCoreId{2},...)`  instead of
+/// `emplace_array_component(3,2,...)`.
+struct LocalCoreId {
+  size_t value;
+};
+
 /// MockDistributedObject mocks the AlgorithmImpl class. It should not be
 /// considered as part of the user interface.
 ///
@@ -288,11 +303,20 @@ class MockDistributedObject {
 
   template <typename... Options>
   MockDistributedObject(
+      const NodeId node_id, const LocalCoreId local_core_id,
+      std::vector<std::vector<size_t>> mock_global_cores,
+      std::vector<std::pair<size_t, size_t>> mock_nodes_and_local_cores,
       const array_index& index,
       Parallel::GlobalCache<typename Component::metavariables>* cache,
       tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes,
       Options&&... opts)
-      : array_index_(index), global_cache_(cache), inboxes_(inboxes) {
+      : mock_node_(node_id.value),
+        mock_local_core_(local_core_id.value),
+        mock_global_cores_(std::move(mock_global_cores)),
+        mock_nodes_and_local_cores_(std::move(mock_nodes_and_local_cores)),
+        array_index_(index),
+        global_cache_(cache),
+        inboxes_(inboxes) {
     box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
         db::create<
             db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<metavariables>>,
@@ -522,6 +546,38 @@ class MockDistributedObject {
         std::forward<Data>(data));
   }
 
+  // {@
+  /// Wrappers for charm++ informational functions.
+
+  /// Number of processing elements
+  int number_of_procs() const noexcept;
+
+  /// Global %Index of my processing element.
+  int my_proc() const noexcept;
+
+  /// Number of nodes.
+  int number_of_nodes() const noexcept;
+
+  /// %Index of my node.
+  int my_node() const noexcept;
+
+  /// Number of processing elements on the given node.
+  int procs_on_node(int node_index) const noexcept;
+
+  /// The local index of my processing element on my node.
+  /// This is in the interval 0, ..., procs_on_node(my_node()) - 1.
+  int my_local_rank() const noexcept;
+
+  /// %Index of first processing element on the given node.
+  int first_proc_on_node(int node_index) const noexcept;
+
+  /// %Index of the node for the given processing element.
+  int node_of(int proc_index) const noexcept;
+
+  /// The local index for the given processing element on its node.
+  int local_rank_of(int proc_index) const noexcept;
+  // @}
+
  private:
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_simple_action(
@@ -664,6 +720,13 @@ class MockDistributedObject {
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
   PhaseType phase_{};
+
+  size_t mock_node_{0};
+  size_t mock_local_core_{0};
+  // mock_global_cores[node][local_core] is the global_core.
+  std::vector<std::vector<size_t>> mock_global_cores_{};
+  // mock_nodes_and_local_cores_[global_core] is the pair node,local_core.
+  std::vector<std::pair<size_t, size_t>> mock_nodes_and_local_cores_{};
 
   typename Component::array_index array_index_{};
   Parallel::GlobalCache<typename Component::metavariables>* global_cache_{
@@ -999,4 +1062,59 @@ bool MockDistributedObject<Component>::is_ready_impl(
   EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
   return next_action_is_ready;
 }
+
+template <typename Component>
+int MockDistributedObject<Component>::number_of_procs() const noexcept {
+  return static_cast<int>(mock_nodes_and_local_cores_.size());
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::my_proc() const noexcept {
+  return static_cast<int>(
+      mock_global_cores_.at(mock_node_).at(mock_local_core_));
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::number_of_nodes() const noexcept {
+  return static_cast<int>(mock_global_cores_.size());
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::my_node() const noexcept {
+  return static_cast<int>(mock_node_);
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::procs_on_node(
+    const int node_index) const noexcept {
+  return static_cast<int>(
+      mock_global_cores_.at(static_cast<size_t>(node_index)).size());
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::my_local_rank() const noexcept {
+  return static_cast<int>(mock_local_core_);
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::first_proc_on_node(
+    const int node_index) const noexcept {
+  return static_cast<int>(
+      mock_global_cores_.at(static_cast<size_t>(node_index)).front());
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::node_of(
+    const int proc_index) const noexcept {
+  return static_cast<int>(
+      mock_nodes_and_local_cores_.at(static_cast<size_t>(proc_index)).first);
+}
+
+template <typename Component>
+int MockDistributedObject<Component>::local_rank_of(
+    const int proc_index) const noexcept {
+  return static_cast<int>(
+      mock_nodes_and_local_cores_.at(static_cast<size_t>(proc_index)).second);
+}
+
 }  // namespace ActionTesting

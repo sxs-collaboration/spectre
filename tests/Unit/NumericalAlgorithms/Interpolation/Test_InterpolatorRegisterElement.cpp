@@ -30,7 +30,7 @@ namespace {
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -88,7 +88,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
-  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   }
