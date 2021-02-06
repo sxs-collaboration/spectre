@@ -244,10 +244,11 @@ struct EvolutionMetavars {
                   Phase, Phase::Evolve,
                   tmpl::list<
                       Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                      step_actions,
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>;
+                      Actions::AdvanceTime>>>>>;
 
   static constexpr Options::String help{
       "Evolve the Burgers equation.\n\n"

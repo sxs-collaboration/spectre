@@ -39,7 +39,7 @@ struct Component {
 
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                        Tags::TimeStep, Tags::Time>;
+                        Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -68,7 +68,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
       {TimeStepId(time_step.is_positive(), 8, start),
        TimeStepId(time_step.is_positive(), 8, start, 1,
                   start + substep_offsets[1]),
-       time_step, start.value()});
+       time_step, time_step, start.value()});
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 
@@ -110,7 +110,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
       &runner, 0,
       {TimeStepId(time_step.is_positive(), 8, start),
        TimeStepId(time_step.is_positive(), 8, start + time_step), time_step,
-       start.value()});
+       time_step, start.value()});
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 

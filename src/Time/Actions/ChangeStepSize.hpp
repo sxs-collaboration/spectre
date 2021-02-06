@@ -44,20 +44,15 @@ void change_step_size(
   const auto& step_choosers = db::get<step_choosers_tag>(*box);
   const auto& step_controller = db::get<Tags::StepController>(*box);
 
-  const auto& time_id = db::get<Tags::TimeStepId>(*box);
+  const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
   const auto& history = db::get<Tags::HistoryEvolvedVariables<>>(*box);
 
-  if (not time_stepper.can_change_step_size(time_id, history)) {
+  if (not time_stepper.can_change_step_size(next_time_id, history)) {
     return;
   }
 
   const auto& current_step = db::get<Tags::TimeStep>(*box);
-
-  const double last_step_size =
-      history.size() > 0 ? abs(time_id.step_time() -
-                               (history.end() - 1).time_step_id().step_time())
-                               .value()
-                         : std::numeric_limits<double>::infinity();
+  const double last_step_size = std::abs(db::get<Tags::TimeStep>(*box).value());
 
   // The step choosers return the magnitude of the desired step, so
   // we always want the minimum requirement, but we have to negate
@@ -73,16 +68,11 @@ void change_step_size(
   }
 
   const auto new_step =
-      step_controller.choose_step(time_id.step_time(), desired_step);
+      step_controller.choose_step(next_time_id.step_time(), desired_step);
   if (new_step != current_step) {
-    const auto new_next_time_id = time_stepper.next_time_id(time_id, new_step);
-
-    db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
-        box, [&new_next_time_id, &new_step](
-                 const gsl::not_null<TimeStepId*> next_time_id,
-                 const gsl::not_null<TimeDelta*> time_step) noexcept {
-          *next_time_id = new_next_time_id;
-          *time_step = new_step;
+    db::mutate<Tags::Next<Tags::TimeStep>>(
+        box, [&new_step](const gsl::not_null<TimeDelta*> next_step) noexcept {
+          *next_step = new_step;
         });
   }
 }

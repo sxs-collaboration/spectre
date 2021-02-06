@@ -84,7 +84,8 @@ struct TimeAndTimeStep {
 
   using simple_tags =
       tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                 ::Tags::Time, ::Tags::TimeStep>;
+                 ::Tags::Time, ::Tags::TimeStep,
+                 ::Tags::Next<::Tags::TimeStep>>;
   using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
 
   template <
@@ -133,11 +134,11 @@ struct TimeAndTimeStep {
         -static_cast<int64_t>(time_stepper.number_of_past_steps()),
         initial_time);
 
-    Initialization::mutate_assign<
-        tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                   ::Tags::Time, ::Tags::TimeStep>>(
+    Initialization::mutate_assign<tmpl::list<
+        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::Time,
+        ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
         make_not_null(&box), TimeStepId{}, time_id,
-        std::numeric_limits<double>::signaling_NaN(), initial_dt);
+        std::numeric_limits<double>::signaling_NaN(), initial_dt, initial_dt);
     return std::make_tuple(std::move(box));
   }
 

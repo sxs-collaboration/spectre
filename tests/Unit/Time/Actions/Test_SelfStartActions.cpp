@@ -131,7 +131,7 @@ struct Component {
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
       history_tag, Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-      Tags::TimeStep, Tags::Time>>;
+      Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time>>;
   using compute_tags = db::AddComputeTags<Tags::SubstepTimeCompute>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
@@ -174,7 +174,8 @@ void emplace_component_and_initialize(
       {initial_value, 0., typename history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
+       initial_time_step, initial_time_step,
+       std::numeric_limits<double>::signaling_NaN()});
 }
 
 template <>
@@ -190,7 +191,8 @@ void emplace_component_and_initialize<true>(
        TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
+       initial_time_step, initial_time_step,
+       std::numeric_limits<double>::signaling_NaN()});
 }
 
 using not_self_start_action = std::negation<std::disjunction<

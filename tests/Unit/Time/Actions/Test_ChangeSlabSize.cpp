@@ -57,9 +57,9 @@ struct Component {
 
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
 
-  using simple_tags =
-      tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                 Tags::HistoryEvolvedVariables<Var>>;
+  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                                 Tags::TimeStep, Tags::Next<Tags::TimeStep>,
+                                 Tags::HistoryEvolvedVariables<Var>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -105,15 +105,18 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
              id.step_time().slab().duration() / 2;
     };
 
-    db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
+    db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+               Tags::Next<Tags::TimeStep>>(
         make_not_null(&box),
         [&get_step, &start_time, &time_runs_forward](
             const gsl::not_null<TimeStepId*> id,
             const gsl::not_null<TimeStepId*> next_id,
             const gsl::not_null<TimeDelta*> step,
+            const gsl::not_null<TimeDelta*> next_step,
             const TimeStepper& stepper) noexcept {
           *id = TimeStepId(time_runs_forward, 3, start_time);
           *step = get_step(*id);
+          *next_step = get_step(*id);
           *next_id = stepper.next_time_id(*id, *step);
         },
         db::get<Tags::TimeStepper<>>(box));

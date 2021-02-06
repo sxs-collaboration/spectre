@@ -44,6 +44,12 @@ using StepToTimes = Registration::Registrar<StepChoosers::StepToTimes>;
 /// changing immediately is inefficient, it may be best to use
 /// triggers to only activate this check near (within a few slabs of)
 /// the desired time.
+/// \warning This step chooser should be used only to choose slabs, not steps in
+/// an LTS scheme. Because the times are chosen based on the current time step
+/// id, using this as a step chooser in local time stepping will act
+/// unintuitively. Further, roundoff-level fluctuations arising from taking
+/// floating-point time differences will tend to interact poorly with
+/// `StepController`s.
 template <typename StepChooserRegistrars = tmpl::list<Registrars::StepToTimes>>
 class StepToTimes : public StepChooser<StepChooserRegistrars> {
  public:

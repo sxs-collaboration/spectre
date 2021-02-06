@@ -323,11 +323,11 @@ struct EvolutionMetavars {
                       VariableFixing::FixToAtmosphere<volume_dim,
                                                       thermodynamic_dim>>,
                   Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
-                  Actions::ChangeSlabSize,
+                  Actions::ChangeSlabSize, step_actions,
                   tmpl::conditional_t<local_time_stepping,
                                       Actions::ChangeStepSize<step_choosers>,
                                       tmpl::list<>>,
-                  step_actions, Actions::AdvanceTime>>>>;
+                  Actions::AdvanceTime>>>>;
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,

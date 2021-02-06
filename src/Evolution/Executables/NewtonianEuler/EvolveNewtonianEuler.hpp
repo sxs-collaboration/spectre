@@ -279,10 +279,11 @@ struct EvolutionMetavars {
                   tmpl::list<
                       Actions::UpdateConservatives,
                       Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                      step_actions,
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>;
+                      Actions::AdvanceTime>>>>>;
 
   using const_global_cache_tags = tmpl::list<
       initial_data_tag,
