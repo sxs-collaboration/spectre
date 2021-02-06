@@ -227,12 +227,15 @@ class DataBox<tmpl::list<Tags...>>
    */
   using tags_list = tmpl::list<Tags...>;
 
-  /// A list of all the compute item tags, excluding their subitems
-  using compute_item_tags =
-      tmpl::filter<tags_list, db::is_compute_tag<tmpl::_1>>;
+  /// A list of all the immutable item tags used to create the DataBox
+  ///
+  /// \note This does not include subitems of immutable items
+  using immutable_item_creation_tags =
+      tmpl::filter<tags_list, db::is_immutable_item_tag<tmpl::_1>>;
 
   /// A list of all the compute items, including subitems from the compute items
-  using compute_with_subitems_tags = detail::expand_subitems<compute_item_tags>;
+  using compute_with_subitems_tags =
+      detail::expand_subitems<immutable_item_creation_tags>;
 
   /// A list of all the simple items, including subitems from the simple
   /// items
@@ -305,7 +308,7 @@ class DataBox<tmpl::list<Tags...>>
 
     // We do not send subitems for both simple items and compute items since
     // they can be reconstructed very cheaply.
-    pup_impl(p, non_subitems_tags{}, compute_item_tags{});
+    pup_impl(p, non_subitems_tags{}, immutable_item_creation_tags{});
   }
 
   template <typename Box, typename... KeepTags, typename... AddTags,
@@ -442,7 +445,7 @@ class DataBox<tmpl::list<Tags...>>
   // End mutating items in the DataBox
 
   using edge_list = tmpl::join<tmpl::transform<
-      compute_item_tags,
+      immutable_item_creation_tags,
       detail::create_dependency_graph<tmpl::pin<tags_list>, tmpl::_1>>>;
 
   bool mutate_locked_box_{false};
@@ -1154,7 +1157,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
 #ifdef SPECTRE_DEBUG
   // Check that we're not removing a subitem itself, should remove the parent.
   using compute_subitems_tags =
-      tmpl::filter<typename std::decay_t<Box>::compute_item_tags,
+      tmpl::filter<typename std::decay_t<Box>::immutable_item_creation_tags,
                    tmpl::bind<has_subitems, tmpl::_1>>;
 
   using compute_only_expand_subitems_tags = tmpl::flatten<
