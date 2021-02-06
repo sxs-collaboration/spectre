@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ElasticityBoundaryConditions")
 
 set(LIBRARY_SOURCES
+  Test_LaserBeam.cpp
   Test_Zero.cpp
   )
 
@@ -18,7 +19,10 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  Domain
+  DomainStructure
   ElasticityBoundaryConditions
+  ElasticitySolutions
   Elliptic
   Utilities
   )
