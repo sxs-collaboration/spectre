@@ -233,14 +233,14 @@ class DataBox<tmpl::list<Tags...>>
   using immutable_item_creation_tags =
       tmpl::filter<tags_list, db::is_immutable_item_tag<tmpl::_1>>;
 
-  /// A list of all the compute items, including subitems from the compute items
-  using compute_with_subitems_tags =
+  /// A list of all the immutable item tags, including their subitems
+  using immutable_item_tags =
       detail::expand_subitems<immutable_item_creation_tags>;
 
   /// A list of all the simple items, including subitems from the simple
   /// items
   using simple_item_tags =
-      tmpl::list_difference<tags_list, compute_with_subitems_tags>;
+      tmpl::list_difference<tags_list, immutable_item_tags>;
 
   /// A list of the simple items that have subitems, without expanding the
   /// subitems out
@@ -870,7 +870,7 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
       "One of the tags being mutated could not be found in the DataBox or "
       "is a base tag identifying more than one tag.");
   static_assert(not tmpl2::flat_any_v<tmpl::list_contains_v<
-                    typename DataBox<TagList>::compute_with_subitems_tags,
+                    typename DataBox<TagList>::immutable_item_tags,
                     detail::first_matching_tag<TagList, MutateTags>>...>,
                 "Cannot mutate a compute item");
   if (UNLIKELY(box->mutate_locked_box_)) {
@@ -1137,7 +1137,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
 
   // 5. Create the list of compute items with the RemoveTags removed
   using compute_tags_to_keep = tmpl::list_difference<
-      typename std::decay_t<Box>::compute_with_subitems_tags,
+      typename std::decay_t<Box>::immutable_item_tags,
       compute_tags_to_remove_with_subitems>;
 
   // 6. List of the old tags that are being kept
