@@ -14,3 +14,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "ConstitutiveRelations;DataStructures;Domain;Elasticity;LinearOperators;Utilities"
   )
+
+add_subdirectory(BoundaryConditions)
