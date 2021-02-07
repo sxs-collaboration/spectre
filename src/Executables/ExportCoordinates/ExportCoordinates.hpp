@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <pup.h>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -21,17 +22,18 @@
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
-#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -45,11 +47,30 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
-#include "Utilities/Requires.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+using MinGridSpacingReductionData = Parallel::ReductionData<
+    // Time
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+    // Minimum grid spacing
+    Parallel::ReductionDatum<double, funcl::Min<>>>;
+
+struct MinGridSpacingFormatter
+    : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
+  using reduction_data = MinGridSpacingReductionData;
+  std::string operator()(const double time,
+                         const double min_grid_spacing) noexcept {
+    return "Time: " + get_output(time) +
+           ", Global inertial minimum grid spacing: " +
+           get_output(min_grid_spacing);
+  }
+  void pup(PUP::er& /*p*/) noexcept {}
+};
+
 namespace Actions {
 template <size_t Dim>
 struct ExportCoordinates {
@@ -62,15 +83,13 @@ struct ExportCoordinates {
             observers::ObservationKey("ObserveCoords")};
   }
 
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, domain::Tags::Mesh<Dim>>> =
-          nullptr>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const double time = get<Tags::Time>(box);
@@ -116,65 +135,44 @@ struct ExportCoordinates {
   }
 };
 
-struct PrintGlobalMinimumGridSpacing {
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex>
-  static void apply(const db::DataBox<DbTags>& /*box*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const double time,
-                    const double global_min_grid_spacing) noexcept {
-    Parallel::printf(
-        "Time: %1.3e, Global inertial minimum grid spacing: %1.3e\n", time,
-        global_min_grid_spacing);
-  }
-};
-}  // namespace Actions
-
-template <typename Metavariables>
-struct SingletonParallelComponent {
-  using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-
-  static void execute_next_phase(
-      const typename Metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
-};
-
 struct FindGlobalMinimumGridSpacing {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename ArrayIndex>
+  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
+  register_info(const db::DataBox<DbTagsList>& /*box*/,
+                const ArrayIndex& /*array_index*/) noexcept {
+    return {observers::TypeOfObservation::Reduction,
+            observers::ObservationKey("min_grid_spacing")};
+  }
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            size_t Dim, typename ActionList,
-            typename ParallelComponent>
+            size_t Dim, typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& element_proxy =
-        Parallel::get_parallel_component<ParallelComponent>(cache)[element_id];
-    const auto& singleton_proxy = Parallel::get_parallel_component<
-        SingletonParallelComponent<Metavariables>>(cache);
-
-    Parallel::ReductionData<
-        Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-        Parallel::ReductionDatum<double, funcl::Min<>>>
-        time_and_elemental_min_grid_spacing(
-            get<Tags::Time>(box),
-            get<domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>(box));
-    Parallel::contribute_to_reduction<Actions::PrintGlobalMinimumGridSpacing>(
-        std::move(time_and_elemental_min_grid_spacing), element_proxy,
-        singleton_proxy);
-
+    const double time = get<Tags::Time>(box);
+    const double local_min_grid_spacing =
+        get<domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>(box);
+    auto& local_observer =
+        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+             cache)
+             .ckLocalBranch();
+    Parallel::simple_action<observers::Actions::ContributeReductionData>(
+        local_observer, observers::ObservationId(time, "min_grid_spacing"),
+        observers::ArrayComponentId{
+            std::add_pointer_t<ParallelComponent>{nullptr},
+            Parallel::ArrayIndex<ElementId<Dim>>(element_id)},
+        std::string{"/MinGridSpacing"},
+        std::vector<std::string>{"Time", "MinGridSpacing"},
+        MinGridSpacingReductionData{time, local_min_grid_spacing},
+        std::make_optional(MinGridSpacingFormatter{}));
     return {std::move(box)};
   }
 };
+}  // namespace Actions
 
 template <size_t Dim>
 struct Metavariables {
@@ -220,18 +218,20 @@ struct Metavariables {
                   Metavariables::Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  Actions::ExportCoordinates<Dim>>,
+                             observers::Actions::RegisterWithObservers<
+                                 Actions::FindGlobalMinimumGridSpacing>,
                              Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   typename Metavariables::Phase, Metavariables::Phase::Export,
                   tmpl::list<Actions::AdvanceTime,
                              Actions::ExportCoordinates<Dim>,
-                             FindGlobalMinimumGridSpacing,
+                             Actions::FindGlobalMinimumGridSpacing,
                              Actions::RunEventsAndTriggers>>>>,
       observers::Observer<Metavariables>,
-      observers::ObserverWriter<Metavariables>,
-      SingletonParallelComponent<Metavariables>>;
+      observers::ObserverWriter<Metavariables>>;
 
-  using observed_reduction_data_tags = tmpl::list<>;
+  using observed_reduction_data_tags = observers::make_reduction_data_tags<
+      tmpl::list<MinGridSpacingReductionData>>;
 
   static Phase determine_next_phase(
       const Phase& current_phase,
