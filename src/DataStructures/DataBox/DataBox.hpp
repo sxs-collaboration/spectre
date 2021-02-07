@@ -241,19 +241,13 @@ class DataBox<tmpl::list<Tags...>>
   using mutable_item_tags =
       tmpl::list_difference<tags_list, immutable_item_tags>;
 
-  /// A list of the simple items that have subitems, without expanding the
-  /// subitems out
-  using simple_subitems_tags =
-      tmpl::filter<mutable_item_tags,
-                   tmpl::bind<detail::has_subitems, tmpl::_1>>;
-
   /// A list of the expanded simple subitems, not including the main Subitem
   /// tags themselves.
   ///
   /// Specifically, if there is a `Variables<Tag0, Tag1>`, then this list would
   /// contain `Tag0, Tag1`.
-  using simple_only_expanded_subitems_tags = tmpl::flatten<
-      tmpl::transform<simple_subitems_tags, db::Subitems<tmpl::_1>>>;
+  using mutable_subitem_tags = tmpl::flatten<
+      tmpl::transform<mutable_item_tags, db::Subitems<tmpl::_1>>>;
 
   /// \cond HIDDEN_SYMBOLS
   /*!
@@ -303,7 +297,7 @@ class DataBox<tmpl::list<Tags...>>
   void pup(PUP::er& p) noexcept {  // NOLINT
     using non_subitems_tags =
         tmpl::list_difference<mutable_item_tags,
-                              simple_only_expanded_subitems_tags>;
+                              mutable_subitem_tags>;
 
     // We do not send subitems for both simple items and compute items since
     // they can be reconstructed very cheaply.
@@ -1162,7 +1156,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
   using compute_only_expand_subitems_tags = tmpl::flatten<
       tmpl::transform<compute_subitems_tags, db::Subitems<tmpl::_1>>>;
   using all_only_subitems_tags = tmpl::append<
-      typename std::decay_t<Box>::simple_only_expanded_subitems_tags,
+      typename std::decay_t<Box>::mutable_subitem_tags,
       compute_only_expand_subitems_tags>;
   using non_expand_subitems_remove_tags =
       tmpl::list_difference<RemoveTags, all_only_subitems_tags>;
