@@ -26,3 +26,4 @@ spectre_target_headers(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(Protocols)
