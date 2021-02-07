@@ -237,15 +237,14 @@ class DataBox<tmpl::list<Tags...>>
   using immutable_item_tags =
       detail::expand_subitems<immutable_item_creation_tags>;
 
-  /// A list of all the simple items, including subitems from the simple
-  /// items
-  using simple_item_tags =
+  /// A list of all the mutable item tags, including their subitems
+  using mutable_item_tags =
       tmpl::list_difference<tags_list, immutable_item_tags>;
 
   /// A list of the simple items that have subitems, without expanding the
   /// subitems out
   using simple_subitems_tags =
-      tmpl::filter<simple_item_tags,
+      tmpl::filter<mutable_item_tags,
                    tmpl::bind<detail::has_subitems, tmpl::_1>>;
 
   /// A list of the expanded simple subitems, not including the main Subitem
@@ -303,7 +302,7 @@ class DataBox<tmpl::list<Tags...>>
   // clang-tidy: no non-const references
   void pup(PUP::er& p) noexcept {  // NOLINT
     using non_subitems_tags =
-        tmpl::list_difference<simple_item_tags,
+        tmpl::list_difference<mutable_item_tags,
                               simple_only_expanded_subitems_tags>;
 
     // We do not send subitems for both simple items and compute items since
@@ -1130,7 +1129,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
   // 4. Create new list of tags by removing all the remove tags, and adding all
   // the AddTags, including subitems
   using simple_tags_to_keep =
-      tmpl::list_difference<typename std::decay_t<Box>::simple_item_tags,
+      tmpl::list_difference<typename std::decay_t<Box>::mutable_item_tags,
                             simple_tags_to_remove_with_subitems>;
   using new_simple_tags =
       tmpl::append<simple_tags_to_keep, simple_tags_to_add_with_subitems>;

@@ -65,7 +65,7 @@ struct SetVariables {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if constexpr (tmpl::list_contains_v<
-                      typename db::DataBox<DbTagsList>::simple_item_tags,
+                      typename db::DataBox<DbTagsList>::mutable_item_tags,
                       ::Initialization::Tags::InitialTime>) {
       impl<Metavariables>(make_not_null(&box));
     } else {

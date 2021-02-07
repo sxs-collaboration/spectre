@@ -136,7 +136,7 @@ auto merge_into_databox(db::DataBox<DbTagsList>&& box,
   using simple_tags_to_check = tmpl::filter<
       SimpleTagsList,
       tmpl::bind<tmpl::list_contains,
-                 tmpl::pin<typename db::DataBox<DbTagsList>::simple_item_tags>,
+                 tmpl::pin<typename db::DataBox<DbTagsList>::mutable_item_tags>,
                  tmpl::_1>>;
   using simple_tags_to_add =
       tmpl::remove_if<SimpleTagsList,

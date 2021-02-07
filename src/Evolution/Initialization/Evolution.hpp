@@ -91,15 +91,15 @@ struct TimeAndTimeStep {
       typename DbTagsList, typename... InboxTags, typename ArrayIndex,
       typename ActionList, typename ParallelComponent,
       Requires<tmpl::list_contains_v<
-                   typename db::DataBox<DbTagsList>::simple_item_tags,
+                   typename db::DataBox<DbTagsList>::mutable_item_tags,
                    Initialization::Tags::InitialTime> and
 
                tmpl::list_contains_v<
-                   typename db::DataBox<DbTagsList>::simple_item_tags,
+                   typename db::DataBox<DbTagsList>::mutable_item_tags,
                    Initialization::Tags::InitialTimeDelta> and
 
                tmpl::list_contains_v<
-                   typename db::DataBox<DbTagsList>::simple_item_tags,
+                   typename db::DataBox<DbTagsList>::mutable_item_tags,
                    Tags::InitialSlabSize<Metavariables::local_time_stepping>>> =
           nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -146,15 +146,15 @@ struct TimeAndTimeStep {
       typename ActionList, typename ParallelComponent,
       Requires<
           not(tmpl::list_contains_v<
-                  typename db::DataBox<DbTagsList>::simple_item_tags,
+                  typename db::DataBox<DbTagsList>::mutable_item_tags,
                   Initialization::Tags::InitialTime> and
 
               tmpl::list_contains_v<
-                  typename db::DataBox<DbTagsList>::simple_item_tags,
+                  typename db::DataBox<DbTagsList>::mutable_item_tags,
                   Initialization::Tags::InitialTimeDelta> and
 
               tmpl::list_contains_v<
-                  typename db::DataBox<DbTagsList>::simple_item_tags,
+                  typename db::DataBox<DbTagsList>::mutable_item_tags,
                   Tags::InitialSlabSize<Metavariables::local_time_stepping>>)> =
           nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
@@ -220,11 +220,11 @@ struct TimeStepperHistory {
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             Requires<tmpl::list_contains_v<
-                         typename db::DataBox<DbTagsList>::simple_item_tags,
+                         typename db::DataBox<DbTagsList>::mutable_item_tags,
                          domain::Tags::Mesh<dim>> and
 
                      tmpl::list_contains_v<
-                         typename db::DataBox<DbTagsList>::simple_item_tags,
+                         typename db::DataBox<DbTagsList>::mutable_item_tags,
                          variables_tag>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -246,15 +246,16 @@ struct TimeStepperHistory {
     return std::make_tuple(std::move(box));
   }
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<not(tmpl::list_contains_v<
-                             typename db::DataBox<DbTagsList>::simple_item_tags,
-                             domain::Tags::Mesh<dim>> and
+  template <
+      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<not(tmpl::list_contains_v<
+                       typename db::DataBox<DbTagsList>::mutable_item_tags,
+                       domain::Tags::Mesh<dim>> and
 
-                         tmpl::list_contains_v<
-                             typename db::DataBox<DbTagsList>::simple_item_tags,
-                             variables_tag>)> = nullptr>
+                   tmpl::list_contains_v<
+                       typename db::DataBox<DbTagsList>::mutable_item_tags,
+                       variables_tag>)> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
