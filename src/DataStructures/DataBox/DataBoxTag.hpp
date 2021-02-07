@@ -151,10 +151,10 @@ struct storage_type_impl {
           ? 4
           : (is_compute_tag_v<Tag>and has_return_type_member_v<Tag>)
                 ? 3
-                : is_compute_tag_v<Tag> ? 2
-                                        : std::is_base_of_v<db::SimpleTag, Tag>
-                                              ? 1
-                                              : 0>::template f<TagList, Tag>;
+                : is_immutable_item_tag_v<Tag>
+                      ? 2
+                      : std::is_base_of_v<db::SimpleTag, Tag> ? 1 : 0>::
+      template f<TagList, Tag>;
 };
 
 template <>
