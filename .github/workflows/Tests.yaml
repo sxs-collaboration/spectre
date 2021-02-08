@@ -335,7 +335,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Restore ccache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: /work/ccache
           key:
