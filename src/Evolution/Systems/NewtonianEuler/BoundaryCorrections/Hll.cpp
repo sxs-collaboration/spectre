@@ -8,8 +8,10 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
@@ -138,42 +140,72 @@ void Hll<Dim>::dg_boundary_terms(
     const Scalar<DataVector>& largest_outgoing_char_speed_ext,
     const Scalar<DataVector>& largest_ingoing_char_speed_ext,
     const dg::Formulation dg_formulation) const noexcept {
+  // Allocate a temp buffer with four tags.
+  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>>>
+      temps{get(mass_density_int).size()};
+
+  // Determine lambda_max and lambda_min from the characteristic speeds info
+  // from interior and exterior
+  get(get<::Tags::TempScalar<0>>(temps)) =
+      max(0., get(largest_outgoing_char_speed_int),
+          -get(largest_ingoing_char_speed_ext));
+  const DataVector& lambda_max = get(get<::Tags::TempScalar<0>>(temps));
+  get(get<::Tags::TempScalar<1>>(temps)) =
+      min(0., get(largest_ingoing_char_speed_int),
+          -get(largest_outgoing_char_speed_ext));
+  const DataVector& lambda_min = get(get<::Tags::TempScalar<1>>(temps));
+
+  // Pre-compute two expressions made out of lambda_max and lambda_min, for
+  // speeding up evaluating HLL flux
+  get(get<::Tags::TempScalar<2>>(temps)) = lambda_max * lambda_min;
+  const DataVector& lambdas_product = get(get<::Tags::TempScalar<2>>(temps));
+  get(get<::Tags::TempScalar<3>>(temps)) = 1. / (lambda_max - lambda_min);
+  const DataVector& one_over_lambda_max_minus_min =
+      get(get<::Tags::TempScalar<3>>(temps));
+
   if (dg_formulation == dg::Formulation::WeakInertial) {
+    //  weak formulation
     get(*boundary_correction_mass_density) =
-        0.5 * (get(normal_dot_flux_mass_density_int) -
-               get(normal_dot_flux_mass_density_ext)) -
-        0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
-            (get(mass_density_ext) - get(mass_density_int));
+        ((lambda_max * get(normal_dot_flux_mass_density_int) +
+          lambda_min * get(normal_dot_flux_mass_density_ext)) +
+         lambdas_product * (get(mass_density_ext) - get(mass_density_int))) *
+        one_over_lambda_max_minus_min;
     for (size_t i = 0; i < Dim; ++i) {
       boundary_correction_momentum_density->get(i) =
-          0.5 * (normal_dot_flux_momentum_density_int.get(i) -
-                 normal_dot_flux_momentum_density_ext.get(i)) -
-          0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
-              (momentum_density_ext.get(i) - momentum_density_int.get(i));
+          ((lambda_max * normal_dot_flux_momentum_density_int.get(i) +
+            lambda_min * normal_dot_flux_momentum_density_ext.get(i)) +
+           lambdas_product *
+               (momentum_density_ext.get(i) - momentum_density_int.get(i))) *
+          one_over_lambda_max_minus_min;
     }
     get(*boundary_correction_energy_density) =
-        0.5 * (get(normal_dot_flux_energy_density_int) -
-               get(normal_dot_flux_energy_density_ext)) -
-        0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
-            (get(energy_density_ext) - get(energy_density_int));
+        ((lambda_max * get(normal_dot_flux_energy_density_int) +
+          lambda_min * get(normal_dot_flux_energy_density_ext)) +
+         lambdas_product *
+             (get(energy_density_ext) - get(energy_density_int))) *
+        one_over_lambda_max_minus_min;
   } else {
+    //  strong formulation
     get(*boundary_correction_mass_density) =
-        -0.5 * (get(normal_dot_flux_mass_density_int) +
-                get(normal_dot_flux_mass_density_ext)) -
-        0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
-            (get(mass_density_ext) - get(mass_density_int));
+        (lambda_min * (get(normal_dot_flux_mass_density_int) +
+                       get(normal_dot_flux_mass_density_ext)) +
+         lambdas_product * (get(mass_density_ext) - get(mass_density_int))) *
+        one_over_lambda_max_minus_min;
     for (size_t i = 0; i < Dim; ++i) {
       boundary_correction_momentum_density->get(i) =
-          -0.5 * (normal_dot_flux_momentum_density_int.get(i) +
-                  normal_dot_flux_momentum_density_ext.get(i)) -
-          0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
-              (momentum_density_ext.get(i) - momentum_density_int.get(i));
+          (lambda_min * (normal_dot_flux_momentum_density_int.get(i) +
+                         normal_dot_flux_momentum_density_ext.get(i)) +
+           lambdas_product *
+               (momentum_density_ext.get(i) - momentum_density_int.get(i))) *
+          one_over_lambda_max_minus_min;
     }
     get(*boundary_correction_energy_density) =
-        -0.5 * (get(normal_dot_flux_energy_density_int) +
-                get(normal_dot_flux_energy_density_ext)) -
-        0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
-            (get(energy_density_ext) - get(energy_density_int));
+        (lambda_min * (get(normal_dot_flux_energy_density_int) +
+                       get(normal_dot_flux_energy_density_ext)) +
+         lambdas_product *
+             (get(energy_density_ext) - get(energy_density_int))) *
+        one_over_lambda_max_minus_min;
   }
 }
 
