@@ -643,7 +643,7 @@ class MockCollectionOfDistributedObjectsProxy {
   // mock_node_, mock_local_core_, and mock_global_core_ are the
   // (mock) node and core that the
   // MockCollectionOfDistributedObjectsProxy lives on.  This is
-  // different than the (mock) nodes and cores that each element ofthe
+  // different than the (mock) nodes and cores that each element of the
   // referred-to CollectionOfMockDistributedObjects lives on.
   size_t mock_node_{0};
   size_t mock_local_core_{0};
