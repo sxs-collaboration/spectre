@@ -1007,43 +1007,24 @@ using AddComputeTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 
 namespace detail {
-template <class ItemsList, class ComputeItemsList>
-struct compute_dbox_type;
-
-template <class... ItemsPack, class ComputeItemsList>
-struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
-  using full_items = detail::expand_subitems<tmpl::list<ItemsPack...>>;
-  using full_compute_items = detail::expand_subitems<ComputeItemsList>;
-  using type = DataBox<tmpl::append<full_items, full_compute_items>>;
+template <typename TagList>
+struct compute_dbox_type {
+  using immutable_item_tags = detail::expand_subitems<
+      tmpl::filter<TagList, db::is_immutable_item_tag<tmpl::_1>>>;
+  using mutable_item_tags = detail::expand_subitems<tmpl::filter<
+      TagList, tmpl::not_<tmpl::bind<db::is_immutable_item_tag, tmpl::_1>>>>;
+  using type = DataBox<tmpl::append<mutable_item_tags, immutable_item_tags>>;
 };
 }  // namespace detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Get all the Tags that are compute items from the `TagList`
- */
-template <class TagList>
-using get_compute_items =
-    tmpl::filter<TagList, db::is_immutable_item_tag<tmpl::_1>>;
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Get all the Tags that are items from the `TagList`
- */
-template <class TagList>
-using get_items =
-    tmpl::filter<TagList,
-                 tmpl::not_<tmpl::bind<db::is_immutable_item_tag, tmpl::_1>>>;
 
 /*!
  * \ingroup DataBoxGroup
  * \brief Returns the type of the DataBox that would be constructed from the
  * `TagList` of tags.
  */
-template <class TagList>
-using compute_databox_type =
-    typename detail::compute_dbox_type<get_items<TagList>,
-                                       get_compute_items<TagList>>::type;
+template <typename TagList>
+using compute_databox_type = typename detail::compute_dbox_type<TagList>::type;
+
 /*!
  * \ingroup DataBoxGroup
  * \brief Create a new DataBox

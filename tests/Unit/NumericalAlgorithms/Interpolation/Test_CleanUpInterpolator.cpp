@@ -44,11 +44,9 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using simple_tags =
-      db::get_items<typename intrp::Actions::InitializeInterpolator<
-          intrp::Tags::VolumeVarsInfo<Metavariables>,
-          intrp::Tags::InterpolatedVarsHolders<Metavariables>>::
-                        return_tag_list>;
+  using simple_tags = typename intrp::Actions::InitializeInterpolator<
+      intrp::Tags::VolumeVarsInfo<Metavariables>,
+      intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

@@ -1452,23 +1452,6 @@ void test_mutate_apply() noexcept {
 }
 
 static_assert(
-    std::is_same_v<tmpl::list<test_databox_tags::Tag4Compute,
-                              test_databox_tags::Tag5Compute,
-                              test_databox_tags::MultiplyScalarByTwoCompute>,
-                   db::get_compute_items<tmpl::list<
-                       test_databox_tags::Tag0, test_databox_tags::Tag4Compute,
-                       test_databox_tags::Tag1, test_databox_tags::Tag5Compute,
-                       test_databox_tags::MultiplyScalarByTwoCompute>>>,
-    "Failed testing db::get_compute_items");
-static_assert(
-    std::is_same_v<tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
-                   db::get_items<tmpl::list<
-                       test_databox_tags::Tag0, test_databox_tags::Tag4Compute,
-                       test_databox_tags::Tag1, test_databox_tags::Tag5Compute,
-                       test_databox_tags::MultiplyScalarByTwoCompute>>>,
-    "Failed testing db::get_items");
-
-static_assert(
     std::is_same_v<
         db::compute_databox_type<tmpl::list<
             test_databox_tags::Tag0, test_databox_tags::Tag1,
