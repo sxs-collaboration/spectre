@@ -31,6 +31,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -41,6 +42,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -307,17 +309,20 @@ void test_shell_boundaries() {
 
 void test_shell_factory_equiangular() {
   INFO("Shell factory equiangular");
-  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "Shell:\n"
-          "  InnerRadius: 1\n"
-          "  OuterRadius: 3\n"
-          "  InitialRefinement: 2\n"
-          "  InitialGridPoints: [2,3]\n"
-          "  UseEquiangularMap: true\n"
-          "  AspectRatio: 1.0\n"
-          "  UseLogarithmicMap: false\n"
-          "  WhichWedges: All\n"
-          "  RadialBlockLayers: 1\n");
+  const auto shell = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
+      "Shell:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: true\n"
+      "  AspectRatio: 1.0\n"
+      "  UseLogarithmicMap: false\n"
+      "  WhichWedges: All\n"
+      "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -329,7 +334,10 @@ void test_shell_factory_equiangular() {
 
 void test_shell_factory_equidistant() {
   INFO("Shell factory equidistant");
-  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto shell = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -368,7 +376,10 @@ void test_shell_boundaries_aspect_ratio() {
 
 void test_shell_factory_aspect_ratio() {
   INFO("Shell factory aspect ratio");
-  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto shell = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -410,7 +421,10 @@ void test_shell_boundaries_logarithmic_map() {
 
 void test_shell_factory_logarithmic_map() {
   INFO("Shell factory logarithmic map");
-  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto shell = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -435,7 +449,10 @@ void test_shell_factory_logarithmic_map() {
 
 void test_shell_factory_wedges_four_on_equator() {
   INFO("Shell factory wedges four on equator");
-  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto shell = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -461,7 +478,10 @@ void test_shell_factory_wedges_four_on_equator() {
 
 void test_shell_factory_wedges_one_along_minus_x() {
   INFO("Shell factory wedges one along minus x");
-  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto shell = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"
       "  InnerRadius: 2\n"
       "  OuterRadius: 3\n"
@@ -587,7 +607,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell", "[Domain][Unit]") {
 
   {
     INFO("shell factory logarithmic block layers");
-    const auto log_shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+    const auto log_shell = TestHelpers::test_factory_creation<
+        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<3>>(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"

@@ -20,9 +20,11 @@
 #include "Domain/FunctionsOfTime/ReadSpecThirdOrderPiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -195,7 +197,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
 
   const auto& created_domain_creator =
       TestHelpers::test_creation<std::unique_ptr<::DomainCreator<3>>,
-                                 domain::OptionTags::DomainCreator<3>>(
+                                 domain::OptionTags::DomainCreator<3>,
+                                 TestHelpers::domain::BoundaryConditions::
+                                     MetavariablesWithoutBoundaryConditions<3>>(
           "Brick:\n"
           "  LowerBound: [-4.0, -5.0, -6.0]\n"
           "  UpperBound: [6.0, 5.0, 4.0]\n"
