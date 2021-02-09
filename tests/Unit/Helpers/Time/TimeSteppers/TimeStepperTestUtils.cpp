@@ -15,6 +15,7 @@
 #include <type_traits>
 
 #include "Time/BoundaryHistory.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -23,6 +24,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Numeric.hpp"
 
 namespace TimeStepperTestUtils {
 
@@ -60,10 +62,9 @@ void take_step_and_check_error(
     CHECK(time_id.substep() == substep);
     history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
     bool error_updated = stepper.update_u(y, y_error, history, step_size);
-    if (substep != stepper.number_of_substeps_for_error() - 1) {
-      CAPTURE(substep);
-      CHECK_FALSE(error_updated);
-    }
+    CAPTURE(substep);
+    REQUIRE((substep == stepper.number_of_substeps_for_error() - 1) ==
+            error_updated);
     time_id = stepper.next_time_id_for_error(time_id, step_size);
   }
   CHECK(time_id.substep_time() - *time == step_size);
@@ -93,6 +94,35 @@ void initialize_history(
         TimeStepId(step_size.is_positive(), slab_number, time),
         analytic(time.value()), rhs(analytic(time.value()), time.value()));
   }
+}
+
+template <typename F>
+double convergence_rate(const int32_t large_steps, const int32_t small_steps,
+                        F&& error) noexcept {
+  // We do a least squares fit on a log-log error-vs-steps plot.  The
+  // unequal points caused by the log scale will introduce some bias,
+  // but the typical range this is used for is only a factor of a few,
+  // so it shouldn't be too bad.
+  const auto num_tests = static_cast<size_t>(small_steps - large_steps) + 1;
+  std::vector<double> log_steps;
+  std::vector<double> log_errors;
+  log_steps.reserve(num_tests);
+  log_errors.reserve(num_tests);
+  for (auto steps = large_steps; steps <= small_steps; ++steps) {
+    log_steps.push_back(log(steps));
+    log_errors.push_back(log(abs(error(steps))));
+  }
+  const double average_log_steps = alg::accumulate(log_steps, 0.0) / num_tests;
+  const double average_log_errors =
+      alg::accumulate(log_errors, 0.0) / num_tests;
+  double numerator = 0.0;
+  double denominator = 0.0;
+  for (size_t i = 0; i < num_tests; ++i) {
+    numerator += (log_steps[i] - average_log_steps) *
+        (log_errors[i] - average_log_errors);
+    denominator += square(log_steps[i] - average_log_steps);
+  }
+  return -numerator / denominator;
 }
 }  // namespace
 
@@ -221,7 +251,6 @@ void integrate_error_test(const TimeStepper& stepper,
     // from the analytic solution. This solution is smooth, so the error should
     // be dominated by the stepper.
     if (i > num_steps / 2) {
-      REQUIRE(static_cast<bool>(y_error));
       double local_error = abs((y - analytic(time.value())) -
                                (previous_y - analytic(previous_time)));
       CHECK(local_error < std::max(abs(y_error), 1e-14));
@@ -419,8 +448,7 @@ void check_convergence_order(const TimeStepper& stepper,
   const int32_t large_steps = 10;
   // The high-order solvers have round-off error around here
   const int32_t small_steps = 40;
-  CHECK((log(do_integral(large_steps)) - log(do_integral(small_steps))) /
-            (log(small_steps) - log(large_steps)) ==
+  CHECK(convergence_rate(large_steps, small_steps, do_integral) ==
         approx(expected_order).margin(0.4));
 }
 
@@ -428,7 +456,10 @@ void check_dense_output(const TimeStepper& stepper,
                         const int expected_order) noexcept {
   const auto get_dense = [&stepper](TimeDelta step_size,
                                     const double time) noexcept {
-    TimeStepId time_id(true, 0, step_size.slab().start());
+    TimeStepId time_id(step_size.is_positive(), 0,
+                       step_size.is_positive() ? step_size.slab().start()
+                                               : step_size.slab().end());
+    const evolution_less<double> before{time_id.time_runs_forward()};
     double y = 1.;
     TimeSteppers::History<double, double> history;
     initialize_history(
@@ -441,7 +472,7 @@ void check_dense_output(const TimeStepper& stepper,
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
       history.insert(time_id, y, y);
       if (next_time_id.substep() == 0 and
-          time < next_time_id.step_time().value()) {
+          before(time, next_time_id.step_time().value())) {
         stepper.dense_update_u(make_not_null(&y), history, time);
         return y;
       }
@@ -453,22 +484,29 @@ void check_dense_output(const TimeStepper& stepper,
 
   // Check that the dense output is continuous
   {
-    const Slab slab(0., 1.);
-    Time time = slab.start();
-    double y = 1.;
-    TimeSteppers::History<double, double> history;
-    const auto rhs = [](const double v, const double /*t*/) noexcept {
-      return v;
-    };
-    initialize_history(
-        time, &history, [](const double t) noexcept { return exp(t); }, rhs,
-        slab.duration(), stepper.number_of_past_steps());
-    take_step(&time, &y, &history, stepper, rhs, slab.duration());
+    auto local_approx = approx.epsilon(1e-12);
+    for (const auto time_step :
+         {Slab(0., 1.).duration(), -Slab(-1., 0.).duration()}) {
+      CAPTURE(time_step);
+      Time time = Slab(0., 1.).start().with_slab(time_step.slab());
+      double y = 1.;
+      TimeSteppers::History<double, double> history;
+      const auto rhs = [](const double v, const double /*t*/) noexcept {
+        return v;
+      };
+      initialize_history(
+          time, &history, [](const double t) noexcept { return exp(t); }, rhs,
+          time_step, stepper.number_of_past_steps());
+      take_step(&time, &y, &history, stepper, rhs, time_step);
 
-    CHECK(get_dense(slab.duration(), std::numeric_limits<double>::epsilon()) ==
-          approx(1.));
-    CHECK(get_dense(slab.duration(),
-                    1. - std::numeric_limits<double>::epsilon()) == approx(y));
+      // Some time steppers special-case the endpoints of the
+      // interval, so check just inside to trigger the main dense
+      // output path.
+      CHECK(get_dense(time_step, std::numeric_limits<double>::epsilon() *
+                                     time_step.value()) == local_approx(1.));
+      CHECK(get_dense(time_step, (1. - std::numeric_limits<double>::epsilon()) *
+                                     time.value()) == local_approx(y));
+    }
   }
 
   // Test convergence
@@ -482,8 +520,15 @@ void check_dense_output(const TimeStepper& stepper,
       return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
                  exp(0.25 * M_PI));
     };
-    CHECK((log(error(large_steps)) - log(error(small_steps))) /
-              (log(small_steps) - log(large_steps)) ==
+    CHECK(convergence_rate(large_steps, small_steps, error) ==
+          approx(expected_order).margin(0.4));
+
+    const auto error_backwards = [&get_dense](const int32_t steps) noexcept {
+      const Slab slab(-1., 0.);
+      return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
+                 exp(-0.25 * M_PI));
+    };
+    CHECK(convergence_rate(large_steps, small_steps, error_backwards) ==
           approx(expected_order).margin(0.4));
   }
 }
@@ -527,12 +572,10 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
         slab.duration() * 4 / 9}}};
 
   Time t = slab.start();
-  double y = 0.;
   Time next_check = t + dt[0][0];
   std::array<Time, 2> next{{t, t}};
   for (;;) {
-    const auto side = static_cast<size_t>(
-        std::min_element(next.cbegin(), next.cend()) - next.cbegin());
+    const size_t side = next[0] <= next[1] ? 0 : 1;
 
     if (side == 0) {
       history.local_insert(make_time_id(next[0]), get_value());
@@ -545,13 +588,12 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
 
     gsl::at(next, side) += this_dt;
 
-    if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
+    if (std::min(next[0], next[1]) == next_check) {
       const double dense_result =
           stepper.boundary_dense_output(coupling, history, next_check.value());
       const double delta = stepper.compute_boundary_delta(
           coupling, make_not_null(&history), next_check - t);
       CHECK(dense_result == approx(delta));
-      y += delta;
       if (next_check.is_at_slab_boundary()) {
         break;
       }
