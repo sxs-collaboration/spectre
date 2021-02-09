@@ -20,12 +20,14 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RotatedRectangles.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
@@ -171,15 +173,17 @@ void test_rotated_rectangles_factory() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
-  const auto domain_creator =
-      TestHelpers::test_factory_creation<DomainCreator<2>>(
-          "RotatedRectangles:\n"
-          "  LowerBound: [0.1, -0.4]\n"
-          "  Midpoint:   [2.6, 3.2]\n"
-          "  UpperBound: [5.1, 6.2]\n"
-          "  IsPeriodicIn: [false, false]\n"
-          "  InitialGridPoints: [[3,2],[1,4]]\n"
-          "  InitialRefinement: [2,1]\n");
+  const auto domain_creator = TestHelpers::test_factory_creation<
+      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<2>>(
+      "RotatedRectangles:\n"
+      "  LowerBound: [0.1, -0.4]\n"
+      "  Midpoint:   [2.6, 3.2]\n"
+      "  UpperBound: [5.1, 6.2]\n"
+      "  IsPeriodicIn: [false, false]\n"
+      "  InitialGridPoints: [[3,2],[1,4]]\n"
+      "  InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
       dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
   test_rotated_rectangles_construction(

@@ -62,16 +62,18 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       dynamic_cast<const creators::AlignedLattice<1>*>(domain_creator_1d.get());
   test_aligned_blocks(*aligned_blocks_creator_1d);
 
-  const auto domain_creator_2d =
-      TestHelpers::test_factory_creation<DomainCreator<2>>(
-          "AlignedLattice:\n"
-          "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
-          "  IsPeriodicIn: [false, true]\n"
-          "  InitialGridPoints: [3, 4]\n"
-          "  InitialLevels: [2, 1]\n"
-          "  RefinedLevels: []\n"
-          "  RefinedGridPoints: []\n"
-          "  BlocksToExclude: []\n");
+  const auto domain_creator_2d = TestHelpers::test_factory_creation<
+      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<2>>(
+      "AlignedLattice:\n"
+      "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
+      "  IsPeriodicIn: [false, true]\n"
+      "  InitialGridPoints: [3, 4]\n"
+      "  InitialLevels: [2, 1]\n"
+      "  RefinedLevels: []\n"
+      "  RefinedGridPoints: []\n"
+      "  BlocksToExclude: []\n");
   const auto* aligned_blocks_creator_2d =
       dynamic_cast<const creators::AlignedLattice<2>*>(domain_creator_2d.get());
   test_aligned_blocks(*aligned_blocks_creator_2d);
@@ -133,22 +135,24 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     // 23 23 67
     // 23 45 67
     // 23 XX 45
-    const auto refined_domain =
-        TestHelpers::test_factory_creation<DomainCreator<2>>(
-            "AlignedLattice:\n"
-            "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
-            "  IsPeriodicIn: [false, false]\n"
-            "  InitialGridPoints: [2, 3]\n"
-            "  InitialLevels: [0, 0]\n"
-            "  BlocksToExclude: [[1, 0]]\n"
-            "  RefinedLevels: []\n"
-            "  RefinedGridPoints:\n"
-            "  - LowerCornerIndex: [1, 0]\n"
-            "    UpperCornerIndex: [3, 2]\n"
-            "    Refinement: [4, 5]\n"
-            "  - LowerCornerIndex: [2, 1]\n"
-            "    UpperCornerIndex: [3, 3]\n"
-            "    Refinement: [6, 7]");
+    const auto refined_domain = TestHelpers::test_factory_creation<
+        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<2>>(
+        "AlignedLattice:\n"
+        "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+        "  IsPeriodicIn: [false, false]\n"
+        "  InitialGridPoints: [2, 3]\n"
+        "  InitialLevels: [0, 0]\n"
+        "  BlocksToExclude: [[1, 0]]\n"
+        "  RefinedLevels: []\n"
+        "  RefinedGridPoints:\n"
+        "  - LowerCornerIndex: [1, 0]\n"
+        "    UpperCornerIndex: [3, 2]\n"
+        "    Refinement: [4, 5]\n"
+        "  - LowerCornerIndex: [2, 1]\n"
+        "    UpperCornerIndex: [3, 3]\n"
+        "    Refinement: [6, 7]");
     std::unordered_set<
         std::pair<std::vector<double>, std::array<size_t, 2>>,
         boost::hash<std::pair<std::vector<double>, std::array<size_t, 2>>>>
@@ -183,22 +187,24 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     // 25 25 46
     // 25 35 46
     // 25 XX 35
-    const auto refined_domain =
-        TestHelpers::test_factory_creation<DomainCreator<2>>(
-            "AlignedLattice:\n"
-            "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
-            "  IsPeriodicIn: [false, false]\n"
-            "  InitialGridPoints: [10, 10]\n"
-            "  InitialLevels: [2, 5]\n"
-            "  BlocksToExclude: [[1, 0]]\n"
-            "  RefinedGridPoints: []\n"
-            "  RefinedLevels:\n"
-            "  - LowerCornerIndex: [1, 0]\n"
-            "    UpperCornerIndex: [3, 2]\n"
-            "    Refinement: [3, 5]\n"
-            "  - LowerCornerIndex: [2, 1]\n"
-            "    UpperCornerIndex: [3, 3]\n"
-            "    Refinement: [4, 6]");
+    const auto refined_domain = TestHelpers::test_factory_creation<
+        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<2>>(
+        "AlignedLattice:\n"
+        "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+        "  IsPeriodicIn: [false, false]\n"
+        "  InitialGridPoints: [10, 10]\n"
+        "  InitialLevels: [2, 5]\n"
+        "  BlocksToExclude: [[1, 0]]\n"
+        "  RefinedGridPoints: []\n"
+        "  RefinedLevels:\n"
+        "  - LowerCornerIndex: [1, 0]\n"
+        "    UpperCornerIndex: [3, 2]\n"
+        "    Refinement: [3, 5]\n"
+        "  - LowerCornerIndex: [2, 1]\n"
+        "    UpperCornerIndex: [3, 3]\n"
+        "    Refinement: [4, 6]");
     std::unordered_set<
         std::pair<std::vector<double>, std::array<size_t, 2>>,
         boost::hash<std::pair<std::vector<double>, std::array<size_t, 2>>>>

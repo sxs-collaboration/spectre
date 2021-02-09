@@ -162,8 +162,8 @@ std::unique_ptr<DomainCreator<1>> domain_creator() noexcept {
 template <>
 std::unique_ptr<DomainCreator<2>> domain_creator() noexcept {
   return std::make_unique<domain::creators::Rectangle>(
-      domain::creators::Rectangle({{-0.5, -0.5}}, {{0.5, 0.5}},
-                                  {{false, false}}, {{0, 0}}, {{4, 4}}));
+      domain::creators::Rectangle({{-0.5, -0.5}}, {{0.5, 0.5}}, {{0, 0}},
+                                  {{4, 4}}, {{false, false}}));
 }
 
 template <>
