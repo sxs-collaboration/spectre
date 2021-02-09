@@ -349,25 +349,44 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     CAPTURE(expected_blocks);
     CHECK(expected_blocks.empty());
   }
-}
 
-// [[OutputRegex, Cannot exclude blocks as well as have periodic boundary
-// conditions!]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice.Error",
-                  "[Unit][ErrorHandling]") {
-  ERROR_TEST();
-  const auto failed_cubical_shell_domain = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "AlignedLattice:\n"
-      "  BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
-      "[-1.5, -0.5, 0.5, 1.5]]\n"
-      "  IsPeriodicIn: [true, false, false]\n"
-      "  InitialGridPoints: [5, 5, 5]\n"
-      "  InitialLevels: [1, 1, 1]\n"
-      "  RefinedLevels: []\n"
-      "  RefinedGridPoints: []\n"
-      "  BlocksToExclude: [[1, 1, 1]]");
+  CHECK_THROWS_WITH(
+      creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
+                                    {{1.5, -0.5, 0.5, 1.5}},
+                                    {{-1.5, -0.5, 0.5, 1.5}}}},
+                                  {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
+                                  {{{{1, 1, 1}}}}, {{true, false, false}},
+                                  Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Cannot exclude blocks as well as have periodic boundary"));
+  CHECK_THROWS_WITH(
+      creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
+                                    {{1.5, -0.5, 0.5, 1.5}},
+                                    {{-1.5, -0.5, 0.5, 1.5}}}},
+                                  {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
+                                  {{{{1, 1, 1}}}}, {{false, true, false}},
+                                  Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Cannot exclude blocks as well as have periodic boundary"));
+  CHECK_THROWS_WITH(
+      creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
+                                    {{1.5, -0.5, 0.5, 1.5}},
+                                    {{-1.5, -0.5, 0.5, 1.5}}}},
+                                  {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
+                                  {{{{1, 1, 1}}}}, {{true, false, true}},
+                                  Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Cannot exclude blocks as well as have periodic boundary"));
+  CHECK_THROWS_WITH(
+      creators::AlignedLattice<3>(
+          {{{{-1.5, -0.5, 0.5, 1.5}},
+            {{1.5, -0.5, 0.5, 1.5}},
+            {{-1.5, -0.5, 0.5, 1.5}}}},
+          {{1, 1, 1}}, {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Cannot exclude blocks as well as have periodic boundary"));
 }
 }  // namespace domain
