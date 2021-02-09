@@ -428,8 +428,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   CHECK(boundary_history.remote_size() < 20);
 }
 
-void check_convergence_order(const TimeStepper& stepper,
-                             const int expected_order) noexcept {
+void check_convergence_order(const TimeStepper& stepper) noexcept {
   const auto do_integral = [&stepper](const int32_t num_steps) noexcept {
     const Slab slab(0., 1.);
     const TimeDelta step_size = slab.duration() / num_steps;
@@ -452,11 +451,10 @@ void check_convergence_order(const TimeStepper& stepper,
   // The high-order solvers have round-off error around here
   const int32_t small_steps = 40;
   CHECK(convergence_rate(large_steps, small_steps, do_integral) ==
-        approx(expected_order).margin(0.4));
+        approx(stepper.order()).margin(0.4));
 }
 
-void check_dense_output(const TimeStepper& stepper,
-                        const int expected_order) noexcept {
+void check_dense_output(const TimeStepper& stepper) noexcept {
   const auto get_dense = [&stepper](TimeDelta step_size,
                                     const double time) noexcept {
     TimeStepId time_id(step_size.is_positive(), 0,
@@ -526,7 +524,7 @@ void check_dense_output(const TimeStepper& stepper,
                  exp(0.25 * M_PI));
     };
     CHECK(convergence_rate(large_steps, small_steps, error) ==
-          approx(expected_order).margin(0.4));
+          approx(stepper.order()).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) noexcept {
       const Slab slab(-1., 0.);
@@ -534,7 +532,7 @@ void check_dense_output(const TimeStepper& stepper,
                  exp(-0.25 * M_PI));
     };
     CHECK(convergence_rate(large_steps, small_steps, error_backwards) ==
-          approx(expected_order).margin(0.4));
+          approx(stepper.order()).margin(0.4));
   }
 }
 
