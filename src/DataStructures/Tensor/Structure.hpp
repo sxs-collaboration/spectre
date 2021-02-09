@@ -424,11 +424,7 @@ struct Structure {
     return gsl::at(
         collapsed_to_storage,
         compute_collapsed_index(
-            canonicalize_tensor_index(
-                cpp20::array<size_t, sizeof...(N)>{
-                    {static_cast<size_t>(args)...}},
-                make_cpp20_array_from_list<
-                    tmpl::conditional_t<0 != sizeof...(Indices), Symm, int>>()),
+            cpp20::array<size_t, sizeof...(N)>{{static_cast<size_t>(args)...}},
             make_cpp20_array_from_list<tmpl::conditional_t<
                 0 != sizeof...(Indices), index_list, size_t>>()));
   }
@@ -438,15 +434,11 @@ struct Structure {
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(
       const std::array<I, sizeof...(Indices)>& tensor_index) noexcept {
     constexpr auto collapsed_to_storage = collapsed_to_storage_;
-    return gsl::at(
-        collapsed_to_storage,
-        compute_collapsed_index(
-            canonicalize_tensor_index(
-                convert_to_cpp20_array(tensor_index),
-                make_cpp20_array_from_list<
-                    tmpl::conditional_t<0 != sizeof...(Indices), Symm, int>>()),
-            make_cpp20_array_from_list<tmpl::conditional_t<
-                0 != sizeof...(Indices), index_list, size_t>>()));
+    return gsl::at(collapsed_to_storage,
+                   compute_collapsed_index(
+                       convert_to_cpp20_array(tensor_index),
+                       make_cpp20_array_from_list<tmpl::conditional_t<
+                           0 != sizeof...(Indices), index_list, size_t>>()));
   }
 
   template <int... N, Requires<(sizeof...(N) > 0)> = nullptr>
@@ -456,9 +448,7 @@ struct Structure {
                   "the number arguments must be equal to rank_");
     constexpr std::size_t storage_index =
         collapsed_to_storage_[compute_collapsed_index(
-            canonicalize_tensor_index(
-                cpp20::array<size_t, sizeof...(N)>{{N...}},
-                make_cpp20_array_from_list<Symm>()),
+            cpp20::array<size_t, sizeof...(N)>{{N...}},
             make_cpp20_array_from_list<index_list>())];
     return storage_index;
   }
