@@ -76,8 +76,44 @@ class RotatedIntervals : public DomainCreator<1> {
         "Initial number of grid points in [[x]]."};
   };
 
-  using options = tmpl::list<LowerBound, Midpoint, UpperBound, IsPeriodicIn,
-                             InitialRefinement, InitialGridPoints>;
+  struct BoundaryConditions {
+    static constexpr Options::String help = "The boundary conditions to apply.";
+  };
+  template <typename BoundaryConditionsBase>
+  struct UpperBoundaryCondition {
+    static std::string name() noexcept { return "UpperBoundary"; }
+    static constexpr Options::String help =
+        "Options for the boundary condition applied at the upper boundary.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+    using group = BoundaryConditions;
+  };
+  template <typename BoundaryConditionsBase>
+  struct LowerBoundaryCondition {
+    static std::string name() noexcept { return "LowerBoundary"; }
+    static constexpr Options::String help =
+        "Options for the boundary condition applied at the lower boundary.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+    using group = BoundaryConditions;
+  };
+
+  using common_options = tmpl::list<LowerBound, Midpoint, UpperBound,
+                                    InitialRefinement, InitialGridPoints>;
+  using options_periodic = tmpl::list<IsPeriodicIn>;
+  template <typename System>
+  using options_boundary_conditions = tmpl::list<
+      LowerBoundaryCondition<
+          domain::BoundaryConditions::get_boundary_conditions_base<System>>,
+      UpperBoundaryCondition<
+          domain::BoundaryConditions::get_boundary_conditions_base<System>>>;
+
+  template <typename Metavariables>
+  using options = tmpl::append<
+      common_options,
+      tmpl::conditional_t<
+          domain::BoundaryConditions::has_boundary_conditions_base_v<
+              typename Metavariables::system>,
+          options_boundary_conditions<typename Metavariables::system>,
+          options_periodic>>;
 
   static constexpr Options::String help = {
       "A DomainCreator useful for testing purposes.\n"
@@ -87,13 +123,23 @@ class RotatedIntervals : public DomainCreator<1> {
       "RotatedIntervals), and the innermost index is the block index\n"
       "along that dimension."};
 
-  RotatedIntervals(typename LowerBound::type lower_x,
-                   typename Midpoint::type midpoint_x,
-                   typename UpperBound::type upper_x,
-                   typename IsPeriodicIn::type is_periodic_in,
-                   typename InitialRefinement::type initial_refinement_level_x,
-                   typename InitialGridPoints::type
-                       initial_number_of_grid_points_in_x) noexcept;
+  RotatedIntervals(
+      typename LowerBound::type lower_x, typename Midpoint::type midpoint_x,
+      typename UpperBound::type upper_x,
+      typename InitialRefinement::type initial_refinement_level_x,
+      typename InitialGridPoints::type initial_number_of_grid_points_in_x,
+      typename IsPeriodicIn::type is_periodic_in) noexcept;
+
+  RotatedIntervals(
+      typename LowerBound::type lower_x, typename Midpoint::type midpoint_x,
+      typename UpperBound::type upper_x,
+      typename InitialRefinement::type initial_refinement_level_x,
+      typename InitialGridPoints::type initial_number_of_grid_points_in_x,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          lower_boundary_condition,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          upper_boundary_condition,
+      const Options::Context& context = {});
 
   RotatedIntervals() = default;
   RotatedIntervals(const RotatedIntervals&) = delete;
@@ -121,6 +167,10 @@ class RotatedIntervals : public DomainCreator<1> {
       {std::numeric_limits<size_t>::max()}};
   typename InitialGridPoints::type initial_number_of_grid_points_in_x_{
       {{{std::numeric_limits<size_t>::max()}}}};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      lower_boundary_condition_{nullptr};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      upper_boundary_condition_{nullptr};
 };
 }  // namespace creators
 }  // namespace domain
