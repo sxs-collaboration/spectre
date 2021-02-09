@@ -36,6 +36,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -240,8 +241,12 @@ template <typename Preconditioner>
 struct run_preconditioner_impl {
   using type =
       tmpl::list<ComputeOperatorAction<typename Preconditioner::fields_tag>,
+                 // [make_identity_if_skipped]
                  typename Preconditioner::template solve<ComputeOperatorAction<
-                     typename Preconditioner::operand_tag>>>;
+                     typename Preconditioner::operand_tag>>,
+                 LinearSolver::Actions::MakeIdentityIfSkipped<Preconditioner>
+                 // [make_identity_if_skipped]
+                 >;
 };
 
 template <>

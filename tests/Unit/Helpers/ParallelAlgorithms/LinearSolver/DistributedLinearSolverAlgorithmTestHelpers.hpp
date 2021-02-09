@@ -41,6 +41,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -288,7 +289,8 @@ struct run_preconditioner_impl {
   using type =
       tmpl::list<ComputeOperatorAction<typename Preconditioner::fields_tag>,
                  typename Preconditioner::template solve<ComputeOperatorAction<
-                     typename Preconditioner::operand_tag>>>;
+                     typename Preconditioner::operand_tag>>,
+                 LinearSolver::Actions::MakeIdentityIfSkipped<Preconditioner>>;
 };
 
 template <>
