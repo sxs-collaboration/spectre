@@ -109,7 +109,8 @@ void apply_matrices(const gsl::not_null<ResultType*> result,  // NOLINT
              number_of_independent_components *
                  apply_matrices_detail::result_size(matrices, extents),
          "result has wrong size.  Expected "
-             << apply_matrices_detail::result_size(matrices, extents)
+             << number_of_independent_components *
+                    apply_matrices_detail::result_size(matrices, extents)
              << ", received " << result->size());
   apply_matrices_detail::Impl<typename VectorType::ElementType, Dim>::apply(
       result->data(), matrices, u.data(), extents,
