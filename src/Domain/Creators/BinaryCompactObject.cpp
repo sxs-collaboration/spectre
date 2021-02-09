@@ -236,7 +236,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
             std::back_inserter(maps));
   if (inner_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_cube_A.size(); ++i) {
-      boundary_conditions_all_blocks.push_back(BcMap{});
+      boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
   }
   std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
@@ -254,7 +254,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
             std::back_inserter(maps));
   if (inner_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_cube_B.size() + maps_frustums.size(); ++i) {
-      boundary_conditions_all_blocks.push_back(BcMap{});
+      boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
   }
   std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
@@ -295,7 +295,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
     for (size_t i = 0; i < maps_first_outer_shell.size() +
                                maps_second_outer_shell.size() - 10;
          ++i) {
-      boundary_conditions_all_blocks.push_back(BcMap{});
+      boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
     for (size_t i = 0; i < 10; ++i) {
       BcMap bcs{};
@@ -317,7 +317,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   using Identity2D = CoordinateMaps::Identity<2>;
   if (not excise_interior_A_) {
     if (inner_boundary_condition_ != nullptr) {
-      boundary_conditions_all_blocks.push_back(BcMap{});
+      boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
 
     auto shift_1d_A =
@@ -349,7 +349,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   }
   if (not excise_interior_B_) {
     if (inner_boundary_condition_ != nullptr) {
-      boundary_conditions_all_blocks.push_back(BcMap{});
+      boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
 
     auto shift_1d_B =
