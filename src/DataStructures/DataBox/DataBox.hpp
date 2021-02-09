@@ -1111,8 +1111,9 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
   // 2. Expand subitems of tags to remove
   using immutable_item_tags_to_remove = expand_subitems<
       tmpl::filter<remove_tags, db::is_immutable_item_tag<tmpl::_1>>>;
-  using mutable_item_tags_to_remove = expand_subitems<
-      tmpl::list_difference<remove_tags, immutable_item_tags_to_remove>>;
+  using mutable_item_tags_to_remove = expand_subitems<tmpl::filter<
+      remove_tags,
+      tmpl::not_<tmpl::bind<db::is_immutable_item_tag, tmpl::_1>>>>;
 
   // 3. Expand subitems of tags to add
   using mutable_item_tags_to_add = expand_subitems<AddTags>;
