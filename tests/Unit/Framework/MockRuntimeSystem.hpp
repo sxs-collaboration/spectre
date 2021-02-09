@@ -171,10 +171,10 @@ class MockRuntimeSystem {
         mutable_caches_(mock_nodes_and_local_cores_.size()),
         caches_(mock_nodes_and_local_cores_.size()) {
     // Fill the parallel components in each cache.  There is one cache
-    // per mock core.  The parallel components on each cache (i.e. the
+    // per mock core.  The parallel components held in each cache (i.e. the
     // MockProxies) are filled with the same GlobalCache data, and are
     // passed the mock node and mock core associated with that cache.
-    // The actual chares on each cache are emplaced by the user explicitly
+    // The actual chares held in each cache are emplaced by the user explicitly
     // on a chosen node and core, via `emplace_component`.
     for (const auto& node_and_core : mock_nodes_and_local_cores_) {
       const size_t global_core =
