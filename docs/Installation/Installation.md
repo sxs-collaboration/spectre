@@ -114,15 +114,8 @@ To build with the docker image:
    the docker container as root.
 4. Make a build directory somewhere inside the container, e.g.
    `/work/spectre-build-gcc`, and cd into it.
-5. Build SpECTRE with
-```
-   cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
-```
-   then
-   `make -jN`
-   to compile the code, `make test-executables -jN` to compile the test
-   executables, and `ctest` to run the tests.
+5. See the \ref spectre_getting_started "Getting Started" guide to build
+   SpECTRE.
 
 Notes:
   * Everything in your build directory is owned by root, and is
@@ -207,13 +200,8 @@ To use Singularity you must:
    will be dropped into a bash shell.
 5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
    directory.
-6. To build SpECTRE run
-```
-   cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
-```
-   followed by
-   `make -jN` where `N` is the number of cores to build on in parallel.
+6. See the \ref spectre_getting_started "Getting Started" guide to build
+   SpECTRE.
 
 Notes:
 - You should edit source files in SPECTRE_ROOT in a separate terminal outside
@@ -325,13 +313,8 @@ Follow these steps:
     `/Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support`
 3.  Return to `SPECTRE_ROOT`, and create a build dir by running
     `mkdir build && cd build`
-4.  Build SpECTRE with
-    `cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT`
-    then
-    `make -jN`
-    to compile the code.
-5.  Run the tests with
-    `make test-executables && ctest`.
+4.  See the \ref spectre_getting_started "Getting Started" guide to build
+    SpECTRE.
 
 **Notes**:
 * For more details on building Charm++, see the directions

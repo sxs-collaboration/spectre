@@ -4,6 +4,7 @@ See LICENSE.txt for details.
 \endcond
 # User Tutorials {#tutorials}
 
+- \ref spectre_getting_started - Get started using SpECTRE
 - \ref tutorial_visualization - How to run an existing executable and
   visualize its output
 - \ref tutorial_orientations - How to determine orientations
