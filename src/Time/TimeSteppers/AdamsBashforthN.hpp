@@ -26,7 +26,6 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/CachedFunction.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -408,61 +407,19 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
          << "should not exceed target order (" << order_ << ") by more than 1");
 
   const size_t update_order = std::min(history.size(), order);
-  // note that the order-0 version should only be called when determining
-  // error estimates -- it is not useful for actual integration
-  if(update_order == 0) {
-    *u = (history.end() - 1).value();
-    return;
-  }
-  const auto& coefficients = get_coefficients(
+  const auto history_start =
       history.end() -
-          static_cast<typename History<Vars, DerivVars>::difference_type>(
-              update_order),
-      history.end(), time_step);
+      static_cast<typename History<Vars, DerivVars>::difference_type>(
+          update_order);
+  const auto coefficients =
+      get_coefficients(history_start, history.end(), time_step);
 
-  const auto do_update = [u, &time_step, &coefficients,
-                          &history](auto local_order) noexcept {
-    *u = (history.end() - 1).value() +
-         time_step.value() *
-             constexpr_sum<local_order>([local_order, &coefficients,
-                                         &history](auto i) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-            return coefficients[local_order - 1 - i] *
-                   (history.end() - local_order +
-                    static_cast<
-                        typename History<Vars, DerivVars>::difference_type>(i))
-                       .derivative();
-#pragma GCC diagnostic pop
-          });
-  };
-  switch (update_order) {
-    case 1:
-      do_update(std::integral_constant<size_t, 1>{});
-      break;
-    case 2:
-      do_update(std::integral_constant<size_t, 2>{});
-      break;
-    case 3:
-      do_update(std::integral_constant<size_t, 3>{});
-      break;
-    case 4:
-      do_update(std::integral_constant<size_t, 4>{});
-      break;
-    case 5:
-      do_update(std::integral_constant<size_t, 5>{});
-      break;
-    case 6:
-      do_update(std::integral_constant<size_t, 6>{});
-      break;
-    case 7:
-      do_update(std::integral_constant<size_t, 7>{});
-      break;
-    case 8:
-      do_update(std::integral_constant<size_t, 8>{});
-      break;
-    default:
-      ERROR("Bad amount of history data: " << history.size());
+  *u = (history.end() - 1).value();
+  auto coefficient = coefficients.rbegin();
+  for (auto history_entry = history_start;
+       history_entry != history.end();
+       ++history_entry, ++coefficient) {
+    *u += time_step.value() * *coefficient * history_entry.derivative();
   }
 }
 
@@ -777,7 +734,9 @@ template <typename Iterator, typename Delta>
 std::vector<double> AdamsBashforthN::get_coefficients(
     const Iterator& times_begin, const Iterator& times_end,
     const Delta& step) noexcept {
-  ASSERT(times_begin != times_end, "No history provided");
+  if (times_begin == times_end) {
+    return {};
+  }
   std::vector<double> steps;
   // This may be slightly more space than we need, but we can't get
   // the exact amount without iterating through the iterators, which
