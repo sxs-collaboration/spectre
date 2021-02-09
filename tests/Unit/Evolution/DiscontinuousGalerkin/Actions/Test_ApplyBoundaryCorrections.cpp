@@ -268,7 +268,7 @@ struct component {
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::Actions::SetupDataBox,
               ::evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim>,
+                  Metavariables::volume_dim, typename Metavariables::system>,
               SetLocalMortarData>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,

@@ -790,7 +790,7 @@ struct component {
                                       typename Metavariables::boundary_scheme>,
                                   tmpl::list<>>,
               ::evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim>>>>,
+                  Metavariables::volume_dim, typename Metavariables::system>>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
