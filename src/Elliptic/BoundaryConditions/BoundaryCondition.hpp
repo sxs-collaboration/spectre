@@ -64,10 +64,10 @@ namespace BoundaryConditions {
  * - They have `apply` and `apply_linearized` member functions that take these
  *   arguments (in this order):
  *
- *   1. The types held by the argument tags.
- *   2. The dynamic fields as not-null pointers.
- *   3. The normal-dot-fluxes corresponding to the dynamic fields as not-null
+ *   1. The dynamic fields as not-null pointers.
+ *   2. The normal-dot-fluxes corresponding to the dynamic fields as not-null
  *      pointers. These have the same types as the dynamic fields.
+ *   3. The types held by the argument tags.
  *
  *   For first-order systems that involve auxiliary variables, only the
  *   non-auxiliary ("primal") variables are included in the lists above. For
