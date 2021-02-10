@@ -2674,6 +2674,33 @@ struct FromTaggedTuple : Tag, db::ReferenceTag {
 };
 /// [databox_reference_tag_example]
 }  // namespace test_databox_tags
+
+void test_reference_item() noexcept {
+  INFO("test reference item");
+  using tuple_tag = test_databox_tags::TaggedTuple<test_databox_tags::Tag0,
+                                                   test_databox_tags::Tag1,
+                                                   test_databox_tags::Tag2>;
+  auto box =
+      db::create<db::AddSimpleTags<tuple_tag>,
+                 db::AddComputeTags<test_databox_tags::FromTaggedTuple<
+                                        test_databox_tags::Tag0, tuple_tag>,
+                                    test_databox_tags::FromTaggedTuple<
+                                        test_databox_tags::Tag1, tuple_tag>,
+                                    test_databox_tags::FromTaggedTuple<
+                                        test_databox_tags::Tag2, tuple_tag>>>(
+          tuples::TaggedTuple<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                              test_databox_tags::Tag2>{
+              3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s});
+  const auto& tagged_tuple = get<tuple_tag>(box);
+  CHECK(get<test_databox_tags::Tag0>(tagged_tuple) == 3.14);
+  CHECK(get<test_databox_tags::Tag1>(tagged_tuple) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(get<test_databox_tags::Tag2>(tagged_tuple) == "My Sample String"s);
+  CHECK(get<test_databox_tags::Tag0>(box) == 3.14);
+  CHECK(get<test_databox_tags::Tag1>(box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+}
 }  // namespace
 
 void test_serialization() noexcept {
@@ -2702,6 +2729,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_overload_compute_tags();
   test_with_tagged_tuple();
   test_serialization();
+  test_reference_item();
 }
 
 // Test`tag_is_retrievable_v`
