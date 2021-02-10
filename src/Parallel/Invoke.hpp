@@ -32,28 +32,6 @@ struct has_ckLocal_method : std::false_type {};
 template <typename T>
 struct has_ckLocal_method<T, std::void_t<decltype(std::declval<T>().ckLocal())>>
     : std::true_type {};
-
-// Any class template that disables its ckLocal() function for some
-// template parameters (via static_assert or if constexpr) should
-// define a type alias ckLocal_enabled to be std::true_type for
-// cases where ckLocal() is enabled, and std::false_type for cases
-// where ckLocal() is disabled.  If ckLocal_enabled isn't defined,
-// then ckLocal() is understood to be enabled.
-template<typename T, typename = std::void_t<>>
-struct ckLocal_enabled {
-  using type = std::true_type;
-};
-
-template <typename T>
-struct ckLocal_enabled<T, std::void_t<typename T::ckLocal_enabled>> {
-  using type = typename T::ckLocal_enabled;
-};
-
-template <typename T>
-using ckLocal_exists_and_is_enabled_t =
-    std::conditional_t<has_ckLocal_method<T>::value,
-                       typename ckLocal_enabled<T>::type, std::false_type>;
-
 }  // namespace detail
 
 // @{
@@ -65,9 +43,9 @@ using ckLocal_exists_and_is_enabled_t =
  * If the algorithm was previously disabled, set `enable_if_disabled` to true to
  * enable the algorithm on the parallel component.
  */
-template <typename ReceiveTag, typename Proxy, typename ReceiveDataType,
-          Requires<detail::ckLocal_exists_and_is_enabled_t<
-              std::decay_t<Proxy>>::value> = nullptr>
+template <
+    typename ReceiveTag, typename Proxy, typename ReceiveDataType,
+    Requires<detail::has_ckLocal_method<std::decay_t<Proxy>>::value> = nullptr>
 void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
                   ReceiveDataType&& receive_data,
                   const bool enable_if_disabled = false) noexcept {
@@ -86,8 +64,8 @@ void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
 }
 
 template <typename ReceiveTag, typename Proxy, typename ReceiveDataType,
-          Requires<not detail::ckLocal_exists_and_is_enabled_t<
-              std::decay_t<Proxy>>::value> = nullptr>
+          Requires<not detail::has_ckLocal_method<std::decay_t<Proxy>>::value> =
+              nullptr>
 void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
                   ReceiveDataType&& receive_data,
                   const bool enable_if_disabled = false) noexcept {
