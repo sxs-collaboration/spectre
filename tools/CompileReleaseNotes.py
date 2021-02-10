@@ -29,11 +29,11 @@ def get_last_release(
         return str(tag).startswith('v')
 
     def distance_from_head(tag):
-        return sum(1 for _ in repo.iter_commits(rev=f'{tag}~1..{head_rev}',
+        return sum(1 for _ in repo.iter_commits(rev=f'{tag}..{head_rev}',
                                                 first_parent=True))
 
     def is_in_history(tag):
-        return distance_from_head(tag) > 0
+        return repo.is_ancestor(ancestor_rev=tag, rev=head_rev)
 
     try:
         return min(filter(is_in_history, filter(is_version_tag, repo.tags)),
