@@ -66,7 +66,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
   GhLocalTimeStepping() = default;
 
   explicit GhLocalTimeStepping(const size_t order)
-      : order_{order}, time_stepper_{order} {}
+      : order_{order}, boundary_history_{order}, time_stepper_{order} {}
 
   explicit GhLocalTimeStepping(CkMigrateMessage* /*unused*/) noexcept {}
 

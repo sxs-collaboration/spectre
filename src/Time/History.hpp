@@ -46,6 +46,9 @@ class History {
   History& operator=(History&&) = default;
   ~History() = default;
 
+  explicit History(const size_t integration_order) noexcept
+      : integration_order_(integration_order) {}
+
   /// Add a new set of values to the end of the history.
   void insert(const TimeStepId& time_step_id, const Vars& value,
               const DerivVars& deriv) noexcept;
@@ -91,6 +94,15 @@ class History {
   }
   //@}
 
+  /// Get or set the current order of integration.  TimeSteppers may
+  /// impose restrictions on the valid values.
+  //@{
+  size_t integration_order() const noexcept { return integration_order_; }
+  void integration_order(const size_t integration_order) noexcept {
+    integration_order_ = integration_order;
+  }
+  //@}
+
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept {  // NOLINT
     // Don't send cached allocations.  This object is probably going
@@ -98,11 +110,13 @@ class History {
     // route of just throwing them away.
     shrink_to_fit();
     p | data_;
+    p | integration_order_;
   }
 
  private:
   std::deque<std::tuple<TimeStepId, Vars, DerivVars>> data_;
   size_t first_needed_entry_{0};
+  size_t integration_order_{0};
 };
 
 /// \ingroup TimeSteppersGroup

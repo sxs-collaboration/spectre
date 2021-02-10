@@ -134,7 +134,7 @@ void check_substep_properties(const TimeStepper& stepper) noexcept {
 
   const Slab slab(0., 1.);
   TimeStepId id(true, 3, slab.start() + slab.duration() / 2);
-  TimeSteppers::History<double, double> history;
+  TimeSteppers::History<double, double> history{stepper.order()};
   CHECK(stepper.can_change_step_size(id, history));
   id = stepper.next_time_id(id, slab.duration() / 2);
   if (id.substep() != 0) {
@@ -144,6 +144,7 @@ void check_substep_properties(const TimeStepper& stepper) noexcept {
 }
 
 void integrate_test(const TimeStepper& stepper,
+                    const size_t order,
                     const size_t number_of_past_steps,
                     const double integration_time,
                     const double epsilon) noexcept {
@@ -162,7 +163,7 @@ void integrate_test(const TimeStepper& stepper,
 
   Time time = integration_time > 0 ? slab.start() : slab.end();
   double y = analytic(time.value());
-  TimeSteppers::History<double, double> history;
+  TimeSteppers::History<double, double> history{order};
 
   initialize_history(time, &history, analytic, rhs, step_size,
                      number_of_past_steps);
@@ -182,6 +183,7 @@ void integrate_test(const TimeStepper& stepper,
 }
 
 void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
+                                             const size_t order,
                                              const size_t number_of_past_steps,
                                              const double integration_time,
                                              const double epsilon) noexcept {
@@ -198,7 +200,7 @@ void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
 
   Time time = integration_time > 0 ? slab.start() : slab.end();
   double y = analytic(time.value());
-  TimeSteppers::History<double, double> history;
+  TimeSteppers::History<double, double> history{order};
 
   initialize_history(time, &history, analytic, rhs, step_size,
                      number_of_past_steps);
@@ -216,6 +218,7 @@ void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
 }
 
 void integrate_error_test(const TimeStepper& stepper,
+                          const size_t order,
                           const size_t number_of_past_steps,
                           const double integration_time, const double epsilon,
                           const size_t num_steps,
@@ -234,7 +237,7 @@ void integrate_error_test(const TimeStepper& stepper,
 
   Time time = integration_time > 0 ? slab.start() : slab.end();
   double y = analytic(time.value());
-  TimeSteppers::History<double, double> history;
+  TimeSteppers::History<double, double> history{order};
 
   initialize_history(time, make_not_null(&history), analytic, rhs, step_size,
                      number_of_past_steps);
@@ -270,6 +273,7 @@ void integrate_error_test(const TimeStepper& stepper,
 }
 
 void integrate_variable_test(const TimeStepper& stepper,
+                             const size_t order,
                              const size_t number_of_past_steps,
                              const double epsilon) noexcept {
   auto analytic = [](const double t) noexcept { return sin(t); };
@@ -284,7 +288,7 @@ void integrate_variable_test(const TimeStepper& stepper,
   Time time = slab.end();
   double y = analytic(time.value());
 
-  TimeSteppers::History<double, double> history;
+  TimeSteppers::History<double, double> history{order};
   initialize_history(time, &history, analytic, rhs, slab.duration(),
                      number_of_past_steps);
 
@@ -314,7 +318,7 @@ void stability_test(const TimeStepper& stepper) noexcept {
 
     Time time = slab.start();
     double y = 1.;
-    TimeSteppers::History<double, double> history;
+    TimeSteppers::History<double, double> history{stepper.order()};
     const auto rhs = [](const double v, const double /*t*/) noexcept {
       return -2. * v;
     };
@@ -336,7 +340,7 @@ void stability_test(const TimeStepper& stepper) noexcept {
 
     Time time = slab.start();
     double y = 1.;
-    TimeSteppers::History<double, double> history;
+    TimeSteppers::History<double, double> history{stepper.order()};
     const auto rhs = [](const double v, const double /*t*/) noexcept {
       return -2. * v;
     };
@@ -355,6 +359,7 @@ void stability_test(const TimeStepper& stepper) noexcept {
 }
 
 void equal_rate_boundary(const LtsTimeStepper& stepper,
+                         const size_t order,
                          const size_t number_of_past_steps,
                          const double epsilon, const bool forward) noexcept {
   // This does an integral putting the entire derivative into the
@@ -376,7 +381,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
 
   TimeStepId time_id(forward, 0, forward ? slab.start() : slab.end());
   double y = analytic(time_id.substep_time().value());
-  TimeSteppers::History<double, double> volume_history;
+  TimeSteppers::History<double, double> volume_history{order};
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
 
   {
@@ -435,7 +440,7 @@ void check_convergence_order(const TimeStepper& stepper) noexcept {
 
     Time time = slab.start();
     double y = 1.;
-    TimeSteppers::History<double, double> history;
+    TimeSteppers::History<double, double> history{stepper.order()};
     const auto rhs = [](const double v, const double /*t*/) noexcept {
       return v;
     };
@@ -462,7 +467,7 @@ void check_dense_output(const TimeStepper& stepper) noexcept {
                                                : step_size.slab().end());
     const evolution_less<double> before{time_id.time_runs_forward()};
     double y = 1.;
-    TimeSteppers::History<double, double> history;
+    TimeSteppers::History<double, double> history{stepper.order()};
     initialize_history(
         time_id.substep_time(), &history,
         [](const double t) noexcept { return exp(t); },
@@ -491,7 +496,7 @@ void check_dense_output(const TimeStepper& stepper) noexcept {
       CAPTURE(time_step);
       Time time = Slab(0., 1.).start().with_slab(time_step.slab());
       double y = 1.;
-      TimeSteppers::History<double, double> history;
+      TimeSteppers::History<double, double> history{stepper.order()};
       const auto rhs = [](const double v, const double /*t*/) noexcept {
         return v;
       };

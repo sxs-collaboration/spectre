@@ -118,11 +118,11 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0, {time_step, 1., history_tag::type{}});
+      &runner, 0, {time_step, 1., history_tag::type{3}});
 
   ActionTesting::emplace_component_and_initialize<
       component_with_template_specified_variables>(
-      &runner, 0, {time_step, 1., alternative_history_tag::type{}});
+      &runner, 0, {time_step, 1., alternative_history_tag::type{3}});
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 

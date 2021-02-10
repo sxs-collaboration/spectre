@@ -292,13 +292,16 @@ struct CheckForOrderIncrease {
 
     const Time required_time =
         (time_step.is_positive() ? time.slab().start() : time.slab().end()) +
-        (history.size() + 1) * time_step;
+        history.integration_order() * time_step;
     const bool done_with_order = time == required_time;
 
     if (done_with_order) {
-      db::mutate<::Tags::Next<::Tags::TimeStepId>>(
+      db::mutate<::Tags::Next<::Tags::TimeStepId>,
+                 ::Tags::HistoryEvolvedVariables<>>(
           make_not_null(&box),
           [](const gsl::not_null<::TimeStepId*> next_time_id,
+             const gsl::not_null<std::decay_t<decltype(history)>*>
+                 mutable_history,
              const ::TimeStepId& current_time_id) noexcept {
             const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
@@ -306,6 +309,8 @@ struct CheckForOrderIncrease {
                            current_time_id.slab_number() + 1,
                            current_time_id.time_runs_forward() ? slab.start()
                                                                : slab.end());
+            mutable_history->integration_order(
+                mutable_history->integration_order() + 1);
           },
           db::get<::Tags::TimeStepId>(box));
     }
