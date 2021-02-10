@@ -9,7 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   PiecewisePolynomial.cpp
-  ReadSpecThirdOrderPiecewisePolynomial.cpp
+  ReadSpecPiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
   )
@@ -21,7 +21,7 @@ spectre_target_headers(
   FunctionOfTime.hpp
   OptionTags.hpp
   PiecewisePolynomial.hpp
-  ReadSpecThirdOrderPiecewisePolynomial.hpp
+  ReadSpecPiecewisePolynomial.hpp
   RegisterDerivedWithCharm.hpp
   SettleToConstant.hpp
   Tags.hpp

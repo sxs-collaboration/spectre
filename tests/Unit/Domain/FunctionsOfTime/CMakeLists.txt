@@ -5,7 +5,7 @@ set(LIBRARY "Test_FunctionsOfTime")
 
 set(LIBRARY_SOURCES
   Test_PiecewisePolynomial.cpp
-  Test_ReadSpecThirdOrderPiecewisePolynomial.cpp
+  Test_ReadSpecPiecewisePolynomial.cpp
   Test_SettleToConstant.cpp
   Test_Tags.cpp
   )

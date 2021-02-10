@@ -39,9 +39,10 @@ class PiecewisePolynomial;
 /// that we will read in with this action will always be 3rd-order
 /// piecewise polynomials.
 ///
-void read_spec_third_order_piecewise_polynomial(
+template <size_t MaxDeriv>
+void read_spec_piecewise_polynomial(
     gsl::not_null<std::unordered_map<
-        std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>*>
+        std::string, domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>>*>
         spec_functions_of_time,
     const std::string& file_name,
     const std::map<std::string, std::string>& dataset_name_map) noexcept;
