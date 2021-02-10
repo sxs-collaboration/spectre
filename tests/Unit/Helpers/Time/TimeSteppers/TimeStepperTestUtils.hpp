@@ -16,26 +16,28 @@ void check_multistep_properties(const TimeStepper& stepper) noexcept;
 
 void check_substep_properties(const TimeStepper& stepper) noexcept;
 
-void integrate_test(const TimeStepper& stepper, size_t number_of_past_steps,
-                    double integration_time, double epsilon) noexcept;
+void integrate_test(const TimeStepper& stepper, size_t order,
+                    size_t number_of_past_steps, double integration_time,
+                    double epsilon) noexcept;
 
 void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
+                                             size_t order,
                                              size_t number_of_past_steps,
                                              double integration_time,
                                              double epsilon) noexcept;
 
-void integrate_variable_test(const TimeStepper& stepper,
+void integrate_variable_test(const TimeStepper& stepper, size_t order,
                              size_t number_of_past_steps,
                              double epsilon) noexcept;
 
-void integrate_error_test(const TimeStepper& stepper,
+void integrate_error_test(const TimeStepper& stepper, size_t order,
                           size_t number_of_past_steps, double integration_time,
                           double epsilon, size_t num_steps,
                           double error_factor) noexcept;
 
 void stability_test(const TimeStepper& stepper) noexcept;
 
-void equal_rate_boundary(const LtsTimeStepper& stepper,
+void equal_rate_boundary(const LtsTimeStepper& stepper, size_t order,
                          size_t number_of_past_steps,
                          double epsilon, bool forward) noexcept;
 

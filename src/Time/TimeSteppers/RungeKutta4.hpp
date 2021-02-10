@@ -134,6 +134,9 @@ void RungeKutta4::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->integration_order() == 4,
+         "Fixed-order stepper cannot run at order "
+         << history->integration_order());
   const size_t substep = history->size() - 1;
   const auto& dt_vars = (history->end() - 1).derivative();
   const auto& u0 = history->begin().value();
@@ -198,6 +201,9 @@ bool RungeKutta4::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->integration_order() == 4,
+         "Fixed-order stepper cannot run at order "
+         << history->integration_order());
   const size_t substep = history->size() - 1;
   if (substep < 3) {
     update_u(u, history, time_step);
