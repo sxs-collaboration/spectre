@@ -456,7 +456,7 @@ struct compute_item_function_impl<false> {
   static decltype(auto) apply(
       const storage_type<ComputeItemArgumentsTags,
                          FullTagList>&... args) noexcept {
-    return ComputeItem::function(convert_to_const_type(args)...);
+    return ComputeItem::get(convert_to_const_type(args)...);
   }
 };
 

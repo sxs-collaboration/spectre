@@ -645,17 +645,18 @@ struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
 /// Tag used to retrieve data from the `Parallel::GlobalCache`. This is the
 /// recommended way for compute tags to retrieve data out of the global cache.
 template <class CacheTag>
-struct FromGlobalCache : CacheTag, db::ComputeTag {
+struct FromGlobalCache : CacheTag, db::ReferenceTag {
   static_assert(db::is_simple_tag_v<CacheTag>);
-  static std::string name() noexcept {
-    return "FromGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
-  }
+  using base = CacheTag;
+  using parent_tag = GlobalCache;
+
   template <class Metavariables>
-  static const GlobalCache_detail::type_for_get<CacheTag, Metavariables>&
-  function(const Parallel::GlobalCache<Metavariables>* const& cache) {
+  static const auto& get(
+      const Parallel::GlobalCache<Metavariables>* const& cache) {
     return Parallel::get<CacheTag>(*cache);
   }
-  using argument_tags = tmpl::list<GlobalCache>;
+
+  using argument_tags = tmpl::list<parent_tag>;
 };
 }  // namespace Tags
 }  // namespace Parallel
