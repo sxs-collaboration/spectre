@@ -47,12 +47,10 @@
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ComputeTags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
-#include "ParallelAlgorithms/LinearSolver/Schwarz/Protocols.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
-#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -273,9 +271,7 @@ struct SolveSubdomain {
         db::get<SubdomainDataBufferTag<SubdomainData, OptionsGroup>>(box);
 
     // Allocate workspace memory for repeatedly applying the subdomain operator
-    const size_t num_points =
-        db::get<domain::Tags::Mesh<Dim>>(box).number_of_grid_points();
-    SubdomainOperator subdomain_operator{num_points};
+    SubdomainOperator subdomain_operator{};
 
     // Construct the subdomain operator
     const auto apply_subdomain_operator =
@@ -284,18 +280,7 @@ struct SolveSubdomain {
       // The subdomain operator can retrieve any information on the subdomain
       // geometry that is available through the DataBox. The user is responsible
       // for communicating this information across neighbors if necessary.
-      db::apply<typename SubdomainOperator::element_operator>(
-          box, operand, result, make_not_null(&subdomain_operator));
-      tmpl::for_each<tmpl::list<domain::Tags::InternalDirections<Dim>,
-                                domain::Tags::BoundaryDirectionsInterior<Dim>>>(
-          [&box, &operand, &result,
-           &subdomain_operator](auto directions_v) noexcept {
-            using directions = tmpl::type_from<decltype(directions_v)>;
-            using face_operator =
-                typename SubdomainOperator::template face_operator<directions>;
-            interface_apply<directions, face_operator>(
-                box, operand, result, make_not_null(&subdomain_operator));
-          });
+      subdomain_operator(result, operand, box);
     };
 
     // Solve the subdomain problem
