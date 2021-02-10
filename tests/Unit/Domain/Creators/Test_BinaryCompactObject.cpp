@@ -496,6 +496,73 @@ void test_binary_factory() {
                with_boundary_conds);
   }
 }
+
+void test_parse_errors() {
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, 1.0, true, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "The x-coordinate of ObjectA's center is expected to be negative."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, true, 0.3, 1.0, -1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "The x-coordinate of ObjectB's center is expected to be positive."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -7.0, true, 0.3, 1.0, 8.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("The radius for the enveloping cube is too "
+                                "small! The Frustums will be malformed."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          1.5, 1.0, -1.0, true, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "ObjectA's inner radius must be less than its outer radius."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, true, 3.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "ObjectB's inner radius must be less than its outer radius."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, false, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, true, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "excise_interior_A must be true if use_logarithmic_map_object_A is "
+          "true; that is, using a logarithmically spaced radial grid in the "
+          "part of Layer 1 enveloping Object A requires excising the interior "
+          "of Object A"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, true, 0.3, 1.0, 1.0, false, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, true, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "excise_interior_B must be true if use_logarithmic_map_object_B is "
+          "true; that is, using a logarithmically spaced radial grid in the "
+          "part of Layer 1 enveloping Object B requires excising the interior "
+          "of Object B"));
+  // Note: the boundary condition-related parse errors are checked in the
+  // test_connectivity function.
+}
 }  // namespace
 
 // [[Timeout, 15]]
@@ -505,96 +572,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
   test_bbh_time_dependent_factory(true);
   test_bbh_time_dependent_factory(false);
   test_binary_factory();
-}
-
-// [[OutputRegex, The radius for the enveloping cube is too small! The Frustums
-// will be malformed.]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.Options1",
-                  "[Domain][Unit]") {
-  ERROR_TEST();
-  // ObjectA:
-  const double inner_radius_objectA = 0.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -7.0;
-  const bool excise_interiorA = true;
-
-  // ObjectB:
-  const double inner_radius_objectB = 0.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 8.0;
-  const bool excise_interiorB = true;
-
-  // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
-
-  // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
-
-  domain::creators::BinaryCompactObject binary_compact_object{
-      inner_radius_objectA,     outer_radius_objectA, xcoord_objectA,
-      excise_interiorA,         inner_radius_objectB, outer_radius_objectB,
-      xcoord_objectB,           excise_interiorB,     radius_enveloping_cube,
-      radius_enveloping_sphere, refinement,           grid_points};
-}
-// [[OutputRegex, ObjectA's inner radius must be less than its outer radius.]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.Options2",
-                  "[Domain][Unit]") {
-  ERROR_TEST();
-  // ObjectA:
-  const double inner_radius_objectA = 1.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -1.0;
-  const bool excise_interiorA = true;
-
-  // ObjectB:
-  const double inner_radius_objectB = 0.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 1.0;
-  const bool excise_interiorB = true;
-
-  // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
-
-  // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
-
-  domain::creators::BinaryCompactObject binary_compact_object{
-      inner_radius_objectA,     outer_radius_objectA, xcoord_objectA,
-      excise_interiorA,         inner_radius_objectB, outer_radius_objectB,
-      xcoord_objectB,           excise_interiorB,     radius_enveloping_cube,
-      radius_enveloping_sphere, refinement,           grid_points};
-}
-// [[OutputRegex, ObjectB's inner radius must be less than its outer radius.]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.Options3",
-                  "[Domain][Unit]") {
-  ERROR_TEST();
-  // ObjectA:
-  const double inner_radius_objectA = 0.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -1.0;
-  const bool excise_interiorA = true;
-
-  // ObjectB:
-  const double inner_radius_objectB = 3.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 1.0;
-  const bool excise_interiorB = true;
-
-  // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
-
-  // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
-
-  domain::creators::BinaryCompactObject binary_compact_object{
-      inner_radius_objectA,     outer_radius_objectA, xcoord_objectA,
-      excise_interiorA,         inner_radius_objectB, outer_radius_objectB,
-      xcoord_objectB,           excise_interiorB,     radius_enveloping_cube,
-      radius_enveloping_sphere, refinement,           grid_points};
+  test_parse_errors();
 }
