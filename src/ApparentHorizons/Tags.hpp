@@ -366,6 +366,24 @@ struct RicciScalarCompute : RicciScalar, db::ComputeTag {
   using return_type = Scalar<DataVector>;
 };
 
+/// The pointwise maximum of the Strahlkorper's intrinsic Ricci scalar
+/// curvature.
+struct MaxRicciScalar : db::SimpleTag {
+  using type = double;
+};
+
+/// Computes the pointwise maximum of the Strahlkorper's intrinsic Ricci
+/// scalar curvature.
+struct MaxRicciScalarCompute : MaxRicciScalar, db::ComputeTag {
+  using base = MaxRicciScalar;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> max_ricci_scalar,
+                       const Scalar<DataVector>& ricci_scalar) noexcept {
+    *max_ricci_scalar = max(get(ricci_scalar));
+  }
+  using argument_tags = tmpl::list<RicciScalar>;
+};
+
 // @{
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
