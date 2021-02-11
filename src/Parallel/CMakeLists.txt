@@ -21,6 +21,7 @@ spectre_target_headers(
   Algorithm.hpp
   AlgorithmMetafunctions.hpp
   ArrayIndex.hpp
+  Callback.hpp
   CharmMain.tpp
   CharmPupable.hpp
   CharmRegistration.hpp

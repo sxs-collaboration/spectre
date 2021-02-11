@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Parallel/Callback.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -136,7 +137,8 @@ using get_mutable_global_cache_tags =
 template <typename Tag>
 struct MutableCacheTag {
   using tag  = Tag;
-  using type = std::tuple<typename Tag::type, std::vector<CkCallback>>;
+  using type =
+      std::tuple<typename Tag::type, std::vector<std::unique_ptr<Callback>>>;
 };
 
 template <typename Tag>

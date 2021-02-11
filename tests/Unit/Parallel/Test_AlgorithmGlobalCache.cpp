@@ -131,18 +131,17 @@ struct simple_action_check_and_use_stored_double {
     ++number_of_calls_to_check_and_use_stored_double_is_ready;
     auto& this_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
-    auto callback = CkCallback(
-        Parallel::index_from_parallel_component<ParallelComponent>::
-            template simple_action<simple_action_check_and_use_stored_double>(),
-        this_proxy);
     const bool is_ready =
         ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
             cache,
-            [&callback](const std::vector<double>& VectorOfDoubles)
-                -> std::optional<CkCallback> {
+            [&this_proxy](const std::vector<double>& VectorOfDoubles)
+                -> std::unique_ptr<Parallel::Callback> {
               return VectorOfDoubles.empty()
-                         ? std::optional<CkCallback>(callback)
-                         : std::optional<CkCallback>{};
+                         ? std::unique_ptr<Parallel::Callback>(
+                               new Parallel::SimpleActionCallback<
+                                   simple_action_check_and_use_stored_double,
+                                   decltype(this_proxy)>(this_proxy))
+                         : std::unique_ptr<Parallel::Callback>{};
             });
 
     if (is_ready) {
@@ -183,16 +182,14 @@ struct use_stored_double {
     ++number_of_calls_to_use_stored_double_is_ready;
     auto& this_proxy = Parallel::get_parallel_component<
         UseMutatedCacheComponent<Metavariables>>(cache);
-    auto callback = CkCallback(
-        Parallel::index_from_parallel_component<
-            UseMutatedCacheComponent<Metavariables>>::perform_algorithm(),
-        this_proxy);
     return ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
         cache,
-        [&callback](const std::vector<double>& VectorOfDoubles)
-            -> std::optional<CkCallback> {
-          return VectorOfDoubles.empty() ? std::optional<CkCallback>(callback)
-                                         : std::optional<CkCallback>{};
+        [&this_proxy](const std::vector<double>& VectorOfDoubles)
+            -> std::unique_ptr<Parallel::Callback> {
+          return VectorOfDoubles.empty()
+                     ? std::unique_ptr<Parallel::Callback>(
+                           new Parallel::PerformAlgorithmCallback(this_proxy))
+                     : std::unique_ptr<Parallel::Callback>{};
         });
   }
   /// [check_mutable_cache_item_is_ready]
