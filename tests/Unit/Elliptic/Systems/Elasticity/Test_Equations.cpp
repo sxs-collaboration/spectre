@@ -42,37 +42,14 @@ void primal_fluxes(
 }
 
 template <size_t Dim>
-void add_curved_sources(
-    const gsl::not_null<tnsr::I<DataVector, Dim>*> source_for_displacement,
-    const tnsr::Ijj<DataVector, Dim>& christoffel_second_kind,
-    const tnsr::i<DataVector, Dim>& christoffel_contracted,
-    const tnsr::II<DataVector, Dim>& stress) noexcept {
-  std::fill(source_for_displacement->begin(), source_for_displacement->end(),
-            0.);
-  Elasticity::add_curved_sources(source_for_displacement,
-                                 christoffel_second_kind,
-                                 christoffel_contracted, stress);
-}
-
-template <size_t Dim>
-void add_curved_auxiliary_sources(
-    const gsl::not_null<tnsr::ii<DataVector, Dim>*> source_for_strain,
-    const tnsr::ijj<DataVector, Dim>& christoffel_first_kind,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept {
-  std::fill(source_for_strain->begin(), source_for_strain->end(), 0.);
-  Elasticity::add_curved_auxiliary_sources(
-      source_for_strain, christoffel_first_kind, displacement);
-}
-
-template <size_t Dim>
 void test_equations(const DataVector& used_for_size) {
   pypp::check_with_random_values<4>(
       &primal_fluxes<Dim>, "Equations",
       {MakeString{} << "primal_fluxes_" << Dim << "d"},
       {{{-1., 1.}, {-1., 1.}, {0., 1.}, {0., 1.}}}, used_for_size);
-  pypp::check_with_random_values<1>(&add_curved_sources<Dim>, "Equations",
-                                    {"add_curved_sources"}, {{{-1., 1.}}},
-                                    used_for_size);
+  pypp::check_with_random_values<1>(
+      &Elasticity::add_curved_sources<Dim>, "Equations", {"add_curved_sources"},
+      {{{-1., 1.}}}, used_for_size, 1.e-12, {}, 0.);
   pypp::check_with_random_values<1>(&Elasticity::auxiliary_fluxes<Dim>,
                                     "Equations", {"auxiliary_fluxes"},
                                     {{{-1., 1.}}}, used_for_size);
@@ -80,8 +57,9 @@ void test_equations(const DataVector& used_for_size) {
                                     "Equations", {"curved_auxiliary_fluxes"},
                                     {{{-1., 1.}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      &add_curved_auxiliary_sources<Dim>, "Equations",
-      {"add_curved_auxiliary_sources"}, {{{-1., 1.}}}, used_for_size);
+      &Elasticity::add_curved_auxiliary_sources<Dim>, "Equations",
+      {"add_curved_auxiliary_sources"}, {{{-1., 1.}}}, used_for_size, 1.e-12,
+      {}, 0.);
 }
 
 template <size_t Dim>
