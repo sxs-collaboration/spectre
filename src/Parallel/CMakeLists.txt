@@ -39,6 +39,7 @@ spectre_target_headers(
   PupStlCpp11.hpp
   PupStlCpp17.hpp
   Reduction.hpp
+  ReductionDeclare.hpp
   RegisterDerivedClassesWithCharm.hpp
   Serialize.hpp
   SimpleActionVisitation.hpp
@@ -60,3 +61,4 @@ target_link_libraries(
 
 add_subdirectory(Actions)
 add_subdirectory(Algorithms)
+add_subdirectory(PhaseControl)

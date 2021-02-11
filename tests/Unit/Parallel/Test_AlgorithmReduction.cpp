@@ -274,9 +274,13 @@ struct TestMetavariables {
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
   enum class Phase { Initialization, CallArrayReduce, Exit };
-  static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_GlobalCache<
-                                        TestMetavariables>& /*cache_proxy*/) {
+  template <typename... Tags>
+  static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
+      const Phase& current_phase,
+      const Parallel::CProxy_GlobalCache<
+          TestMetavariables>& /*cache_proxy*/) noexcept {
     return current_phase == Phase::Initialization ? Phase::CallArrayReduce
                                                   : Phase::Exit;
   }

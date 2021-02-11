@@ -19,7 +19,9 @@
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/Printf.hpp"
+#include "Parallel/Reduction.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Formaline.hpp"
@@ -27,10 +29,18 @@
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
 #include "Parallel/Main.decl.h"
 
 namespace Parallel {
+namespace detail {
+CREATE_HAS_TYPE_ALIAS(phase_change_tags_and_combines_list)
+CREATE_HAS_TYPE_ALIAS_V(phase_change_tags_and_combines_list)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(phase_change_tags_and_combines_list)
+CREATE_HAS_TYPE_ALIAS(initialize_phase_change_decision_data)
+CREATE_HAS_TYPE_ALIAS_V(initialize_phase_change_decision_data)
+}
 
 /// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
@@ -44,6 +54,9 @@ class Main : public CBase_Main<Metavariables> {
   using mutable_global_cache_tags =
       get_mutable_global_cache_tags<Metavariables>;
 
+  using phase_change_tags_and_combines_list =
+      detail::get_phase_change_tags_and_combines_list_or_default_t<
+          Metavariables, tmpl::list<>>;
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
   explicit Main(
@@ -69,6 +82,16 @@ class Main : public CBase_Main<Metavariables> {
   /// Determine the next phase of the simulation and execute it.
   void execute_next_phase() noexcept;
 
+  /// Reduction target for data used in phase change decisions.
+  ///
+  /// It is required that the `Parallel::ReductionData` holds a single
+  /// `tuples::TaggedTuple`.
+  template <typename InvokeCombine, typename... Tags>
+  void phase_change_reduction(
+      ReductionData<ReductionDatum<tuples::TaggedTuple<Tags...>, InvokeCombine,
+                                   funcl::Identity, std::index_sequence<>>>
+          reduction_data) noexcept;
+
  private:
   template <typename ParallelComponent>
   using parallel_component_options =
@@ -93,6 +116,10 @@ class Main : public CBase_Main<Metavariables> {
   // the chares are created.  It is a member variable because passing
   // local state through charm callbacks is painful.
   tuples::tagged_tuple_from_typelist<option_list> options_{};
+  // type to be determined by the collection of available phase changers in the
+  // Metavariables
+  tuples::tagged_tuple_from_typelist<phase_change_tags_and_combines_list>
+      phase_change_decision_data_;
 };
 
 // ================================================================
@@ -358,6 +385,12 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       this->thisProxy);
   global_cache_proxy_.set_parallel_components(the_parallel_components,
                                                     callback);
+
+  if constexpr (detail::has_initialize_phase_change_decision_data_v<
+                Metavariables>) {
+    Metavariables::initialize_phase_change_decision_data::apply(
+        make_not_null(&phase_change_decision_data_), global_cache_proxy_);
+  }
 }
 
 template <typename Metavariables>
@@ -394,7 +427,8 @@ void Main<Metavariables>::
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() noexcept {
   current_phase_ = Metavariables::determine_next_phase(
-      current_phase_, global_cache_proxy_);
+      make_not_null(&phase_change_decision_data_), current_phase_,
+      global_cache_proxy_);
   if (Metavariables::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     sys::exit();
@@ -407,6 +441,102 @@ void Main<Metavariables>::execute_next_phase() noexcept {
                        this->thisProxy));
 }
 
+template <typename Metavariables>
+template <typename InvokeCombine, typename... Tags>
+void Main<Metavariables>::phase_change_reduction(
+    ReductionData<ReductionDatum<tuples::TaggedTuple<Tags...>, InvokeCombine,
+                                 funcl::Identity, std::index_sequence<>>>
+        reduction_data) noexcept {
+  using tagged_tuple_type = std::decay_t<
+      std::tuple_element_t<0, std::decay_t<decltype(reduction_data.data())>>>;
+  (void)Parallel::charmxx::RegisterPhaseChangeReduction<
+      Metavariables, InvokeCombine, Tags...>::registrar;
+  static_assert(tt::is_a_v<tuples::TaggedTuple, tagged_tuple_type>,
+                "The main chare expects a tagged tuple in the phase change "
+                "reduction target.");
+  reduction_data.finalize();
+  PhaseControl::TaggedTupleMainCombine::apply(
+      make_not_null(&phase_change_decision_data_),
+      get<0>(reduction_data.data()));
+}
+
+/// @{
+/// Send data from a parallel component to the Main chare for making
+/// phase-change decisions.
+///
+/// This function is distinct from `Parallel::contribute_to_reduction` because
+/// this function contributes reduction data to the Main chare via the entry
+/// method `phase_change_reduction`. This must be done because the entry method
+/// must alter member data specific to the Main chare, and the Main chare cannot
+/// execute actions like most SpECTRE parallel components.
+/// For all cases other than sending phase-change decision data to the Main
+/// chare, you should use `Parallel::contribute_to_reduction`.
+template <typename SenderComponent, typename ArrayIndex, typename Metavariables,
+          class... Ts>
+void contribute_to_phase_change_reduction(
+    tuples::TaggedTuple<Ts...> data_for_reduction,
+    Parallel::GlobalCache<Metavariables>& cache,
+    const ArrayIndex& array_index) noexcept {
+  if constexpr (detail::has_phase_change_tags_and_combines_list_v<
+                    Metavariables>) {
+    using reduction_data_type = PhaseControl::reduction_data<
+        tmpl::list<Ts...>,
+        typename Metavariables::phase_change_tags_and_combines_list>;
+    (void)Parallel::charmxx::RegisterReducerFunction<
+        reduction_data_type::combine>::registrar;
+    CkCallback callback(
+        CProxy_Main<Metavariables>::index_t::
+            template redn_wrapper_phase_change_reduction<
+                PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
+        cache.get_main_proxy().value());
+    reduction_data_type reduction_data{data_for_reduction};
+    Parallel::get_parallel_component<SenderComponent>(cache)[array_index]
+        .ckLocal()
+        ->contribute(static_cast<int>(reduction_data.size()),
+                     reduction_data.packed().get(),
+                     Parallel::charmxx::charm_reducer_functions.at(
+                         std::hash<Parallel::charmxx::ReducerFunctions>{}(
+                             &reduction_data_type::combine)),
+                     callback);
+  } else {
+    ERROR(
+        "No phase change tags were found; cannot contribute to phase change "
+        "reduction.");
+  }
+}
+template <typename SenderComponent, typename Metavariables, class... Ts>
+void contribute_to_phase_change_reduction(
+    tuples::TaggedTuple<Ts...> data_for_reduction,
+    Parallel::GlobalCache<Metavariables>& cache) noexcept {
+  if constexpr (detail::has_phase_change_tags_and_combines_list_v<
+                    Metavariables>) {
+    using reduction_data_type = PhaseControl::reduction_data<
+        tmpl::list<Ts...>,
+        typename Metavariables::phase_change_tags_and_combines_list>;
+    (void)Parallel::charmxx::RegisterReducerFunction<
+        reduction_data_type::combine>::registrar;
+    CkCallback callback(
+        CProxy_Main<Metavariables>::index_t::
+            template redn_wrapper_phase_change_reduction<
+                PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
+        cache.get_main_proxy().value());
+    reduction_data_type reduction_data{data_for_reduction};
+    Parallel::get_parallel_component<SenderComponent>(cache)
+        .ckLocalBranch()
+        ->contribute(static_cast<int>(reduction_data.size()),
+                     reduction_data.packed().get(),
+                     Parallel::charmxx::charm_reducer_functions.at(
+                         std::hash<Parallel::charmxx::ReducerFunctions>{}(
+                             &reduction_data_type::combine)),
+                     callback);
+
+  } else {
+    ERROR(
+        "No phase change tags were found; cannot contribute to phase change "
+        "reduction.");
+  }
+}
+/// @}
 }  // namespace Parallel
 
 #define CK_TEMPLATES_ONLY

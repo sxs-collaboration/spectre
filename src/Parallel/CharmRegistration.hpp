@@ -11,7 +11,9 @@
 #include <unordered_set>
 
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/ReductionDeclare.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Utilities/Functional.hpp"
 
 /// \cond
 template <size_t MaxSize, class Key, class ValueType, class Hash,
@@ -27,9 +29,15 @@ class MutableGlobalCache;
 template <typename Metavariables>
 class CProxy_GlobalCache;
 template <typename Metavariables>
+class CProxy_Main;
+template <typename Metavariables>
 class CkIndex_GlobalCache;
 template <typename Metavariables>
+class CkIndex_Main;
+template <typename Metavariables>
 class GlobalCache;
+template <typename Metavariables>
+class Main;
 }  // namespace Parallel
 /// \endcond
 
@@ -496,6 +504,44 @@ struct RegisterReductionAction : RegistrationHelper {
   static bool registrar;
 };
 
+template <typename Metavariables, typename InvokeCombine, typename... Tags>
+struct RegisterPhaseChangeReduction : RegistrationHelper {
+  using cproxy = CProxy_Main<Metavariables>;
+  using ckindex = CkIndex_Main<Metavariables>;
+  using algorithm = Main<Metavariables>;
+
+  RegisterPhaseChangeReduction() = default;
+  RegisterPhaseChangeReduction(const RegisterPhaseChangeReduction&) = default;
+  RegisterPhaseChangeReduction& operator=(const RegisterPhaseChangeReduction&) =
+      default;
+  RegisterPhaseChangeReduction(RegisterPhaseChangeReduction&&) = default;
+  RegisterPhaseChangeReduction& operator=(RegisterPhaseChangeReduction&&) =
+      default;
+  ~RegisterPhaseChangeReduction() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    ckindex::template idx_phase_change_reduction<InvokeCombine, Tags...>(
+        static_cast<void (algorithm::*)(
+            const ReductionData<
+                ReductionDatum<tuples::TaggedTuple<Tags...>, InvokeCombine,
+                               funcl::Identity, std::index_sequence<>>>&)>(
+            nullptr));
+    ckindex::template redn_wrapper_phase_change_reduction<InvokeCombine,
+                                                          Tags...>(nullptr);
+  }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterPhaseChangeReduction>();
+  }
+
+  static bool registrar;
+};
+
 /*!
  * \ingroup CharmExtensionsGroup
  * \brief Derived class for registering MutableGlobalCache::mutate
@@ -672,6 +718,13 @@ bool Parallel::charmxx::RegisterReductionAction<
     ParallelComponent, Action, ReductionType>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterReductionAction<ParallelComponent, Action, ReductionType>>();
+
+// clang-tidy: redundant declaration
+template <typename Metavariables, typename Invokable, typename... Tags>
+bool Parallel::charmxx::RegisterPhaseChangeReduction<
+    Metavariables, Invokable, Tags...>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterPhaseChangeReduction<Metavariables, Invokable, Tags...>>();
 
 // clang-tidy: redundant declaration
 template <typename Metavariables, typename GlobalCacheTag, typename Function,

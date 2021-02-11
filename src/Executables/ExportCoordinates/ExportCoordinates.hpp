@@ -233,7 +233,10 @@ struct Metavariables {
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<MinGridSpacingReductionData>>;
 
+  template <typename... Tags>
   static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<
           Metavariables>& /*cache_proxy*/) noexcept {

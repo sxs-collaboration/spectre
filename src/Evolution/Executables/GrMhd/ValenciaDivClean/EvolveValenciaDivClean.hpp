@@ -344,7 +344,10 @@ struct EvolutionMetavars {
       "Evolve the Valencia formulation of the GRMHD system with divergence "
       "cleaning.\n\n"};
 
+  template <typename... Tags>
   static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
