@@ -306,8 +306,9 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<Phase, Phase::Initialization,
                                  initialization_actions>,
 
-          Parallel::PhaseActions<Phase, Phase::InitializeTimeStepperHistory,
-                                 SelfStart::self_start_procedure<step_actions>>,
+          Parallel::PhaseActions<
+              Phase, Phase::InitializeTimeStepperHistory,
+              SelfStart::self_start_procedure<step_actions, system>>,
 
           Parallel::PhaseActions<
               Phase, Phase::Register,

@@ -337,7 +337,6 @@ struct EvolutionMetavars {
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      Actions::SetupDataBox,
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
           volume_dim, use_damped_harmonic_rollon>,
       GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
@@ -380,7 +379,7 @@ struct EvolutionMetavars {
                   initialize_initial_data_dependent_quantities_actions>,
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
-                  SelfStart::self_start_procedure<step_actions>>,
+                  SelfStart::self_start_procedure<step_actions, system>>,
               Parallel::PhaseActions<
                   Phase, Phase::Register,
                   tmpl::list<intrp::Actions::RegisterElementWithInterpolator,

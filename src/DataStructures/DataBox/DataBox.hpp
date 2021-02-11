@@ -372,12 +372,12 @@ class DataBox<tmpl::list<Tags...>>
       tmpl::list<Subtags...> /*meta*/,
       std::true_type /*has_return_type_member*/) noexcept;
 
-  template <typename ComputeItem, typename FullTagList,
+  template <typename ComputeItem, typename FullTagList, bool CheckArgs,
             typename... ComputeItemArgumentsTags>
   constexpr void add_compute_item_to_box_impl(
       tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept;
 
-  template <typename Tag, typename FullTagList>
+  template <typename Tag, typename FullTagList, bool CheckArgs = true>
   constexpr void add_compute_item_to_box() noexcept;
   // End adding compute items
 
@@ -556,23 +556,26 @@ constexpr char check_compute_item_argument_exists() noexcept {
 }  // namespace detail
 
 template <typename... Tags>
-template <typename ComputeItem, typename FullTagList,
+template <typename ComputeItem, typename FullTagList, bool CheckArgs,
           typename... ComputeItemArgumentsTags>
 SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_compute_item_to_box_impl(
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
-  DEBUG_STATIC_ASSERT(
-      tmpl2::flat_all_v<is_tag_v<ComputeItemArgumentsTags>...>,
-      "Cannot have non-DataBoxTag arguments to a ComputeItem. Please make "
-      "sure all the specified argument_tags in the ComputeItem derive from "
-      "db::SimpleTag.");
-  DEBUG_STATIC_ASSERT(
-      not tmpl2::flat_any_v<
-          std::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
-      "A ComputeItem cannot take its own Tag as an argument.");
-  expand_pack(detail::check_compute_item_argument_exists<
-              ComputeItem, ComputeItemArgumentsTags, FullTagList>()...);
-
+  // These checks can be expensive for the build, so the template argument
+  // allows us to skip them in situations that they would be redundant.
+  if constexpr (CheckArgs) {
+    DEBUG_STATIC_ASSERT(
+        tmpl2::flat_all_v<is_tag_v<ComputeItemArgumentsTags>...>,
+        "Cannot have non-DataBoxTag arguments to a ComputeItem. Please make "
+        "sure all the specified argument_tags in the ComputeItem derive from "
+        "db::SimpleTag.");
+    DEBUG_STATIC_ASSERT(
+        not tmpl2::flat_any_v<
+            std::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
+        "A ComputeItem cannot take its own Tag as an argument.");
+    expand_pack(detail::check_compute_item_argument_exists<
+                ComputeItem, ComputeItemArgumentsTags, FullTagList>()...);
+  }
   get_deferred<ComputeItem>() =
       make_deferred<detail::storage_type<ComputeItem, FullTagList>>(
           detail::compute_item_function<FullTagList, ComputeItem,
@@ -581,10 +584,10 @@ DataBox<tmpl::list<Tags...>>::add_compute_item_to_box_impl(
 }
 
 template <typename... Tags>
-template <typename Tag, typename FullTagList>
+template <typename Tag, typename FullTagList, bool CheckArgs>
 SPECTRE_ALWAYS_INLINE constexpr void
 db::DataBox<tmpl::list<Tags...>>::add_compute_item_to_box() noexcept {
-  add_compute_item_to_box_impl<Tag, FullTagList>(
+  add_compute_item_to_box_impl<Tag, FullTagList, CheckArgs>(
       tmpl::transform<typename Tag::argument_tags,
                       tmpl::bind<detail::first_matching_tag,
                                  tmpl::pin<tmpl::list<Tags...>>, tmpl::_1>>{});
@@ -770,7 +773,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     (void)this;  // Compiler bug warns this isn't used
     using tag = decltype(current_tag);
     if (p.isUnpacking()) {
-      add_compute_item_to_box<tag, tmpl::list<Tags...>>();
+      add_compute_item_to_box<tag, tmpl::list<Tags...>, false>();
     }
     get_deferred<tag>().pack_unpack_lazy_function(p);
   };

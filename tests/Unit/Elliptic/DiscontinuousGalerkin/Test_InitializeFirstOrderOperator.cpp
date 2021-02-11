@@ -120,11 +120,10 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Actions::SetupDataBox,
-                     elliptic::dg::Actions::InitializeFirstOrderOperator<
-                         Dim, Fluxes<Dim>, Sources, vars_tag<Dim>,
-                         tmpl::list<ScalarFieldTag>,
-                         tmpl::list<AuxiliaryFieldTag<Dim>>>>>>;
+          tmpl::list<elliptic::dg::Actions::InitializeFirstOrderOperator<
+              Dim, Fluxes<Dim>, Sources, vars_tag<Dim>,
+              tmpl::list<ScalarFieldTag>,
+              tmpl::list<AuxiliaryFieldTag<Dim>>>>>>;
 };
 
 template <size_t Dim>
