@@ -16,6 +16,7 @@
 #include <exception>
 #include <memory>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 
 #include "Parallel/AlgorithmMetafunctions.hpp"
@@ -121,14 +122,83 @@ struct NodeId {
   size_t value;
 };
 
+inline bool operator==(const NodeId& lhs, const NodeId& rhs) noexcept {
+  return lhs.value == rhs.value;
+}
+
+inline bool operator!=(const NodeId& lhs, const NodeId& rhs) noexcept {
+  return not(lhs==rhs);
+}
+
 /// Wraps a size_t representing the local core number. This is so the
 /// user can write things like
 /// `emplace_array_component(NodeId{3},LocalCoreId{2},...)`  instead of
 /// `emplace_array_component(3,2,...)`.
+///
+/// The local core number is unique for each core on the same node,
+/// but cores on different nodes can have the same local core number.
+/// For example, if there are 3 nodes with 2
+/// cores each, then the cores on the first node have local core numbers
+/// 0 and 1, the cores on the second node also have local core numbers
+/// 0 and 1, and so on.
 struct LocalCoreId {
   size_t value;
 };
 
+inline bool operator==(const LocalCoreId& lhs,
+                       const LocalCoreId& rhs) noexcept {
+  return lhs.value == rhs.value;
+}
+
+inline bool operator!=(const LocalCoreId& lhs,
+                       const LocalCoreId& rhs) noexcept {
+  return not(lhs==rhs);
+}
+
+/// Wraps a size_t representing the global core number.
+///
+/// The global core number is unique for each core, even if the cores
+/// are on different nodes.  For example, if there are 3 nodes with 2
+/// cores each, the global core number goes from 0 through 5 to label
+/// each of the 6 cores, and no two cores have the same global core
+/// number.
+struct GlobalCoreId {
+  size_t value;
+};
+
+inline bool operator==(const GlobalCoreId& lhs,
+                       const GlobalCoreId& rhs) noexcept {
+  return lhs.value == rhs.value;
+}
+
+inline bool operator!=(const GlobalCoreId& lhs,
+                       const GlobalCoreId& rhs) noexcept {
+  return not(lhs==rhs);
+}
+}  // namespace ActionTesting
+
+namespace std {
+template <>
+struct hash<ActionTesting::NodeId> {
+  size_t operator()(const ActionTesting::NodeId& t) const { return t.value; }
+};
+
+template <>
+struct hash<ActionTesting::LocalCoreId> {
+  size_t operator()(const ActionTesting::LocalCoreId& t) const {
+    return t.value;
+  }
+};
+
+template <>
+struct hash<ActionTesting::GlobalCoreId> {
+  size_t operator()(const ActionTesting::GlobalCoreId& t) const {
+    return t.value;
+  }
+};
+}  // namespace std
+
+namespace ActionTesting {
 /// MockDistributedObject mocks the AlgorithmImpl class. It should not be
 /// considered as part of the user interface.
 ///
@@ -304,8 +374,10 @@ class MockDistributedObject {
   template <typename... Options>
   MockDistributedObject(
       const NodeId node_id, const LocalCoreId local_core_id,
-      std::vector<std::vector<size_t>> mock_global_cores,
-      std::vector<std::pair<size_t, size_t>> mock_nodes_and_local_cores,
+      std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>
+          mock_global_cores,
+      std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
+          mock_nodes_and_local_cores,
       const array_index& index,
       Parallel::GlobalCache<typename Component::metavariables>* cache,
       tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes,
@@ -724,9 +796,11 @@ class MockDistributedObject {
   size_t mock_node_{0};
   size_t mock_local_core_{0};
   // mock_global_cores[node][local_core] is the global_core.
-  std::vector<std::vector<size_t>> mock_global_cores_{};
+  std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>
+      mock_global_cores_{};
   // mock_nodes_and_local_cores_[global_core] is the pair node,local_core.
-  std::vector<std::pair<size_t, size_t>> mock_nodes_and_local_cores_{};
+  std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
+      mock_nodes_and_local_cores_{};
 
   typename Component::array_index array_index_{};
   Parallel::GlobalCache<typename Component::metavariables>* global_cache_{
@@ -1070,8 +1144,9 @@ int MockDistributedObject<Component>::number_of_procs() const noexcept {
 
 template <typename Component>
 int MockDistributedObject<Component>::my_proc() const noexcept {
-  return static_cast<int>(
-      mock_global_cores_.at(mock_node_).at(mock_local_core_));
+  return static_cast<int>(mock_global_cores_.at(NodeId{mock_node_})
+                              .at(LocalCoreId{mock_local_core_})
+                              .value);
 }
 
 template <typename Component>
@@ -1088,7 +1163,7 @@ template <typename Component>
 int MockDistributedObject<Component>::procs_on_node(
     const int node_index) const noexcept {
   return static_cast<int>(
-      mock_global_cores_.at(static_cast<size_t>(node_index)).size());
+      mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)}).size());
 }
 
 template <typename Component>
@@ -1100,21 +1175,25 @@ template <typename Component>
 int MockDistributedObject<Component>::first_proc_on_node(
     const int node_index) const noexcept {
   return static_cast<int>(
-      mock_global_cores_.at(static_cast<size_t>(node_index)).front());
+      mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)})
+          .at(LocalCoreId{0})
+          .value);
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::node_of(
     const int proc_index) const noexcept {
-  return static_cast<int>(
-      mock_nodes_and_local_cores_.at(static_cast<size_t>(proc_index)).first);
+  return static_cast<int>(mock_nodes_and_local_cores_
+                              .at(GlobalCoreId{static_cast<size_t>(proc_index)})
+                              .first.value);
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::local_rank_of(
     const int proc_index) const noexcept {
-  return static_cast<int>(
-      mock_nodes_and_local_cores_.at(static_cast<size_t>(proc_index)).second);
+  return static_cast<int>(mock_nodes_and_local_cores_
+                              .at(GlobalCoreId{static_cast<size_t>(proc_index)})
+                              .second.value);
 }
 
 }  // namespace ActionTesting
