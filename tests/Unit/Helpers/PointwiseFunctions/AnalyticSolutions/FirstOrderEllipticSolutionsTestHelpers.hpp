@@ -13,7 +13,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Elliptic/FirstOrderOperator.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
@@ -24,7 +23,7 @@
 #include "Utilities/Tuple.hpp"
 
 namespace FirstOrderEllipticSolutionsTestHelpers {
-
+namespace detail {
 namespace Tags {
 
 template <typename Tag>
@@ -35,24 +34,24 @@ struct OperatorAppliedTo : db::SimpleTag, db::PrefixTag {
 
 }  // namespace Tags
 
-/// \ingroup TestingFrameworkGroup
-/// Test that the `solution` numerically solves the `System` on the given grid
-/// for the given tolerance
 template <typename System, typename SolutionType, typename... Maps,
-          typename... FluxesArgs, typename... SourcesArgs>
-void verify_solution(
-    const SolutionType& solution,
-    const typename System::fluxes_computer& fluxes_computer,
-    const Mesh<System::volume_dim>& mesh,
+          typename... FluxesArgs, typename... SourcesArgs,
+          typename... PrimalFields, typename... AuxiliaryFields,
+          typename... PrimalFluxes, typename... AuxiliaryFluxes>
+void verify_solution_impl(
+    const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
         coord_map,
-    const double tolerance,
-    const std::tuple<FluxesArgs...>& fluxes_args = std::tuple<>{},
-    const std::tuple<SourcesArgs...>& sources_args = std::tuple<>{}) {
-  using all_fields = typename System::fields_tag::tags_list;
-  using primal_fields = typename System::primal_fields;
-  using auxiliary_fields = typename System::auxiliary_fields;
-
+    const double tolerance, const std::tuple<FluxesArgs...>& fluxes_args,
+    const std::tuple<SourcesArgs...>& sources_args,
+    tmpl::list<PrimalFields...> /*meta*/,
+    tmpl::list<AuxiliaryFields...> /*meta*/,
+    tmpl::list<PrimalFluxes...> /*meta*/,
+    tmpl::list<AuxiliaryFluxes...> /*meta*/) {
+  using all_fields = tmpl::list<PrimalFields..., AuxiliaryFields...>;
+  using all_fluxes = tmpl::list<PrimalFluxes..., AuxiliaryFluxes...>;
+  using FluxesComputer = typename System::fluxes_computer;
+  using SourcesComputer = typename System::sources_computer;
   CAPTURE(mesh);
 
   const size_t num_points = mesh.number_of_grid_points();
@@ -61,36 +60,47 @@ void verify_solution(
   const auto solution_fields = variables_from_tagged_tuple(
       solution.variables(inertial_coords, all_fields{}));
 
-  // Apply operator to solution fields
-  auto fluxes = std::apply(
-      [&solution_fields,
-       &fluxes_computer](const auto&... expanded_fluxes_args) {
-        return ::elliptic::first_order_fluxes<System::volume_dim, primal_fields,
-                                              auxiliary_fields>(
-            solution_fields, fluxes_computer, expanded_fluxes_args...);
+  // Apply operator to solution fields: -div(F) + S = f
+  Variables<all_fluxes> fluxes{num_points};
+  std::apply(
+      [&fluxes, &solution_fields](const auto&... expanded_fluxes_args) {
+        FluxesComputer::apply(make_not_null(&get<PrimalFluxes>(fluxes))...,
+                              expanded_fluxes_args...,
+                              get<AuxiliaryFields>(solution_fields)...);
+        FluxesComputer::apply(make_not_null(&get<AuxiliaryFluxes>(fluxes))...,
+                              expanded_fluxes_args...,
+                              get<PrimalFields>(solution_fields)...);
       },
       fluxes_args);
-  auto div_fluxes =
-      divergence(fluxes, mesh, coord_map.inv_jacobian(logical_coords));
-  auto sources = std::apply(
-      [&solution_fields, &fluxes](const auto&... expanded_sources_args) {
-        return ::elliptic::first_order_sources<
-            System::volume_dim, primal_fields, auxiliary_fields,
-            typename System::sources_computer>(solution_fields, fluxes,
-                                               expanded_sources_args...);
-      },
-      sources_args);
   Variables<db::wrap_tags_in<Tags::OperatorAppliedTo, all_fields>>
       operator_applied_to_fields{num_points};
-  elliptic::first_order_operator(make_not_null(&operator_applied_to_fields),
-                                 std::move(div_fluxes), std::move(sources));
+  divergence(make_not_null(&operator_applied_to_fields), fluxes, mesh,
+             coord_map.inv_jacobian(logical_coords));
+  operator_applied_to_fields *= -1.;
+  std::apply(
+      [&operator_applied_to_fields, &solution_fields,
+       &fluxes](const auto&... expanded_sources_args) {
+        SourcesComputer::apply(
+            make_not_null(&get<Tags::OperatorAppliedTo<AuxiliaryFields>>(
+                operator_applied_to_fields))...,
+            expanded_sources_args..., get<PrimalFields>(solution_fields)...);
+        SourcesComputer::apply(
+            make_not_null(&get<Tags::OperatorAppliedTo<PrimalFields>>(
+                operator_applied_to_fields))...,
+            expanded_sources_args..., get<PrimalFields>(solution_fields)...,
+            get<PrimalFluxes>(fluxes)...);
+      },
+      sources_args);
 
-  // Set fixed sources to zero for auxiliary fields, and retrieve the fixed
-  // sources for primal fields from the solution
+  // Set RHS for auxiliary equations to minus auxiliary fields, and for primal
+  // equations to the solution's fixed sources f(x)
   Variables<db::wrap_tags_in<::Tags::FixedSource, all_fields>> fixed_sources{
       num_points, 0.};
+  expand_pack((get<::Tags::FixedSource<AuxiliaryFields>>(fixed_sources) =
+                   get<AuxiliaryFields>(solution_fields))...);
+  fixed_sources *= -1.;
   fixed_sources.assign_subset(solution.variables(
-      inertial_coords, db::wrap_tags_in<::Tags::FixedSource, primal_fields>{}));
+      inertial_coords, tmpl::list<::Tags::FixedSource<PrimalFields>...>{}));
 
   // Check error norms against the given tolerance
   tmpl::for_each<all_fields>([&operator_applied_to_fields, &fixed_sources,
@@ -120,6 +130,26 @@ void verify_solution(
   });
 }
 
+}  // namespace detail
+
+/// \ingroup TestingFrameworkGroup
+/// Test that the `solution` numerically solves the `System` on the given grid
+/// for the given tolerance
+template <typename System, typename SolutionType, typename... Maps,
+          typename... FluxesArgs, typename... SourcesArgs>
+void verify_solution(
+    const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
+    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
+        coord_map,
+    const double tolerance,
+    const std::tuple<FluxesArgs...>& fluxes_args = std::tuple<>{},
+    const std::tuple<SourcesArgs...>& sources_args = std::tuple<>{}) {
+  detail::verify_solution_impl<System>(
+      solution, mesh, coord_map, tolerance, fluxes_args, sources_args,
+      typename System::primal_fields{}, typename System::auxiliary_fields{},
+      typename System::primal_fluxes{}, typename System::auxiliary_fluxes{});
+}
+
 /*!
  * \ingroup TestingFrameworkGroup
  * Test that the `solution` numerically solves the `System` on the given grid
@@ -142,7 +172,6 @@ template <typename System, typename SolutionType,
           typename PackageFluxesArgs>
 void verify_smooth_solution(
     const SolutionType& solution,
-    const typename System::fluxes_computer& fluxes_computer,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
         coord_map,
     const double tolerance_offset, const double tolerance_scaling,
@@ -160,8 +189,7 @@ void verify_smooth_solution(
     const Mesh<Dim> mesh{num_points, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<System>(
-        solution, fluxes_computer, mesh, coord_map, tolerance,
-        package_fluxes_args(mesh));
+        solution, mesh, coord_map, tolerance, package_fluxes_args(mesh));
   }
 }
 
@@ -183,7 +211,6 @@ template <typename System, typename SolutionType,
           size_t Dim = System::volume_dim, typename... Maps>
 void verify_solution_with_power_law_convergence(
     const SolutionType& solution,
-    const typename System::fluxes_computer& fluxes_computer,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
         coord_map,
     const double tolerance_offset, const double tolerance_pow) {
@@ -197,7 +224,7 @@ void verify_solution_with_power_law_convergence(
     const double tolerance = tolerance_offset * pow(num_points, -tolerance_pow);
     CAPTURE(tolerance);
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<System>(
-        solution, fluxes_computer,
+        solution,
         Mesh<Dim>{num_points, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto},
         coord_map, tolerance);

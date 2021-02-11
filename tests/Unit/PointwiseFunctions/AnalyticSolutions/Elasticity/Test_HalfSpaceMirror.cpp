@@ -135,7 +135,6 @@ SPECTRE_TEST_CASE(
     INFO("Test elasticity system with half-space mirror");
     // Verify that the solution numerically solves the system
     using system = Elasticity::FirstOrderSystem<3>;
-    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -146,7 +145,7 @@ SPECTRE_TEST_CASE(
     const auto logical_coords = logical_coordinates(mesh);
     const auto inertial_coords = coord_map(logical_coords);
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
-        solution, fluxes_computer, mesh, coord_map, 0.05,
+        solution, mesh, coord_map, 0.05,
         std::make_tuple(constitutive_relation, inertial_coords));
   };
 }

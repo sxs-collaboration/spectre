@@ -56,12 +56,11 @@ void test_solution() {
 
   using system =
       Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian>;
-  const typename system::fluxes_computer fluxes_computer{};
   const Mesh<Dim> mesh{12, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   const auto coord_map = make_coord_map<Dim>();
   FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
-      solution, fluxes_computer, mesh, coord_map, 1.e-14);
+      solution, mesh, coord_map, 1.e-14);
 }
 
 }  // namespace

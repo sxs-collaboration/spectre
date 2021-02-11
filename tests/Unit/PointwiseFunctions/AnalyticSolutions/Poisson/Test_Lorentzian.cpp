@@ -86,7 +86,6 @@ SPECTRE_TEST_CASE(
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Lorentzian<3> solution{};
-    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -94,7 +93,7 @@ SPECTRE_TEST_CASE(
         coord_map{
             {{-1., 1., -0.5, 0.5}, {-1., 1., -0.5, 0.5}, {-1., 1., -0.5, 0.5}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
-        solution, fluxes_computer, coord_map, 5.e1, 1.2,
+        solution, coord_map, 5.e1, 1.2,
         [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
   }
 
@@ -103,7 +102,6 @@ SPECTRE_TEST_CASE(
     // Euclidean metric. This is more a test of the system than of the solution.
     using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
     const Poisson::Solutions::Lorentzian<3> solution{};
-    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -121,8 +119,7 @@ SPECTRE_TEST_CASE(
     const auto spatial_christoffel_contracted =
         make_with_value<tnsr::i<DataVector, 3>>(used_for_size, 0.);
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
-        solution, fluxes_computer, mesh, coord_map, 0.1,
-        std::make_tuple(inv_spatial_metric),
+        solution, mesh, coord_map, 0.1, std::make_tuple(inv_spatial_metric),
         std::make_tuple(spatial_christoffel_contracted));
   }
 }

@@ -85,12 +85,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Moustache<1> solution{};
-    const typename system::fluxes_computer fluxes_computer{};
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
         coord_map{{-1., 1., 0., 1.}};
     FirstOrderEllipticSolutionsTestHelpers::
-        verify_solution_with_power_law_convergence<system>(
-            solution, fluxes_computer, coord_map, 3.e1, 2.5);
+        verify_solution_with_power_law_convergence<system>(solution, coord_map,
+                                                           3.e1, 2.5);
   }
   {
     INFO("2D");
@@ -99,13 +98,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Moustache<2> solution{};
-    const typename system::fluxes_computer fluxes_computer{};
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
         coord_map{{{-1., 1., 0., 1.}, {-1., 1., 0., 1.}}};
     FirstOrderEllipticSolutionsTestHelpers::
-        verify_solution_with_power_law_convergence<system>(
-            solution, fluxes_computer, coord_map, 5., 2.);
+        verify_solution_with_power_law_convergence<system>(solution, coord_map,
+                                                           5., 2.);
   }
 }
