@@ -203,9 +203,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
     const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
                                                  {{1.5, 2., 3.}},
-                                                 {{false, false, false}},
                                                  {{2, 0, 1}},
-                                                 {{4, 3, 2}}};
+                                                 {{4, 3, 2}},
+                                                 {{false, false, false}}};
 
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;

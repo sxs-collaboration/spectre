@@ -261,9 +261,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFirstOrderOperator",
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
     const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
                                                  {{1.5, 1., 3.}},
-                                                 {{false, false, false}},
                                                  {{1, 1, 1}},
-                                                 {{2, 3, 4}}};
+                                                 {{2, 3, 4}},
+                                                 {{false, false, false}}};
 
     test_initialize_fluxes(domain_creator, element_id);
   }

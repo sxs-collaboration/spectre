@@ -299,8 +299,8 @@ void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
       domain::creators::time_dependence::UniformTranslation<3>(
           0.0, 2.5, {{0.1, 0.2, 0.3}});
   const auto brick = domain::creators::Brick(
-      {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{false, false, false}},
-      {{0, 0, 0}}, {{3, 3, 3}}, uniform_translation.get_clone());
+      {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{0, 0, 0}}, {{3, 3, 3}},
+      {{false, false, false}}, uniform_translation.get_clone());
   const auto domain = brick.create_domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.

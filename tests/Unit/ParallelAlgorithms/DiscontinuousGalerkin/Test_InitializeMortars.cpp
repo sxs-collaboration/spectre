@@ -250,9 +250,9 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
     const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
                                                  {{1.5, 1., 3.}},
-                                                 {{false, false, false}},
                                                  {{1, 1, 1}},
-                                                 {{2, 3, 4}}};
+                                                 {{2, 3, 4}},
+                                                 {{false, false, false}}};
     const auto boundary_mortar_id_left = std::make_pair(
         Direction<3>::lower_xi(), ElementId<3>::external_boundary_id());
     const auto boundary_mortar_id_back = std::make_pair(

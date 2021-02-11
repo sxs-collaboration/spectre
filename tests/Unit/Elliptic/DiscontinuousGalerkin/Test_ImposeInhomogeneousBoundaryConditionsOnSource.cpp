@@ -237,9 +237,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
     const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
                                                  {{1.5, 1., 3.}},
-                                                 {{false, false, false}},
                                                  {{1, 1, 1}},
-                                                 {{2, 2, 2}}};
+                                                 {{2, 2, 2}},
+                                                 {{false, false, false}}};
 
     // Expected boundary contribution to source in reference element (0, 1, 0):
     //                   7 eta
