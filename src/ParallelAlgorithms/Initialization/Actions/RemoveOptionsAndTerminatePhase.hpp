@@ -47,7 +47,7 @@ struct RemoveOptionsAndTerminatePhase {
         tags_to_remove,
         tmpl::bind<
             tmpl::list_contains,
-            tmpl::pin<typename db::DataBox<DbTagsList>::simple_item_tags>,
+            tmpl::pin<typename db::DataBox<DbTagsList>::mutable_item_tags>,
             tmpl::_1>>;
     static_assert(std::is_same<tmpl::back<ActionList>,
                                RemoveOptionsAndTerminatePhase>::value,

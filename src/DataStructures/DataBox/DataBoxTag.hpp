@@ -151,10 +151,10 @@ struct storage_type_impl {
           ? 4
           : (is_compute_tag_v<Tag>and has_return_type_member_v<Tag>)
                 ? 3
-                : is_compute_tag_v<Tag> ? 2
-                                        : std::is_base_of_v<db::SimpleTag, Tag>
-                                              ? 1
-                                              : 0>::template f<TagList, Tag>;
+                : is_immutable_item_tag_v<Tag>
+                      ? 2
+                      : std::is_base_of_v<db::SimpleTag, Tag> ? 1 : 0>::
+      template f<TagList, Tag>;
 };
 
 template <>
@@ -244,8 +244,8 @@ using const_item_type =
 template <typename Tag, typename TagList = NoSuchType>
 using item_type = typename item_type_impl<TagList, Tag>::type;
 
-CREATE_IS_CALLABLE(function)
-CREATE_IS_CALLABLE_V(function)
+CREATE_IS_CALLABLE(get)
+CREATE_IS_CALLABLE_V(get)
 
 template <typename Tag, typename TagList, typename TagTypesList>
 struct check_compute_item_is_invokable;
@@ -254,7 +254,7 @@ template <typename Tag, typename... Tags, typename... TagTypes>
 struct check_compute_item_is_invokable<Tag, tmpl::list<Tags...>,
                                        tmpl::list<TagTypes...>> {
   static_assert(
-      is_function_callable_v<Tag, TagTypes...>,
+      is_get_callable_v<Tag, TagTypes...>,
       "The compute item is not callable with the types that the tags hold. The "
       "compute item tag that is the problem should be shown in the first line "
       " after the static assert error: "
@@ -272,7 +272,7 @@ struct compute_item_type<tmpl::list<Args...>> {
           Tag, tmpl::list<Args...>,
           tmpl::list<const_item_type<Args, TagList>...>>{},
 #endif  // SPECTRE_DEBUG
-      Tag::function(std::declval<const_item_type<Args, TagList>>()...));
+      Tag::get(std::declval<const_item_type<Args, TagList>>()...));
 };
 }  // namespace detail
 }  // namespace db

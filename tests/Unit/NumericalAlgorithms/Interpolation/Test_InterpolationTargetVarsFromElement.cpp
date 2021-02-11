@@ -107,9 +107,8 @@ struct mock_interpolation_target {
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
-  using simple_tags =
-      db::get_items<typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::return_tag_list>;
+  using simple_tags = typename intrp::Actions::InitializeInterpolationTarget<
+      Metavariables, InterpolationTargetTag>::simple_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<

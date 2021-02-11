@@ -96,11 +96,12 @@ auto merge_into_databox_impl(
           std::move(tuples::get<SimpleTagsToCheck>(simple_tags))));
 
   // Only add compute tags that are not in the DataBox.
-  using compute_tags_to_add = tmpl::remove_if<
-      ComputeTagsList,
-      tmpl::bind<tmpl::list_contains,
-                 tmpl::pin<typename db::DataBox<DbTagsList>::compute_item_tags>,
-                 tmpl::_1>>;
+  using compute_tags_to_add =
+      tmpl::remove_if<ComputeTagsList,
+                      tmpl::bind<tmpl::list_contains,
+                                 tmpl::pin<typename db::DataBox<
+                                     DbTagsList>::immutable_item_creation_tags>,
+                                 tmpl::_1>>;
 
   return db::create_from<db::RemoveTags<>,
                          db::AddSimpleTags<SimpleTagsToAdd...>,
@@ -135,7 +136,7 @@ auto merge_into_databox(db::DataBox<DbTagsList>&& box,
   using simple_tags_to_check = tmpl::filter<
       SimpleTagsList,
       tmpl::bind<tmpl::list_contains,
-                 tmpl::pin<typename db::DataBox<DbTagsList>::simple_item_tags>,
+                 tmpl::pin<typename db::DataBox<DbTagsList>::mutable_item_tags>,
                  tmpl::_1>>;
   using simple_tags_to_add =
       tmpl::remove_if<SimpleTagsList,
