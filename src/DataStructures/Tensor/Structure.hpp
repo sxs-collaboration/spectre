@@ -143,6 +143,23 @@ constexpr size_t compute_collapsed_index(
   return collapsed_index;
 }
 
+/// \brief Computes a mapping from a collapsed_index to its storage_index
+///
+/// \details
+/// Because each collapsed_index corresponds to a unique tensor_index, this map
+/// also effectively relates each unique tensor_index to its storage_index.
+/// While each index of the returned map corresponds to a unique tensor_index,
+/// the element stored at each index is a storage_index that may or may not be
+/// unique. If symmetries are present, this map will not be 1-1, as
+/// collapsed_indices that correspond to tensor_indices with the same canonical
+/// form will map to the same storage_index. Provided that any tensor_index is
+/// first converted to its corresponding collapsed_index, this map can be used
+/// to retrieve the storage_index of that tensor_index, canonicalized or not.
+///
+/// \tparam Symm the Symmetry of the tensor
+/// \tparam NumberOfComponents the total number of components in the tensor
+/// \param index_dimensions the dimensions of the tensor's indices
+/// \return a mapping from a collapsed_index to its storage_index
 template <typename Symm, size_t NumberOfComponents>
 constexpr auto compute_collapsed_to_storage(
     const cpp20::array<size_t, tmpl::size<Symm>::value>&
@@ -180,6 +197,26 @@ constexpr auto compute_collapsed_to_storage(
   }
 }
 
+/// \brief Computes a 1-1 mapping from a storage_index to its canonical
+/// tensor_index
+///
+/// \details
+/// When symmetries are present, not all unique tensor_indices can be retrieved
+/// from this map, as some tensor_indices will share the same canonical form.
+/// Otherwise, if no symmetries are present, each unique tensor_index is already
+/// in the canonical form, and one that is not shared by another tensor_index,
+/// so this would equivalently mean a 1-1 mapping from a storage_index to a
+/// tensor_index. This means that when no symmetries are present, all unique
+/// tensor_indices of a tensor can be retrieved from this map.
+///
+/// \tparam Symm the Symmetry of the tensor
+/// \tparam NumIndComps the number of independent components in the tensor, i.e.
+/// components equivalent due to symmetry counted only once
+/// \tparam NumComps the total number of components in the tensor
+/// \param collapsed_to_storage a mapping from a collapsed_index to its
+/// storage_index, which is only 1-1 if there are no symmetries
+/// \param index_dimensions the dimensions of the tensor's indices
+/// \return a 1-1 mapping from a storage_index to its canonical tensor_index
 template <typename Symm, size_t NumIndComps, size_t NumComps>
 constexpr auto compute_storage_to_tensor(
     const cpp20::array<size_t, NumComps>& collapsed_to_storage,
@@ -299,8 +336,14 @@ struct ComponentNameImpl<0> {
 ///                     unique collapsed indices and there is a 1-1 map between
 ///                     a tensor_index and a collapsed_index.
 /// 3. storage_index: index into the storage vector of the Tensor. This depends
-///                   on symmetries of the tensor, rank and dimensionality.
-///                   There are size storage_index's.
+///                   on symmetries of the tensor, rank, and dimensionality. If
+///                   the Tensor has symmetries, tensor_indices that are
+///                   equivalent due to symmetry will have the same
+///                   storage_index and canonical form. This means that the
+///                   mapping between tensor_indices and storage_indices is 1-1
+///                   only if no symmetries are present, but there is a 1-1
+///                   mapping between canonical tensor_indices and
+///                   storage_indices, regardless of symmetry.
 /// \tparam Symm the symmetry of the Tensor
 /// \tparam Indices list of tensor_index's giving the dimensionality and frame
 /// of the index
@@ -340,10 +383,14 @@ struct Structure {
     return number_of_components;
   }
 
+  /// A mapping between each collapsed_index and its storage_index. See
+  /// \ref compute_collapsed_to_storage for details.
   static constexpr auto collapsed_to_storage_ =
       compute_collapsed_to_storage<Symm, number_of_components()>(
           make_cpp20_array_from_list<tmpl::conditional_t<
               sizeof...(Indices) == 0, size_t, index_list>>());
+  /// A 1-1 mapping between each storage_index and its canonical tensor_index.
+  /// See \ref compute_storage_to_tensor for details.
   static constexpr auto storage_to_tensor_ = compute_storage_to_tensor<Symm,
                                                                        size()>(
       collapsed_to_storage_,
@@ -391,15 +438,21 @@ struct Structure {
     return std::tuple<typename Indices::Frame...>{};
   }
 
-  /*!
-   * \brief Get the canonical tensor_index array
-   *
-   * \details
-   * For a symmetric tensor \f$T_{(ab)}\f$ with an associated symmetry list
-   * `Symmetry<1, 1>`, this will return, e.g. `{{3, 2}}` rather than `{{2, 3}}`
-   * for that particular index.
-   * Note that this ordering is implementation defined.
-   */
+  /// \brief Get the canonical tensor_index array of a storage_index
+  ///
+  /// \details
+  /// For a symmetric tensor \f$T_{(ab)}\f$ with an associated symmetry list
+  /// `Symmetry<1, 1>`, this will return, e.g. `{{3, 2}}` rather than `{{2, 3}}`
+  /// for that particular index. Note that the canonical ordering is
+  /// implementation-defined.
+  ///
+  /// As `storage_to_tensor_` is a computed 1-1 mapping between a storage_index
+  /// and canonical tensor_index, we simply retrieve the canonical tensor_index
+  /// from this map.
+  ///
+  /// \param storage_index the storage_index of which to get the canonical
+  /// tensor_index
+  /// \return the canonical tensor_index array of a storage_index
   template <size_t Rank = sizeof...(Indices)>
   SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, Rank>
   get_canonical_tensor_index(const size_t storage_index) noexcept {
@@ -413,8 +466,16 @@ struct Structure {
     }
   }
 
-  /// Get storage_index
-  /// \param args comma separated list of the index to return
+  /// \brief Get the storage_index of a tensor_index
+  ///
+  /// \details
+  /// This first computes the collapsed_index of the given tensor_index (this is
+  /// a 1-1 mapping), then retrieves the storage_index from
+  /// collapsed_to_storage_.
+  ///
+  /// \param args comma separated list of the tensor_index of which to get the
+  /// storage_index
+  /// \return the storage_index of a tensor_index
   template <typename... N>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(
       const N... args) noexcept {
@@ -428,8 +489,16 @@ struct Structure {
             make_cpp20_array_from_list<tmpl::conditional_t<
                 0 != sizeof...(Indices), index_list, size_t>>()));
   }
-  /// Get storage_index
+
+  /// \brief Get the storage_index of a tensor_index
+  ///
+  /// \details
+  /// This first computes the collapsed_index of the given tensor_index (this is
+  /// a 1-1 mapping), then retrieves the storage_index from
+  /// collapsed_to_storage_.
+  ///
   /// \param tensor_index the tensor_index of which to get the storage_index
+  /// \return the storage_index of a tensor_index
   template <typename I>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(
       const std::array<I, sizeof...(Indices)>& tensor_index) noexcept {
@@ -441,6 +510,16 @@ struct Structure {
                            0 != sizeof...(Indices), index_list, size_t>>()));
   }
 
+  /// \brief Get the storage_index of a tensor_index
+  ///
+  /// \details
+  /// This first computes the collapsed_index of the given tensor_index (this is
+  /// a 1-1 mapping), then retrieves the storage_index from
+  /// collapsed_to_storage_.
+  ///
+  /// \tparam N the comma separated list of the tensor_index of which to get the
+  /// storage_index
+  /// \return the storage_index of a tensor_index
   template <int... N, Requires<(sizeof...(N) > 0)> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t
   get_storage_index() noexcept {
