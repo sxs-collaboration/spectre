@@ -457,7 +457,8 @@ template <typename Map>
 void test_suite_for_map_on_sphere(
     const Map& map, const bool include_origin = true,
     const double radius_of_sphere = 1.0) noexcept {
-  static_assert(Map::dim == 3, "Works only for a 3d map");
+  static_assert(Map::dim == 3,
+                "test_suite_for_map_on_sphere works only for a 3d map");
 
   // Set up random number generator
   MAKE_GENERATOR(gen);
@@ -479,43 +480,30 @@ void test_suite_for_map_on_sphere(
   const double radius = radius_dis(gen);
   CAPTURE(radius);
 
-  const std::array<double, 3> random_point{{radius * sin(theta) * cos(phi),
-                                            radius * sin(theta) * sin(phi),
-                                            radius * cos(theta)}};
+  const std::array<std::array<double, 3>, 3> points_to_test{
+      {// A random point in the interior
+       {radius * sin(theta) * cos(phi), radius * sin(theta) * sin(phi),
+        radius * cos(theta)},
+       // A random point on the outer boundary
+       {radius_of_sphere * sin(theta) * cos(phi),
+        radius_of_sphere * sin(theta) * sin(phi),
+        radius_of_sphere * cos(theta)},
+       // Either a point at the origin or (if include_origin is false)
+       // a random point on the inner boundary.
+       {inner_bdry * sin(theta) * cos(phi), inner_bdry * sin(theta) * sin(phi),
+        inner_bdry * cos(theta)}}};
 
-  const std::array<double, 3> random_bdry_point{
-      {radius_of_sphere * sin(theta) * cos(phi),
-       radius_of_sphere * sin(theta) * sin(phi),
-       radius_of_sphere * cos(theta)}};
-
-  // This point is either the origin or (if include_origin is false)
-  // it is some random point on the inner boundary.
-  const std::array<double, 3> random_inner_bdry_point_or_origin{
-      {inner_bdry * sin(theta) * cos(phi),
-       inner_bdry * sin(theta) * sin(phi),
-       inner_bdry * cos(theta)}};
-
-  const auto test_helper =
-    [&random_bdry_point, &random_inner_bdry_point_or_origin,
-       &random_point ](const auto& map_to_test) noexcept {
+  const auto test_helper = [&points_to_test](const auto& map_to_test) noexcept {
     test_serialization(map_to_test);
     CHECK_FALSE(map_to_test != map_to_test);
-
-    test_coordinate_map_argument_types(map_to_test,
-                                       random_inner_bdry_point_or_origin);
-    test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-    test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-    test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
-
-    test_coordinate_map_argument_types(map_to_test, random_point);
-    test_jacobian(map_to_test, random_point);
-    test_inv_jacobian(map_to_test, random_point);
-    test_inverse_map(map_to_test, random_point);
-
-    test_jacobian(map_to_test, random_bdry_point);
-    test_inv_jacobian(map_to_test, random_bdry_point);
-    test_inverse_map(map_to_test, random_bdry_point);
+    for (const auto& point : points_to_test) {
+      test_coordinate_map_argument_types(map_to_test, point);
+      test_jacobian(map_to_test, point);
+      test_inv_jacobian(map_to_test, point);
+      test_inverse_map(map_to_test, point);
+    };
   };
+
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
@@ -523,6 +511,106 @@ void test_suite_for_map_on_sphere(
       domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
   test_helper(map2);
 }
+
+  /*!
+   * \ingroup TestingFrameworkGroup
+   * \brief Given a Map `map`, tests the map functions, including map inverse,
+   * jacobian, and inverse jacobian, for a series of points.
+   * These points are chosen in a right cylinder with cylindrical radius 1
+   * and z-axis extending from -1 to +1. The
+   * map is expected to be valid on the boundary of that cylinder as well as
+   * in its interior.
+   * This test works only in 3 dimensions.
+   */
+  template <typename Map>
+  void test_suite_for_map_on_cylinder(const Map& map, const double inner_radius,
+                                      const double outer_radius) noexcept {
+    static_assert(Map::dim == 3,
+                  "test_suite_for_map_on_cylinder works only for a 3d map");
+
+    // Set up random number generator
+    MAKE_GENERATOR(gen);
+
+    std::uniform_real_distribution<> radius_dis(inner_radius, outer_radius);
+    std::uniform_real_distribution<> phi_dis(0.0, 2.0 * M_PI);
+    std::uniform_real_distribution<> height_dis(-1.0, 1.0);
+
+    const double height = height_dis(gen);
+    CAPTURE(height);
+    const double phi = phi_dis(gen);
+    CAPTURE(phi);
+    const double radius = radius_dis(gen);
+    CAPTURE(radius);
+
+    const std::array<double, 3> random_point{
+        {radius * cos(phi), radius * sin(phi), height}};
+
+    const std::array<double, 3> random_bdry_point_rho{
+        {outer_radius * cos(phi), outer_radius * sin(phi), height}};
+
+    const std::array<double, 3> random_bdry_point_z{
+        {radius * cos(phi), radius * sin(phi), height > 0.5 ? 1.0 : -1.0}};
+
+    const std::array<double, 3> random_bdry_point_corner{
+        {outer_radius * cos(phi), outer_radius * sin(phi),
+         height > 0.5 ? 1.0 : -1.0}};
+
+    // If inner_radius is zero, this point is on the axis.
+    const std::array<double, 3> random_inner_bdry_point_or_origin{
+        {inner_radius * cos(phi), inner_radius * sin(phi), height}};
+
+    // If inner_radius is zero, this point is on the axis.
+    const std::array<double, 3> random_inner_bdry_point_corner{
+        {inner_radius * cos(phi), inner_radius * sin(phi),
+         height > 0.5 ? 1.0 : -1.0}};
+
+    const auto test_helper = [&random_bdry_point_rho, &random_bdry_point_z,
+                              &random_bdry_point_corner,
+                              &random_inner_bdry_point_or_origin,
+                              &random_inner_bdry_point_corner,
+                              &random_point](const auto& map_to_test) noexcept {
+      test_serialization(map_to_test);
+      CHECK_FALSE(map_to_test != map_to_test);
+
+      test_coordinate_map_argument_types(map_to_test,
+                                         random_inner_bdry_point_or_origin);
+      test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+      test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+      test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
+
+      test_coordinate_map_argument_types(map_to_test, random_point);
+      test_jacobian(map_to_test, random_point);
+      test_inv_jacobian(map_to_test, random_point);
+      test_inverse_map(map_to_test, random_point);
+
+      test_coordinate_map_argument_types(map_to_test, random_bdry_point_rho);
+      test_jacobian(map_to_test, random_bdry_point_rho);
+      test_inv_jacobian(map_to_test, random_bdry_point_rho);
+      test_inverse_map(map_to_test, random_bdry_point_rho);
+
+      test_coordinate_map_argument_types(map_to_test, random_bdry_point_z);
+      test_jacobian(map_to_test, random_bdry_point_z);
+      test_inv_jacobian(map_to_test, random_bdry_point_z);
+      test_inverse_map(map_to_test, random_bdry_point_z);
+
+      test_coordinate_map_argument_types(map_to_test, random_bdry_point_corner);
+      test_jacobian(map_to_test, random_bdry_point_corner);
+      test_inv_jacobian(map_to_test, random_bdry_point_corner);
+      test_inverse_map(map_to_test, random_bdry_point_corner);
+
+      test_coordinate_map_argument_types(map_to_test,
+                                         random_inner_bdry_point_corner);
+      test_jacobian(map_to_test, random_inner_bdry_point_corner);
+      test_inv_jacobian(map_to_test, random_inner_bdry_point_corner);
+      test_inverse_map(map_to_test, random_inner_bdry_point_corner);
+    };
+    test_helper(map);
+    const auto map2 = serialize_and_deserialize(map);
+    check_if_maps_are_equal(
+        domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+        domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+    test_helper(map2);
+  }
 
 /*!
  * \ingroup TestingFrameworkGroup
