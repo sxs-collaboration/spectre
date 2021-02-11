@@ -3,14 +3,20 @@
 
 #pragma once
 
+#include <limits>
 #include <ostream>
 
+#include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -63,6 +69,189 @@ enum class SchwarzschildCoordinates {
 std::ostream& operator<<(std::ostream& os,
                          SchwarzschildCoordinates coords) noexcept;
 
+}  // namespace Xcts::Solutions
+
+template <>
+struct Options::create_from_yaml<Xcts::Solutions::SchwarzschildCoordinates> {
+  template <typename Metavariables>
+  static Xcts::Solutions::SchwarzschildCoordinates create(
+      const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+Xcts::Solutions::SchwarzschildCoordinates
+Options::create_from_yaml<Xcts::Solutions::SchwarzschildCoordinates>::create<
+    void>(const Options::Option& options);
+
+namespace Xcts::Solutions {
+
+namespace detail {
+
+struct SchwarzschildImpl {
+  struct Mass {
+    using type = double;
+    static constexpr Options::String help = "Mass parameter M";
+  };
+
+  struct CoordinateSystem {
+    static std::string name() noexcept { return "Coordinates"; }
+    using type = SchwarzschildCoordinates;
+    static constexpr Options::String help =
+        "The coordinate system used to describe the solution";
+  };
+
+  using options = tmpl::list<Mass, CoordinateSystem>;
+  static constexpr Options::String help{
+      "Schwarzschild spacetime in general relativity"};
+
+  SchwarzschildImpl() = default;
+  SchwarzschildImpl(const SchwarzschildImpl&) noexcept = default;
+  SchwarzschildImpl& operator=(const SchwarzschildImpl&) noexcept = default;
+  SchwarzschildImpl(SchwarzschildImpl&&) noexcept = default;
+  SchwarzschildImpl& operator=(SchwarzschildImpl&&) noexcept = default;
+  ~SchwarzschildImpl() noexcept = default;
+
+  explicit SchwarzschildImpl(
+      double mass, SchwarzschildCoordinates coordinate_system) noexcept;
+
+  /// The mass parameter \f$M\f$.
+  double mass() const noexcept;
+
+  SchwarzschildCoordinates coordinate_system() const noexcept;
+
+  /// The radius of the Schwarzschild horizon in the given coordinates.
+  double radius_at_horizon() const noexcept;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) noexcept;
+
+ protected:
+  double mass_{std::numeric_limits<double>::signaling_NaN()};
+  SchwarzschildCoordinates coordinate_system_{};
+};
+
+bool operator==(const SchwarzschildImpl& lhs,
+                const SchwarzschildImpl& rhs) noexcept;
+
+bool operator!=(const SchwarzschildImpl& lhs,
+                const SchwarzschildImpl& rhs) noexcept;
+
+template <typename DataType>
+struct SchwarzschildVariables {
+  using Cache = CachedTempBuffer<
+      SchwarzschildVariables,
+      Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+      gr::Tags::TraceExtrinsicCurvature<DataType>,
+      ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+      Tags::ConformalFactor<DataType>,
+      ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      Tags::LapseTimesConformalFactor<DataType>,
+      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+      Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+      Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
+      gr::Tags::EnergyDensity<DataType>, gr::Tags::StressTrace<DataType>,
+      gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+      ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
+      ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
+      ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
+
+  const tnsr::I<DataType, 3>& x;
+  double mass;
+  SchwarzschildCoordinates coordinate_system;
+
+  void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+      const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, 3>*> trace_extrinsic_curvature_gradient,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ConformalFactor<DataType> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, 3>*> conformal_factor_gradient,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+                    Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
+      gsl::not_null<Cache*> cache,
+      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, 3>*>
+          lapse_times_conformal_factor_gradient,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
+                    Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
+      const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> shift_excess,
+      gsl::not_null<Cache*> cache,
+      Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
+      gsl::not_null<Cache*> cache,
+      Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::EnergyDensity<DataType> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<Scalar<DataType>*> stress_trace,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::StressTrace<DataType> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::MomentumDensity<3, Frame::Inertial,
+                                            DataType> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> fixed_source_for_hamiltonian_constraint,
+      gsl::not_null<Cache*> cache,
+      ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
+      const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
+      gsl::not_null<Cache*> cache,
+      ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
+      const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
+      gsl::not_null<Cache*> cache,
+      ::Tags::FixedSource<
+          Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
+      const noexcept;
+};
+
+}  // namespace detail
+
+// The following implements the registration and factory-creation mechanism
+
+/// \cond
+template <typename Registrars>
+struct Schwarzschild;
+
+namespace Registrars {
+struct Schwarzschild {
+  template <typename Registrars>
+  using f = Solutions::Schwarzschild<Registrars>;
+};
+}  // namespace Registrars
+/// \endcond
+
 /*!
  * \brief Schwarzschild spacetime in general relativity
  *
@@ -71,181 +260,48 @@ std::ostream& operator<<(std::ostream& os,
  * `Xcts::Solutions::SchwarzschildCoordinates` enum for the available coordinate
  * systems and for the solution variables in the respective coordinates.
  */
-template <SchwarzschildCoordinates Coords>
-class Schwarzschild {
+template <typename Registrars =
+              tmpl::list<Solutions::Registrars::Schwarzschild>>
+class Schwarzschild : public AnalyticSolution<Registrars>,
+                      public detail::SchwarzschildImpl {
  private:
-  struct Mass {
-    using type = double;
-    static constexpr Options::String help = "Mass parameter M";
-  };
+  using Base = AnalyticSolution<Registrars>;
 
  public:
-  using options = tmpl::list<Mass>;
-  static constexpr Options::String help{
-      "Schwarzschild spacetime in general relativity"};
-
   Schwarzschild() = default;
-  Schwarzschild(const Schwarzschild&) noexcept = delete;
-  Schwarzschild& operator=(const Schwarzschild&) noexcept = delete;
+  Schwarzschild(const Schwarzschild&) noexcept = default;
+  Schwarzschild& operator=(const Schwarzschild&) noexcept = default;
   Schwarzschild(Schwarzschild&&) noexcept = default;
   Schwarzschild& operator=(Schwarzschild&&) noexcept = default;
   ~Schwarzschild() noexcept = default;
 
-  explicit Schwarzschild(double mass) noexcept;
+  using SchwarzschildImpl::SchwarzschildImpl;
 
-  /// The mass parameter \f$M\f$.
-  double mass() const noexcept;
+  /// \cond
+  explicit Schwarzschild(CkMigrateMessage* m) noexcept : Base(m) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Schwarzschild);
+  /// \endcond
 
-  /// The radius of the Schwarzschild horizon in the given coordinates.
-  double radius_at_horizon() const noexcept;
-
-  // @{
-  /// Retrieve variable at coordinates `x`
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<Xcts::Tags::ConformalMetric<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const
-      noexcept
-      -> tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DataType>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                               tmpl::size_t<3>, Frame::Inertial>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<
-          ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                        tmpl::size_t<3>, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
-                               tmpl::size_t<3>, Frame::Inertial>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<
-          ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                        Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Xcts::Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<Xcts::Tags::LapseTimesConformalFactor<DataType>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
-                               tmpl::size_t<3>, Frame::Inertial>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<
-          ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
-                        tmpl::size_t<3>, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<Xcts::Tags::ShiftBackground<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<
-          Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
-          Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<
-          Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
-          Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<::Tags::FixedSource<
-                     Xcts::Tags::ConformalFactor<DataType>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
-          ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<::Tags::FixedSource<
-                     Xcts::Tags::LapseTimesConformalFactor<DataType>>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<
-          ::Tags::FixedSource<Xcts::Tags::LapseTimesConformalFactor<DataType>>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<::Tags::FixedSource<Xcts::Tags::ShiftExcess<
-                     DataType, 3, Frame::Inertial>>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<::Tags::FixedSource<
-          Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<gr::Tags::StressTrace<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<gr::Tags::StressTrace<DataType>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<gr::Tags::MomentumDensity<3, Frame::Inertial,
-                                                      DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
-          gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>>;
-  // @}
-
-  /// Retrieve a collection of variables at coordinates `x`
-  template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
-    static_assert(sizeof...(Tags) > 1, "The requested tag is not implemented.");
-    return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+    using VarsComputer = detail::SchwarzschildVariables<DataType>;
+    typename VarsComputer::Cache cache{
+        get_size(*x.begin()), VarsComputer{x, mass_, coordinate_system_}};
+    return {cache.get_var(RequestedTags{})...};
   }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
-    p | mass_;
+  void pup(PUP::er& p) noexcept override {
+    Base::pup(p);
+    detail::SchwarzschildImpl::pup(p);
   }
-
- private:
-  double mass_;
 };
 
-template <SchwarzschildCoordinates Coords>
-SPECTRE_ALWAYS_INLINE bool operator==(
-    const Schwarzschild<Coords>& lhs,
-    const Schwarzschild<Coords>& rhs) noexcept {
-  return lhs.mass() == rhs.mass();
-}
-
-template <SchwarzschildCoordinates Coords>
-SPECTRE_ALWAYS_INLINE bool operator!=(
-    const Schwarzschild<Coords>& lhs,
-    const Schwarzschild<Coords>& rhs) noexcept {
-  return not(lhs == rhs);
-}
+/// \cond
+template <typename Registrars>
+PUP::able::PUP_ID Schwarzschild<Registrars>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
 
 }  // namespace Xcts::Solutions

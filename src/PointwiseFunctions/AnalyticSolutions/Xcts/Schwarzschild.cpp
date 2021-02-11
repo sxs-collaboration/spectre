@@ -3,7 +3,9 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
 
+#include <algorithm>
 #include <ostream>
+#include <pup.h>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -12,10 +14,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \cond
 namespace Xcts::Solutions {
@@ -30,346 +34,220 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
-template <SchwarzschildCoordinates Coords>
-Schwarzschild<Coords>::Schwarzschild(const double mass) noexcept
-    : mass_(mass) {}
-
-template <SchwarzschildCoordinates Coords>
-double Schwarzschild<Coords>::mass() const noexcept {
-  return mass_;
-}
-
-template <>
-double Schwarzschild<SchwarzschildCoordinates::Isotropic>::radius_at_horizon()
-    const noexcept {
-  return 0.5 * mass_;
-}
-
-// Conformal metric
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::ConformalMetric<DataType, 3,
-                                           Frame::Inertial>> /*meta*/) const
-    noexcept {
-  auto conformal_metric =
-      make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.);
-  get<0, 0>(conformal_metric) = 1.;
-  get<1, 1>(conformal_metric) = 1.;
-  get<2, 2>(conformal_metric) = 1.;
-  return {std::move(conformal_metric)};
-}
-
-// Extrinsic curvature trace
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DataType>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const
-    noexcept {
-  return {make_with_value<Scalar<DataType>>(x, 0.)};
-}
-
-// Extrinsic curvature trace gradient
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                                  tmpl::size_t<3>, Frame::Inertial>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                             tmpl::size_t<3>, Frame::Inertial>> /*meta*/) const
-    noexcept {
-  return {make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.)};
-}
-
-// Conformal factor
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const noexcept {
-  return {Scalar<DataType>{1. + 0.5 * mass_ / get(magnitude(x))}};
-}
-
-// Conformal factor gradient
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
-                                  tmpl::size_t<3>, Frame::Inertial>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
-                             tmpl::size_t<3>, Frame::Inertial>> /*meta*/) const
-    noexcept {
-  const DataType isotropic_prefactor = -0.5 * mass_ / cube(get(magnitude(x)));
-  auto conformal_factor_gradient =
-      make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.);
-  get<0>(conformal_factor_gradient) = isotropic_prefactor * get<0>(x);
-  get<1>(conformal_factor_gradient) = isotropic_prefactor * get<1>(x);
-  get<2>(conformal_factor_gradient) = isotropic_prefactor * get<2>(x);
-  return {std::move(conformal_factor_gradient)};
-}
-
-// Lapse (times conformal factor)
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<Xcts::Tags::LapseTimesConformalFactor<DataType>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::LapseTimesConformalFactor<DataType>> /*meta*/) const
-    noexcept {
-  return {Scalar<DataType>{1. - 0.5 * mass_ / get(magnitude(x))}};
-}
-
-// Lapse (times conformal factor) gradient
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
-                  tmpl::size_t<3>, Frame::Inertial>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
-                             tmpl::size_t<3>, Frame::Inertial>> /*meta*/) const
-    noexcept {
-  auto lapse_times_conformal_factor_gradient = get<::Tags::deriv<
-      Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>, Frame::Inertial>>(
-      variables(x,
-                tmpl::list<::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
-                                         tmpl::size_t<3>, Frame::Inertial>>{}));
-  get<0>(lapse_times_conformal_factor_gradient) *= -1.;
-  get<1>(lapse_times_conformal_factor_gradient) *= -1.;
-  get<2>(lapse_times_conformal_factor_gradient) *= -1.;
-  return {std::move(lapse_times_conformal_factor_gradient)};
-}
-
-// Shift
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::ShiftBackground<DataType, 3,
-                                           Frame::Inertial>> /*meta*/) const
-    noexcept {
-  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.)};
-}
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
-    const noexcept {
-  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.)};
-}
-
-// Shift strain
-
-template <>
-template <typename DataType>
-tuples::TaggedTuple<Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial>>
-Schwarzschild<SchwarzschildCoordinates::Isotropic>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial>> /*meta*/)
-    const noexcept {
-  return {make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.)};
-}
-
-// Fixed sources (all zero)
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<
-        ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
-    const noexcept {
-  return {make_with_value<Scalar<DataType>>(x, 0.)};
-}
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::FixedSource<Xcts::Tags::LapseTimesConformalFactor<DataType>>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::FixedSource<
-        Xcts::Tags::LapseTimesConformalFactor<DataType>>> /*meta*/) const
-    noexcept {
-  return {make_with_value<Scalar<DataType>>(x, 0.)};
-}
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::FixedSource<Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::FixedSource<
-        Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>> /*meta*/) const
-    noexcept {
-  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.)};
-}
-
-// Matter sources (all zero)
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const noexcept {
-  return {make_with_value<Scalar<DataType>>(x, 0.)};
-}
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<gr::Tags::StressTrace<DataType>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<gr::Tags::StressTrace<DataType>> /*meta*/) const noexcept {
-  return {make_with_value<Scalar<DataType>>(x, 0.)};
-}
-
-template <SchwarzschildCoordinates Coords>
-template <typename DataType>
-tuples::TaggedTuple<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>>
-Schwarzschild<Coords>::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<
-        gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>> /*meta*/) const
-    noexcept {
-  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.)};
-}
-
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define COORDS(data) BOOST_PP_TUPLE_ELEM(1, data)
-
-#define INSTANTIATE(_, data)                                                   \
-  template tuples::TaggedTuple<                                                \
-      Xcts::Tags::ConformalMetric<DTYPE(data), 3, Frame::Inertial>>            \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<                                                              \
-          Xcts::Tags::ConformalMetric<DTYPE(data), 3, Frame::Inertial>>)       \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>> \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>>)              \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>,            \
-                    tmpl::size_t<3>, Frame::Inertial>>                         \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>, \
-                               tmpl::size_t<3>, Frame::Inertial>>)             \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DTYPE(data)>>       \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<Xcts::Tags::ConformalFactor<DTYPE(data)>>) const noexcept;    \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::deriv<Xcts::Tags::ConformalFactor<DTYPE(data)>, tmpl::size_t<3>, \
-                    Frame::Inertial>>                                          \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<::Tags::deriv<Xcts::Tags::ConformalFactor<DTYPE(data)>,       \
-                               tmpl::size_t<3>, Frame::Inertial>>)             \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      Xcts::Tags::LapseTimesConformalFactor<DTYPE(data)>>                      \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<Xcts::Tags::LapseTimesConformalFactor<DTYPE(data)>>)          \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DTYPE(data)>,        \
-                    tmpl::size_t<3>, Frame::Inertial>>                         \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<                                                              \
-          ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DTYPE(data)>,    \
-                        tmpl::size_t<3>, Frame::Inertial>>) const noexcept;    \
-  template tuples::TaggedTuple<                                                \
-      Xcts::Tags::ShiftBackground<DTYPE(data), 3, Frame::Inertial>>            \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<                                                              \
-          Xcts::Tags::ShiftBackground<DTYPE(data), 3, Frame::Inertial>>)       \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      Xcts::Tags::ShiftExcess<DTYPE(data), 3, Frame::Inertial>>                \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<Xcts::Tags::ShiftExcess<DTYPE(data), 3, Frame::Inertial>>)    \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      Xcts::Tags::ShiftStrain<DTYPE(data), 3, Frame::Inertial>>                \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<Xcts::Tags::ShiftStrain<DTYPE(data), 3, Frame::Inertial>>)    \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>           \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<                                                              \
-          ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)      \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<                                                \
-      ::Tags::FixedSource<Xcts::Tags::LapseTimesConformalFactor<DTYPE(data)>>> \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<::Tags::FixedSource<                                          \
-          Xcts::Tags::LapseTimesConformalFactor<DTYPE(data)>>>)                \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<::Tags::FixedSource<                            \
-      Xcts::Tags::ShiftExcess<DTYPE(data), 3, Frame::Inertial>>>               \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<::Tags::FixedSource<                                          \
-          Xcts::Tags::ShiftExcess<DTYPE(data), 3, Frame::Inertial>>>)          \
-      const noexcept;                                                          \
-  template tuples::TaggedTuple<gr::Tags::EnergyDensity<DTYPE(data)>>           \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<gr::Tags::EnergyDensity<DTYPE(data)>>) const noexcept;        \
-  template tuples::TaggedTuple<gr::Tags::StressTrace<DTYPE(data)>>             \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<gr::Tags::StressTrace<DTYPE(data)>>) const noexcept;          \
-  template tuples::TaggedTuple<                                                \
-      gr::Tags::MomentumDensity<3, Frame::Inertial, DTYPE(data)>>              \
-  Schwarzschild<COORDS(data)>::variables(                                      \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                         \
-      tmpl::list<gr::Tags::MomentumDensity<3, Frame::Inertial, DTYPE(data)>>)  \
-      const noexcept;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector),
-                        (SchwarzschildCoordinates::Isotropic))
-
-template class Schwarzschild<SchwarzschildCoordinates::Isotropic>;
-
-#undef DTYPE
-#undef INSTANTIATE
-
 }  // namespace Xcts::Solutions
+
+template <>
+Xcts::Solutions::SchwarzschildCoordinates
+Options::create_from_yaml<Xcts::Solutions::SchwarzschildCoordinates>::create<
+    void>(const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  if ("Isotropic" == type_read) {
+    return Xcts::Solutions::SchwarzschildCoordinates::Isotropic;
+  }
+  PARSE_ERROR(options.context(),
+              "Failed to convert \""
+                  << type_read
+                  << "\" to Xcts::Solutions::SchwarzschildCoordinates. Must be "
+                     "'Isotropic'.");
+}
+
+namespace Xcts::Solutions::detail {
+
+SchwarzschildImpl::SchwarzschildImpl(
+    const double mass,
+    const SchwarzschildCoordinates coordinate_system) noexcept
+    : mass_(mass), coordinate_system_(coordinate_system) {}
+
+double SchwarzschildImpl::mass() const noexcept { return mass_; }
+
+SchwarzschildCoordinates SchwarzschildImpl::coordinate_system() const noexcept {
+  return coordinate_system_;
+}
+
+double SchwarzschildImpl::radius_at_horizon() const noexcept {
+  switch (coordinate_system_) {
+    case SchwarzschildCoordinates::Isotropic:
+      return 0.5 * mass_;
+    default:
+      ERROR("Missing case for SchwarzschildCoordinates");
+  }
+}
+
+void SchwarzschildImpl::pup(PUP::er& p) noexcept {
+  p | mass_;
+  p | coordinate_system_;
+}
+
+bool operator==(const SchwarzschildImpl& lhs,
+                const SchwarzschildImpl& rhs) noexcept {
+  return lhs.mass() == rhs.mass() and
+         lhs.coordinate_system() == rhs.coordinate_system();
+}
+
+bool operator!=(const SchwarzschildImpl& lhs,
+                const SchwarzschildImpl& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+    const noexcept {
+  std::fill(conformal_metric->begin(), conformal_metric->end(), 0.);
+  get<0, 0>(*conformal_metric) = 1.;
+  get<1, 1>(*conformal_metric) = 1.;
+  get<2, 2>(*conformal_metric) = 1.;
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const noexcept {
+  get(*trace_extrinsic_curvature) = 0.;
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*>
+        trace_extrinsic_curvature_gradient,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const noexcept {
+  std::fill(trace_extrinsic_curvature_gradient->begin(),
+            trace_extrinsic_curvature_gradient->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ConformalFactor<DataType> /*meta*/) const noexcept {
+  get(*conformal_factor) = 1. + 0.5 * mass / get(magnitude(x));
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*> conformal_factor_gradient,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const noexcept {
+  const DataType isotropic_prefactor = -0.5 * mass / cube(get(magnitude(x)));
+  get<0>(*conformal_factor_gradient) = isotropic_prefactor * get<0>(x);
+  get<1>(*conformal_factor_gradient) = isotropic_prefactor * get<1>(x);
+  get<2>(*conformal_factor_gradient) = isotropic_prefactor * get<2>(x);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::LapseTimesConformalFactor<DataType> /*meta*/) const noexcept {
+  get(*lapse_times_conformal_factor) = 1. - 0.5 * mass / get(magnitude(x));
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*>
+        lapse_times_conformal_factor_gradient,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const noexcept {
+  *lapse_times_conformal_factor_gradient =
+      cache->get_var(::Tags::deriv<Tags::ConformalFactor<DataType>,
+                                   tmpl::size_t<3>, Frame::Inertial>{});
+  get<0>(*lapse_times_conformal_factor_gradient) *= -1.;
+  get<1>(*lapse_times_conformal_factor_gradient) *= -1.;
+  get<2>(*lapse_times_conformal_factor_gradient) *= -1.;
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
+    const noexcept {
+  std::fill(shift_background->begin(), shift_background->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> shift_excess,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/) const noexcept {
+  std::fill(shift_excess->begin(), shift_excess->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const noexcept {
+  std::fill(shift_strain->begin(), shift_strain->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> energy_density,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::EnergyDensity<DataType> /*meta*/) const noexcept {
+  std::fill(energy_density->begin(), energy_density->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> stress_trace,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::StressTrace<DataType> /*meta*/) const noexcept {
+  std::fill(stress_trace->begin(), stress_trace->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::MomentumDensity<3, Frame::Inertial, DataType> /*meta*/)
+    const noexcept {
+  std::fill(momentum_density->begin(), momentum_density->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*>
+        fixed_source_for_hamiltonian_constraint,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
+    const noexcept {
+  std::fill(fixed_source_for_hamiltonian_constraint->begin(),
+            fixed_source_for_hamiltonian_constraint->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
+    const noexcept {
+  std::fill(fixed_source_for_lapse_equation->begin(),
+            fixed_source_for_lapse_equation->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::FixedSource<
+        Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
+    const noexcept {
+  std::fill(fixed_source_momentum_constraint->begin(),
+            fixed_source_momentum_constraint->end(), 0.);
+}
+
+template class SchwarzschildVariables<double>;
+template class SchwarzschildVariables<DataVector>;
+
+}  // namespace Xcts::Solutions::detail
+
 /// \endcond
