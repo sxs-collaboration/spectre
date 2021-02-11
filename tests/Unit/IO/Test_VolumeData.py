@@ -20,8 +20,7 @@ class TestVolumeDataWriting(unittest.TestCase):
                                       "IO/TestVolumeDataWriting.h5")
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
-        self.h5_file = spectre_h5.H5File(file_name=self.file_name,
-                                         append_to_file=True)
+        self.h5_file = spectre_h5.H5File(file_name=self.file_name, mode="a")
 
     def tearDown(self):
         self.h5_file.close()
@@ -52,8 +51,7 @@ class TestVolumeData(unittest.TestCase):
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
 
-        self.h5_file = spectre_h5.H5File(file_name=self.file_name,
-                                         append_to_file=True)
+        self.h5_file = spectre_h5.H5File(file_name=self.file_name, mode="a")
         self.tensor_component_data = np.random.rand(4, 8)
         observation_ids = [0, 1]
         observation_values = {0: 7.0, 1: 1.3}
