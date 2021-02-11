@@ -369,8 +369,15 @@ void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->size() >= history->integration_order(),
+         "Insufficient data to take an order-" << history->integration_order()
+         << " step.  Have " << history->size() << " times, need "
+         << history->integration_order());
+  history->mark_unneeded(
+      history->end() -
+      static_cast<typename decltype(history->end())::difference_type>(
+          history->integration_order()));
   update_u_impl(u, *history, time_step, history->integration_order());
-  history->mark_unneeded(history->begin() + 1);
 }
 
 template <typename Vars, typename DerivVars>
@@ -378,12 +385,19 @@ bool AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->size() >= history->integration_order(),
+         "Insufficient data to take an order-" << history->integration_order()
+         << " step.  Have " << history->size() << " times, need "
+         << history->integration_order());
+  history->mark_unneeded(
+      history->end() -
+      static_cast<typename decltype(history->end())::difference_type>(
+          history->integration_order()));
   update_u_impl(u, *history, time_step, history->integration_order());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
   update_u_impl(u_error, *history, time_step, history->integration_order() - 1);
   *u_error = *u - *u_error;
-  history->mark_unneeded(history->begin() + 1);
   return true;
 }
 

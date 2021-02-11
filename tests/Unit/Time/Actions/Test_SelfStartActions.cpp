@@ -325,7 +325,8 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
         }
         CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
                                              history_tag>(runner, 0)
-                  .size() == current_order);
+                  .integration_order() ==
+              (last_point ? current_order + 1 : current_order));
       }
     }
   }
@@ -359,7 +360,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
     // This test only uses Adams-Bashforth.
     CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
           TimeStepId(forward_in_time, 0, initial_time + initial_time_step));
-    CHECK(db::get<history_tag>(box).size() == order - 1);
+    CHECK(db::get<history_tag>(box).integration_order() == order);
   }
 }
 
