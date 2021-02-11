@@ -43,7 +43,10 @@ void test_rotated_rectangles_construction(
     const std::vector<DirectionMap<2, BlockNeighbor<2>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
-        expected_external_boundaries) noexcept {
+        expected_external_boundaries,
+    const std::vector<DirectionMap<
+        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
+        expected_boundary_conditions = {}) noexcept {
   const auto domain = rotated_rectangles.create_domain();
 
   CHECK(domain.blocks().size() == expected_extents.size());
@@ -82,12 +85,43 @@ void test_rotated_rectangles_construction(
               {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
           Affine2D(upper_x_map, upper_y_map)));
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps);
+                           expected_external_boundaries, coord_maps,
+                           std::numeric_limits<double>::signaling_NaN(), {}, {},
+                           expected_boundary_conditions);
   test_initial_domain(domain, rotated_rectangles.initial_refinement_levels());
 
   Parallel::register_classes_in_list<
       typename domain::creators::RotatedRectangles::maps_list>();
   test_serialization(domain);
+}
+
+auto create_boundary_conditions() {
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      expected_boundary_conditions{4};
+  const auto boundary_condition = std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
+      Direction<2>::lower_xi(), 2);
+  expected_boundary_conditions[0][Direction<2>::lower_xi()] =
+      boundary_condition->get_clone();
+  expected_boundary_conditions[0][Direction<2>::lower_eta()] =
+      boundary_condition->get_clone();
+
+  expected_boundary_conditions[1][Direction<2>::lower_xi()] =
+      boundary_condition->get_clone();
+  expected_boundary_conditions[1][Direction<2>::upper_eta()] =
+      boundary_condition->get_clone();
+
+  expected_boundary_conditions[2][Direction<2>::upper_xi()] =
+      boundary_condition->get_clone();
+  expected_boundary_conditions[2][Direction<2>::upper_eta()] =
+      boundary_condition->get_clone();
+
+  expected_boundary_conditions[3][Direction<2>::lower_xi()] =
+      boundary_condition->get_clone();
+  expected_boundary_conditions[3][Direction<2>::upper_eta()] =
+      boundary_condition->get_clone();
+  return expected_boundary_conditions;
 }
 
 void test_rotated_rectangles() {
@@ -110,10 +144,10 @@ void test_rotated_rectangles() {
       lower_bound,
       midpoint,
       upper_bound,
-      {{false, false}},
       {{refinement_level[0][0], refinement_level[0][1]}},
       {{{{grid_points[0][0], grid_points[1][0]}},
-        {{grid_points[0][1], grid_points[2][0]}}}}};
+        {{grid_points[0][1], grid_points[2][0]}}}},
+      {{false, false}}};
   test_rotated_rectangles_construction(
       rotated_rectangles, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
@@ -133,17 +167,82 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
   test_physical_separation(rotated_rectangles.create_domain().blocks());
 
+  const creators::RotatedRectangles rotated_rectangles_boundary_conditions{
+      lower_bound,
+      midpoint,
+      upper_bound,
+      {{refinement_level[0][0], refinement_level[0][1]}},
+      {{{{grid_points[0][0], grid_points[1][0]}},
+        {{grid_points[0][1], grid_points[2][0]}}}},
+      std::make_unique<
+          TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
+          Direction<2>::lower_xi(), 2)};
+  const std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      expected_boundary_conditions = create_boundary_conditions();
+
+  test_rotated_rectangles_construction(
+      rotated_rectangles_boundary_conditions, lower_bound, midpoint,
+      upper_bound, grid_points, refinement_level,
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+          {{Direction<2>::upper_xi(), {1, half_turn}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
+          {{Direction<2>::upper_xi(), {0, half_turn}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
+          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {3, half_turn}}},
+          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {2, half_turn}}}},
+      std::vector<std::unordered_set<Direction<2>>>{
+          {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
+          {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
+          {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
+          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
+      expected_boundary_conditions);
+
   const creators::RotatedRectangles rotated_periodic_rectangles{
       lower_bound,
       midpoint,
       upper_bound,
-      {{true, true}},
       {{refinement_level[0][0], refinement_level[0][1]}},
       {{{{grid_points[0][0], grid_points[1][0]}},
-        {{grid_points[0][1], grid_points[2][0]}}}}};
+        {{grid_points[0][1], grid_points[2][0]}}}},
+      {{true, true}}};
   test_rotated_rectangles_construction(
       rotated_periodic_rectangles, lower_bound, midpoint, upper_bound,
       grid_points, refinement_level,
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+          {{Direction<2>::upper_xi(), {1, half_turn}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
+           {Direction<2>::lower_xi(), {1, half_turn}},
+           {Direction<2>::lower_eta(), {2, quarter_turn_ccw}}},
+          {{Direction<2>::upper_xi(), {0, half_turn}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}},
+           {Direction<2>::lower_xi(), {0, half_turn}},
+           {Direction<2>::upper_eta(), {3, quarter_turn_ccw}}},
+          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {3, half_turn}},
+           {Direction<2>::upper_xi(), {0, quarter_turn_cw}},
+           {Direction<2>::upper_eta(), {3, half_turn}}},
+          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {2, half_turn}},
+           {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
+           {Direction<2>::upper_eta(), {2, half_turn}}}},
+      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
+
+  const creators::RotatedRectangles
+      periodic_rotated_rectangles_boundary_conditions{
+          lower_bound,
+          midpoint,
+          upper_bound,
+          {{refinement_level[0][0], refinement_level[0][1]}},
+          {{{{grid_points[0][0], grid_points[1][0]}},
+            {{grid_points[0][1], grid_points[2][0]}}}},
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<2>>()};
+  test_rotated_rectangles_construction(
+      periodic_rotated_rectangles_boundary_conditions, lower_bound, midpoint,
+      upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<2, BlockNeighbor<2>>>{
           {{Direction<2>::upper_xi(), {1, half_turn}},
            {Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
@@ -173,37 +272,81 @@ void test_rotated_rectangles_factory() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
-  const auto domain_creator = TestHelpers::test_factory_creation<
-      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<2>>(
-      "RotatedRectangles:\n"
-      "  LowerBound: [0.1, -0.4]\n"
-      "  Midpoint:   [2.6, 3.2]\n"
-      "  UpperBound: [5.1, 6.2]\n"
-      "  IsPeriodicIn: [false, false]\n"
-      "  InitialGridPoints: [[3,2],[1,4]]\n"
-      "  InitialRefinement: [2,1]\n");
-  const auto* rotated_rectangles_creator =
-      dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
-  test_rotated_rectangles_construction(
-      *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
-      {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
-      {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
-      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
-          {{Direction<2>::upper_xi(), {1, half_turn}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
-          {{Direction<2>::upper_xi(), {0, half_turn}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
-          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {3, half_turn}}},
-          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{
-          {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+  {
+    INFO("No boundary condition");
+    const auto domain_creator = TestHelpers::test_factory_creation<
+        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<2>>(
+        "RotatedRectangles:\n"
+        "  LowerBound: [0.1, -0.4]\n"
+        "  Midpoint:   [2.6, 3.2]\n"
+        "  UpperBound: [5.1, 6.2]\n"
+        "  IsPeriodicIn: [false, false]\n"
+        "  InitialGridPoints: [[3,2],[1,4]]\n"
+        "  InitialRefinement: [2,1]\n");
+    const auto* rotated_rectangles_creator =
+        dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
+    test_rotated_rectangles_construction(
+        *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
+        {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
+        {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
+        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+            {{Direction<2>::upper_xi(), {1, half_turn}},
+             {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
+            {{Direction<2>::upper_xi(), {0, half_turn}},
+             {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
+            {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+             {Direction<2>::lower_eta(), {3, half_turn}}},
+            {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+             {Direction<2>::lower_eta(), {2, half_turn}}}},
+        std::vector<std::unordered_set<Direction<2>>>{
+            {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
+            {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
+            {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
+            {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+  }
+  {
+    INFO("With boundary condition");
+    const std::vector<DirectionMap<
+        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        expected_boundary_conditions = create_boundary_conditions();
+    const auto domain_creator = TestHelpers::test_factory_creation<
+        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithBoundaryConditions<2>>(
+        "RotatedRectangles:\n"
+        "  LowerBound: [0.1, -0.4]\n"
+        "  Midpoint:   [2.6, 3.2]\n"
+        "  UpperBound: [5.1, 6.2]\n"
+        "  InitialGridPoints: [[3,2],[1,4]]\n"
+        "  InitialRefinement: [2,1]\n"
+        "  BoundaryCondition:\n"
+        "    TestBoundaryCondition:\n"
+        "      Direction: lower-xi\n"
+        "      BlockId: 2\n");
+    const auto* rotated_rectangles_creator =
+        dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
+    test_rotated_rectangles_construction(
+        *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
+        {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
+        {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
+        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+            {{Direction<2>::upper_xi(), {1, half_turn}},
+             {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
+            {{Direction<2>::upper_xi(), {0, half_turn}},
+             {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
+            {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+             {Direction<2>::lower_eta(), {3, half_turn}}},
+            {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+             {Direction<2>::lower_eta(), {2, half_turn}}}},
+        std::vector<std::unordered_set<Direction<2>>>{
+            {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
+            {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
+            {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
+            {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
+        expected_boundary_conditions);
+  }
 }
 }  // namespace
 
