@@ -239,18 +239,21 @@ void check_with_random_values_impl(
     std::index_sequence<ResultIs...> /*index_return_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
     std::index_sequence<MemberArgsIs...> /*index_member_args*/,
-    NoSuchType /* meta */, const double epsilon = 1.0e-12) {
+    NoSuchType /* meta */, const double epsilon = 1.0e-12,
+    const std::optional<double>& initial_result_values = std::nullopt) {
   // Note: generator and distributions cannot be const.
-  std::tuple<ReturnTypes...> results{
-      make_with_value<ReturnTypes>(used_for_size, 0.0)...};
+  std::tuple<ReturnTypes...> results{make_with_value<ReturnTypes>(
+      used_for_size, initial_result_values.value_or(0.))...};
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
   EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
       make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
       make_not_null(&(distributions[ArgumentIs]))));
-  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
-      make_not_null(&std::get<ResultIs>(results)), make_not_null(&generator),
-      make_not_null(&(distributions[0]))));
+  if (not initial_result_values.has_value()) {
+    EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+        make_not_null(&std::get<ResultIs>(results)), make_not_null(&generator),
+        make_not_null(&(distributions[0]))));
+  }
   if constexpr (std::is_same_v<NoSuchType, std::decay_t<Klass>>) {
     f(make_not_null(&std::get<ResultIs>(results))...,
       std::get<ArgumentIs>(args)...);
@@ -375,7 +378,10 @@ void check_with_random_values(
  * 0.0)`. For functions that return by `gsl::not_null`, the result will be
  * initialized with random values rather than to signaling `NaN`s. This means
  * functions do not need to support receiving a signaling `NaN` in their return
- * argument to be tested using this function.
+ * argument to be tested using this function. The optional argument
+ * `initial_result_values` allows initializing the result buffers with a given
+ * value instead of random data to test functions that mutate the result buffers
+ * instead of assigning to it.
  *
  * \note You must explicitly pass the number of bounds you will be passing as
  * the first template parameter, the rest will be inferred.
@@ -398,6 +404,8 @@ void check_with_random_values(
  * \param seed The seed for the random number generator. This should only be
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
+ * \param initial_result_values Fill the result buffers with this value instead
+ * of random data before calling the function `f`.
  */
 template <size_t NumberOfBounds, class F, class T>
 void check_with_random_values(
@@ -407,7 +415,8 @@ void check_with_random_values(
         lower_and_upper_bounds,
     const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
-        std::random_device{}()) {
+        std::random_device{}(),
+    const std::optional<double>& initial_result_values = std::nullopt) {
   MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
@@ -457,7 +466,8 @@ void check_with_random_values(
       argument_types{},
       std::make_index_sequence<tmpl::size<return_types>::value>{},
       std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<0>{}, NoSuchType{}, epsilon);
+      std::make_index_sequence<0>{}, NoSuchType{}, epsilon,
+      initial_result_values);
 }
 
 /*!
