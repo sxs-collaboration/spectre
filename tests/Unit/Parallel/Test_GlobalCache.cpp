@@ -516,7 +516,7 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
   tuples::tagged_tuple_from_typelist<const_tag_list> const_data_to_be_cached(
       "Nobody", 178, 2.2, std::make_unique<Square>());
   global_cache_proxy_ = Parallel::CProxy_GlobalCache<TestMetavariables>::ckNew(
-      const_data_to_be_cached, mutable_global_cache_proxy_,
+      const_data_to_be_cached, mutable_global_cache_proxy_, std::nullopt,
       &mutable_global_cache_dependency);
 
   CkEntryOptions global_cache_dependency;

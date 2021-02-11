@@ -19,6 +19,7 @@
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -29,6 +30,7 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 
 #include "Parallel/GlobalCache.decl.h"
+#include "Parallel/Main.decl.h"
 
 namespace Parallel {
 
@@ -284,6 +286,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
  public:
   using proxy_type = CProxy_GlobalCache<Metavariables>;
+  using main_proxy_type = CProxy_Main<Metavariables>;
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
   /// Typelist of the ParallelComponents stored in the GlobalCache
@@ -291,17 +294,20 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
   /// Constructor used only by the ActionTesting framework and other
   /// non-charm++ tests that don't know about proxies.
-  GlobalCache(tuples::tagged_tuple_from_typelist<
-                  get_const_global_cache_tags<Metavariables>>
-                  const_global_cache,
-              MutableGlobalCache<Metavariables>* mutable_global_cache) noexcept;
+  GlobalCache(
+      tuples::tagged_tuple_from_typelist<
+          get_const_global_cache_tags<Metavariables>>
+          const_global_cache,
+      MutableGlobalCache<Metavariables>* mutable_global_cache,
+      std::optional<main_proxy_type> main_proxy = std::nullopt) noexcept;
 
   /// Constructor used by Main and anything else that is charm++ aware.
-  GlobalCache(tuples::tagged_tuple_from_typelist<
-                  get_const_global_cache_tags<Metavariables>>
-                  const_global_cache,
-              CProxy_MutableGlobalCache<Metavariables>
-                  mutable_global_cache_proxy) noexcept;
+  GlobalCache(
+      tuples::tagged_tuple_from_typelist<
+          get_const_global_cache_tags<Metavariables>>
+          const_global_cache,
+      CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy,
+      std::optional<main_proxy_type> main_proxy = std::nullopt) noexcept;
 
   explicit GlobalCache(CkMigrateMessage* msg)
       : CBase_GlobalCache<Metavariables>(msg) {}
@@ -358,6 +364,10 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
   void pup(PUP::er& p) noexcept override;  // NOLINT
 
+  /// Retrieve the proxy to the Main chare (or std::nullopt if the proxy has not
+  /// been set).
+  std::optional<main_proxy_type> get_main_proxy() noexcept;
+
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
@@ -398,6 +408,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   MutableGlobalCache<Metavariables>* mutable_global_cache_{nullptr};
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_{};
   bool parallel_components_have_been_set_{false};
+  std::optional<main_proxy_type> main_proxy_;
 };
 
 template <typename Metavariables>
@@ -405,9 +416,11 @@ GlobalCache<Metavariables>::GlobalCache(
     tuples::tagged_tuple_from_typelist<
         get_const_global_cache_tags<Metavariables>>
         const_global_cache,
-    MutableGlobalCache<Metavariables>* mutable_global_cache) noexcept
+    MutableGlobalCache<Metavariables>* mutable_global_cache,
+    std::optional<main_proxy_type> main_proxy) noexcept
     : const_global_cache_(std::move(const_global_cache)),
-      mutable_global_cache_(mutable_global_cache) {
+      mutable_global_cache_(mutable_global_cache),
+      main_proxy_(std::move(main_proxy)) {
   ASSERT(mutable_global_cache_ != nullptr,
          "GlobalCache: Do not construct with a nullptr!");
 }
@@ -417,11 +430,12 @@ GlobalCache<Metavariables>::GlobalCache(
     tuples::tagged_tuple_from_typelist<
         get_const_global_cache_tags<Metavariables>>
         const_global_cache,
-    CProxy_MutableGlobalCache<Metavariables>
-        mutable_global_cache_proxy) noexcept
+    CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy,
+    std::optional<main_proxy_type> main_proxy) noexcept
     : const_global_cache_(std::move(const_global_cache)),
       mutable_global_cache_(nullptr),
-      mutable_global_cache_proxy_(std::move(mutable_global_cache_proxy)) {}
+      mutable_global_cache_proxy_(std::move(mutable_global_cache_proxy)),
+      main_proxy_(std::move(main_proxy)) {}
 
 template <typename Metavariables>
 void GlobalCache<Metavariables>::set_parallel_components(
@@ -473,6 +487,19 @@ GlobalCache<Metavariables>::get_this_proxy() noexcept {
   return this->thisProxy;
 }
 
+template <typename Metavariables>
+std::optional<
+    typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
+GlobalCache<Metavariables>::get_main_proxy() noexcept {
+  if(main_proxy_.has_value()) {
+    return main_proxy_;
+  } else {
+    ERROR(
+        "Attempting to retrieve the main proxy in a context in which the main "
+        "proxy has not been supplied to the constructor.");
+  }
+}
+
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
@@ -482,6 +509,7 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
   p | const_global_cache_;
   p | parallel_components_;
   p | mutable_global_cache_proxy_;
+  p | main_proxy_;
   p | parallel_components_have_been_set_;
   if (not p.isUnpacking() and mutable_global_cache_ != nullptr) {
     ERROR(

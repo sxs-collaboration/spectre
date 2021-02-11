@@ -2,8 +2,10 @@
 // See LICENSE.txt for details.
 
 module GlobalCache {
+  include "optional";
   include "Parallel/ParallelComponentHelpers.hpp";
   include "Utilities/TaggedTuple.hpp";
+  include "Parallel/Main.decl.h";
   namespace Parallel {
 
   template <typename Metavariables>
@@ -17,10 +19,10 @@ module GlobalCache {
 
   template <typename Metavariables>
   nodegroup[migratable] GlobalCache {
-    entry GlobalCache(
-        tuples::tagged_tuple_from_typelist<
-            get_const_global_cache_tags<Metavariables>>&,
-            CProxy_MutableGlobalCache<Metavariables>&);
+    entry GlobalCache(tuples::tagged_tuple_from_typelist<
+                          get_const_global_cache_tags<Metavariables>>&,
+                      CProxy_MutableGlobalCache<Metavariables>&,
+                      std::optional<CProxy_Main<Metavariables>>);
     entry void set_parallel_components(
         tuples::tagged_tuple_from_typelist<tmpl::transform<
             typename Metavariables::component_list,
