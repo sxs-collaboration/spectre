@@ -384,6 +384,13 @@
  */
 
 /*!
+ * \defgroup DgSubcellGroup DG-Subcell
+ * \brief Functions and classes specific to the discontinuous Galerkin method
+ * supplemented with a finite volume or finite difference subcell limiter. Can
+ * also be thought of as a DG-FD hybrid method.
+ */
+
+/*!
  * \defgroup DiscontinuousGalerkinGroup Discontinuous Galerkin
  * \brief Functions and classes specific to the Discontinuous Galerkin
  * algorithm.
