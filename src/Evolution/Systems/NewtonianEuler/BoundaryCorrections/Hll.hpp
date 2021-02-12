@@ -77,7 +77,7 @@ class Hll final : public BoundaryCorrection<Dim> {
       tmpl::list<hydro::Tags::EquationOfStateBase>;
 
   template <size_t ThermodynamicDim>
-  double dg_package_data(
+  void dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           packaged_momentum_density,

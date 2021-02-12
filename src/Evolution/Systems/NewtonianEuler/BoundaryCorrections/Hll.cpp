@@ -33,7 +33,7 @@ void Hll<Dim>::pup(PUP::er& p) {
 
 template <size_t Dim>
 template <size_t ThermodynamicDim>
-double Hll<Dim>::dg_package_data(
+void Hll<Dim>::dg_package_data(
     const gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         packaged_momentum_density,
@@ -109,7 +109,8 @@ double Hll<Dim>::dg_package_data(
   dot_product(packaged_normal_dot_flux_energy_density, flux_energy_density,
               normal_covector);
 
-  return max(get(*packaged_abs_char_speed));
+  // What value to return here..?
+  // ...
 }
 
 template <size_t Dim>
@@ -184,7 +185,7 @@ PUP::able::PUP_ID Hll<Dim>::my_PUP_ID = 0;
 
 #define INSTANTIATION(_, data)                                                 \
   template class Hll<DIM(data)>;                                               \
-  template double Hll<DIM(data)>::dg_package_data<1>(                          \
+  template void Hll<DIM(data)>::dg_package_data<1>(                            \
       gsl::not_null<Scalar<DataVector>*> packaged_mass_density,                \
       gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>          \
           packaged_momentum_density,                                           \
@@ -218,7 +219,7 @@ PUP::able::PUP_ID Hll<Dim>::my_PUP_ID = 0;
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,       \
       const EquationsOfState::EquationOfState<false, 1>& equation_of_state)    \
       const noexcept;                                                          \
-  template double Hll<DIM(data)>::dg_package_data<2>(                          \
+  template void Hll<DIM(data)>::dg_package_data<2>(                            \
       gsl::not_null<Scalar<DataVector>*> packaged_mass_density,                \
       gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>          \
           packaged_momentum_density,                                           \
