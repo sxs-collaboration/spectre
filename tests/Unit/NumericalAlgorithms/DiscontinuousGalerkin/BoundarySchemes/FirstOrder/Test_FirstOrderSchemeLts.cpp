@@ -80,6 +80,7 @@ auto make_mortar_data(const dg::MortarId<BoundaryScheme::volume_dim>& mortar_id,
                       BoundaryData&& exterior_data) noexcept {
   typename ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag,
                            BoundaryScheme::volume_dim>::type all_mortar_data;
+  all_mortar_data.emplace(mortar_id, 1);
   all_mortar_data[mortar_id].local_insert(
       time, std::forward<BoundaryData>(interior_data));
   all_mortar_data[mortar_id].remote_insert(
@@ -332,6 +333,8 @@ SPECTRE_TEST_CASE("Unit.DG.FirstOrderScheme.Lts",
         gsl::at(remote_data, 2).field_data)) = DataVector{67., 71., 73.};
 
     typename ::Tags::Mortars<mortar_data_tag, 2>::type mortar_data;
+    mortar_data.emplace(slow_mortar, 1);
+    mortar_data.emplace(fast_mortar, 1);
     mortar_data[slow_mortar].local_insert(TimeStepId(true, 0, now),
                                           gsl::at(local_data, 0));
     mortar_data[fast_mortar].local_insert(TimeStepId(true, 0, now),

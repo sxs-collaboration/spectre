@@ -484,7 +484,7 @@ AdamsBashforthN::boundary_impl(
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
     const TimeType& end_time) const noexcept {
   // Might be different from order_ during self-start.
-  const auto current_order = history.local_size();
+  const auto current_order = history.integration_order();
 
   ASSERT(current_order <= order_,
          "Local history is too long for target order (" << current_order

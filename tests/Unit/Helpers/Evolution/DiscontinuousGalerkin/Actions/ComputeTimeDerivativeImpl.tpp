@@ -716,6 +716,8 @@ struct component {
       typename Metavariables::system::variables_tag,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
+      ::Tags::HistoryEvolvedVariables<
+          typename Metavariables::system::variables_tag>,
       Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
                                                   Frame::Grid, Frame::Inertial>,
@@ -986,6 +988,10 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
   Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>
       dt_evolved_vars{mesh.number_of_grid_points()};
+  const ::TimeSteppers::History<
+      Variables<tmpl::list<Var1, Var2<Dim>>>,
+      Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>>
+      history{4};
 
   // Compute expected volume fluxes
   [[maybe_unused]] const auto expected_fluxes = [&evolved_vars, &inv_jac, &mesh,
@@ -1088,9 +1094,9 @@ void test_impl(const Spectral::Quadrature quadrature,
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, next_time_step_id, quadrature, evolved_vars,
-         dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
-         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
-         mesh_velocity, div_mesh_velocity,
+         dt_evolved_vars, history, var3, mesh,
+         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
+         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>{
              mesh.number_of_grid_points(), -100.}});
@@ -1100,9 +1106,10 @@ void test_impl(const Spectral::Quadrature quadrature,
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
             {time_step_id, next_time_step_id, quadrature, evolved_vars,
-             dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
-             normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
-             mesh_velocity, div_mesh_velocity,
+             dt_evolved_vars, history, var3, mesh,
+             grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
+             element, inertial_coords, inv_jac, mesh_velocity,
+             div_mesh_velocity,
              Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                         tmpl::size_t<Dim>, Frame::Inertial>>{
                  mesh.number_of_grid_points(), -100.}});
@@ -1112,18 +1119,19 @@ void test_impl(const Spectral::Quadrature quadrature,
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, next_time_step_id, quadrature, evolved_vars,
-         dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
-         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
-         mesh_velocity, div_mesh_velocity});
+         dt_evolved_vars, history, var3, mesh,
+         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
+         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
             {time_step_id, next_time_step_id, quadrature, evolved_vars,
-             dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
-             normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
-             mesh_velocity, div_mesh_velocity});
+             dt_evolved_vars, history, var3, mesh,
+             grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
+             element, inertial_coords, inv_jac, mesh_velocity,
+             div_mesh_velocity});
       }
     }
   }

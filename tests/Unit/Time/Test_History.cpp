@@ -240,7 +240,12 @@ size_t check_boundary_state(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
-  BoundaryHistoryType history;
+  BoundaryHistoryType history{3};
+
+  CHECK(history.integration_order() == 3);
+  CHECK(std::as_const(history).integration_order() == 3);
+  history.integration_order(2);
+  CHECK(history.integration_order() == 2);
 
   CHECK(history.local_size() == 0);
   CHECK(history.local_begin() == history.local_end());
@@ -309,4 +314,5 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   CHECK(check_boundary_state(&copy) == 0);
   check_iterator(copy.local_begin() + 1);
   check_iterator(copy.remote_begin() + 2);
+  CHECK(copy.integration_order() == 2);
 }

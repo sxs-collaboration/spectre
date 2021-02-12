@@ -21,6 +21,24 @@ namespace dg {
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
 class SimpleMortarData {
  public:
+  SimpleMortarData() = default;
+  SimpleMortarData(const SimpleMortarData&) = default;
+  SimpleMortarData(SimpleMortarData&&) = default;
+  SimpleMortarData& operator=(const SimpleMortarData&) = default;
+  SimpleMortarData& operator=(SimpleMortarData&&) = default;
+  ~SimpleMortarData() = default;
+
+  /// The argument is ignored.  It exists for compatibility with
+  /// BoundaryHistory.
+  explicit SimpleMortarData(const size_t /*integration_order*/) noexcept {}
+
+  /// These functions do nothing.  They exist for compatibility with
+  /// BoundaryHistory.
+  //@{
+  size_t integration_order() const noexcept { return 0; }
+  void integration_order(const size_t /*integration_order*/) noexcept {}
+  //@}
+
   /// Add a value.  This function must be called once between calls to
   /// extract.
   //@{

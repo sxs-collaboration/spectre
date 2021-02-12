@@ -298,6 +298,7 @@ struct SetLocalMortarData {
                                          evolution::dg::Tags::NormalCovector<
                                              Metavariables::volume_dim>>>>>&
                       normal_covector_and_magnitude) {
+                mortar_data_history_ptr->at(mortar_id).integration_order(2);
                 mortar_data_history_ptr->at(mortar_id).local_insert(
                     past_time_step_id, past_mortar_data);
 
@@ -592,13 +593,14 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor : neighbors_in_direction) {
         const std::pair mortar_id{direction, neighbor};
         // Copy past and current mortar data from element's DataBox
-        mortar_data_history[mortar_id].local_insert(
+        mortar_data_history.emplace(mortar_id, 2);
+        mortar_data_history.at(mortar_id).local_insert(
             past_time_step_id,
             get_tag<evolution::dg::Tags::MortarDataHistory<
                 Dim, typename dt_variables_tag::type>>(runner, self_id)
                 .at(mortar_id)
                 .local_data(past_time_step_id));
-        mortar_data_history[mortar_id].local_insert(
+        mortar_data_history.at(mortar_id).local_insert(
             time_step_id,
             get_tag<evolution::dg::Tags::MortarDataHistory<
                 Dim, typename dt_variables_tag::type>>(runner, self_id)
