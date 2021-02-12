@@ -63,6 +63,23 @@ constexpr bool is_immutable_item_tag_v = is_immutable_item_tag<Tag>::value;
 
 /*!
  * \ingroup DataBoxGroup
+ * \brief Check if `Tag` is a DataBox tag for a mutable item, i.e. a SimpleTag
+ *
+ * \see is_mutable_item_tag_v
+ */
+template <typename Tag>
+struct is_mutable_item_tag
+    : std::bool_constant<std::is_base_of_v<db::SimpleTag, Tag> and
+                         not is_compute_tag_v<Tag> and
+                         not is_reference_tag_v<Tag>> {};
+
+/// \ingroup DataBoxGroup
+/// \brief True if `Tag` is a DataBox tag for a mutable item, i.e. a SimpleTag
+template <typename Tag>
+constexpr bool is_mutable_item_tag_v = is_mutable_item_tag<Tag>::value;
+
+/*!
+ * \ingroup DataBoxGroup
  * \brief Check if `Tag` is a simple tag.
  *
  * \details This is done by deriving from std::true_type if `Tag` is derived
