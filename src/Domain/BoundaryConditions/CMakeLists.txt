@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  None.cpp
   Periodic.cpp
   )
 
@@ -17,6 +18,7 @@ spectre_target_headers(
   HEADERS
   BoundaryCondition.hpp
   GetBoundaryConditionsBase.hpp
+  None.hpp
   Periodic.hpp
   )
 

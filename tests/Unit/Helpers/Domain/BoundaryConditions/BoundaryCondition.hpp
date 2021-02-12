@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Options/Options.hpp"
@@ -32,6 +33,7 @@ class BoundaryConditionBase
  public:
   using creatable_classes = tmpl::list<
       TestBoundaryCondition<Dim>,
+      ::domain::BoundaryConditions::None<BoundaryConditionBase<Dim>>,
       ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>>;
 
   BoundaryConditionBase() = default;
@@ -107,6 +109,10 @@ bool operator!=(const TestBoundaryCondition<Dim>& lhs,
 template <size_t Dim>
 using TestPeriodicBoundaryCondition =
     ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>;
+
+template <size_t Dim>
+using TestNoneBoundaryCondition =
+    ::domain::BoundaryConditions::None<BoundaryConditionBase<Dim>>;
 
 /// Empty system that has boundary conditions
 template <size_t Dim>
