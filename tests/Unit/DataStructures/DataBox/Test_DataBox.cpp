@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -27,6 +28,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
@@ -1961,6 +1963,9 @@ void test_subitems() noexcept {
                         db::AddComputeTags<ParentCompute<1>>>(
       std::make_pair(Boxed<int>(std::make_shared<int>(5)),
                      Boxed<double>(std::make_shared<double>(3.5))));
+
+  TestHelpers::db::test_reference_tag<
+      ::Tags::Subitem<First<1>, ParentCompute<1>>>("First");
 
   CHECK(*db::get<First<0>>(box) == 5);
   CHECK(*db::get<First<1>>(box) == 6);
