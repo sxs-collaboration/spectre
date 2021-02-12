@@ -87,7 +87,8 @@ class Hll final : public BoundaryCorrection<Dim> {
           packaged_normal_dot_flux_momentum_density,
       gsl::not_null<Scalar<DataVector>*>
           packaged_normal_dot_flux_energy_density,
-      gsl::not_null<Scalar<DataVector>*> packaged_abs_char_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,
 
       const Scalar<DataVector>& mass_density,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& momentum_density,
@@ -119,7 +120,8 @@ class Hll final : public BoundaryCorrection<Dim> {
       const tnsr::I<DataVector, Dim, Frame::Inertial>&
           normal_dot_flux_momentum_density_int,
       const Scalar<DataVector>& normal_dot_flux_energy_density_int,
-      const Scalar<DataVector>& abs_char_speed_int,
+      const Scalar<DataVector>& largest_outgoing_char_speed_int,
+      const Scalar<DataVector>& largest_ingoing_char_speed_int,
       const Scalar<DataVector>& mass_density_ext,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& momentum_density_ext,
       const Scalar<DataVector>& energy_density_ext,
@@ -127,7 +129,8 @@ class Hll final : public BoundaryCorrection<Dim> {
       const tnsr::I<DataVector, Dim, Frame::Inertial>&
           normal_dot_flux_momentum_density_ext,
       const Scalar<DataVector>& normal_dot_flux_energy_density_ext,
-      const Scalar<DataVector>& abs_char_speed_ext,
+      const Scalar<DataVector>& largest_outgoing_char_speed_ext,
+      const Scalar<DataVector>& largest_ingoing_char_speed_ext,
       dg::Formulation dg_formulation) const noexcept;
 };
 }  // namespace NewtonianEuler::BoundaryCorrections

@@ -44,7 +44,10 @@ double Hll<Dim>::dg_package_data(
         packaged_normal_dot_flux_momentum_density,
     const gsl::not_null<Scalar<DataVector>*>
         packaged_normal_dot_flux_energy_density,
-    const gsl::not_null<Scalar<DataVector>*> packaged_abs_char_speed,
+    const gsl::not_null<Scalar<DataVector>*>
+        packaged_largest_outgoing_char_speed,
+    const gsl::not_null<Scalar<DataVector>*>
+        packaged_largest_ingoing_char_speed,
 
     const Scalar<DataVector>& mass_density,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& momentum_density,
@@ -71,16 +74,21 @@ double Hll<Dim>::dg_package_data(
                         specific_internal_energy, equation_of_state);
     get(sound_speed) = sqrt(get(sound_speed));
     dot_product(make_not_null(&normal_dot_velocity), velocity, normal_covector);
+    // Compute the largest outgoing / ingoing characteristic speeds. Note that
+    // the notion of being 'largest ingoing' means taking the most negative
+    // value given that the positive direction is outward normal.
     if (normal_dot_mesh_velocity.has_value()) {
-      get(*packaged_abs_char_speed) =
-          max(abs(get(normal_dot_velocity) + get(sound_speed) -
-                  get(*normal_dot_mesh_velocity)),
-              abs(get(normal_dot_velocity) - get(sound_speed) -
-                  get(*normal_dot_mesh_velocity)));
+      get(*packaged_largest_outgoing_char_speed) =
+          get(normal_dot_velocity) + get(sound_speed) -
+          get(*normal_dot_mesh_velocity);
+      get(*packaged_largest_ingoing_char_speed) =
+          get(normal_dot_velocity) - get(sound_speed) -
+          get(*normal_dot_mesh_velocity);
     } else {
-      get(*packaged_abs_char_speed) =
-          max(abs(get(normal_dot_velocity) + get(sound_speed)),
-              abs(get(normal_dot_velocity) - get(sound_speed)));
+      get(*packaged_largest_outgoing_char_speed) =
+          get(normal_dot_velocity) + get(sound_speed);
+      get(*packaged_largest_ingoing_char_speed) =
+          get(normal_dot_velocity) - get(sound_speed);
     }
   }
 
@@ -117,7 +125,8 @@ void Hll<Dim>::dg_boundary_terms(
     const tnsr::I<DataVector, Dim, Frame::Inertial>&
         normal_dot_flux_momentum_density_int,
     const Scalar<DataVector>& normal_dot_flux_energy_density_int,
-    const Scalar<DataVector>& abs_char_speed_int,
+    const Scalar<DataVector>& largest_outgoing_char_speed_int,
+    const Scalar<DataVector>& largest_ingoing_char_speed_int,
     const Scalar<DataVector>& mass_density_ext,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& momentum_density_ext,
     const Scalar<DataVector>& energy_density_ext,
@@ -125,7 +134,8 @@ void Hll<Dim>::dg_boundary_terms(
     const tnsr::I<DataVector, Dim, Frame::Inertial>&
         normal_dot_flux_momentum_density_ext,
     const Scalar<DataVector>& normal_dot_flux_energy_density_ext,
-    const Scalar<DataVector>& abs_char_speed_ext,
+    const Scalar<DataVector>& largest_outgoing_char_speed_ext,
+    const Scalar<DataVector>& largest_ingoing_char_speed_ext,
     const dg::Formulation dg_formulation) const noexcept {
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_mass_density) =
@@ -185,7 +195,8 @@ PUP::able::PUP_ID Hll<Dim>::my_PUP_ID = 0;
           packaged_normal_dot_flux_momentum_density,                           \
       gsl::not_null<Scalar<DataVector>*>                                       \
           packaged_normal_dot_flux_energy_density,                             \
-      gsl::not_null<Scalar<DataVector>*> packaged_abs_char_speed,              \
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed, \
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,  \
                                                                                \
       const Scalar<DataVector>& mass_density,                                  \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& momentum_density, \
@@ -218,7 +229,8 @@ PUP::able::PUP_ID Hll<Dim>::my_PUP_ID = 0;
           packaged_normal_dot_flux_momentum_density,                           \
       gsl::not_null<Scalar<DataVector>*>                                       \
           packaged_normal_dot_flux_energy_density,                             \
-      gsl::not_null<Scalar<DataVector>*> packaged_abs_char_speed,              \
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed, \
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,  \
                                                                                \
       const Scalar<DataVector>& mass_density,                                  \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& momentum_density, \
