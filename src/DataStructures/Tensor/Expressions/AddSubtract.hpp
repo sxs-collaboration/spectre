@@ -10,6 +10,8 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -57,11 +59,16 @@ template <typename T1, typename T2, template <typename...> class ArgsList1,
 struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     : public TensorExpression<
           AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>,
-          typename T1::type,
+          std::conditional_t<
+              std::is_same<typename T1::type, DataVector>::value or
+                  std::is_same<typename T2::type, DataVector>::value,
+              DataVector, double>,
           tmpl::transform<typename T1::symmetry, typename T2::symmetry,
                           tmpl::append<tmpl::max<tmpl::_1, tmpl::_2>>>,
           typename T1::index_list, typename T1::args_list> {
-  static_assert(std::is_same<typename T1::type, typename T2::type>::value,
+  static_assert(std::is_same<typename T1::type, typename T2::type>::value or
+                    std::is_same<T1, NumberAsExpression>::value or
+                    std::is_same<T2, NumberAsExpression>::value,
                 "Cannot add or subtract Tensors holding different data types.");
   static_assert(
       detail::AddSubIndexCheck<typename T1::index_list, typename T2::index_list,
@@ -74,7 +81,10 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
                 "Invalid Sign provided for addition or subtraction of Tensor "
                 "elements. Sign must be 1 (addition) or -1 (subtraction).");
 
-  using type = typename T1::type;
+  using type =
+      std::conditional_t<std::is_same<typename T1::type, DataVector>::value or
+                             std::is_same<typename T2::type, DataVector>::value,
+                         DataVector, double>;
   using symmetry = tmpl::transform<typename T1::symmetry, typename T2::symmetry,
                                    tmpl::append<tmpl::max<tmpl::_1, tmpl::_2>>>;
   using index_list = typename T1::index_list;
@@ -113,12 +123,12 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
 /*!
  * \ingroup TensorExpressionsGroup
  */
-template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
-          typename IndexList1, typename IndexList2, typename Args1,
-          typename Args2>
+template <typename T1, typename T2, typename X1, typename X2, typename Symm1,
+          typename Symm2, typename IndexList1, typename IndexList2,
+          typename Args1, typename Args2>
 SPECTRE_ALWAYS_INLINE auto operator+(
-    const TensorExpression<T1, X, Symm1, IndexList1, Args1>& t1,
-    const TensorExpression<T2, X, Symm2, IndexList2, Args2>& t2) {
+    const TensorExpression<T1, X1, Symm1, IndexList1, Args1>& t1,
+    const TensorExpression<T2, X2, Symm2, IndexList2, Args2>& t2) {
   static_assert(tmpl::size<Args1>::value == tmpl::size<Args2>::value,
                 "Tensor addition is only possible with the same rank tensors");
   static_assert(tmpl::equal_members<Args1, Args2>::value,
@@ -127,15 +137,51 @@ SPECTRE_ALWAYS_INLINE auto operator+(
   return TensorExpressions::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
 }
 
+// @{
+/// \ingroup TensorExpressionsGroup
+/// \brief Returns the tensor expression representing the sum of a tensor
+/// expression and a `double`
+///
+/// \details
+/// The tensor expression operand must represent an expression that, when
+/// evaluated, would be a rank 0 tensor. For example, if `R` and `S` are
+/// Tensors, here is a non-exhaustive list of some of the acceptable forms that
+/// the tensor expression operand could take:
+/// - `R()`
+/// - `R(ti_A, ti_a)`
+/// - `(R(ti_A, ti_B) * S(ti_a, ti_b))`
+///
+/// \tparam T the derived TensorExpression type of the tensor expression operand
+/// of the sum
+/// \tparam X the type of data stored in the tensor expression operand of the
+/// sum
+/// \param t the tensor expression operand of the sum
+/// \param number the `double` operand of the sum
+/// \return the tensor expression representing the sum of a tensor expression
+/// and a `double`
+template <typename T, typename X>
+SPECTRE_ALWAYS_INLINE auto operator+(
+    const TensorExpression<T, X, tmpl::list<>, tmpl::list<>, tmpl::list<>>& t,
+    const double number) {
+  return t + TensorExpressions::NumberAsExpression(number);
+}
+template <typename T, typename X>
+SPECTRE_ALWAYS_INLINE auto operator+(
+    const double number,
+    const TensorExpression<T, X, tmpl::list<>, tmpl::list<>, tmpl::list<>>& t) {
+  return TensorExpressions::NumberAsExpression(number) + t;
+}
+// @}
+
 /*!
  * \ingroup TensorExpressionsGroup
  */
-template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
-          typename IndexList1, typename IndexList2, typename Args1,
-          typename Args2>
+template <typename T1, typename T2, typename X1, typename X2, typename Symm1,
+          typename Symm2, typename IndexList1, typename IndexList2,
+          typename Args1, typename Args2>
 SPECTRE_ALWAYS_INLINE auto operator-(
-    const TensorExpression<T1, X, Symm1, IndexList1, Args1>& t1,
-    const TensorExpression<T2, X, Symm2, IndexList2, Args2>& t2) {
+    const TensorExpression<T1, X1, Symm1, IndexList1, Args1>& t1,
+    const TensorExpression<T2, X2, Symm2, IndexList2, Args2>& t2) {
   static_assert(tmpl::size<Args1>::value == tmpl::size<Args2>::value,
                 "Tensor addition is only possible with the same rank tensors");
   static_assert(tmpl::equal_members<Args1, Args2>::value,
@@ -143,3 +189,39 @@ SPECTRE_ALWAYS_INLINE auto operator-(
                 "occurs from expressions like A(_a, _b) - B(_c, _a)");
   return TensorExpressions::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
+
+// @{
+/// \ingroup TensorExpressionsGroup
+/// \brief Returns the tensor expression representing the difference of a tensor
+/// expression and a `double`
+///
+/// \details
+/// The tensor expression operand must represent an expression that, when
+/// evaluated, would be a rank 0 tensor. For example, if `R` and `S` are
+/// Tensors, here is a non-exhaustive list of some of the acceptable forms that
+/// the tensor expression operand could take:
+/// - `R()`
+/// - `R(ti_A, ti_a)`
+/// - `(R(ti_A, ti_B) * S(ti_a, ti_b))`
+///
+/// \tparam T the derived TensorExpression type of the tensor expression operand
+/// of the difference
+/// \tparam X the type of data stored in the tensor expression operand of the
+/// difference
+/// \param t the tensor expression operand of the difference
+/// \param number the `double` operand of the difference
+/// \return the tensor expression representing the difference of a tensor
+/// expression and a `double`
+template <typename T, typename X>
+SPECTRE_ALWAYS_INLINE auto operator-(
+    const TensorExpression<T, X, tmpl::list<>, tmpl::list<>, tmpl::list<>>& t,
+    const double number) {
+  return t - TensorExpressions::NumberAsExpression(number);
+}
+template <typename T, typename X>
+SPECTRE_ALWAYS_INLINE auto operator-(
+    const double number,
+    const TensorExpression<T, X, tmpl::list<>, tmpl::list<>, tmpl::list<>>& t) {
+  return TensorExpressions::NumberAsExpression(number) - t;
+}
+// @}
