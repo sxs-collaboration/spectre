@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"                   // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
@@ -50,6 +51,13 @@ FrustalCloak::FrustalCloak(
       length_outer_cube_(length_outer_cube),          // NOLINT
       origin_preimage_(origin_preimage),              // NOLINT
       boundary_condition_(std::move(boundary_condition)) {
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
+  }
   using domain::BoundaryConditions::is_periodic;
   if (boundary_condition_ != nullptr and is_periodic(boundary_condition_)) {
     PARSE_ERROR(

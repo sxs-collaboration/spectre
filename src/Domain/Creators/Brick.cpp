@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -59,7 +60,8 @@ Brick::Brick(
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dependence) noexcept
+        time_dependence,
+    const Options::Context& context)
     // clang-tidy: trivially copyable
     : lower_xyz_(std::move(lower_xyz)),  // NOLINT
       upper_xyz_(std::move(upper_xyz)),  // NOLINT
@@ -73,6 +75,13 @@ Brick::Brick(
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
+  }
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(boundary_condition_)) {

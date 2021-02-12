@@ -283,6 +283,16 @@ void test_brick() {
                               Affine{-1., 1., lower_bound[1], upper_bound[1]},
                               Affine{-1., 1., lower_bound[2], upper_bound[2]}}),
                  *serialize_and_deserialize(base_map));
+
+  CHECK_THROWS_WITH(
+      creators::Brick(lower_bound, upper_bound, refinement_level[0],
+                      grid_points[0],
+                      std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestNoneBoundaryCondition<3>>(),
+                      nullptr, Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow boundary condition, you must use that."));
 }
 
 void test_brick_factory() {

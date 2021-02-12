@@ -603,6 +603,27 @@ void test_shell_boundaries_logarithmic_map() {
                       Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Cannot have periodic boundary conditions with a shell"));
+  CHECK_THROWS_WITH(
+      creators::Shell(inner_radius, outer_radius, refinement_level,
+                      grid_points_r_angular, false, aspect_ratio,
+                      use_logarithmic_map, ShellWedges::All, 1,
+                      create_inner_boundary_condition(),
+                      std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestNoneBoundaryCondition<3>>(),
+                      Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like "
+          "an outflow boundary condition, you must use that."));
+  CHECK_THROWS_WITH(
+      creators::Shell(
+          inner_radius, outer_radius, refinement_level, grid_points_r_angular,
+          false, aspect_ratio, use_logarithmic_map, ShellWedges::All, 1,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like "
+          "an outflow boundary condition, you must use that."));
 }
 
 void test_shell_factory_logarithmic_map() {

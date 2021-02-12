@@ -5,6 +5,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
@@ -50,6 +51,14 @@ RotatedIntervals::RotatedIntervals(
       initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
       lower_boundary_condition_(std::move(lower_boundary_condition)),
       upper_boundary_condition_(std::move(upper_boundary_condition)) {
+  using domain::BoundaryConditions::is_none;
+  if (is_none(lower_boundary_condition_) or
+      is_none(upper_boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
+  }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(lower_boundary_condition_) !=
       is_periodic(upper_boundary_condition_)) {

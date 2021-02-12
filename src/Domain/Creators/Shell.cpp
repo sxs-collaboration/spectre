@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
@@ -65,6 +66,14 @@ Shell::Shell(typename InnerRadius::type inner_radius,
                 "Can only apply boundary conditions when using the full shell. "
                 "Additional cases can be supported by adding them to the Shell "
                 "domain creator's create_domain function.");
+  }
+  using domain::BoundaryConditions::is_none;
+  if (is_none(inner_boundary_condition_) or
+      is_none(outer_boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(inner_boundary_condition_) or

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -106,6 +107,13 @@ AlignedLattice<VolumeDim>::AlignedLattice(
           block_bounds_,
           [](const std::vector<double>& v) noexcept { return v.size() - 1; })},
       boundary_condition_(std::move(boundary_condition)) {
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
+  }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(boundary_condition_)) {
     is_periodic_in_[0] = true;

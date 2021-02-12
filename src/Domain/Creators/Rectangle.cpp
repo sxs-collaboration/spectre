@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -60,7 +61,8 @@ Rectangle::Rectangle(
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
-        time_dependence)
+        time_dependence,
+    const Options::Context& context)
     : lower_xy_(lower_xy),
       upper_xy_(upper_xy),
       is_periodic_in_xy_{{false, false}},
@@ -71,6 +73,13 @@ Rectangle::Rectangle(
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<2>>();
+  }
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(boundary_condition_)) {
