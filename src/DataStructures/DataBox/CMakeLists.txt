@@ -9,6 +9,7 @@ spectre_target_headers(
   DataBoxTag.hpp
   DataOnSlice.hpp
   Deferred.hpp
+  Item.hpp
   PrefixHelpers.hpp
   Prefixes.hpp
   SubitemTag.hpp
