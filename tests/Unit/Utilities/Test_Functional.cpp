@@ -73,7 +73,7 @@ using std::min;
           gen, make_not_null(&dist1));                                    \
       auto val2 = make_with_random_values<typename T2::type>(             \
           gen, make_not_null(&dist2));                                    \
-      CHECK(STRUCTNAME<>{}(val1, val2) == val1 OP val2); /*NOLINT*/       \
+      CHECK(STRUCTNAME<>{}(val1, val2) == (val1 OP val2)); /*NOLINT*/     \
     }                                                                     \
   }
 
@@ -167,6 +167,8 @@ MAKE_BINARY_OP_TEST(Divides, /);
 MAKE_BINARY_OP_TEST(Minus, -);
 MAKE_BINARY_OP_TEST(Multiplies, *);
 MAKE_BINARY_OP_TEST(Plus, +);
+MAKE_BINARY_OP_TEST(And, and);
+MAKE_BINARY_OP_TEST(Or, or);
 
 MAKE_BINARY_INPLACE_TEST(DivAssign, /=, /);
 MAKE_BINARY_INPLACE_TEST(MinusAssign, -=, -);
@@ -370,6 +372,16 @@ void test_floating_point_functions(const gsl::not_null<Gen*> gen) noexcept {
 }
 
 template <typename Gen>
+void test_boolean_functions(const gsl::not_null<Gen*> gen) noexcept {
+  auto boolean_binaries = std::make_tuple(TestFuncEvalAnd{}, TestFuncEvalOr{});
+  tuple_fold(boolean_binaries, [&gen](auto binary_test_func) noexcept {
+    binary_test_func(gen, UniformCustomDistribution<bool>{},
+                     UniformCustomDistribution<bool>{}, tmpl::type_<bool>{},
+                     tmpl::type_<bool>{});
+  });
+}
+
+template <typename Gen>
 void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
@@ -460,6 +472,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   MAKE_GENERATOR(generator);
   test_generic_unaries(make_not_null(&generator));
   test_floating_point_functions(make_not_null(&generator));
+  test_boolean_functions(make_not_null(&generator));
   test_real_functions(make_not_null(&generator));
   test_functional_combinations(make_not_null(&generator));
   test_assert_equal();
