@@ -532,6 +532,8 @@ void ComputeTimeDerivative<Metavariables>::
   const auto& mortar_sizes =
       get<::Tags::Mortars<::Tags::MortarSize<VolumeDim - 1>, VolumeDim>>(*box);
   const auto& temporal_id = get<temporal_id_tag>(*box);
+  const auto integration_order =
+      db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
   for (const auto& [direction, neighbors] : element.neighbors()) {
     const auto& face_mesh = face_meshes.at(direction);
     for (const auto& neighbor : neighbors) {
@@ -552,11 +554,14 @@ void ComputeTimeDerivative<Metavariables>::
 
       // Store the boundary data on this side of the mortar
       db::mutate<all_mortar_data_tag>(
-          box, [&mortar_id, &temporal_id, &boundary_data_on_mortar ](
+          box, [&mortar_id, &temporal_id, &boundary_data_on_mortar,
+                &integration_order](
                    const gsl::not_null<typename all_mortar_data_tag::type*>
                        all_mortar_data) noexcept {
-            all_mortar_data->at(mortar_id).local_insert(
-                temporal_id, std::move(boundary_data_on_mortar));
+              auto& mortar_data = all_mortar_data->at(mortar_id);
+              mortar_data.integration_order(integration_order);
+              mortar_data.local_insert(temporal_id,
+                                       std::move(boundary_data_on_mortar));
           });
     }
   }

@@ -228,7 +228,7 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
 
   TimeSteppers::AdamsBashforthN ab4(4);
 
-  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history;
+  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{4};
   {
     const Slab init_slab = slab.advance_towards(-dt[0]);
 
@@ -288,7 +288,7 @@ void check_lts_vts() noexcept {
 
   TimeSteppers::AdamsBashforthN ab4(4);
 
-  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history;
+  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{4};
   {
     const Slab init_slab = slab.retreat();
     const TimeDelta init_dt = init_slab.duration() / 4;
@@ -425,7 +425,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
   };
 
   const Slab slab(0., 1.);
-  TimeSteppers::BoundaryHistory<double, double, double> history{};
+  TimeSteppers::BoundaryHistory<double, double, double> history{3};
   const auto add_history = [&df, &history](const TimeStepId& time_id) noexcept {
     history.local_insert(time_id, df(time_id.step_time().value()));
     history.remote_insert(time_id, 0.);

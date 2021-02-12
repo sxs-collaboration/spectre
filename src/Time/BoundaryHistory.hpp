@@ -47,6 +47,18 @@ class BoundaryHistory {
   BoundaryHistory& operator=(BoundaryHistory&&) = default;
   ~BoundaryHistory() = default;
 
+  explicit BoundaryHistory(const size_t integration_order) noexcept
+      : integration_order_(integration_order) {}
+
+  /// The current order of integration.  This should match the value
+  /// in the History.
+  //@{
+  size_t integration_order() const noexcept { return integration_order_; }
+  void integration_order(const size_t integration_order) noexcept {
+    integration_order_ = integration_order;
+  }
+  //@}
+
   /// Add a new value to the end of the history of the indicated side.
   //@{
   void local_insert(const TimeStepId& time_id, LocalVars vars) noexcept {
@@ -134,6 +146,7 @@ class BoundaryHistory {
   void mark_unneeded(gsl::not_null<DataType*> data,
                      const Iterator& first_needed) noexcept;
 
+  size_t integration_order_{0};
   std::deque<std::tuple<Time, LocalVars>> local_data_;
   std::deque<std::tuple<Time, RemoteVars>> remote_data_;
   // We use pointers instead of iterators because deque invalidates
@@ -182,6 +195,7 @@ BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::coupling(
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::pup(
     PUP::er& p) noexcept {
+  p | integration_order_;
   p | local_data_;
   p | remote_data_;
 
