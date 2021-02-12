@@ -30,6 +30,9 @@ DomainCreator:
     UseEquiangularMap: True
     RadialPartitioning: []
     HeightPartitioning: []
+    BoundaryCondition:
+      AnalyticSolution:
+        Displacement: Dirichlet
 
 NumericalFlux:
   InternalPenalty:

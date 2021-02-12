@@ -21,10 +21,12 @@ DomainCreator:
   Rectangle:
     LowerBound: [-1., -0.5]
     UpperBound: [1., 0.5]
-    IsPeriodicIn: [false, false]
     InitialRefinement: [2, 1]
     InitialGridPoints: [3, 3]
     TimeDependence: None
+    BoundaryCondition:
+      AnalyticSolution:
+        Displacement: Dirichlet
 
 NumericalFlux:
   InternalPenalty:

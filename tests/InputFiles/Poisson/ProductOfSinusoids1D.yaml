@@ -15,10 +15,16 @@ DomainCreator:
   Interval:
     LowerBound: [0]
     UpperBound: [3.141592653589793]
-    IsPeriodicIn: [false]
     InitialRefinement: [1]
     InitialGridPoints: [3]
     TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary:
+        AnalyticSolution:
+          Field: Dirichlet
+      UpperBoundary:
+        AnalyticSolution:
+          Field: Dirichlet
 
 NumericalFlux:
   InternalPenalty:

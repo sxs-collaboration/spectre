@@ -9,6 +9,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -73,6 +75,13 @@ struct FirstOrderSystem {
   // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim>;
   using sources_computer = Sources<Dim>;
+
+  // The supported boundary conditions. Boundary conditions can be
+  // factory-created from this base class.
+  using boundary_conditions_base =
+      elliptic::BoundaryConditions::BoundaryCondition<
+          Dim, tmpl::list<elliptic::BoundaryConditions::Registrars::
+                              AnalyticSolution<FirstOrderSystem>>>;
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element
