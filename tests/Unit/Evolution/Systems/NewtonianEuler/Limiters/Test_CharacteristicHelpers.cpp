@@ -21,6 +21,29 @@
 
 namespace {
 
+// This computes a unit vector. It is NOT uniformly distributed in angle,
+// but for this test the angular distribution is not important.
+template <size_t Dim>
+tnsr::i<double, Dim> random_unit_vector(
+    const gsl::not_null<std::mt19937*>& gen,
+    const gsl::not_null<std::uniform_real_distribution<>*>& dist) noexcept {
+  const double used_for_size = 0.;
+  auto result =
+      make_with_random_values<tnsr::i<double, Dim>>(gen, dist, used_for_size);
+  double vector_magnitude = get(magnitude(result));
+  // Though highly unlikely, the vector could have length nearly 0. If this
+  // happens, we edit the vector to make it non-zero.
+  if (vector_magnitude < 1e-3) {
+    get<0>(result) += 0.9;
+    vector_magnitude = get(magnitude(result));
+  }
+  // Make unit magnitude
+  for (auto& n_i : result) {
+    n_i /= vector_magnitude;
+  }
+  return result;
+}
+
 template <size_t Dim>
 void prepare_hydro_data_for_test(
     const gsl::not_null<Scalar<DataVector>*>& mass_density,
@@ -31,7 +54,8 @@ void prepare_hydro_data_for_test(
     const gsl::not_null<Scalar<double>*>& mean_energy_density,
     const gsl::not_null<Matrix*>& right, const gsl::not_null<Matrix*>& left,
     const Mesh<Dim>& mesh,
-    const EquationsOfState::IdealFluid<false>& equation_of_state) noexcept {
+    const EquationsOfState::IdealFluid<false>& equation_of_state,
+    const bool generate_random_vector = true) noexcept {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1., 1.);
   std::uniform_real_distribution<> distribution_positive(1e-3, 1.);
@@ -40,23 +64,16 @@ void prepare_hydro_data_for_test(
   const auto nn_distribution = make_not_null(&distribution);
   const auto nn_distribution_positive = make_not_null(&distribution_positive);
 
-  // This computes a unit vector. It is NOT uniformly distributed in angle,
-  // but for this test the angular distribution is not important.
-  const auto unit_vector = [&nn_generator, &nn_distribution]() noexcept {
-    const double double_used_for_size = 0.;
-    auto result = make_with_random_values<tnsr::i<double, Dim>>(
-        nn_generator, nn_distribution, double_used_for_size);
-    double vector_magnitude = get(magnitude(result));
-    // Though highly unlikely, the vector could have length nearly 0. If this
-    // happens, we edit the vector to make it non-zero.
-    if (vector_magnitude < 1e-3) {
-      get<0>(result) += 0.9;
-      vector_magnitude = get(magnitude(result));
+  const auto unit_vector = [&generate_random_vector, &nn_generator,
+                            &nn_distribution]() noexcept {
+    if (generate_random_vector) {
+      return random_unit_vector<Dim>(nn_generator, nn_distribution);
+    } else {
+      // Return unit vector pointing in the "last" dimension
+      tnsr::i<double, Dim> result{{0.}};
+      get<Dim - 1>(result) = 1.;
+      return result;
     }
-    for (auto& n_i : result) {
-      n_i /= vector_magnitude;
-    }
-    return result;
   }();
 
   // Derive all fluid quantities from the primitive variables
@@ -97,6 +114,8 @@ void prepare_hydro_data_for_test(
 
 template <size_t Dim>
 void test_characteristic_helpers() noexcept {
+  INFO("Testing characteristic helpers");
+  CAPTURE(Dim);
   const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
@@ -176,6 +195,120 @@ void test_characteristic_helpers() noexcept {
   CHECK_ITERABLE_APPROX(get<NewtonianEuler::Tags::VPlus>(char_vars), v_plus);
 }
 
+template <size_t Dim>
+void test_apply_limiter_to_char_fields() noexcept {
+  INFO("Testing apply_limiter_to_characteristic_fields_in_all_directions");
+  CAPTURE(Dim);
+  const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto);
+  const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
+
+  Scalar<DataVector> mass_density;
+  tnsr::I<DataVector, Dim> momentum_density;
+  Scalar<DataVector> energy_density;
+  Scalar<double> mean_mass_density;
+  tnsr::I<double, Dim> mean_momentum_density;
+  Scalar<double> mean_energy_density;
+  Matrix right;
+  Matrix left;
+
+  const bool generate_random_vector = false;
+  prepare_hydro_data_for_test(
+      make_not_null(&mass_density), make_not_null(&momentum_density),
+      make_not_null(&energy_density), make_not_null(&mean_mass_density),
+      make_not_null(&mean_momentum_density),
+      make_not_null(&mean_energy_density), make_not_null(&right),
+      make_not_null(&left), mesh, equation_of_state, generate_random_vector);
+
+  // Check case where limiter does nothing
+  const auto noop_expected_mass_density = mass_density;
+  const auto noop_expected_momentum_density = momentum_density;
+  const auto noop_expected_energy_density = energy_density;
+  const auto noop_limiter_wrapper =
+      [](const gsl::not_null<Scalar<DataVector>*> /*char_v_minus*/,
+         const gsl::not_null<tnsr::I<DataVector, Dim>*> /*char_v_momentum*/,
+         const gsl::not_null<Scalar<DataVector>*> /*char_v_plus*/,
+         const Matrix& /*left*/) noexcept -> bool { return false; };
+
+  const bool noop_result = NewtonianEuler::Limiters::
+      apply_limiter_to_characteristic_fields_in_all_directions(
+          make_not_null(&mass_density), make_not_null(&momentum_density),
+          make_not_null(&energy_density), mesh, equation_of_state,
+          noop_limiter_wrapper);
+  CHECK_FALSE(noop_result);
+  CHECK_ITERABLE_APPROX(mass_density, noop_expected_mass_density);
+  CHECK_ITERABLE_APPROX(momentum_density, noop_expected_momentum_density);
+  CHECK_ITERABLE_APPROX(energy_density, noop_expected_energy_density);
+
+  // Check with a silly (and completely nonphysical) limiter that scales char
+  // fields, which is relatively easy to check. The solution is set to 0 on the
+  // first dims (d < Dim-1), and scaled by some integers on dim d == Dim-1
+  size_t current_dim = 0;
+  const auto silly_limiter_wrapper =
+      [&current_dim](
+          const gsl::not_null<Scalar<DataVector>*> char_v_minus,
+          const gsl::not_null<tnsr::I<DataVector, Dim>*> char_v_momentum,
+          const gsl::not_null<Scalar<DataVector>*> char_v_plus,
+          const Matrix& /*left*/) noexcept -> bool {
+    if (current_dim == Dim - 1) {
+      get(*char_v_minus) *= 2.;
+      // no change to char_v_momentum
+      get(*char_v_plus) = 0.;
+    } else {
+      get(*char_v_minus) = 0.;
+      for (size_t i = 0; i < Dim; ++i) {
+        char_v_momentum->get(i) = 0.;
+      }
+      get(*char_v_plus) = 0.;
+      current_dim++;
+    }
+    return true;
+  };
+
+  Matrix silly_limiter_action(Dim + 2, Dim + 2, 0.);
+  silly_limiter_action(0, 0) = 2. / static_cast<double>(Dim);
+  for (size_t i = 0; i < Dim; ++i) {
+    silly_limiter_action(i + 1, i + 1) = 1. / static_cast<double>(Dim);
+  }
+  silly_limiter_action(Dim + 1, Dim + 1) = 0.;
+  const Matrix silly = right * silly_limiter_action * left;
+
+  auto expected_mass_density = mass_density;
+  auto expected_momentum_density = momentum_density;
+  auto expected_energy_density = energy_density;
+
+  get(expected_mass_density) = silly(0, 0) * get(mass_density);
+  for (size_t j = 0; j < Dim; ++j) {
+    expected_momentum_density.get(j) = silly(j + 1, 0) * get(mass_density);
+  }
+  get(expected_energy_density) = silly(Dim + 1, 0) * get(mass_density);
+  for (size_t i = 0; i < Dim; ++i) {
+    get(expected_mass_density) += silly(0, i + 1) * momentum_density.get(i);
+    for (size_t j = 0; j < Dim; ++j) {
+      expected_momentum_density.get(j) +=
+          silly(j + 1, i + 1) * momentum_density.get(i);
+    }
+    get(expected_energy_density) +=
+        silly(Dim + 1, i + 1) * momentum_density.get(i);
+  }
+  get(expected_mass_density) += silly(0, Dim + 1) * get(energy_density);
+  for (size_t j = 0; j < Dim; ++j) {
+    expected_momentum_density.get(j) +=
+        silly(j + 1, Dim + 1) * get(energy_density);
+  }
+  get(expected_energy_density) += silly(Dim + 1, Dim + 1) * get(energy_density);
+
+  const bool silly_result = NewtonianEuler::Limiters::
+      apply_limiter_to_characteristic_fields_in_all_directions(
+          make_not_null(&mass_density), make_not_null(&momentum_density),
+          make_not_null(&energy_density), mesh, equation_of_state,
+          silly_limiter_wrapper);
+  CHECK(silly_result);
+  CHECK_ITERABLE_APPROX(mass_density, expected_mass_density);
+  CHECK_ITERABLE_APPROX(momentum_density, expected_momentum_density);
+  CHECK_ITERABLE_APPROX(energy_density, expected_energy_density);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -184,4 +317,8 @@ SPECTRE_TEST_CASE(
   test_characteristic_helpers<1>();
   test_characteristic_helpers<2>();
   test_characteristic_helpers<3>();
+
+  test_apply_limiter_to_char_fields<1>();
+  test_apply_limiter_to_char_fields<2>();
+  test_apply_limiter_to_char_fields<3>();
 }
