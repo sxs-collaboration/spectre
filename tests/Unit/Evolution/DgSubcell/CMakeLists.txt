@@ -6,6 +6,7 @@ set(LIBRARY "Test_DgSubcell")
 set(LIBRARY_SOURCES
   Test_ActiveGrid.cpp
   Test_Matrices.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
