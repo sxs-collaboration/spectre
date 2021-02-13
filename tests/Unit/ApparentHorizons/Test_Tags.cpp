@@ -290,6 +290,15 @@ void test_max_ricci_scalar() {
   CHECK(expected_max == max);
 }
 
+void test_min_ricci_scalar() {
+  // Test min_ricci_scalar
+  Scalar<DataVector> d{{{{1., 2., 3.}}}};
+  const double expected_min{1.};
+  double min{std::numeric_limits<double>::signaling_NaN()};
+  StrahlkorperTags::MinRicciScalarCompute::function(make_not_null(&min), d);
+  CHECK(expected_min == min);
+}
+
 struct SomeType {};
 struct SomeTag : db::SimpleTag {
   using type = SomeType;
@@ -303,6 +312,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   test_radius_and_derivs();
   test_normals();
   test_max_ricci_scalar();
+  test_min_ricci_scalar();
   TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::IrreducibleMass>(
@@ -313,6 +323,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       "RicciScalar");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::MaxRicciScalar>(
       "MaxRicciScalar");
+  TestHelpers::db::test_simple_tag<StrahlkorperTags::MinRicciScalar>(
+      "MinRicciScalar");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::SpinFunction>(
       "SpinFunction");
   TestHelpers::db::test_simple_tag<
@@ -436,6 +448,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       "RicciScalar");
   TestHelpers::db::test_compute_tag<StrahlkorperTags::MaxRicciScalarCompute>(
       "MaxRicciScalar");
+  TestHelpers::db::test_compute_tag<StrahlkorperTags::MinRicciScalarCompute>(
+      "MinRicciScalar");
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::SpinFunctionCompute<Frame::Inertial>>(
       "SpinFunction");
