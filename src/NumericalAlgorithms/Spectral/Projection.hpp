@@ -53,6 +53,18 @@ bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
  * sometimes referred to as a "restriction operator" and the
  * `projection_matrix_parent_to_child` as a "prolongation operator".
  *
+ * \par Massive quantities
+ * If the quantity that should be projected is not a function over the
+ * computational grid but a "massive" residual, i.e. a quantity
+ * \f$\int_{\Omega_k} f(x) \psi_p(x) \mathrm{d}V\f$ where \f$\psi_p\f$ are the
+ * basis functions on the mesh, then pass `true` for the parameter
+ * `operand_is_massive` (default is `false`). The restriction operator for this
+ * case is just the transpose of the prolongation operator, i.e. just an
+ * interpolation matrix transpose. Note that the "massive" residual already
+ * takes the difference in element size between parent and children into account
+ * by including a Jacobian in the volume element of the integral.
+ *
+ * \par Implementation details
  * The half-interval projections are based on an equation derived by
  * Saul.  This shows that the projection from the spectral basis for
  * the entire interval to the spectral basis for the upper half
@@ -62,16 +74,17 @@ bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
  * \binom{(j + k + n - 1)/2}{j} \frac{(k + n)!^2}{(2 k + n + 1)! n!}
  * \f}
  */
-const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
-                                                const Mesh<1>& parent_mesh,
-                                                ChildSize size) noexcept;
+const Matrix& projection_matrix_child_to_parent(
+    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh, ChildSize size,
+    bool operand_is_massive = false) noexcept;
 
 /// The projection matrix from a child mesh to its parent, in `Dim` dimensions.
 template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim>
-projection_matrix_child_to_parent(
-    const Mesh<Dim>& child_mesh, const Mesh<Dim>& parent_mesh,
-    const std::array<ChildSize, Dim>& child_sizes) noexcept;
+projection_matrix_child_to_parent(const Mesh<Dim>& child_mesh,
+                                  const Mesh<Dim>& parent_mesh,
+                                  const std::array<ChildSize, Dim>& child_sizes,
+                                  bool operand_is_massive = false) noexcept;
 
 /// The projection matrix from a parent mesh to one of its children.
 ///

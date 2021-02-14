@@ -8,10 +8,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -342,6 +344,101 @@ void test_h_element_to_mortar() {
   }
 }
 
+void test_massive_restriction() {
+  INFO("Massive restriction operator");
+  // Using Gauss quadrature so the diagonal mass-matrix approximation used in
+  // `::dg::apply_mass_matrix` is exact. Note that for Gauss-Lobatto quadrature
+  // the mass matrix is diagonally approximated in most places in the code, but
+  // the `projection_matrix_child_to_parent` uses the exact mass matrix because
+  // it is implemented in terms of Vandermonde matrices.
+  const Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
+                            Spectral::Quadrature::Gauss};
+  const Mesh<1> child_mesh{4, Spectral::Basis::Legendre,
+                           Spectral::Quadrature::Gauss};
+  const auto& x_child = Spectral::collocation_points(child_mesh);
+  DataVector child_data = square(x_child) + x_child + 1.;
+  for (const ChildSize child_size :
+       {ChildSize::Full, ChildSize::LowerHalf, ChildSize::UpperHalf}) {
+    CAPTURE(child_size);
+    // Check R = M_coarse^-1 * I^T * M_fine and R_massive = I^T
+    // => M_coarse * R * f = R_massive * M_fine * f
+    //
+    // (i) Compute l.h.s.
+    const auto& restriction_operator =
+        projection_matrix_child_to_parent(child_mesh, parent_mesh, child_size);
+    auto lhs = apply_matrix(restriction_operator, child_data);
+    ::dg::apply_mass_matrix(make_not_null(&lhs), parent_mesh);
+    // (ii) Compute r.h.s.
+    auto massive_child_data = child_data;
+    if (child_size != ChildSize::Full) {
+      // This is the Jacobian from logical to inertial coordinates (we take the
+      // parent logical coordinates as inertial so don't have to apply a
+      // Jacobian above). The `apply_mass_matrix` function requires
+      // pre-multiplying by the Jacobian.
+      massive_child_data *= 0.5;
+    }
+    ::dg::apply_mass_matrix(make_not_null(&massive_child_data), child_mesh);
+    const auto& restriction_operator_massive =
+        projection_matrix_child_to_parent(child_mesh, parent_mesh, child_size,
+                                          true);
+    const auto rhs =
+        apply_matrix(restriction_operator_massive, massive_child_data);
+    CHECK_ITERABLE_APPROX(lhs, rhs);
+  }
+}
+
+void test_exact_restriction() {
+  INFO("Exact restriction");
+  const Mesh<1> child_mesh{3, Spectral::Basis::Legendre,
+                           Spectral::Quadrature::Gauss};
+  const Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
+                            Spectral::Quadrature::Gauss};
+  const auto& x_parent = Spectral::collocation_points(parent_mesh);
+  const auto& xi_child = Spectral::collocation_points(child_mesh);
+  const DataVector x_child_left = xi_child / 2. - 0.5;
+  const DataVector x_child_right = xi_child / 2. + 0.5;
+  // This polynomial is exactly represented on both the child and the parent
+  // meshes
+  const auto func = [](const DataVector& x) -> DataVector {
+    return cube(x) + square(x) + x + 1.;
+  };
+  DataVector child_data_left = func(x_child_left);
+  DataVector child_data_right = func(x_child_right);
+  DataVector parent_data = func(x_parent);
+
+  // Restrict function values
+  const auto& restriction_operator_left = projection_matrix_child_to_parent(
+      child_mesh, parent_mesh, ChildSize::LowerHalf);
+  const auto& restriction_operator_right = projection_matrix_child_to_parent(
+      child_mesh, parent_mesh, ChildSize::UpperHalf);
+  auto restricted_data =
+      apply_matrix(restriction_operator_left, child_data_left);
+  restricted_data += apply_matrix(restriction_operator_right, child_data_right);
+  CHECK_ITERABLE_APPROX(parent_data, restricted_data);
+
+  // Restrict massive data
+  ::dg::apply_mass_matrix(make_not_null(&parent_data), parent_mesh);
+  // This is the Jacobian from logical to inertial coordinates (we take the
+  // parent logical coordinates as inertial so don't have to apply a Jacobian
+  // above). The `apply_mass_matrix` function requires pre-multiplying by the
+  // Jacobian.
+  child_data_left *= 0.5;
+  child_data_right *= 0.5;
+  ::dg::apply_mass_matrix(make_not_null(&child_data_left), child_mesh);
+  ::dg::apply_mass_matrix(make_not_null(&child_data_right), child_mesh);
+  const auto& restriction_operator_left_massive =
+      projection_matrix_child_to_parent(child_mesh, parent_mesh,
+                                        ChildSize::LowerHalf, true);
+  const auto& restriction_operator_right_massive =
+      projection_matrix_child_to_parent(child_mesh, parent_mesh,
+                                        ChildSize::UpperHalf, true);
+  restricted_data =
+      apply_matrix(restriction_operator_left_massive, child_data_left);
+  restricted_data +=
+      apply_matrix(restriction_operator_right_massive, child_data_right);
+  CHECK_ITERABLE_APPROX(parent_data, restricted_data);
+}
+
 template <size_t Dim>
 void test_higher_dimensions() {
   INFO("Higher-dimensional operators");
@@ -403,6 +500,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_p_element_to_mortar();
   test_h_mortar_to_element();
   test_h_element_to_mortar();
+  test_massive_restriction();
+  test_exact_restriction();
   test_higher_dimensions<1>();
   test_higher_dimensions<2>();
   test_higher_dimensions<3>();
