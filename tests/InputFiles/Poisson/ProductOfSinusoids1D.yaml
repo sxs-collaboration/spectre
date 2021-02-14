@@ -2,10 +2,16 @@
 # See LICENSE.txt for details.
 
 # Executable: SolvePoissonProductOfSinusoids1D
-# Check: parse;execute
+# Check: parse;execute_check_output
 # ExpectedOutput:
 #   PoissonProductOfSinusoids1DReductions.h5
 #   PoissonProductOfSinusoids1DVolume0.h5
+# OutputFileChecks:
+#   - Label: Discretization error
+#     Subfile: /Errors.dat
+#     FileGlob: PoissonProductOfSinusoids1DReductions.h5
+#     SkipColumns: [0, 1, 3]
+#     AbsoluteTolerance: 0.02
 
 AnalyticSolution:
   ProductOfSinusoids:
@@ -30,15 +36,15 @@ Observers:
 
 LinearSolver:
   ConvergenceCriteria:
-    MaxIterations: 1
-    AbsoluteResidual: 0
-    RelativeResidual: 0
+    MaxIterations: 7
+    AbsoluteResidual: 1e-10
+    RelativeResidual: 1e-10
   Verbosity: Verbose
 
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 0
+      Offset: 6
   : - ObserveErrorNorms:
         SubfileName: Errors
     - ObserveFields:
