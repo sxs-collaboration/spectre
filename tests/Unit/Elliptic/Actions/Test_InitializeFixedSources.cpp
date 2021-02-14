@@ -19,6 +19,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -86,7 +87,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
 
   using element_array = ElementArray<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {std::make_unique<Background>(), domain_creator.create_domain()}};
+      tuples::TaggedTuple<elliptic::Tags::Background<Background>,
+                          domain::Tags::Domain<1>, elliptic::dg::Tags::Massive>{
+          std::make_unique<Background>(), domain_creator.create_domain(),
+          false}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
