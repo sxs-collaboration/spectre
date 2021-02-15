@@ -303,18 +303,11 @@ struct Subitems<TestTags::Parent<N>> {
   // We use the template parameter T instead of item_type<tag, TagList> just to
   // test that create_compute_time functions can be function templates too
   template <typename Subtag, typename T>
-  static auto create_compute_item(const T& parent_value) noexcept {
-    // clang-tidy: do not use const_cast
-    // We need a non-const object to set up the aliasing since in the
-    // simple-item case the alias can be used to modify the original
-    // item.  That should not be allowed for compute items, but the
-    // DataBox will only allow access to a const version of the result
-    // and we ensure in the definition of Boxed that that will not
-    // allow modification of the original item.
-    return const_cast<typename Subtag::type&>(  // NOLINT
-        std::get<Subtag::index>(parent_value));
+  static const auto& create_compute_item(const T& parent_value) noexcept {
+    return std::get<Subtag::index>(parent_value);
   }
 };
+
 template <size_t N>
 struct Subitems<TestTags::ParentCompute<N>> {
   using type = tmpl::list<TestTags::First<N>, TestTags::Second<N>>;
@@ -331,16 +324,8 @@ struct Subitems<TestTags::ParentCompute<N>> {
   // We use the template parameter T instead of item_type<tag, TagList> just to
   // test that create_compute_time functions can be function templates too
   template <typename Subtag, typename T>
-  static auto create_compute_item(const T& parent_value) noexcept {
-    // clang-tidy: do not use const_cast
-    // We need a non-const object to set up the aliasing since in the
-    // simple-item case the alias can be used to modify the original
-    // item.  That should not be allowed for compute items, but the
-    // DataBox will only allow access to a const version of the result
-    // and we ensure in the definition of Boxed that that will not
-    // allow modification of the original item.
-    return const_cast<typename Subtag::type&>(  // NOLINT
-        std::get<Subtag::index>(parent_value));
+  static const auto& create_compute_item(const T& parent_value) noexcept {
+    return std::get<Subtag::index>(parent_value);
   }
 };
 }  // namespace db
