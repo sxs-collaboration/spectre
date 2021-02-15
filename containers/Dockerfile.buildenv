@@ -87,8 +87,8 @@ RUN add-apt-repository universe \
     && pip3 --no-cache-dir install -U pip \
     && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
     && pip3 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
-    && pip2 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
-    && pip3 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
+    && pip2 --no-cache-dir install coverxygen beautifulsoup4 pybtex pyyaml \
+    && pip3 --no-cache-dir install coverxygen beautifulsoup4 pybtex pyyaml \
     && pip2 --no-cache-dir install yapf==0.29.0 futures unittest2 \
     && pip3 --no-cache-dir install yapf==0.29.0
 

@@ -32,6 +32,10 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
     CTEST_NAME
     "\"InputFiles.${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${CHECK_TYPE}\""
     )
+  set(
+    RUN_DIRECTORY
+    "${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${CHECK_TYPE}"
+    )
   if ("${CHECK_TYPE}" STREQUAL "parse")
     add_test(
       NAME "${CTEST_NAME}"
@@ -44,6 +48,15 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
       # This script is written below, and only once
       COMMAND sh ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
       ${EXECUTABLE} ${INPUT_FILE}
+      # Make sure we run the test in the build directory for cleaning its output
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      )
+  elseif("${CHECK_TYPE}" STREQUAL "execute_check_output")
+    add_test(
+      NAME "${CTEST_NAME}"
+      # This script is written below, and only once
+      COMMAND sh ${PROJECT_BINARY_DIR}/tmp/ExecuteCheckOutputFilesAndClean.sh
+      ${EXECUTABLE} ${INPUT_FILE} ${RUN_DIRECTORY}
       # Make sure we run the test in the build directory for cleaning its output
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )
@@ -169,5 +182,12 @@ ${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 && \
 ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
 )
+
+# Write command to execute an input file and clean its output into a shell
+# script, which makes it easier to chain multiple commands
+configure_file(
+  ${CMAKE_SOURCE_DIR}/cmake/ExecuteCheckOutputFilesAndClean.sh
+  ${PROJECT_BINARY_DIR}/tmp/ExecuteCheckOutputFilesAndClean.sh
+  )
 
 add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")
