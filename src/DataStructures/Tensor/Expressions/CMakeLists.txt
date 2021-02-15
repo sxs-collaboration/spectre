@@ -10,6 +10,7 @@ spectre_target_headers(
   Evaluate.hpp
   LhsTensorSymmAndIndices.hpp
   Product.hpp
+  NumberAsExpression.hpp
   TensorAsExpression.hpp
   TensorExpression.hpp
   )

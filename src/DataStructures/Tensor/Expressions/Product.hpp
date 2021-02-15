@@ -10,6 +10,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
+#include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
@@ -26,6 +27,10 @@ template <typename T1, typename T2, template <typename...> class SymmList1,
           typename... Symm1, template <typename...> class SymmList2,
           typename... Symm2>
 struct OuterProductType<T1, T2, SymmList1<Symm1...>, SymmList2<Symm2...>> {
+  using type =
+      std::conditional_t<std::is_same<typename T1::type, DataVector>::value or
+                             std::is_same<typename T2::type, DataVector>::value,
+                         DataVector, double>;
   using symmetry =
       Symmetry<(Symm1::value + sizeof...(Symm2))..., Symm2::value...>;
   using index_list =
@@ -56,14 +61,16 @@ template <typename T1, typename T2, template <typename...> class IndexList1,
 struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
                     ArgsList1<Args1...>, ArgsList2<Args2...>>
     : public TensorExpression<
-          OuterProduct<T1, T2>, typename T1::type,
+          OuterProduct<T1, T2>, typename detail::OuterProductType<T1, T2>::type,
           typename detail::OuterProductType<T1, T2>::symmetry,
           typename detail::OuterProductType<T1, T2>::index_list,
           typename detail::OuterProductType<T1, T2>::tensorindex_list> {
-  static_assert(std::is_same<typename T1::type, typename T2::type>::value,
+  static_assert(std::is_same<typename T1::type, typename T2::type>::value or
+                    std::is_same<T1, NumberAsExpression>::value or
+                    std::is_same<T2, NumberAsExpression>::value,
                 "Cannot product Tensors holding different data types.");
 
-  using type = typename T1::type;
+  using type = typename detail::OuterProductType<T1, T2>::type;
   using symmetry = typename detail::OuterProductType<T1, T2>::symmetry;
   using index_list = typename detail::OuterProductType<T1, T2>::index_list;
   using args_list = typename detail::OuterProductType<T1, T2>::tensorindex_list;
@@ -233,3 +240,34 @@ SPECTRE_ALWAYS_INLINE auto operator*(
   return TensorExpressions::contract(
       TensorExpressions::OuterProduct<T1, T2>(~t1, ~t2));
 }
+
+// @{
+/// \ingroup TensorExpressionsGroup
+/// \brief Returns the tensor expression representing the product of a tensor
+/// expression and a `double`
+///
+/// \tparam T the derived TensorExpression type of the tensor expression operand
+/// of the product
+/// \tparam X the type of data stored in the tensor expression operand of the
+/// product
+/// \tparam ArgsList the TensorIndexs of the tensor expression operand of the
+/// product
+/// \param t the tensor expression operand of the product
+/// \param number the `double` operand of the product
+/// \return the tensor expression representing the product of a tensor
+/// expression and a `double`
+template <typename T, typename X, typename ArgsList>
+SPECTRE_ALWAYS_INLINE auto operator*(
+    const TensorExpression<T, X, typename T::symmetry, typename T::index_list,
+                           ArgsList>& t,
+    const double number) {
+  return t * TensorExpressions::NumberAsExpression(number);
+}
+template <typename T, typename X, typename ArgsList>
+SPECTRE_ALWAYS_INLINE auto operator*(
+    const double number,
+    const TensorExpression<T, X, typename T::symmetry, typename T::index_list,
+                           ArgsList>& t) {
+  return TensorExpressions::NumberAsExpression(number) * t;
+}
+// @}
