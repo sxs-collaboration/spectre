@@ -21,7 +21,7 @@ namespace Parallel {
  * \brief Number of processing elements.
  */
 template <typename DistribObject>
-int number_of_procs(const DistribObject& distributed_object) {
+int number_of_procs(const DistribObject& distributed_object) noexcept {
   return distributed_object.number_of_procs();
 }
 
@@ -30,7 +30,7 @@ int number_of_procs(const DistribObject& distributed_object) {
  * \brief %Index of my processing element.
  */
 template <typename DistribObject>
-int my_proc(const DistribObject& distributed_object) {
+int my_proc(const DistribObject& distributed_object) noexcept {
   return distributed_object.my_proc();
 }
 
@@ -39,7 +39,7 @@ int my_proc(const DistribObject& distributed_object) {
  * \brief Number of nodes.
  */
 template <typename DistribObject>
-int number_of_nodes(const DistribObject& distributed_object) {
+int number_of_nodes(const DistribObject& distributed_object) noexcept {
   return distributed_object.number_of_nodes();
 }
 
@@ -48,7 +48,7 @@ int number_of_nodes(const DistribObject& distributed_object) {
   * \brief %Index of my node.
   */
 template <typename DistribObject>
-int my_node(const DistribObject& distributed_object) {
+int my_node(const DistribObject& distributed_object) noexcept {
   return distributed_object.my_node();
 }
 
@@ -58,7 +58,7 @@ int my_node(const DistribObject& distributed_object) {
  */
 template <typename DistribObject>
 int procs_on_node(const int node_index,
-                  const DistribObject& distributed_object) {
+                  const DistribObject& distributed_object) noexcept {
   return distributed_object.procs_on_node(node_index);
 }
 
@@ -68,7 +68,7 @@ int procs_on_node(const int node_index,
  * This is in the interval 0, ..., procs_on_node(my_node()) - 1.
  */
 template <typename DistribObject>
-int my_local_rank(const DistribObject& distributed_object) {
+int my_local_rank(const DistribObject& distributed_object) noexcept {
   return distributed_object.my_local_rank();
 }
 
@@ -78,7 +78,7 @@ int my_local_rank(const DistribObject& distributed_object) {
  */
 template <typename DistribObject>
 int first_proc_on_node(const int node_index,
-                       const DistribObject& distributed_object) {
+                       const DistribObject& distributed_object) noexcept {
   return distributed_object.first_proc_on_node(node_index);
 }
 
@@ -87,7 +87,8 @@ int first_proc_on_node(const int node_index,
  * \brief %Index of the node for the given processing element.
  */
 template <typename DistribObject>
-int node_of(const int proc_index, const DistribObject& distributed_object) {
+int node_of(const int proc_index,
+            const DistribObject& distributed_object) noexcept {
   return distributed_object.node_of(proc_index);
 }
 
@@ -97,7 +98,7 @@ int node_of(const int proc_index, const DistribObject& distributed_object) {
  */
 template <typename DistribObject>
 int local_rank_of(const int proc_index,
-                  const DistribObject& distributed_object) {
+                  const DistribObject& distributed_object) noexcept {
   return distributed_object.local_rank_of(proc_index);
 }
 

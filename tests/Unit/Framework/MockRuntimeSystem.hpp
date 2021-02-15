@@ -140,30 +140,38 @@ class MockRuntimeSystem {
       const std::vector<size_t>& number_of_mock_cores_on_each_mock_node = {1})
       : mock_global_cores_(
             [&number_of_mock_cores_on_each_mock_node]() noexcept {
-              std::vector<std::vector<size_t>> mock_global_cores{};
+              std::unordered_map<NodeId,
+                                 std::unordered_map<LocalCoreId, GlobalCoreId>>
+                  mock_global_cores{};
               size_t global_core = 0;
-              for (auto num_cores_on_this_node :
-                   number_of_mock_cores_on_each_mock_node) {
-                std::vector<size_t> global_cores(num_cores_on_this_node);
-                std::iota(global_cores.begin(), global_cores.end(),
-                          global_core);
-                mock_global_cores.emplace_back(std::move(global_cores));
-                global_core += num_cores_on_this_node;
+              for (size_t node = 0;
+                   node < number_of_mock_cores_on_each_mock_node.size();
+                   ++node) {
+                std::unordered_map<LocalCoreId, GlobalCoreId> global_cores;
+                for (size_t local_core = 0;
+                     local_core < number_of_mock_cores_on_each_mock_node[node];
+                     ++local_core, ++global_core) {
+                  global_cores.insert(
+                      {LocalCoreId{local_core}, GlobalCoreId{global_core}});
+                }
+                mock_global_cores.insert({NodeId{node}, global_cores});
               }
               return mock_global_cores;
             }()),
         mock_nodes_and_local_cores_(
             [&number_of_mock_cores_on_each_mock_node]() noexcept {
-              std::vector<std::pair<size_t, size_t>>
+              std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
                   mock_nodes_and_local_cores{};
+              size_t global_core = 0;
               for (size_t node = 0;
                    node < number_of_mock_cores_on_each_mock_node.size();
                    ++node) {
                 for (size_t local_core = 0;
                      local_core < number_of_mock_cores_on_each_mock_node[node];
-                     ++local_core) {
-                  mock_nodes_and_local_cores.emplace_back(
-                      std::make_pair(node, local_core));
+                     ++local_core, ++global_core) {
+                  mock_nodes_and_local_cores.insert(
+                      {GlobalCoreId{global_core},
+                       std::make_pair(NodeId{node}, LocalCoreId{local_core})});
                 }
               }
               return mock_nodes_and_local_cores;
@@ -171,30 +179,33 @@ class MockRuntimeSystem {
         mutable_caches_(mock_nodes_and_local_cores_.size()),
         caches_(mock_nodes_and_local_cores_.size()) {
     // Fill the parallel components in each cache.  There is one cache
-    // per mock core.  The parallel components on each cache (i.e. the
+    // per mock core.  The parallel components held in each cache (i.e. the
     // MockProxies) are filled with the same GlobalCache data, and are
     // passed the mock node and mock core associated with that cache.
-    // The actual chares on each cache are emplaced by the user explicitly
+    // The actual chares held in each cache are emplaced by the user explicitly
     // on a chosen node and core, via `emplace_component`.
-    for (const auto& node_and_core : mock_nodes_and_local_cores_) {
-      const size_t global_core =
-          mock_global_cores_.at(node_and_core.first).at(node_and_core.second);
+    for (const auto& [global_core_id, node_and_local_core] :
+         mock_nodes_and_local_cores_) {
+      const size_t global_core = global_core_id.value;
       mutable_caches_.at(global_core) =
-                std::make_unique<Parallel::MutableGlobalCache<Metavariables>>(
-                    serialize_and_deserialize(mutable_cache_contents));
+          std::make_unique<Parallel::MutableGlobalCache<Metavariables>>(
+              serialize_and_deserialize(mutable_cache_contents));
       caches_.at(global_core) = std::make_unique<GlobalCache>(
           serialize_and_deserialize(cache_contents),
           mutable_caches_.at(global_core).get());
+      // Note that lambdas cannot capture structured bindings,
+      // so we define node and local_core here.
+      const auto& node = node_and_local_core.first.value;
+      const auto& local_core = node_and_local_core.second.value;
       tmpl::for_each<typename Metavariables::component_list>(
-          [this, &global_core, &node_and_core](auto component) {
+          [this, &global_core, &node, &local_core](auto component) {
             using Component = tmpl::type_from<decltype(component)>;
             Parallel::get_parallel_component<Component>(
                 *caches_.at(global_core))
                 .set_data(&tuples::get<MockDistributedObjectsTag<Component>>(
                               mock_distributed_objects_),
                           &tuples::get<InboxesTag<Component>>(inboxes_),
-                          node_and_core.first, node_and_core.second,
-                          global_core);
+                          node, local_core, global_core);
           });
     }
   }
@@ -223,9 +234,7 @@ class MockRuntimeSystem {
         MockDistributedObject<Component>(
             node_id, local_core_id, mock_global_cores_,
             mock_nodes_and_local_cores_, array_index,
-            caches_
-                .at(mock_global_cores_.at(node_id.value)
-                        .at(local_core_id.value))
+            caches_.at(mock_global_cores_.at(node_id).at(local_core_id).value)
                 .get(),
             // Next line inserts element into inboxes_ and returns ptr to it.
             &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
@@ -247,9 +256,7 @@ class MockRuntimeSystem {
         MockDistributedObject<Component>(
             node_id, local_core_id, mock_global_cores_,
             mock_nodes_and_local_cores_, array_index,
-            caches_
-                .at(mock_global_cores_.at(node_id.value)
-                        .at(local_core_id.value))
+            caches_.at(mock_global_cores_.at(node_id).at(local_core_id).value)
                 .get(),
             // Next line inserts element into inboxes_ and returns ptr to it.
             &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
@@ -263,14 +270,14 @@ class MockRuntimeSystem {
         std::is_same_v<typename Component::chare_type, MockGroupChare>,
         "emplace_group_component expects a MockGroupChare");
     // Emplace once for each core, index by global_core.
-    for (const auto& node_core_pair : mock_nodes_and_local_cores_) {
-      const size_t global_core =
-          mock_global_cores_.at(node_core_pair.first).at(node_core_pair.second);
+    for (const auto& [global_core_id, node_and_local_core] :
+         mock_nodes_and_local_cores_) {
+      const size_t global_core = global_core_id.value;
       const typename Component::array_index array_index = global_core;
       mock_distributed_objects<Component>().emplace(
           array_index,
           MockDistributedObject<Component>(
-              NodeId{node_core_pair.first}, LocalCoreId{node_core_pair.second},
+              node_and_local_core.first, node_and_local_core.second,
               mock_global_cores_, mock_nodes_and_local_cores_, array_index,
               caches_.at(global_core).get(),
               // Next line inserts element into inboxes_ and returns ptr to it.
@@ -286,14 +293,15 @@ class MockRuntimeSystem {
         std::is_same_v<typename Component::chare_type, MockNodeGroupChare>,
         "emplace_nodegroup_component expects a MockNodeGroupChare");
     // Emplace once for each node, index by node number.
-    for (size_t node = 0; node < mock_global_cores_.size(); ++node) {
-      const typename Component::array_index array_index = node;
+    for (const auto& [node, local_and_global_cores] : mock_global_cores_) {
+      const typename Component::array_index array_index = node.value;
       // Use first proc on each node as global_core
-      const size_t global_core = mock_global_cores_.at(node).front();
+      const size_t global_core =
+          local_and_global_cores.at(LocalCoreId{0}).value;
       mock_distributed_objects<Component>().emplace(
           array_index,
           MockDistributedObject<Component>(
-              NodeId{node}, LocalCoreId{0}, mock_global_cores_,
+              node, LocalCoreId{0}, mock_global_cores_,
               mock_nodes_and_local_cores_, array_index,
               caches_.at(global_core).get(),
               // Next line inserts element into inboxes_ and returns ptr to it.
@@ -323,25 +331,26 @@ class MockRuntimeSystem {
       Options&&... opts) noexcept {
     detail::get_initialization<Component>::initialize_databox_action::
         set_initial_values(initial_values);
-    auto iterator_bool = mock_distributed_objects<Component>().emplace(
-        array_index,
-        MockDistributedObject<Component>(
-            node_id, local_core_id, mock_global_cores_,
-            mock_nodes_and_local_cores_, array_index,
-            caches_
-                .at(mock_global_cores_.at(node_id.value)
-                        .at(local_core_id.value))
-                .get(),
-            // Next line inserts element into inboxes_ and returns ptr to it.
-            &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
-            std::forward<Options>(opts)...));
-    if (not iterator_bool.second) {
+    auto [iterator, emplace_was_successful] =
+        mock_distributed_objects<Component>().emplace(
+            array_index,
+            MockDistributedObject<Component>(
+                node_id, local_core_id, mock_global_cores_,
+                mock_nodes_and_local_cores_, array_index,
+                caches_
+                    .at(mock_global_cores_.at(node_id).at(local_core_id).value)
+                    .get(),
+                // Next line inserts element into inboxes_ and returns ptr to
+                // it.
+                &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
+                std::forward<Options>(opts)...));
+    if (not emplace_was_successful) {
       ERROR("Failed to insert parallel component '"
             << pretty_type::get_name<Component>() << "' with index "
             << array_index);
     }
-    iterator_bool.first->second.set_phase(Metavariables::Phase::Initialization);
-    iterator_bool.first->second.next_action();
+    iterator->second.set_phase(Metavariables::Phase::Initialization);
+    iterator->second.next_action();
   }
 
   /// Emplace a singleton component that needs to be initialized.
@@ -359,25 +368,26 @@ class MockRuntimeSystem {
     const typename Component::array_index& array_index{0};
     detail::get_initialization<Component>::initialize_databox_action::
         set_initial_values(initial_values);
-    auto iterator_bool = mock_distributed_objects<Component>().emplace(
-        array_index,
-        MockDistributedObject<Component>(
-            node_id, local_core_id, mock_global_cores_,
-            mock_nodes_and_local_cores_, array_index,
-            caches_
-                .at(mock_global_cores_.at(node_id.value)
-                        .at(local_core_id.value))
-                .get(),
-            // Next line inserts element into inboxes_ and returns ptr to it.
-            &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
-            std::forward<Options>(opts)...));
-    if (not iterator_bool.second) {
+    auto [iterator, emplace_was_successful] =
+        mock_distributed_objects<Component>().emplace(
+            array_index,
+            MockDistributedObject<Component>(
+                node_id, local_core_id, mock_global_cores_,
+                mock_nodes_and_local_cores_, array_index,
+                caches_
+                    .at(mock_global_cores_.at(node_id).at(local_core_id).value)
+                    .get(),
+                // Next line inserts element into inboxes_ and returns ptr to
+                // it.
+                &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
+                std::forward<Options>(opts)...));
+    if (not emplace_was_successful) {
       ERROR("Failed to insert parallel component '"
             << pretty_type::get_name<Component>() << "' with index "
             << array_index);
     }
-    iterator_bool.first->second.set_phase(Metavariables::Phase::Initialization);
-    iterator_bool.first->second.next_action();
+    iterator->second.set_phase(Metavariables::Phase::Initialization);
+    iterator->second.next_action();
   }
 
   /// Emplace a group component that needs to be initialized.
@@ -390,31 +400,32 @@ class MockRuntimeSystem {
         std::is_same_v<typename Component::chare_type, MockGroupChare>,
         "emplace_group_component_and_initialize expects a MockGroupChare");
     // Emplace once for each core, index by global_core.
-    for (const auto& node_core_pair : mock_nodes_and_local_cores_) {
+    for (const auto& [global_core_id, node_and_local_core] :
+         mock_nodes_and_local_cores_) {
       // Need to set initial values for each component, since the
       // InitialDataBox action does a std::move.
       detail::get_initialization<Component>::initialize_databox_action::
           set_initial_values(initial_values);
-      const size_t global_core =
-          mock_global_cores_.at(node_core_pair.first).at(node_core_pair.second);
+      const size_t global_core = global_core_id.value;
       const typename Component::array_index array_index = global_core;
-      auto iterator_bool = mock_distributed_objects<Component>().emplace(
-          array_index,
-          MockDistributedObject<Component>(
-              NodeId{node_core_pair.first}, LocalCoreId{node_core_pair.second},
-              mock_global_cores_, mock_nodes_and_local_cores_, array_index,
-              caches_.at(global_core).get(),
-              // Next line inserts element into inboxes_ and returns ptr to it.
-              &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
-              std::forward<Options>(opts)...));
-      if (not iterator_bool.second) {
+      auto [iterator, emplace_was_successful] =
+          mock_distributed_objects<Component>().emplace(
+              array_index,
+              MockDistributedObject<Component>(
+                  node_and_local_core.first, node_and_local_core.second,
+                  mock_global_cores_, mock_nodes_and_local_cores_, array_index,
+                  caches_.at(global_core).get(),
+                  // Next line inserts element into inboxes_ and returns ptr to
+                  // it.
+                  &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
+                  std::forward<Options>(opts)...));
+      if (not emplace_was_successful) {
         ERROR("Failed to insert parallel component '"
               << pretty_type::get_name<Component>() << "' with index "
               << array_index);
       }
-      iterator_bool.first->second.set_phase(
-          Metavariables::Phase::Initialization);
-      iterator_bool.first->second.next_action();
+      iterator->second.set_phase(Metavariables::Phase::Initialization);
+      iterator->second.next_action();
     }
   }
 
@@ -429,33 +440,35 @@ class MockRuntimeSystem {
         "emplace_nodegroup_component_and_initialize expects a "
         "MockNodeGroupChare");
     // Emplace once for each node, index by node number.
-    for (size_t node = 0; node < mock_global_cores_.size(); ++node) {
+    for (const auto& [node, local_and_global_cores] : mock_global_cores_) {
       // Need to set initial values for each component, since the
       // InitialDataBox action does a std::move.
       detail::get_initialization<Component>::initialize_databox_action::
           set_initial_values(initial_values);
-      const typename Component::array_index array_index = node;
+      const typename Component::array_index array_index = node.value;
       // Use first proc on each node as global_core
-      const size_t global_core = mock_global_cores_.at(node).front();
-      auto iterator_bool = mock_distributed_objects<Component>().emplace(
-          array_index,
-          MockDistributedObject<Component>(
-              NodeId{node}, LocalCoreId{0}, mock_global_cores_,
-              mock_nodes_and_local_cores_, array_index,
-              caches_.at(global_core).get(),
-              // Next line inserts element into inboxes_ and returns ptr to it.
-              &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
-              std::forward<Options>(opts)...));
-      if (not iterator_bool.second) {
+      const size_t global_core =
+          local_and_global_cores.at(LocalCoreId{0}).value;
+      auto [iterator, emplace_was_successful] =
+          mock_distributed_objects<Component>().emplace(
+              array_index,
+              MockDistributedObject<Component>(
+                  node, LocalCoreId{0}, mock_global_cores_,
+                  mock_nodes_and_local_cores_, array_index,
+                  caches_.at(global_core).get(),
+                  // Next line inserts element into inboxes_ and returns ptr to
+                  // it.
+                  &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
+                  std::forward<Options>(opts)...));
+      if (not emplace_was_successful) {
         ERROR("Failed to insert parallel component '"
               << pretty_type::get_name<Component>() << "' with index "
               << array_index);
       }
-      iterator_bool.first->second.set_phase(
-          Metavariables::Phase::Initialization);
-      iterator_bool.first->second.next_action();
+      iterator->second.set_phase(Metavariables::Phase::Initialization);
+      iterator->second.next_action();
     }
-  }
+    }
 
   /// Emplace a component that needs to be initialized.
   /// emplace_component_and_initialize is deprecated in favor of
@@ -682,8 +695,7 @@ class MockRuntimeSystem {
 
   GlobalCache& cache(const NodeId node_id,
                      const LocalCoreId local_core_id) noexcept {
-    return *caches_.at(
-        mock_global_cores_.at(node_id.value).at(local_core_id.value));
+    return *caches_.at(mock_global_cores_.at(node_id).at(local_core_id).value);
   }
 
   GlobalCache& cache() noexcept { return cache(NodeId{0}, LocalCoreId{0}); }
@@ -700,10 +712,10 @@ class MockRuntimeSystem {
   }
 
  private:
-  // mock_global_cores[node][local_core] is the global_core.
-  std::vector<std::vector<size_t>> mock_global_cores_{};
-  // mock_nodes_and_local_cores_[global_core] is the pair node,local_core.
-  std::vector<std::pair<size_t, size_t>> mock_nodes_and_local_cores_{};
+  std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>
+      mock_global_cores_{};
+  std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
+      mock_nodes_and_local_cores_{};
   // There is one MutableGlobalCache and one GlobalCache per
   // global_core.  We need to keep a vector of unique_ptrs rather than
   // a vector of objects because MutableGlobalCache and GlobalCache

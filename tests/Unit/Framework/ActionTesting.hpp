@@ -567,16 +567,10 @@ class MockCollectionOfDistributedObjectsProxy {
     }
   }
 
-  // ckLocal_enabled is used by Parallel/Invoke.hpp to allow or
-  // prevent compilation of ckLocal (the idea is to prevent
-  // compilation in cases where it will static_assert).
-  // ckLocal_enabled can be eliminated if we replace the static_assert
-  // in ckLocal() by an 'if constexpr' that returns nullptr when
-  // ChareType is not a singleton, but that comes at the expense of a
-  // compile-time check.
-  using ckLocal_enabled = std::is_same<ChareType, MockSingletonChare>;
-
   // ckLocal should be called only on a singleton.
+  template <typename U = ChareType,
+            typename = Requires<std::is_same_v<U, ChareType> and
+                                std::is_same_v<U, MockSingletonChare>>>
   MockDistributedObject<Component>* ckLocal() noexcept {
     static_assert(std::is_same_v<ChareType, MockSingletonChare>,
                   "Do not call ckLocal for other than a Singleton");
@@ -643,7 +637,7 @@ class MockCollectionOfDistributedObjectsProxy {
   // mock_node_, mock_local_core_, and mock_global_core_ are the
   // (mock) node and core that the
   // MockCollectionOfDistributedObjectsProxy lives on.  This is
-  // different than the (mock) nodes and cores that each element ofthe
+  // different than the (mock) nodes and cores that each element of the
   // referred-to CollectionOfMockDistributedObjects lives on.
   size_t mock_node_{0};
   size_t mock_local_core_{0};
