@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "DataStructures/BoostMultiArray.hpp" // IWYU pragma: keep
+#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
@@ -37,7 +37,7 @@ void test_tabulated(const std::string& file_path,
   // The group /sample_data has the additional dataset "test_data" which
   // is read to verify that we are not in "/"
   if (subgroup_path != "/") {
-     CHECK(sample_data.get_scalar_dataset<double>("test_data") == 317);
+    CHECK(sample_data.get_scalar_dataset<double>("test_data") == 317);
   }
 
   CHECK(sample_data.get_scalar_dataset<double>("energy_shift") == 317);
@@ -347,8 +347,9 @@ void test_tabulated(const std::string& file_path,
 }
 
 SPECTRE_TEST_CASE("Unit.IO.H5.StellarCollapseEos", "[Unit][IO][H5]") {
-  test_tabulated(unit_test_path() + "/IO/StellarCollapse2017Sample.h5", "/");
-  test_tabulated(unit_test_path() + "/IO/StellarCollapse2017Sample.h5",
+  test_tabulated(unit_test_src_path() + "/IO/StellarCollapse2017Sample.h5",
+                 "/");
+  test_tabulated(unit_test_src_path() + "/IO/StellarCollapse2017Sample.h5",
                  "/sample_data");
 }
 }  // namespace

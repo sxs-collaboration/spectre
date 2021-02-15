@@ -16,7 +16,7 @@ class TestVolumeDataWriting(unittest.TestCase):
     def setUp(self):
         # The tests in this class involve inserting vol files, the h5 file
         # will be deleted and recreated for each test
-        self.file_name = os.path.join(Informer.unit_test_path(),
+        self.file_name = os.path.join(Informer.unit_test_build_path(),
                                       "IO/TestVolumeDataWriting.h5")
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
@@ -46,7 +46,7 @@ class TestVolumeData(unittest.TestCase):
     def setUp(self):
         # The tests in this class use a volume data file written using
         # the write_volume_data() function
-        self.file_name = os.path.join(Informer.unit_test_path(),
+        self.file_name = os.path.join(Informer.unit_test_build_path(),
                                       "IO/TestVolumeData.h5")
 
         if os.path.isfile(self.file_name):

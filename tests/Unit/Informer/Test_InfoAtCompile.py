@@ -15,10 +15,13 @@ class TestInformer(unittest.TestCase):
     def test_spectre_version(self):
         self.assertRegex(Informer.spectre_version(), VERSION_PATTERN)
 
-    # The unit test path is unpredictable, but the last 12 characters must be
-    # '/tests/Unit/'
-    def test_unit_test_path(self):
-        self.assertEqual(Informer.unit_test_path()[-12:], '/tests/Unit/')
+    # The unit test src path and unit test build path are unpredictable,
+    # but the last 12 characters must be '/tests/Unit/'
+    def test_unit_test_src_path(self):
+        self.assertEqual(Informer.unit_test_src_path()[-12:], '/tests/Unit/')
+
+    def test_unit_test_build_path(self):
+        self.assertEqual(Informer.unit_test_build_path()[-12:], '/tests/Unit/')
 
 
 if __name__ == '__main__':

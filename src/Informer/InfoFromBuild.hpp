@@ -41,4 +41,10 @@ std::string spectre_version();
  * \ingroup LoggingGroup
  * \brief Returns the path to the Unit test directory.
  */
-std::string unit_test_path() noexcept;
+std::string unit_test_src_path() noexcept;
+
+/*!
+ * \ingroup LoggingGroup
+ * \brief Returns the path to the Unit test directory in the build directory.
+ */
+std::string unit_test_build_path() noexcept;
