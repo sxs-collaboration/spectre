@@ -16,7 +16,6 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Deferred.hpp"
 #include "DataStructures/DataBox/Item.hpp"
 #include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
@@ -82,46 +81,6 @@ constexpr bool tag_is_retrievable_v =
 // @}
 
 namespace detail {
-template <class Tag, class Type>
-class DataBoxLeaf {
-  using value_type = Deferred<Type>;
-  value_type value_;
-
- public:
-  constexpr DataBoxLeaf() noexcept(
-      std::is_nothrow_default_constructible_v<value_type>)
-      : value_() {
-    static_assert(!std::is_reference_v<value_type>,
-                  "Cannot default construct a reference element in a "
-                  "DataBox");
-  }
-
-  constexpr DataBoxLeaf(DataBoxLeaf const& /*rhs*/) = default;
-  constexpr DataBoxLeaf(DataBoxLeaf&& /*rhs*/) = default;
-  constexpr DataBoxLeaf& operator=(DataBoxLeaf const& rhs) noexcept(
-      noexcept(value_ = rhs.value_)) {
-    if (this != &rhs) {
-      value_ = rhs.value_;
-    }
-    return *this;
-  }
-  constexpr DataBoxLeaf& operator=(DataBoxLeaf&& rhs) noexcept(
-      noexcept(value_ = std::move(rhs.value_))) {
-    if (this != &rhs) {
-      value_ = std::move(rhs.value_);
-    }
-    return *this;
-  }
-
-  ~DataBoxLeaf() = default;
-
-  constexpr value_type& get() noexcept { return value_; }
-  constexpr const value_type& get() const noexcept { return value_; }
-
-  // clang-tidy: runtime-references
-  void pup(PUP::er& p) { p | value_; }  // NOLINT
-};
-
 template <typename Tag>
 using has_subitems =
     tmpl::not_<std::is_same<typename Subitems<Tag>::type, tmpl::list<>>>;
@@ -348,47 +307,7 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
     return static_cast<detail::Item<Tag>&>(*this);
   }
 
-  /*!
-   * \requires Type `T` is one of the Tags corresponding to an object stored in
-   * the DataBox
-   *
-   * \note This should not be used outside of implementation details
-   *
-   * @return The lazy object corresponding to the Tag `T`
-   */
-  template <typename T>
-  const Deferred<detail::storage_type<T, tags_list>>& get_deferred() const
-      noexcept {
-    return static_cast<const detail::DataBoxLeaf<
-        T, detail::storage_type<T, tags_list>>&>(*this)
-        .get();
-  }
-
-  template <typename T>
-  Deferred<detail::storage_type<T, tags_list>>& get_deferred() noexcept {
-    return static_cast<
-               detail::DataBoxLeaf<T, detail::storage_type<T, tags_list>>&>(
-               *this)
-        .get();
-  }
-
   // Adding compute items
-  template <typename ParentTag>
-  SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
-      tmpl::list<> /*meta*/, std::false_type /*meta*/) noexcept {}
-  template <typename ParentTag>
-  SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
-      tmpl::list<> /*meta*/, std::true_type /*meta*/) noexcept {}
-
-  template <typename ParentTag, typename... Subtags>
-  SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
-      tmpl::list<Subtags...> /*meta*/,
-      std::false_type /*has_return_type_member*/) noexcept;
-  template <typename ParentTag, typename... Subtags>
-  SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
-      tmpl::list<Subtags...> /*meta*/,
-      std::true_type /*has_return_type_member*/) noexcept;
-
   template <typename ComputeItem, typename FullTagList, bool CheckArgs,
             typename... ComputeItemArgumentsTags>
   constexpr void add_compute_item_to_box_impl(
@@ -467,38 +386,6 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
 // Adding compute items
 namespace detail {
-template <bool IsMutating>
-struct compute_item_function_impl;
-
-template <>
-struct compute_item_function_impl<false> {
-  template <typename FullTagList, typename ComputeItem,
-            typename... ComputeItemArgumentsTags>
-  static decltype(auto) apply(
-      const storage_type<ComputeItemArgumentsTags,
-                         FullTagList>&... args) noexcept {
-    return ComputeItem::get(convert_to_const_type(args)...);
-  }
-};
-
-template <>
-struct compute_item_function_impl<true> {
-  template <typename FullTagList, typename ComputeItem,
-            typename... ComputeItemArgumentsTags>
-  static decltype(auto) apply(
-      const gsl::not_null<storage_type<ComputeItem, FullTagList>*> ret,
-      const storage_type<ComputeItemArgumentsTags,
-                         FullTagList>&... args) noexcept {
-    return ComputeItem::function(ret, convert_to_const_type(args)...);
-  }
-};
-
-template <typename FullTagList, typename ComputeItem,
-          typename... ComputeItemArgumentsTags>
-constexpr auto compute_item_function =
-    &compute_item_function_impl<has_return_type_member_v<ComputeItem>>::
-        template apply<FullTagList, ComputeItem, ComputeItemArgumentsTags...>;
-
 template <bool IsComputeTag>
 struct get_argument_list_impl {
   template <class Tag>
@@ -516,43 +403,7 @@ struct get_argument_list_impl<true> {
 template <class Tag>
 using get_argument_list = typename get_argument_list_impl<
     ::db::is_immutable_item_tag_v<Tag>>::template f<Tag>;
-}  // namespace detail
 
-template <typename... Tags>
-template <typename ParentTag, typename... Subtags>
-SPECTRE_ALWAYS_INLINE constexpr void
-DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
-    tmpl::list<Subtags...> /*meta*/,
-    std::false_type /*has_return_type_member*/) noexcept {
-  const auto helper = [lazy_function = get_deferred<ParentTag>()](
-                          auto tag) noexcept->decltype(auto) {
-    return Subitems<ParentTag>::template create_compute_item<decltype(tag)>(
-        lazy_function.get());
-  };
-  EXPAND_PACK_LEFT_TO_RIGHT(
-      (get_deferred<Subtags>() =
-           make_deferred_for_subitem<decltype(helper(Subtags{}))>(helper,
-                                                                  Subtags{})));
-}
-
-template <typename... Tags>
-template <typename ParentTag, typename... Subtags>
-SPECTRE_ALWAYS_INLINE constexpr void
-DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
-    tmpl::list<Subtags...> /*meta*/,
-    std::true_type /*has_return_type_member*/) noexcept {
-  const auto helper = [lazy_function = get_deferred<ParentTag>()](
-      const auto result, auto tag) noexcept {
-    Subitems<ParentTag>::template create_compute_item<decltype(tag)>(
-        result, lazy_function.get());
-  };
-  EXPAND_PACK_LEFT_TO_RIGHT(
-      (get_deferred<Subtags>() = make_deferred_for_subitem<
-           detail::storage_type<Subtags, tmpl::list<Tags...>>>(helper,
-                                                               Subtags{})));
-}
-
-namespace detail {
 // This function exists so that the user can look at the template
 // arguments to find out what triggered the static_assert.
 template <typename ComputeItem, typename Argument, typename FullTagList>
@@ -989,20 +840,6 @@ using RemoveTags = tmpl::flatten<tmpl::list<Tags...>>;
  */
 template <typename... Tags>
 using AddSimpleTags = tmpl::flatten<tmpl::list<Tags...>>;
-
-/*!
- * \ingroup DataBoxGroup
- * \brief List of Tags to mutate in the DataBox
- */
-template <typename... Tags>
-using MutateTags = tmpl::flatten<tmpl::list<Tags...>>;
-
-/*!
- * \ingroup DataBoxGroup
- * \brief List of Tags to get from the DataBox to be used as arguments
- */
-template <typename... Tags>
-using ArgumentTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
