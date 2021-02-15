@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -48,21 +49,24 @@ void test_compute_tags(const DataVector& used_for_size) noexcept {
   using energy_tag = Elasticity::Tags::PotentialEnergyDensity<Dim>;
   using energy_compute_tag =
       Elasticity::Tags::PotentialEnergyDensityCompute<Dim>;
-  using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<
-      Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>;
+  using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<Dim>;
   using coordinates_tag = domain::Tags::Coordinates<Dim, Frame::Inertial>;
   TestHelpers::db::test_compute_tag<energy_compute_tag>(
       "PotentialEnergyDensity");
   const size_t num_points = used_for_size.size();
   {
     INFO("Energy");
+    std::unique_ptr<
+        Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>
+        constitutive_relation = std::make_unique<
+            Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(3.,
+                                                                          4.);
     const auto box =
         db::create<db::AddSimpleTags<strain_tag, constitutive_relation_tag,
                                      coordinates_tag>,
                    db::AddComputeTags<energy_compute_tag>>(
             tnsr::ii<DataVector, Dim>{num_points, 1.},
-            Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>{3.,
-                                                                         4.},
+            std::move(constitutive_relation),
             tnsr::I<DataVector, Dim>{num_points, 2.});
 
     const auto expected_energy = Elasticity::potential_energy_density<Dim>(

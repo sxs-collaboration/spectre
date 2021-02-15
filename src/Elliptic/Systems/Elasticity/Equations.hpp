@@ -102,9 +102,9 @@ void add_curved_auxiliary_sources(
 template <size_t Dim>
 struct Fluxes {
   using argument_tags =
-      tmpl::list<Tags::ConstitutiveRelationBase,
+      tmpl::list<Tags::ConstitutiveRelation<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
-  using volume_tags = tmpl::list<Tags::ConstitutiveRelationBase>;
+  using volume_tags = tmpl::list<Tags::ConstitutiveRelation<Dim>>;
   static void apply(
       gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
       const ConstitutiveRelations::ConstitutiveRelation<Dim>&

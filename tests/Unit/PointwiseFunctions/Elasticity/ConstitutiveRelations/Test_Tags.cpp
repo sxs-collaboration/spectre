@@ -11,48 +11,35 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
 
-namespace Elasticity {
-namespace ConstitutiveRelations {
+namespace Elasticity::ConstitutiveRelations {
 
 namespace {
 struct Provider {
-  using constitutive_relation_type = IsotropicHomogeneous<3>;
-  static constitutive_relation_type constitutive_relation() { return {1., 2.}; }
+  const IsotropicHomogeneous<3>& constitutive_relation() const {
+    return constitutive_relation_;
+  }
+
+ private:
+  IsotropicHomogeneous<3> constitutive_relation_{1., 2.};
 };
 
-struct ProviderOptionTag {
+struct ProviderTag : db::SimpleTag {
   using type = Provider;
-};
-
-struct Metavariables {
-  using constitutive_relation_provider_option_tag = ProviderOptionTag;
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elasticity.ConstitutiveRelations.Tags",
                   "[Unit][Elasticity]") {
-  TestHelpers::db::test_base_tag<Elasticity::Tags::ConstitutiveRelationBase>(
-      "ConstitutiveRelationBase");
-  TestHelpers::db::test_simple_tag<
-      Elasticity::Tags::ConstitutiveRelation<IsotropicHomogeneous<3>>>(
+  TestHelpers::db::test_simple_tag<Tags::ConstitutiveRelation<3>>(
       "ConstitutiveRelation");
-  {
-    INFO("Constitutive relation from provider option");
-    // Fake some output of option-parsing
-    const tuples::TaggedTuple<ProviderOptionTag> options{Provider{}};
-    // Dispatch the `create_from_options` function call that constructs the
-    // constitutive relation from the options.
-    const auto constructed_data = Parallel::create_from_options<Metavariables>(
-        options,
-        tmpl::list<
-            Elasticity::Tags::ConstitutiveRelation<IsotropicHomogeneous<3>>>{});
-    // Since the result is a tagged tuple we can't use base tags to retrieve it
-    const auto& constructed_constitutive_relation = tuples::get<
-        Elasticity::Tags::ConstitutiveRelation<IsotropicHomogeneous<3>>>(
-        constructed_data);
-    CHECK(constructed_constitutive_relation == IsotropicHomogeneous<3>{1., 2.});
-  }
+  CHECK(db::tag_name<Tags::ConstitutiveRelation<3>>() ==
+        "ConstitutiveRelation");
+  const auto box = db::create<
+      db::AddSimpleTags<ProviderTag>,
+      db::AddComputeTags<Tags::ConstitutiveRelationReference<3, ProviderTag>>>(
+      Provider{});
+  CHECK(&db::get<Tags::ConstitutiveRelation<3>>(box) ==
+        &db::get<ProviderTag>(box).constitutive_relation());
 }
 
-}  // namespace ConstitutiveRelations
-}  // namespace Elasticity
+}  // namespace Elasticity::ConstitutiveRelations

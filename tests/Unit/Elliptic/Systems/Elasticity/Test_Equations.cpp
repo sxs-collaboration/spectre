@@ -94,12 +94,16 @@ void test_computers(const DataVector& used_for_size) {
       ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
   using field_source_tag = ::Tags::Source<field_tag>;
   using auxiliary_source_tag = ::Tags::Source<auxiliary_field_tag>;
-  using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<
-      Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>;
+  using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<Dim>;
   using coordinates_tag = domain::Tags::Coordinates<Dim, Frame::Inertial>;
   const size_t num_points = used_for_size.size();
   {
     INFO("Fluxes" << Dim << "D");
+    std::unique_ptr<
+        Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>
+        constitutive_relation = std::make_unique<
+            Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1.,
+                                                                          2.);
     auto box = db::create<db::AddSimpleTags<
         field_tag, auxiliary_field_tag, field_flux_tag, auxiliary_flux_tag,
         constitutive_relation_tag, coordinates_tag>>(
@@ -109,7 +113,7 @@ void test_computers(const DataVector& used_for_size) {
                                   std::numeric_limits<double>::signaling_NaN()},
         tnsr::Ijj<DataVector, Dim>{
             num_points, std::numeric_limits<double>::signaling_NaN()},
-        Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>{1., 2.},
+        std::move(constitutive_relation),
         tnsr::I<DataVector, Dim>{num_points, 6.});
 
     const Elasticity::Fluxes<Dim> fluxes_computer{};

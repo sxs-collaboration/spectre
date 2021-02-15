@@ -92,12 +92,6 @@ struct Metavariables {
   using analytic_solution = boundary_conditions;
   using analytic_solution_tag = Tags::AnalyticSolution<analytic_solution>;
 
-  // We retrieve the constitutive relation from the analytic solution
-  using constitutive_relation_type =
-      typename analytic_solution::constitutive_relation_type;
-  using constitutive_relation_provider_option_tag =
-      OptionTags::AnalyticSolution<analytic_solution>;
-
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
   using linear_solver =
@@ -147,10 +141,10 @@ struct Metavariables {
       linear_solver_iteration_id>>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tags = tmpl::list<
-      analytic_solution_tag, fluxes_computer_tag, normal_dot_numerical_flux,
-      Elasticity::Tags::ConstitutiveRelation<constitutive_relation_type>,
-      Tags::EventsAndTriggers<events, triggers>>;
+  using const_global_cache_tags =
+      tmpl::list<analytic_solution_tag, fluxes_computer_tag,
+                 normal_dot_numerical_flux,
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags =
@@ -171,6 +165,8 @@ struct Metavariables {
       typename linear_solver::initialize_element,
       elliptic::Actions::InitializeSystem<system>,
       Initialization::Actions::AddComputeTags<tmpl::list<
+          Elasticity::Tags::ConstitutiveRelationReference<
+              volume_dim, analytic_solution_tag>,
           Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
                                                     analytic_solution_fields>,
