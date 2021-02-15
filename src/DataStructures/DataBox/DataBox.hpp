@@ -50,24 +50,6 @@ class DataBox;
 /// \endcond
 
 // @{
-/*!
- * \ingroup TypeTraitsGroup DataBoxGroup
- * \brief Determines if a type `T` is as db::DataBox
- *
- * \effects Inherits from std::true_type if `T` is a specialization of
- * db::DataBox, otherwise inherits from std::false_type
- * \example
- */
-// \snippet Test_DataBox.cpp
-template <typename T>
-struct is_databox : std::false_type {};
-/// \cond HIDDEN_SYMBOLS
-template <typename... Tags>
-struct is_databox<DataBox<tmpl::list<Tags...>>> : std::true_type {};
-/// \endcond
-// @}
-
-// @{
 /// \ingroup DataBoxGroup
 /// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
 /// `DataBoxType`.
@@ -534,9 +516,6 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
       "Must pass in as many (compute) items as there are Tags.");
   DEBUG_STATIC_ASSERT(sizeof...(TagsInArgsOrder) == sizeof...(Args),
                       "Must pass in as many arguments as AddTags");
-  DEBUG_STATIC_ASSERT(
-      not tmpl2::flat_any_v<is_databox<std::decay_t<Args>>::value...>,
-      "Cannot store a DataBox inside a DataBox.");
 #ifdef SPECTRE_DEBUG
   // The check_argument_type call is very expensive compared to the majority of
   // DataBox
