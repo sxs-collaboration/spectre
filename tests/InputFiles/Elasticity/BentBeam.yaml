@@ -33,7 +33,7 @@ DomainCreator:
 
 NumericalFlux:
   InternalPenalty:
-    PenaltyParameter: 20.
+    PenaltyParameter: 1.
 
 Observers:
   VolumeFileName: "ElasticBentBeam2DVolume"
