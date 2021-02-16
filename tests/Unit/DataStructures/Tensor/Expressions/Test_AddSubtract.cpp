@@ -7,13 +7,103 @@
 #include <iterator>
 #include <numeric>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/AddSubtract.hpp"
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/MakeWithValue.hpp"
+
+namespace {
+template <typename... Ts>
+void assign_unique_values_to_tensor(
+    const gsl::not_null<Tensor<double, Ts...>*> tensor) noexcept {
+  std::iota(tensor->begin(), tensor->end(), 0.0);
+}
+
+template <typename... Ts>
+void assign_unique_values_to_tensor(
+    const gsl::not_null<Tensor<DataVector, Ts...>*> tensor) noexcept {
+  double value = 0.0;
+  for (auto index_it = tensor->begin(); index_it != tensor->end(); index_it++) {
+    for (auto vector_it = index_it->begin(); vector_it != index_it->end();
+         vector_it++) {
+      *vector_it = value;
+      value += 1.0;
+    }
+  }
+}
+
+// \brief Test the sum and difference of a `double` and tensor expression is
+// correctly evaluated
+//
+// \details
+// The cases tested are:
+// - \f$L = R + S\f$
+// - \f$L = R - S\f$
+// - \f$L = G^{i}{}_{i} + R\f$
+// - \f$L = G^{i}{}_{i} - R\f$
+// - \f$L = R + S + T\f$
+// - \f$L = R - G^{i}{}_{i} + T\f$
+//
+// where \f$R\f$ and \f$T\f$ are `double`s and \f$S\f$, \f$G\f$, and \f$L\f$
+// are Tensors with data type `double` or DataVector.
+//
+// \tparam DataType the type of data being stored in the tensor expression
+// operand of the sums and differences
+template <typename DataType>
+void test_addsub_double(const DataType& used_for_size) noexcept {
+  Tensor<DataType> S{{{used_for_size}}};
+  if (std::is_same_v<DataType, double>) {
+    // Replace tensor's value from `used_for_size` to a proper test value
+    S.get() = 2.4;
+  } else {
+    assign_unique_values_to_tensor(make_not_null(&S));
+  }
+
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+      G(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&G));
+
+  DataType G_trace = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    G_trace += G.get(i, i);
+  }
+
+  // \f$L = R + S\f$
+  const Tensor<DataType> R_plus_S = TensorExpressions::evaluate(5.6 + S());
+  // \f$L = R - S\f$
+  const Tensor<DataType> R_minus_S = TensorExpressions::evaluate(1.1 - S());
+  // \f$L = G^{i}{}_{i} + R\f$
+  const Tensor<DataType> G_plus_R =
+      TensorExpressions::evaluate(G(ti_I, ti_i) + 8.2);
+  // \f$L = G^{i}{}_{i} - R\f$
+  const Tensor<DataType> G_minus_R =
+      TensorExpressions::evaluate(G(ti_I, ti_i) - 3.5);
+  // \f$L = R + S + T\f$
+  const Tensor<DataType> R_plus_S_plus_T =
+      TensorExpressions::evaluate(0.7 + S() + 9.8);
+  // \f$L = R - G^{i}{}_{i} + T\f$
+  const Tensor<DataType> R_minus_G_plus_T =
+      TensorExpressions::evaluate(5.9 - G(ti_I, ti_i) + 4.7);
+
+  CHECK(R_plus_S.get() == 5.6 + S.get());
+  CHECK(R_minus_S.get() == 1.1 - S.get());
+  CHECK(G_plus_R.get() == G_trace + 8.2);
+  CHECK(G_minus_R.get() == G_trace - 3.5);
+  CHECK(R_plus_S_plus_T.get() == 0.7 + S.get() + 9.8);
+  CHECK(R_minus_G_plus_T.get() == 5.9 - G_trace + 4.7);
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                   "[DataStructures][Unit]") {
+  test_addsub_double(std::numeric_limits<double>::signaling_NaN());
+  test_addsub_double(
+      DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+
   // Test adding scalars
   const Tensor<double> scalar_1{{{2.1}}};
   const Tensor<double> scalar_2{{{-0.8}}};
