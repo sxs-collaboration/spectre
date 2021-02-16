@@ -139,7 +139,8 @@ class RotatedRectangles : public DomainCreator<2> {
       typename InitialRefinement::type initial_refinement_level_xy,
       typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          boundary_condition) noexcept;
+          boundary_condition,
+      const Options::Context& context = {});
 
   RotatedRectangles() = default;
   RotatedRectangles(const RotatedRectangles&) = delete;

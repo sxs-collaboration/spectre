@@ -119,7 +119,8 @@ class Rectangle : public DomainCreator<2> {
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           boundary_condition,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
-          time_dependence);
+          time_dependence,
+      const Options::Context& context = {});
 
   Rectangle() = default;
   Rectangle(const Rectangle&) = delete;

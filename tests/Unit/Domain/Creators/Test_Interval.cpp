@@ -182,6 +182,28 @@ void test_interval() {
             nullptr, Options::Context{false, {}, 1, 1}),
         Catch::Matchers::Contains("Both the upper and lower boundary condition "
                                   "must be set to periodic if"));
+    CHECK_THROWS_WITH(
+        creators::Interval(
+            lower_bound, upper_bound, refinement_level[0], grid_points[0],
+            expected_boundary_conditions[0][Direction<1>::lower_xi()]
+                ->get_clone(),
+            std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                 TestNoneBoundaryCondition<3>>(),
+            nullptr, Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::Contains(
+            "None boundary condition is not supported. If you would like an "
+            "outflow boundary condition, you must use that."));
+    CHECK_THROWS_WITH(
+        creators::Interval(
+            lower_bound, upper_bound, refinement_level[0], grid_points[0],
+            std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                 TestNoneBoundaryCondition<3>>(),
+            expected_boundary_conditions[0][Direction<1>::lower_xi()]
+                ->get_clone(),
+            nullptr, Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::Contains(
+            "None boundary condition is not supported. If you would like an "
+            "outflow boundary condition, you must use that."));
   }
 }
 

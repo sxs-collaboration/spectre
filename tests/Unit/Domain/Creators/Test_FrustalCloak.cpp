@@ -159,6 +159,16 @@ void test_connectivity() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Cannot have periodic boundary conditions with a frustal cloak"));
+  CHECK_THROWS_WITH(
+      domain::creators::FrustalCloak(
+          refinement, grid_points, true, projective_scale_factor,
+          length_inner_cube, length_outer_cube, origin_preimage,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow boundary condition, you must use that."));
 }
 }  // namespace
 

@@ -257,6 +257,15 @@ void test_disk_boundaries_equidistant() {
                      Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Cannot have periodic boundary conditions on a disk"));
+  CHECK_THROWS_WITH(
+      creators::Disk(inner_radius, outer_radius, refinement_level, grid_points,
+                     false,
+                     std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                          TestNoneBoundaryCondition<2>>(),
+                     Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow boundary condition, you must use that."));
 }
 
 void test_disk_factory_equidistant() {

@@ -354,6 +354,17 @@ void test_cylinder_no_refinement() {
                   "multiple height partitionings. The domain creator code to "
                   "support this is written but untested. To enable, please add "
                   "tests."));
+          CHECK_THROWS_WITH(
+              creators::Cylinder(
+                  inner_radius, outer_radius, lower_bound, upper_bound,
+                  periodic_in_z, refinement_level, grid_points, equiangular_map,
+                  {}, {},
+                  std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                       TestNoneBoundaryCondition<3>>(),
+                  Options::Context{false, {}, 1, 1}),
+              Catch::Matchers::Contains(
+                  "None boundary condition is not supported. If you would like "
+                  "an outflow boundary condition, you must use that."));
         }
       }
     }

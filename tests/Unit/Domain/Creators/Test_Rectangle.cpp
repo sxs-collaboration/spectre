@@ -196,6 +196,15 @@ void test_rectangle() {
              {Direction<2>::upper_eta(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<2>>>{{}});
   }
+  CHECK_THROWS_WITH(
+      creators::Rectangle(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          nullptr, Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow boundary condition, you must use that."));
 }
 
 void test_rectangle_factory() {

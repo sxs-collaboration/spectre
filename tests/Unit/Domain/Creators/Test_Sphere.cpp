@@ -281,6 +281,15 @@ void test_sphere_boundaries_equiangular() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Cannot have periodic boundary conditions with a Sphere"));
+  CHECK_THROWS_WITH(
+      creators::Sphere(
+          inner_radius, outer_radius, refinement, grid_points_r_angular, true,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like "
+          "an outflow boundary condition, you must use that."));
 }
 
 void test_sphere_factory_equiangular() {

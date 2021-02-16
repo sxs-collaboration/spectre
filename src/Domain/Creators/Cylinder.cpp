@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
@@ -68,6 +69,13 @@ Cylinder::Cylinder(
                 "Periodic boundary conditions are not supported in the radial "
                 "direction. If you need periodic boundary conditions along the "
                 "axis of symmetry, use the is_periodic_in_z option.");
+  }
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
   }
 }
 

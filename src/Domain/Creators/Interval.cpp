@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -70,6 +71,14 @@ Interval::Interval(
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<1>>();
+  }
+  using domain::BoundaryConditions::is_none;
+  if (is_none(lower_boundary_condition_) or
+      is_none(upper_boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(lower_boundary_condition_) !=

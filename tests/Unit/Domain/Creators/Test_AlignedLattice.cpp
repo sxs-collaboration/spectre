@@ -388,5 +388,17 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Cannot exclude blocks as well as have periodic boundary"));
+  CHECK_THROWS_WITH(
+      creators::AlignedLattice<3>(
+          {{{{-1.5, -0.5, 0.5, 1.5}},
+            {{1.5, -0.5, 0.5, 1.5}},
+            {{-1.5, -0.5, 0.5, 1.5}}}},
+          {{1, 1, 1}}, {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like an "
+          "outflow boundary condition, you must use that."));
 }
 }  // namespace domain

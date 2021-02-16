@@ -348,6 +348,21 @@ void test_rotated_bricks() {
         std::vector<std::unordered_set<Direction<3>>>{
             {}, {}, {}, {}, {}, {}, {}, {}});
   }
+
+  CHECK_THROWS_WITH(
+      creators::RotatedBricks(
+          lower_bound, midpoint, upper_bound,
+          {{refinement_level[0][0], refinement_level[0][1],
+            refinement_level[0][2]}},
+          {{{{grid_points[0][0], grid_points[1][2]}},
+            {{grid_points[0][1], grid_points[2][2]}},
+            {{grid_points[0][2], grid_points[4][2]}}}},
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like "
+          "an outflow boundary condition, you must use that."));
 }
 
 void test_rotated_bricks_factory() {

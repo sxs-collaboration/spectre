@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Options/Options.hpp"
@@ -21,8 +22,6 @@ namespace TestHelpers::domain::BoundaryConditions {
 /// \cond
 template <size_t Dim>
 class TestBoundaryCondition;
-template <size_t Dim>
-class TestPeriodicBoundaryCondition;
 /// \endcond
 
 /// \brief A system-specific boundary condition base class.
@@ -32,8 +31,10 @@ template <size_t Dim>
 class BoundaryConditionBase
     : public ::domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<TestBoundaryCondition<Dim>,
-                                       TestPeriodicBoundaryCondition<Dim>>;
+  using creatable_classes = tmpl::list<
+      TestBoundaryCondition<Dim>,
+      ::domain::BoundaryConditions::None<BoundaryConditionBase<Dim>>,
+      ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>>;
 
   BoundaryConditionBase() = default;
   BoundaryConditionBase(BoundaryConditionBase&&) noexcept = default;
@@ -106,34 +107,12 @@ bool operator!=(const TestBoundaryCondition<Dim>& lhs,
                 const TestBoundaryCondition<Dim>& rhs) noexcept;
 
 template <size_t Dim>
-class TestPeriodicBoundaryCondition final
-    : public BoundaryConditionBase<Dim>,
-      public ::domain::BoundaryConditions::Periodic {
- public:
-  TestPeriodicBoundaryCondition() = default;
-  TestPeriodicBoundaryCondition(TestPeriodicBoundaryCondition&&) noexcept =
-      default;
-  TestPeriodicBoundaryCondition& operator=(
-      TestPeriodicBoundaryCondition&&) noexcept = default;
-  TestPeriodicBoundaryCondition(const TestPeriodicBoundaryCondition&) = default;
-  TestPeriodicBoundaryCondition& operator=(
-      const TestPeriodicBoundaryCondition&) = default;
-  ~TestPeriodicBoundaryCondition() override = default;
-  explicit TestPeriodicBoundaryCondition(CkMigrateMessage* const msg) noexcept;
+using TestPeriodicBoundaryCondition =
+    ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>;
 
-  using options = tmpl::list<>;
-  static constexpr Options::String help = {
-      "Periodic boundary condition for testing."};
-
-  WRAPPED_PUPable_decl_base_template(
-      ::domain::BoundaryConditions::BoundaryCondition,
-      TestPeriodicBoundaryCondition<Dim>);
-
-  auto get_clone() const noexcept -> std::unique_ptr<
-      ::domain::BoundaryConditions::BoundaryCondition> override;
-
-  void pup(PUP::er& p) override;
-};
+template <size_t Dim>
+using TestNoneBoundaryCondition =
+    ::domain::BoundaryConditions::None<BoundaryConditionBase<Dim>>;
 
 /// Empty system that has boundary conditions
 template <size_t Dim>

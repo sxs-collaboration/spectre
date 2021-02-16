@@ -4,6 +4,7 @@
 #include "Domain/Creators/RotatedRectangles.hpp"
 
 #include "DataStructures/Index.hpp"  // for Index
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -37,7 +38,8 @@ RotatedRectangles::RotatedRectangles(
     const typename InitialRefinement::type initial_refinement_level_xy,
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        boundary_condition) noexcept
+        boundary_condition,
+    const Options::Context& context)
     : lower_xy_(lower_xy),
       midpoint_xy_(midpoint_xy),
       upper_xy_(upper_xy),
@@ -45,6 +47,13 @@ RotatedRectangles::RotatedRectangles(
       initial_refinement_level_xy_(initial_refinement_level_xy),
       initial_number_of_grid_points_in_xy_(initial_number_of_grid_points_in_xy),
       boundary_condition_(std::move(boundary_condition)) {
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
+  }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(boundary_condition_)) {
     is_periodic_in_[0] = true;

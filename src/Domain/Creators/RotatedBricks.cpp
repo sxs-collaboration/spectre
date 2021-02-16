@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -42,7 +43,8 @@ RotatedBricks::RotatedBricks(
     const typename InitialRefinement::type initial_refinement_level_xyz,
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        boundary_condition) noexcept
+        boundary_condition,
+    const Options::Context& context)
     // clang-tidy: trivially copyable
     : lower_xyz_(std::move(lower_xyz)),                      // NOLINT
       midpoint_xyz_(std::move(midpoint_xyz)),                // NOLINT
@@ -53,6 +55,13 @@ RotatedBricks::RotatedBricks(
       initial_number_of_grid_points_in_xyz_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
       boundary_condition_(std::move(boundary_condition)) {
+  using domain::BoundaryConditions::is_none;
+  if (is_none(boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "None boundary condition is not supported. If you would like an "
+        "outflow boundary condition, you must use that.");
+  }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(boundary_condition_)) {
     is_periodic_in_[0] = true;

@@ -4,11 +4,11 @@
 #include "Domain/BoundaryConditions/Periodic.hpp"
 
 namespace domain::BoundaryConditions {
-Periodic::~Periodic() = default;
+MarkAsPeriodic::~MarkAsPeriodic() = default;
 
 bool is_periodic(
     const std::unique_ptr<BoundaryCondition>& boundary_condition) noexcept {
-  return dynamic_cast<const Periodic* const>(boundary_condition.get()) !=
+  return dynamic_cast<const MarkAsPeriodic* const>(boundary_condition.get()) !=
          nullptr;
 }
 }  // namespace domain::BoundaryConditions

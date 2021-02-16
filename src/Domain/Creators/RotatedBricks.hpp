@@ -180,7 +180,8 @@ class RotatedBricks : public DomainCreator<3> {
       typename InitialRefinement::type initial_refinement_level_xyz,
       typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          boundary_condition) noexcept;
+          boundary_condition,
+      const Options::Context& context = {});
 
   RotatedBricks() = default;
   RotatedBricks(const RotatedBricks&) = delete;

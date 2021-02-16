@@ -122,7 +122,8 @@ class Brick : public DomainCreator<3> {
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
             boundary_condition = nullptr,
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-            time_dependence = nullptr) noexcept;
+            time_dependence = nullptr,
+        const Options::Context& context = {});
 
   Brick() = default;
   Brick(const Brick&) = delete;

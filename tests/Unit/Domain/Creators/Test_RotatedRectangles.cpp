@@ -261,6 +261,19 @@ void test_rotated_rectangles() {
            {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
            {Direction<2>::upper_eta(), {2, half_turn}}}},
       std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
+
+  CHECK_THROWS_WITH(
+      creators::RotatedRectangles(
+          lower_bound, midpoint, upper_bound,
+          {{refinement_level[0][0], refinement_level[0][1]}},
+          {{{{grid_points[0][0], grid_points[1][0]}},
+            {{grid_points[0][1], grid_points[2][0]}}}},
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<2>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "None boundary condition is not supported. If you would like "
+          "an outflow boundary condition, you must use that."));
 }
 
 void test_rotated_rectangles_factory() {
