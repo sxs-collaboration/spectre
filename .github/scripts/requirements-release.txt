@@ -7,4 +7,4 @@ GitPython~=3.1.11
 PyGithub~=1.53
 PyYAML~=5.3.1
 tqdm~=4.55.1
-uplink~=0.9.2
+uplink==0.9.2
