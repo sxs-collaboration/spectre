@@ -34,9 +34,11 @@ target_link_libraries(
   CoordinateMaps
   DiscontinuousGalerkin
   Domain
+  DomainStructure
   Evolution
   EvolutionDgActionsHelpers
   Spectral
+  Time
   )
 
 add_dependencies(

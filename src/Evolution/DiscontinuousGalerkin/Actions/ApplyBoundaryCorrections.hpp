@@ -68,6 +68,13 @@ void boundary_correction(
  * - boundary conditions, both through ghost cells and by changing the time
  *   derivatives.
  * - support local time stepping (shouldn't be very difficult)
+ *
+ * When using local time stepping the neighbor sends data at the neighbor's
+ * current temporal id. Along with the boundary data, the next temporal id at
+ * which the neighbor will send data is also sent. This is equal to the
+ * neighbor's `::Tags::Next<::Tags::TimeStepId>`. When inserting into the mortar
+ * data history, we insert the received temporal id, that is, the current time
+ * of the neighbor, along with the boundary correction data.
  */
 template <typename Metavariables>
 struct ApplyBoundaryCorrections {
@@ -94,12 +101,12 @@ struct ApplyBoundaryCorrections {
     }
 
     if constexpr (Metavariables::local_time_stepping) {
-      ERROR("Local time stepping not supported");
+      receive_local_time_stepping(make_not_null(&box), make_not_null(&inboxes));
     } else {
       receive_global_time_stepping(make_not_null(&box),
                                    make_not_null(&inboxes));
-      apply_global_time_stepping(make_not_null(&box));
     }
+    complete_time_step(make_not_null(&box));
     return {std::move(box)};
   }
 
@@ -111,11 +118,16 @@ struct ApplyBoundaryCorrections {
 
  private:
   template <typename DbTagsList, typename... InboxTags>
-  static void apply_global_time_stepping(
+  static void complete_time_step(
       gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
 
   template <typename DbTagsList, typename... InboxTags>
   static void receive_global_time_stepping(
+      gsl::not_null<db::DataBox<DbTagsList>*> box,
+      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
+
+  template <typename DbTagsList, typename... InboxTags>
+  static void receive_local_time_stepping(
       gsl::not_null<db::DataBox<DbTagsList>*> box,
       gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
 };
@@ -140,15 +152,28 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
           volume_dim>>(*inboxes);
   const auto& temporal_id = get<::Tags::TimeStepId>(*box);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
-  db::mutate<evolution::dg::Tags::MortarData<volume_dim>>(
+  db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
+             evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
       box,
       [&received_temporal_id_and_data](
           const gsl::not_null<std::unordered_map<
               Key, evolution::dg::MortarData<volume_dim>, boost::hash<Key>>*>
-              mortar_data) noexcept {
+              mortar_data,
+          const gsl::not_null<
+              std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
+              mortar_next_time_step_id) noexcept {
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
+          ASSERT(mortar_next_time_step_id->at(mortar_id) ==
+                     received_temporal_id_and_data->first,
+                 "Expected to receive mortar data on mortar "
+                     << mortar_id << " at time "
+                     << mortar_next_time_step_id->at(mortar_id)
+                     << " but actually received at time "
+                     << received_temporal_id_and_data->first);
+          mortar_next_time_step_id->at(mortar_id) =
+              std::get<3>(received_mortar_data.second);
           mortar_data->at(mortar_id).insert_neighbor_mortar_data(
               received_temporal_id_and_data->first,
               std::get<0>(received_mortar_data.second),
@@ -160,7 +185,87 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
 
 template <typename Metavariables>
 template <typename DbTagsList, typename... InboxTags>
-void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
+void ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
+    const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept {
+  constexpr size_t volume_dim = Metavariables::system::volume_dim;
+
+  using variables_tag = typename Metavariables::system::variables_tag;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+
+  // The boundary history coupling computation (which computes the _lifted_
+  // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
+  // using the `NormalDotNumericalFlux` prefix tag. This is because the
+  // returned quantity is more a `dt` quantity than a
+  // `NormalDotNormalDotFlux` since it's been lifted to the volume.
+  using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
+  std::map<
+      TimeStepId,
+      FixedHashMap<
+          maximum_number_of_neighbors(volume_dim), Key,
+          std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
+                     std::optional<std::vector<double>>, ::TimeStepId>,
+          boost::hash<Key>>>& inbox =
+      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          volume_dim>>(*inboxes);
+  const auto& local_next_temporal_id =
+      db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+
+  db::mutate<evolution::dg::Tags::MortarDataHistory<
+                 volume_dim, typename dt_variables_tag::type>,
+             evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
+      box, [&inbox, &local_next_temporal_id](
+               const gsl::not_null<
+                   std::unordered_map<Key,
+                                      TimeSteppers::BoundaryHistory<
+                                          evolution::dg::MortarData<volume_dim>,
+                                          evolution::dg::MortarData<volume_dim>,
+                                          typename dt_variables_tag::type>,
+                                      boost::hash<Key>>*>
+                   boundary_data_history,
+               const gsl::not_null<
+                   std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
+                   mortar_next_time_step_id) noexcept {
+        // Move received boundary data into boundary history.
+        for (auto received_data = inbox.begin();
+             received_data != inbox.end() and
+             received_data->first < local_next_temporal_id;
+             received_data = inbox.erase(received_data)) {
+          const auto& receive_temporal_id = received_data->first;
+          // Loop over all mortars for which we received data at this time
+          for (auto& received_mortar_data : received_data->second) {
+            const auto& mortar_id = received_mortar_data.first;
+            MortarData<Metavariables::volume_dim> neighbor_mortar_data{};
+            // Insert:
+            // - the current TimeStepId of the neighbor
+            // - the current face mesh of the neighbor
+            // - the current boundary correction data of the neighbor
+            ASSERT(std::get<2>(received_mortar_data.second).has_value(),
+                   "Did not receive boundary correction data from the "
+                   "neighbor\nMortarId: "
+                       << mortar_id << "\nTimeStepId: " << receive_temporal_id);
+            ASSERT(
+                mortar_next_time_step_id->at(mortar_id) == receive_temporal_id,
+                "Expected to receive mortar data on mortar "
+                    << mortar_id << " at time "
+                    << mortar_next_time_step_id->at(mortar_id)
+                    << " but actually received at time "
+                    << receive_temporal_id);
+            mortar_next_time_step_id->at(mortar_id) =
+                std::get<3>(received_mortar_data.second);
+            neighbor_mortar_data.insert_neighbor_mortar_data(
+                receive_temporal_id, std::get<0>(received_mortar_data.second),
+                std::move(*std::get<2>(received_mortar_data.second)));
+            boundary_data_history->at(mortar_id).remote_insert(
+                receive_temporal_id, std::move(neighbor_mortar_data));
+          }
+        }
+      });
+}
+
+template <typename Metavariables>
+template <typename DbTagsList, typename... InboxTags>
+void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
     const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
@@ -203,13 +308,18 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
           db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
               *box);
 
+  const TimeDelta& time_step = db::get<::Tags::TimeStep>(*box);
+  const auto& time_stepper =
+      db::get<typename Metavariables::time_stepper_tag>(*box);
+
   const auto compute_and_lift_boundary_corrections =
       [&dg_formulation, &face_normal_covector_and_magnitude,
-       local_time_stepping, &mortar_meshes, &mortar_sizes,
-       using_gauss_lobatto_points, &volume_det_jacobian,
-       &volume_det_inv_jacobian,
-       &volume_mesh](const auto dt_variables_ptr, const auto mortar_data_ptr,
-                     const auto& boundary_correction) noexcept {
+       local_time_stepping, &mortar_meshes, &mortar_sizes, &time_step,
+       &time_stepper, using_gauss_lobatto_points, &volume_det_jacobian,
+       &volume_det_inv_jacobian, &volume_mesh](
+          const auto dt_variables_ptr, const auto variables_ptr,
+          const auto mortar_data_ptr, const auto mortar_data_history_ptr,
+          const auto& boundary_correction) noexcept {
         using mortar_tags_list = typename std::decay_t<decltype(
             boundary_correction)>::dg_package_field_tags;
 
@@ -238,6 +348,16 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
           ASSERT(mortar_id_ptr != nullptr,
                  "Mortar ID pointer should never be nullptr, it must not have "
                  "been set before invoking the lambda.");
+          if (local_time_stepping and not using_gauss_lobatto_points) {
+            // This needs to be updated every call because the Jacobian may be
+            // time-dependent. In the case of time-independent maps and local
+            // time stepping we could first perform the integral on the
+            // boundaries, and then lift to the volume. This is left as a future
+            // optimization.
+            local_mortar_data.get_local_volume_det_inv_jacobian(
+                make_not_null(&volume_det_inv_jacobian));
+            get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+          }
           const auto& mortar_id = *mortar_id_ptr;
           const auto& direction = mortar_id.first;
           const auto& mortar_mesh = mortar_meshes.at(mortar_id);
@@ -253,15 +373,11 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
               mortar_mesh.number_of_grid_points()};
           Variables<mortar_tags_list> neighbor_data_on_mortar{
               mortar_mesh.number_of_grid_points()};
-          // Do not copy to .end() since we may be storing extra variables
-          // at the end, like the volume and face Jacobian determinant.
-          const auto copy_size =
-              static_cast<std::ptrdiff_t>(local_data_on_mortar.size());
           std::copy(std::get<1>(local_mesh_and_data).begin(),
-                    std::get<1>(local_mesh_and_data).begin() + copy_size,
+                    std::get<1>(local_mesh_and_data).end(),
                     local_data_on_mortar.data());
           std::copy(std::get<1>(neighbor_mesh_and_data).begin(),
-                    std::get<1>(neighbor_mesh_and_data).begin() + copy_size,
+                    std::get<1>(neighbor_mesh_and_data).end(),
                     neighbor_data_on_mortar.data());
 
           // The boundary computations and lifting can be further
@@ -303,16 +419,21 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
           }();
 
           Scalar<DataVector> magnitude_of_face_normal{};
-          ASSERT(
-              face_normal_covector_and_magnitude.count(direction) == 1 and
-                  face_normal_covector_and_magnitude.at(direction).has_value(),
-              "Face normal covector and magnitude not set in "
-              "direction: "
-                  << direction);
-          get(magnitude_of_face_normal)
-              .set_data_ref(make_not_null(&const_cast<DataVector&>(
-                  get(get<evolution::dg::Tags::MagnitudeOfNormal>(
-                      *face_normal_covector_and_magnitude.at(direction))))));
+          if (local_time_stepping) {
+            local_mortar_data.get_local_face_normal_magnitude(
+                &magnitude_of_face_normal);
+          } else {
+            ASSERT(face_normal_covector_and_magnitude.count(direction) == 1 and
+                       face_normal_covector_and_magnitude.at(direction)
+                           .has_value(),
+                   "Face normal covector and magnitude not set in "
+                   "direction: "
+                       << direction);
+            get(magnitude_of_face_normal)
+                .set_data_ref(make_not_null(&const_cast<DataVector&>(
+                    get(get<evolution::dg::Tags::MagnitudeOfNormal>(
+                        *face_normal_covector_and_magnitude.at(direction))))));
+          }
 
           if (using_gauss_lobatto_points) {
             // The lift_flux function lifts only on the slice, it does not add
@@ -320,12 +441,15 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
             ::dg::lift_flux(make_not_null(&dt_boundary_correction),
                             volume_mesh.extents(direction.dimension()),
                             magnitude_of_face_normal);
-
-            // Add the flux contribution to the volume data
-            add_slice_to_data(
-                dt_variables_ptr, dt_boundary_correction, volume_mesh.extents(),
-                direction.dimension(),
-                index_to_slice_at(volume_mesh.extents(), direction));
+            if (local_time_stepping) {
+              return dt_boundary_correction;
+            } else {
+              // Add the flux contribution to the volume data
+              add_slice_to_data(
+                  dt_variables_ptr, dt_boundary_correction,
+                  volume_mesh.extents(), direction.dimension(),
+                  index_to_slice_at(volume_mesh.extents(), direction));
+            }
           } else {
             // We are using Gauss points.
             //
@@ -339,55 +463,117 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
             //   with projecting from mortars to the face, then lift off the
             //   faces. With non-owning Variables memory allocations could be
             //   significantly reduced in this code.
+            if (local_time_stepping) {
+              ASSERT(get(volume_det_inv_jacobian).size() > 0,
+                     "For local time stepping the volume determinant of the "
+                     "inverse Jacobian has not been set.");
 
-            // Project the determinant of the Jacobian to the face. This
-            // could be optimized by caching in the time-independent case.
-            Scalar<DataVector> face_det_jacobian{
-                face_mesh.number_of_grid_points()};
-            const Matrix identity{};
-            auto interpolation_matrices =
-                make_array<volume_dim>(std::cref(identity));
-            const std::pair<Matrix, Matrix>& matrices =
-                Spectral::boundary_interpolation_matrices(
-                    volume_mesh.slice_through(direction.dimension()));
-            gsl::at(interpolation_matrices, direction.dimension()) =
-                direction.side() == Side::Upper ? matrices.second
-                                                : matrices.first;
-            apply_matrices(make_not_null(&get(face_det_jacobian)),
-                           interpolation_matrices, get(volume_det_jacobian),
-                           volume_mesh.extents());
+              Scalar<DataVector> face_det_jacobian{};
+              local_mortar_data.get_local_face_det_jacobian(
+                  make_not_null(&face_det_jacobian));
 
-            evolution::dg::lift_boundary_terms_gauss_points(
-                dt_variables_ptr, volume_det_inv_jacobian, volume_mesh,
-                direction, dt_boundary_correction, magnitude_of_face_normal,
-                face_det_jacobian);
+              Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>
+                  volume_dt_correction{
+                      dt_variables_ptr->number_of_grid_points(), 0.0};
+              evolution::dg::lift_boundary_terms_gauss_points(
+                  make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
+                  volume_mesh, direction, dt_boundary_correction,
+                  magnitude_of_face_normal, face_det_jacobian);
+              return volume_dt_correction;
+            } else {
+              // Project the determinant of the Jacobian to the face. This
+              // could be optimized by caching in the time-independent case.
+              Scalar<DataVector> face_det_jacobian{
+                  face_mesh.number_of_grid_points()};
+              const Matrix identity{};
+              auto interpolation_matrices =
+                  make_array<volume_dim>(std::cref(identity));
+              const std::pair<Matrix, Matrix>& matrices =
+                  Spectral::boundary_interpolation_matrices(
+                      volume_mesh.slice_through(direction.dimension()));
+              gsl::at(interpolation_matrices, direction.dimension()) =
+                  direction.side() == Side::Upper ? matrices.second
+                                                  : matrices.first;
+              apply_matrices(make_not_null(&get(face_det_jacobian)),
+                             interpolation_matrices, get(volume_det_jacobian),
+                             volume_mesh.extents());
+
+              evolution::dg::lift_boundary_terms_gauss_points(
+                  dt_variables_ptr, volume_det_inv_jacobian, volume_mesh,
+                  direction, dt_boundary_correction, magnitude_of_face_normal,
+                  face_det_jacobian);
+            }
           }
 
-          ASSERT(not local_time_stepping,
-                 "Must return lifted data when using local time stepping");
+          ASSERT(
+              not local_time_stepping,
+              "Must return lifted data when using local time stepping. It's "
+              "likely a missing return statement or incorrect if-else logical "
+              "related to whether or not we are doing local time stepping.");
           return {};
         };
 
-        for (auto& mortar_id_and_data : *mortar_data_ptr) {
-          // Cannot use structured bindings because of a compiler bug where
-          // they cannot be captured by lambdas.
-          const auto& mortar_id = mortar_id_and_data.first;
-          const auto& mortar_data = mortar_id_and_data.second;
-          const auto& direction = mortar_id.first;
-          if (UNLIKELY(mortar_id.second ==
-                       ElementId<volume_dim>::external_boundary_id())) {
-            ERROR(
-                "Cannot impose boundary conditions on external boundary in "
-                "direction "
-                << direction
-                << " in the ApplyBoundaryCorrections action. Boundary "
-                   "conditions are applied in the ComputeTimeDerivative "
-                   "action "
-                   "instead. You may have unintentionally added external "
-                   "mortars in one of the initialization actions.");
+        if constexpr (Metavariables::local_time_stepping) {
+          (void)mortar_data_ptr;
+
+          for (auto& mortar_id_and_data : *mortar_data_history_ptr) {
+            const auto& mortar_id = mortar_id_and_data.first;
+            auto& mortar_data_history = mortar_id_and_data.second;
+            const auto& direction = mortar_id.first;
+            if (UNLIKELY(mortar_id.second ==
+                         ElementId<volume_dim>::external_boundary_id())) {
+              ERROR(
+                  "Cannot impose boundary conditions on external boundary in "
+                  "direction "
+                  << direction
+                  << " in the ApplyBoundaryCorrections action. Boundary "
+                     "conditions are applied in the ComputeTimeDerivative "
+                     "action "
+                     "instead. You may have unintentionally added external "
+                     "mortars in one of the initialization actions.");
+            }
+            mortar_id_ptr = &mortar_id;
+            auto lifted_volume_data = time_stepper.compute_boundary_delta(
+                compute_correction_coupling,
+                make_not_null(&mortar_data_history), time_step);
+
+            if (using_gauss_lobatto_points) {
+              // Add the flux contribution to the volume data
+              add_slice_to_data(
+                  variables_ptr, lifted_volume_data, volume_mesh.extents(),
+                  direction.dimension(),
+                  index_to_slice_at(volume_mesh.extents(), direction));
+            } else {
+              *variables_ptr += lifted_volume_data;
+            }
           }
-          mortar_id_ptr = &mortar_id;
-          compute_correction_coupling(mortar_data, mortar_data);
+        } else {
+          (void)time_step;
+          (void)time_stepper;
+          (void)variables_ptr;
+          (void)mortar_data_history_ptr;
+
+          for (auto& mortar_id_and_data : *mortar_data_ptr) {
+            // Cannot use structured bindings because of a compiler bug where
+            // they cannot be captured by lambdas.
+            const auto& mortar_id = mortar_id_and_data.first;
+            const auto& mortar_data = mortar_id_and_data.second;
+            const auto& direction = mortar_id.first;
+            if (UNLIKELY(mortar_id.second ==
+                         ElementId<volume_dim>::external_boundary_id())) {
+              ERROR(
+                  "Cannot impose boundary conditions on external boundary in "
+                  "direction "
+                  << direction
+                  << " in the ApplyBoundaryCorrections action. Boundary "
+                     "conditions are applied in the ComputeTimeDerivative "
+                     "action "
+                     "instead. You may have unintentionally added external "
+                     "mortars in one of the initialization actions.");
+            }
+            mortar_id_ptr = &mortar_id;
+            compute_correction_coupling(mortar_data, mortar_data);
+          }
         }
       };
 
@@ -412,8 +598,10 @@ void ApplyBoundaryCorrections<Metavariables>::apply_global_time_stepping(
           // Compute internal boundary quantities on the mortar for sides of
           // the element that have neighbors, i.e. they are not an external
           // side.
-          db::mutate<dt_variables_tag,
-                     evolution::dg::Tags::MortarData<volume_dim>>(
+          db::mutate<dt_variables_tag, variables_tag,
+                     evolution::dg::Tags::MortarData<volume_dim>,
+                     evolution::dg::Tags::MortarDataHistory<
+                         volume_dim, typename dt_variables_tag::type>>(
               box, compute_and_lift_boundary_corrections,
               dynamic_cast<const DerivedCorrection&>(boundary_correction));
         }
