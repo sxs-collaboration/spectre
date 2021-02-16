@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <deque>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -201,7 +202,7 @@ size_t check_boundary_state(
 
   std::string local_arg;
   std::vector<int> remote_arg;
-  double coupling_return;
+  double coupling_return = std::numeric_limits<double>::signaling_NaN();
   const auto coupling = [&local_arg, &remote_arg, &coupling_return ](
       const std::string& local, const std::vector<int>& remote) noexcept {
     local_arg = local;
