@@ -116,12 +116,13 @@ void test_secondary_neighbors_to_exclude_from_fit() noexcept {
   check_excluded_neighbors(4., upper_eta, {{lower_xi}});
 }
 
-void test_constrained_fit_1d() noexcept {
+void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
+                                 Spectral::Quadrature::GaussLobatto) noexcept {
   INFO("Testing Weno_detail::solve_constrained_fit in 1D");
+  CAPTURE(quadrature);
   using TagsList = tmpl::list<ScalarTag>;
   const auto element = TestHelpers::Limiters::make_element<1>();
-  const auto mesh = Mesh<1>{
-      {{3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const auto mesh = Mesh<1>{{{3}}, Spectral::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto lower_xi_neighbor =
@@ -184,8 +185,8 @@ void test_constrained_fit_1d() noexcept {
 
     // The expected coefficient values for the result of the constrained fit are
     // found using Mathematica, using the following code (for Mathematica v10):
-    // qw3 = {1/3, 4/3, 1/3};
-    // qx3 = {-1, 0, 1};
+    // qw3 = {1/3, 4/3, 1/3};  (* or Gauss point equivalent *)
+    // qx3 = {-1, 0, 1};       (* or Gauss point equivalent *)
     // quad3[f_, dx_] := Sum[qw3[[qi]] f[qx3[[qi]] + dx], {qi, 1, 3}];
     // trial[c0_, c1_, c2_][x_] := c0 + c1 x + c2 x^2;
     // uLocal[x_] := 1 - 1/5 x + 2/5 x^2;
@@ -197,9 +198,13 @@ void test_constrained_fit_1d() noexcept {
     //     quad3[trial[c0, c1, c2], 0] == quad3[uLocal, 0],
     // {c0, c1, c2}
     // ]
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
-      constexpr std::array<double, 3> c{{41. / 30., -31. / 10., -7. / 10.}};
+      const auto c =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double, 3>{{41. / 30., -31. / 10., -7. / 10.}}
+              : std::array<double, 3>{
+                    {803. / 579., -1247. / 386., -734. / 965.}};
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
     }();
 
@@ -236,10 +241,13 @@ void test_constrained_fit_1d() noexcept {
         primary_neighbor, neighbors_to_exclude);
 
     // Coefficients from Mathematica, using code similar to the one above.
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
-      constexpr std::array<double, 3> c{
-          {929. / 850., -124. / 425., 103. / 850.}};
+      const auto c =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double, 3>{{929. / 850., -124. / 425., 103. / 850.}}
+              : std::array<double, 3>{
+                    {1054. / 965., -286. / 965., 119. / 965.}};
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
     }();
 
@@ -281,9 +289,13 @@ void test_constrained_fit_1d() noexcept {
     // test is not an orthogonal test of the fitting itself, it is a useful test
     // of the caching mechanism in the corner case of having a single
     // neighboring element.
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
-      constexpr std::array<double, 3> c{{41. / 30., -31. / 10., -7. / 10.}};
+      const auto c =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double, 3>{{41. / 30., -31. / 10., -7. / 10.}}
+              : std::array<double, 3>{
+                    {803. / 579., -1247. / 386., -734. / 965.}};
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
     }();
 
@@ -296,12 +308,14 @@ void test_constrained_fit_1d() noexcept {
 
 // Test in 2D using a vector tensor, to test multiple components.
 // Multiple components becomes very tedious in 3D, so 3D will test a scalar.
-void test_constrained_fit_2d_vector() noexcept {
+void test_constrained_fit_2d_vector(
+    const Spectral::Quadrature quadrature =
+        Spectral::Quadrature::GaussLobatto) noexcept {
   INFO("Testing Weno_detail::solve_constrained_fit in 2D");
+  CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<2>>;
   const auto element = TestHelpers::Limiters::make_element<2>();
-  const auto mesh = Mesh<2>{
-      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const auto mesh = Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto lower_xi_neighbor =
@@ -413,9 +427,12 @@ void test_constrained_fit_2d_vector() noexcept {
     // found using Mathematica, using the following code (for Mathematica v10).
     // This example computes the expected result for the vector x component; an
     // analogous piece of code gives the expected result for the y component,
-    // but note that the neighbor to exclude changes in this case. qw3 = {1/3,
-    // 4/3, 1/3}; qx3 = {-1, 0, 1}; qw4 = {1/6, 5/6, 5/6, 1/6}; qx4 = {-1,
-    // -1/Sqrt[5], 1/Sqrt[5], 1}; quad43[f_, dx_, dy_] := Sum[
+    // but note that the neighbor to exclude changes in this case.
+    // qw3 = {1/3, 4/3, 1/3};                 (* or Gauss point equivalent *)
+    // qx3 = {-1, 0, 1};                      (* or Gauss point equivalent *)
+    // qw4 = {1/6, 5/6, 5/6, 1/6};            (* or Gauss point equivalent *)
+    // qx4 = {-1, -1/Sqrt[5], 1/Sqrt[5], 1};  (* or Gauss point equivalent *)
+    // quad43[f_, dx_, dy_] := Sum[
     //     qw4[[qi]] qw3[[qj]] f[qx4[[qi]] + dx, qx3[[qj]] + dy],
     //     {qi, 1, 4}, {qj, 1, 3}];
     // trial[c0_, c1_, c2_, c3_, c4_, c5_, c6_, c7_, c8_, c9_, c10_, c11_][
@@ -443,21 +460,42 @@ void test_constrained_fit_2d_vector() noexcept {
     //            0, 0] == quad43[uLocal, 0, 0],
     // {c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11}
     // ]
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       // x-component coefficients
-      constexpr std::array<double, 12> c{
-          {6049013. / 5913219., 92367. / 360620., -1659. / 558961.,
-           -6083. / 558961., 61831556. / 187251935., 42. / 6935.,
-           -126. / 42997., -462. / 42997., -2460491. / 37450387.,
-           18283. / 180310., -378. / 558961., -1386. / 558961.}};
+      const auto c =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double, 12>{{6049013. / 5913219., 92367. / 360620.,
+                                        -1659. / 558961., -6083. / 558961.,
+                                        61831556. / 187251935., 42. / 6935.,
+                                        -126. / 42997., -462. / 42997.,
+                                        -2460491. / 37450387., 18283. / 180310.,
+                                        -378. / 558961., -1386. / 558961.}}
+              : std::array<double, 12>{
+                    {249938816573. / 244480323945., 405503. / 1579292.,
+                     -534. / 394823., -1246. / 107679.,
+                     26841345508. / 81493441315., 2790. / 394823.,
+                     -558. / 394823., -434. / 35893.,
+                     -5338984133. / 81493441315., 401573. / 3948230.,
+                     -135. / 394823., -105. / 35893.}};
       // y-component coefficients
-      constexpr std::array<double, 12> d{
-          {3609701941. / 1685267415., 120807. / 180310., -1018741. / 5589610.,
-           -168586. / 558961., -18411919. / 43211985., 1164. / 6935.,
-           -3492. / 42997., -12804. / 42997., -50666458. / 187251935.,
-           3492. / 90155., 454201. / 5589610., -38412. / 558961.}};
+      const auto d =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double, 12>{{3609701941. / 1685267415.,
+                                        120807. / 180310., -1018741. / 5589610.,
+                                        -168586. / 558961.,
+                                        -18411919. / 43211985., 1164. / 6935.,
+                                        -3492. / 42997., -12804. / 42997.,
+                                        -50666458. / 187251935., 3492. / 90155.,
+                                        454201. / 5589610., -38412. / 558961.}}
+              : std::array<double, 12>{
+                    {10921212941666. / 5134086802845., 3799721. / 5527522.,
+                     -3799721. / 27637610., -34532. / 107679.,
+                     -751998511637. / 1711362267615., 541260. / 2763761.,
+                     -108252. / 2763761., -12028. / 35893.,
+                     -31292971603. / 114090817841., 130950. / 2763761.,
+                     2501861. / 27637610., -2910. / 35893.}};
       return tnsr::I<DataVector, 2>{
           {{DataVector{
                 c[0] + c[1] * x + c[2] * square(x) + c[3] * cube(x) +
@@ -513,15 +551,24 @@ void test_constrained_fit_2d_vector() noexcept {
     }
 
     // Coefficients from Mathematica, using code similar to the one above.
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
-      constexpr std::array<double, 12> c{{398. / 329., -1738. / 1645.,
-                                          -207. / 329., -33. / 329., -1. / 10.,
-                                          0., 0., 0., 0., 0., 0., 0.}};
-      constexpr std::array<double, 12> d{{589. / 329., 2067. / 1645.,
-                                          207. / 329., 33. / 329., 0., 0., 0.,
-                                          0., 0., 0., 0., 0.}};
+      const auto c =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double, 12>{{398. / 329., -1738. / 1645.,
+                                        -207. / 329., -33. / 329., -1. / 10.,
+                                        0., 0., 0., 0., 0., 0., 0.}}
+              : std::array<double, 12>{{4366. / 3581., -19294. / 17905.,
+                                        -2355. / 3581., -385. / 3581.,
+                                        -1. / 10., 0., 0., 0., 0., 0., 0., 0.}};
+      const auto d = (quadrature == Spectral::Quadrature::GaussLobatto)
+                         ? std::array<double, 12>{{589. / 329., 2067. / 1645.,
+                                                   207. / 329., 33. / 329., 0.,
+                                                   0., 0., 0., 0., 0., 0., 0.}}
+                         : std::array<double, 12>{
+                               {6377. / 3581., 4575. / 3581., 2355. / 3581.,
+                                385. / 3581., 0., 0., 0., 0., 0., 0., 0., 0.}};
       return tnsr::I<DataVector, 2>{
           {{DataVector{
                 c[0] + c[1] * x + c[2] * square(x) + c[3] * cube(x) +
@@ -536,7 +583,7 @@ void test_constrained_fit_2d_vector() noexcept {
     }();
 
     // Fit procedure has somewhat larger error scale than default
-    Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.);
+    Approx local_approx = Approx::custom().epsilon(1e-9).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     // Verify that the constraint is in fact satisfied
     CHECK(mean_value(get<0>(constrained_fit), mesh) ==
@@ -546,8 +593,10 @@ void test_constrained_fit_2d_vector() noexcept {
   }
 }
 
-void test_constrained_fit_3d() noexcept {
+void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
+                                 Spectral::Quadrature::GaussLobatto) noexcept {
   INFO("Testing Weno_detail::solve_constrained_fit in 3D");
+  CAPTURE(quadrature);
   using TagsList = tmpl::list<ScalarTag>;
   struct PackagedData {
     tuples::TaggedTuple<::Tags::Mean<ScalarTag>> means;
@@ -569,9 +618,7 @@ void test_constrained_fit_3d() noexcept {
       std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
 
   const auto element = TestHelpers::Limiters::make_element<3>();
-  const auto mesh = Mesh<3>{{{3, 3, 4}},
-                            Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+  const auto mesh = Mesh<3>{{{3, 3, 4}}, Spectral::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto local_data = [&logical_coords]() noexcept {
@@ -666,10 +713,10 @@ void test_constrained_fit_3d() noexcept {
 
     // The expected coefficient values for the result of the constrained fit are
     // found using Mathematica, using the following code (for Mathematica v10).
-    // qw3 = {1/3, 4/3, 1/3};
-    // qx3 = {-1, 0, 1};
-    // qw4 = {1/6, 5/6, 5/6, 1/6};
-    // qx4 = {-1, -1/Sqrt[5], 1/Sqrt[5], 1};
+    // qw3 = {1/3, 4/3, 1/3};                 (* or Gauss point equivalent *)
+    // qx3 = {-1, 0, 1};                      (* or Gauss point equivalent *)
+    // qw4 = {1/6, 5/6, 5/6, 1/6};            (* or Gauss point equivalent *)
+    // qx4 = {-1, -1/Sqrt[5], 1/Sqrt[5], 1};  (* or Gauss point equivalent *)
     // quad334[f_, dx_, dy_, dz_] := Sum[
     //     qw3[[qi]] qw3[[qj]] qw4[[qk]]
     //     f[qx3[[qi]] + dx, qx3[[qj]] + dy, qx4[[qk]] + dz],
@@ -740,47 +787,86 @@ void test_constrained_fit_3d() noexcept {
     //  c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27,
     //  c28, c29, c30, c31, c32, c33, c34, c35}
     // ]
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       const auto& z = get<2>(logical_coords);
-      constexpr std::array<double, 36> c{
-          {7734190419582420551. / 62148673763526035437.,
-           765121. / 1263364.,
-           786240. / 1895041.,
-           124800. / 1105441.,
-           0.,
-           0.,
-           374400. / 1105441.,
-           0.,
-           0.,
-           308447321809657439079. / 621486737635260354370.,
-           -892944. / 1579205.,
-           -6250608. / 9475205.,
-           -878879. / 11054410.,
-           0.,
-           0.,
-           -595296. / 1105441.,
-           1. / 2.,
-           0.,
-           21514562148445593021. / 124297347527052070874.,
-           89424. / 315841.,
-           625968. / 1895041.,
-           99360. / 1105441.,
-           0.,
-           0.,
-           298080. / 1105441.,
-           0.,
-           0.,
-           3655223967127444271. / 310743368817630177185.,
-           -14256. / 315841.,
-           -99792. / 1895041.,
-           -15840. / 1105441.,
-           0.,
-           0.,
-           -47520. / 1105441.,
-           0.,
-           0.}};
+      const auto c =
+          (quadrature == Spectral::Quadrature::GaussLobatto)
+              ? std::array<double,
+                           36>{{7734190419582420551. / 62148673763526035437.,
+                                765121. / 1263364.,
+                                786240. / 1895041.,
+                                124800. / 1105441.,
+                                0.,
+                                0.,
+                                374400. / 1105441.,
+                                0.,
+                                0.,
+                                308447321809657439079. / 621486737635260354370.,
+                                -892944. / 1579205.,
+                                -6250608. / 9475205.,
+                                -878879. / 11054410.,
+                                0.,
+                                0.,
+                                -595296. / 1105441.,
+                                1. / 2.,
+                                0.,
+                                21514562148445593021. / 124297347527052070874.,
+                                89424. / 315841.,
+                                625968. / 1895041.,
+                                99360. / 1105441.,
+                                0.,
+                                0.,
+                                298080. / 1105441.,
+                                0.,
+                                0.,
+                                3655223967127444271. / 310743368817630177185.,
+                                -14256. / 315841.,
+                                -99792. / 1895041.,
+                                -15840. / 1105441.,
+                                0.,
+                                0.,
+                                -47520. / 1105441.,
+                                0.,
+                                0.}}
+              : std::array<double, 36>{
+                    {458679916884839601803. / 3920643646799006444317.,
+                     8269253. / 13751060.,
+                     4227552. / 10313281.,
+                     268416. / 5500417.,
+                     0.,
+                     0.,
+                     2013120. / 5500417.,
+                     0.,
+                     0.,
+                     4086360148702064037975. / 7841287293598012888634.,
+                     -395280. / 687553.,
+                     -6917400. / 10313281.,
+                     1108417. / 55004170.,
+                     0.,
+                     0.,
+                     -3294000. / 5500417.,
+                     1. / 2.,
+                     0.,
+                     1217573258478400072485. / 7841287293598012888634.,
+                     203472. / 687553.,
+                     3560760. / 10313281.,
+                     226080. / 5500417.,
+                     0.,
+                     0.,
+                     1695600. / 5500417.,
+                     0.,
+                     0.,
+                     3895938147037532473. / 254587249792143275605.,
+                     -33264. / 687553.,
+                     -52920. / 937571.,
+                     -36960. / 5500417.,
+                     0.,
+                     0.,
+                     -277200. / 5500417.,
+                     0.,
+                     0.}};
       const DataVector term_z0 =
           c[0] + c[1] * x + c[2] * square(x) +
           y * (c[3] + c[4] * x + c[5] * square(x)) +
@@ -842,23 +928,38 @@ void test_constrained_fit_3d() noexcept {
         neighbors_to_exclude);
 
     // Coefficients from Mathematica, using code similar to the one above.
-    const auto expected = [&logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() noexcept {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       const auto& z = get<2>(logical_coords);
       auto c = make_array<36>(0.);
-      c[0] = 139558567. / 190046570.;
-      c[1] = 306385833. / 95023285.;
-      c[2] = -70704423. / 95023285.;
-      c[9] = 88164. / 1117921.;
-      c[10] = -87048. / 1117921.;
-      c[11] = 20088. / 1117921.;
-      c[18] = 42660. / 1117921.;
-      c[19] = -42120. / 1117921.;
-      c[20] = 9720. / 1117921.;
-      c[27] = -156420. / 1117921.;
-      c[28] = 154440. / 1117921.;
-      c[29] = -35640. / 1117921.;
+      if (quadrature == Spectral::Quadrature::GaussLobatto) {
+        c[0] = 139558567. / 190046570.;
+        c[1] = 306385833. / 95023285.;
+        c[2] = -70704423. / 95023285.;
+        c[9] = 88164. / 1117921.;
+        c[10] = -87048. / 1117921.;
+        c[11] = 20088. / 1117921.;
+        c[18] = 42660. / 1117921.;
+        c[19] = -42120. / 1117921.;
+        c[20] = 9720. / 1117921.;
+        c[27] = -156420. / 1117921.;
+        c[28] = 154440. / 1117921.;
+        c[29] = -35640. / 1117921.;
+      } else {
+        c[0] = 90824101. / 118534617.;
+        c[1] = 133513993. / 39511539.;
+        c[2] = -21534515. / 26341026.;
+        c[9] = 17800. / 204723.;
+        c[10] = -6200. / 68241.;
+        c[11] = 500. / 22747.;
+        c[18] = 3560. / 204723.;
+        c[19] = -1240. / 68241.;
+        c[20] = 100. / 22747.;
+        c[27] = -274120. / 1842507.;
+        c[28] = 95480. / 614169.;
+        c[29] = -7700. / 204723.;
+      }
 
       const DataVector term_z0 =
           c[0] + c[1] * x + c[2] * square(x) +
@@ -988,11 +1089,12 @@ void test_hweno_work(
   CHECK_ITERABLE_CUSTOM_APPROX(vector_to_limit, expected_hweno, local_approx);
 }
 
-void test_hweno_impl_1d() noexcept {
+void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
+                            Spectral::Quadrature::GaussLobatto) noexcept {
   INFO("Testing hweno_impl in 1D");
+  CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<1>>;
-  const auto mesh = Mesh<1>{
-      {{3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const auto mesh = Mesh<1>{{{3}}, Spectral::Basis::Legendre, quadrature};
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -1036,11 +1138,12 @@ void test_hweno_impl_1d() noexcept {
       local_approx);
 }
 
-void test_hweno_impl_2d() noexcept {
+void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
+                            Spectral::Quadrature::GaussLobatto) noexcept {
   INFO("Testing hweno_impl in 2D");
+  CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<2>>;
-  const auto mesh = Mesh<2>{
-      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const auto mesh = Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature};
   const auto element = TestHelpers::Limiters::make_element<2>();
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -1127,12 +1230,12 @@ void test_hweno_impl_2d() noexcept {
       local_approx);
 }
 
-void test_hweno_impl_3d() noexcept {
+void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
+                            Spectral::Quadrature::GaussLobatto) noexcept {
   INFO("Testing hweno_impl in 3D");
+  CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<3>>;
-  const auto mesh = Mesh<3>{{{3, 3, 4}},
-                            Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto};
+  const auto mesh = Mesh<3>{{{3, 3, 4}}, Spectral::Basis::Legendre, quadrature};
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto logical_coords = logical_coordinates(mesh);
 
@@ -1279,4 +1382,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl", "[Limiters][Unit]") {
   test_hweno_impl_1d();
   test_hweno_impl_2d();
   test_hweno_impl_3d();
+}
+
+// Separate the Gauss quadrature tests for two reasons:
+// 1. Generalizing the Hweno matrix static caches to handle both LGL and LG
+//    points in the same run would be somewhat tedious. By testing each basis
+//    in a separate SPECTRE_TEST_CASE, run in separate calls to the test
+//    executable, the static cache clashes are avoided.
+// 2. To keep the test case duration comfortably under the 2s time limit
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl.GaussQuadrature",
+                  "[Limiters][Unit]") {
+  const auto gauss = Spectral::Quadrature::Gauss;
+  test_constrained_fit_1d(gauss);
+  test_constrained_fit_2d_vector(gauss);
+  test_constrained_fit_3d(gauss);
+
+  test_hweno_impl_1d(gauss);
+  test_hweno_impl_2d(gauss);
+  test_hweno_impl_3d(gauss);
 }

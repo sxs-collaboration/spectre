@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -79,9 +80,9 @@ double compute_sum_of_legendre_derivs(
 }
 
 // Compute the indicator matrix, similar to that of Dumbser2007 Eq. 25, but
-// adapted for use on square/cube grids.
+// adapted for use on square/cube grids. A Legendre basis is assumed.
 //
-// The reference computes the indicator on a triangle/tetdrahedral grid, so
+// The reference computes the indicator on a triangle/tetrahedral grid, so
 // the basis functions (and their derivatives) do not factor into a tensor
 // product across dimensions. We instead compute the indicator on a square/cube
 // grid, where the basis functions (and their derivatives) do factor. We use
@@ -96,14 +97,15 @@ double compute_sum_of_legendre_derivs(
 // oscillation content, any matrix element associated with basis functions
 // m == 0 or n == 0 vanishes. We thus slightly reduce the necessary storage by
 // computing only the (N-1)^2 matrix where we start at m, n >= 1.
+//
+// Finally, note that the matrix measures the oscillation content in modes of
+// a Legendre basis. Therefore, the matrix must be multiplied by ModalVectors
+// of Legendre modes to compute the oscillation indicator.
 template <size_t VolumeDim>
 Matrix compute_indicator_matrix(
     const Limiters::Weno_detail::DerivativeWeight derivative_weight,
-    const Mesh<VolumeDim>& mesh) noexcept {
-  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
-         "No implementation for mesh: " << mesh);
-  Matrix result(mesh.number_of_grid_points() - 1,
-                mesh.number_of_grid_points() - 1);
+    const Index<VolumeDim>& extents) noexcept {
+  Matrix result(extents.product() - 1, extents.product() - 1);
 
   const std::array<
       double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
@@ -125,12 +127,12 @@ Matrix compute_indicator_matrix(
         return weights;
       }();
 
-  for (IndexIterator<VolumeDim> m(mesh.extents()); m; ++m) {
+  for (IndexIterator<VolumeDim> m(extents); m; ++m) {
     if (m.collapsed_index() == 0) {
       // Skip the terms associated with the cell average of the data
       continue;
     }
-    for (IndexIterator<VolumeDim> n(mesh.extents()); n; ++n) {
+    for (IndexIterator<VolumeDim> n(extents); n; ++n) {
       if (n.collapsed_index() == 0) {
         // Skip the terms associated with the cell average of the data
         continue;
@@ -139,11 +141,11 @@ Matrix compute_indicator_matrix(
       // polynomial math
       auto& result_mn =
           result(m.collapsed_index() - 1, n.collapsed_index() - 1);
-      result_mn = compute_sum_of_legendre_derivs(
-          mesh.extents(0), m()[0], n()[0], weights_for_derivatives);
+      result_mn = compute_sum_of_legendre_derivs(extents[0], m()[0], n()[0],
+                                                 weights_for_derivatives);
       for (size_t dim = 1; dim < VolumeDim; ++dim) {
         result_mn *= compute_sum_of_legendre_derivs(
-            mesh.extents(dim), m()[dim], n()[dim], weights_for_derivatives);
+            extents[dim], m()[dim], n()[dim], weights_for_derivatives);
       }
     }
     // Subtract the tensor-product term that has no derivatives
@@ -161,6 +163,54 @@ Matrix compute_indicator_matrix(
         term_with_no_derivs;
   }
   return result;
+}
+
+// Helper function for caching a matrix that depends on the extents of a Mesh.
+// The helper handles converting from the extents (passed in as an Index) to a
+// series of integers (used to call into the StaticCache) and back to an Index
+// (used to compute the matrix).
+template <size_t VolumeDim>
+const Matrix& cached_indicator_matrix_from_mesh_index(
+    const Limiters::Weno_detail::DerivativeWeight derivative_weight,
+    const Index<VolumeDim>& extents) noexcept {
+  using CacheEnumerationDerivativeWeight = CacheEnumeration<
+      Limiters::Weno_detail::DerivativeWeight,
+      Limiters::Weno_detail::DerivativeWeight::Unity,
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEll,
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial>;
+  // Oscillation indicator needs at least two grid points
+  constexpr size_t min = 2;
+  constexpr size_t max =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  if constexpr (VolumeDim == 1) {
+    const auto cache = make_static_cache<CacheEnumerationDerivativeWeight,
+                                         CacheRange<min, max>>(
+        [](const Limiters::Weno_detail::DerivativeWeight dw,
+           const size_t nx) noexcept -> Matrix {
+          return compute_indicator_matrix(dw, Index<1>(nx));
+        });
+    return cache(derivative_weight, extents[0]);
+  } else if constexpr (VolumeDim == 2) {
+    const auto cache =
+        make_static_cache<CacheEnumerationDerivativeWeight,
+                          CacheRange<min, max>, CacheRange<min, max>>(
+            [](const Limiters::Weno_detail::DerivativeWeight dw,
+               const size_t nx, const size_t ny) noexcept -> Matrix {
+              return compute_indicator_matrix(dw, Index<2>(nx, ny));
+            });
+    return cache(derivative_weight, extents[0], extents[1]);
+  } else {
+    const auto cache =
+        make_static_cache<CacheEnumerationDerivativeWeight,
+                          CacheRange<min, max>, CacheRange<min, max>,
+                          CacheRange<min, max>>(
+            [](const Limiters::Weno_detail::DerivativeWeight dw,
+               const size_t nx, const size_t ny,
+               const size_t nz) noexcept -> Matrix {
+              return compute_indicator_matrix(dw, Index<3>(nx, ny, nz));
+            });
+    return cache(derivative_weight, extents[0], extents[1], extents[2]);
+  }
 }
 
 }  // namespace
@@ -186,32 +236,19 @@ double oscillation_indicator(const DerivativeWeight derivative_weight,
                              const DataVector& data,
                              const Mesh<VolumeDim>& mesh) noexcept {
   ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
-         "No implementation for mesh: " << mesh);
+         "Unsupported basis: " << mesh);
+  ASSERT(mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
+             mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+         "Unsupported quadrature: " << mesh);
+  // The oscillation indicator is computed from the N>0 spectral modes of the
+  // input data, so we need at least two modes => at least two grid points.
+  ASSERT(*alg::min_element(mesh.extents().indices()) > 1,
+         "Unsupported extents: " << mesh);
 
-  // Optimization: cache the indicator matrix, because it does not depend on the
-  // data. This caching will have to be generalized to handle simulations with
-  // more than one mesh.
-  const auto cache = make_static_cache<CacheEnumeration<
-      DerivativeWeight, DerivativeWeight::Unity, DerivativeWeight::PowTwoEll,
-      DerivativeWeight::PowTwoEllOverEllFactorial>>(
-      [&mesh](const DerivativeWeight dw) noexcept -> Matrix {
-        return compute_indicator_matrix(dw, mesh);
-      });
-  const Matrix indicator_matrix = cache(derivative_weight);
-
-  // Check there is only one mesh, i.e., that we satisfy the cache assumptions.
-  static const Mesh<VolumeDim> mesh_for_cached_matrix = mesh;
-  ASSERT(
-      mesh_for_cached_matrix == mesh,
-      "This call to oscillation_indicator received as argument a different\n"
-      "Mesh than was previously cached, suggesting that multiple meshes are\n"
-      "used in the computational domain. This is not (yet) supported.\n"
-      "Cached mesh: "
-          << mesh_for_cached_matrix
-          << "\n"
-             "Argument mesh: "
-          << mesh);
-
+  const Matrix& indicator_matrix = cached_indicator_matrix_from_mesh_index(
+      derivative_weight, mesh.extents());
   const ModalVector coeffs = to_modal_coefficients(data, mesh);
 
   double result = 0.;

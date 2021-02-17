@@ -191,12 +191,13 @@ void test_simple_weno_work(
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector_to_limit, local_approx);
 }
 
-void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
-                             directions_of_external_boundaries = {}) noexcept {
-  INFO("Test simple_weno_impl in 1D");
+void test_simple_weno_1d_impl(
+    const Spectral::Quadrature quadrature,
+    const std::unordered_set<Direction<1>>& directions_of_external_boundaries =
+        {}) noexcept {
+  CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<1>(3, Spectral::Basis::Legendre, quadrature);
   const auto element =
       TestHelpers::Limiters::make_element<1>(directions_of_external_boundaries);
   const auto logical_coords = logical_coordinates(mesh);
@@ -265,9 +266,24 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
                            neighbor_modified_vars);
 }
 
-void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
-                             directions_of_external_boundaries = {}) noexcept {
+void test_simple_weno_1d() noexcept {
+  INFO("Test simple_weno_impl in 1D");
+  const auto gl = Spectral::Quadrature::GaussLobatto;
+  const auto gauss = Spectral::Quadrature::Gauss;
+
+  test_simple_weno_1d_impl(gl);
+  test_simple_weno_1d_impl(gauss);
+
+  // Test with particular boundaries labeled as external
+  test_simple_weno_1d_impl(gl, {{Direction<1>::lower_xi()}});
+}
+
+void test_simple_weno_2d_impl(
+    const Spectral::Quadrature quadrature,
+    const std::unordered_set<Direction<2>>& directions_of_external_boundaries =
+        {}) noexcept {
   INFO("Test simple_weno_impl in 2D");
+  CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
@@ -373,12 +389,28 @@ void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
                            neighbor_modified_vars);
 }
 
-void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
-                             directions_of_external_boundaries = {}) noexcept {
-  INFO("Test simple_weno_impl in 3D");
+void test_simple_weno_2d() noexcept {
+  INFO("Test simple_weno_impl in 2D");
+  const auto gl = Spectral::Quadrature::GaussLobatto;
+  const auto gauss = Spectral::Quadrature::Gauss;
+
+  test_simple_weno_2d_impl(gl);
+  test_simple_weno_2d_impl(gauss);
+
+  // Test with particular boundaries labeled as external
+  test_simple_weno_2d_impl(gl, {{Direction<2>::lower_eta()}});
+  test_simple_weno_2d_impl(
+      gl, {{Direction<2>::lower_xi(), Direction<2>::lower_eta(),
+            Direction<2>::upper_eta()}});
+}
+
+void test_simple_weno_3d_impl(
+    const Spectral::Quadrature quadrature,
+    const std::unordered_set<Direction<3>>& directions_of_external_boundaries =
+        {}) noexcept {
+  CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
-  const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre, quadrature);
   const auto element =
       TestHelpers::Limiters::make_element<3>(directions_of_external_boundaries);
   const auto logical_coords = logical_coordinates(mesh);
@@ -526,6 +558,22 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
                            neighbor_modified_vars, custom_approx);
 }
 
+void test_simple_weno_3d() noexcept {
+  INFO("Test simple_weno_impl in 3D");
+  const auto gl = Spectral::Quadrature::GaussLobatto;
+  const auto gauss = Spectral::Quadrature::Gauss;
+
+  test_simple_weno_3d_impl(gl);
+  test_simple_weno_3d_impl(gauss);
+
+  // Test with particular boundaries labeled as external
+  test_simple_weno_3d_impl(gl, {{Direction<3>::lower_zeta()}});
+  test_simple_weno_3d_impl(
+      gl, {{Direction<3>::lower_xi(), Direction<3>::upper_xi(),
+            Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
+            Direction<3>::lower_zeta()}});
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.SimpleWenoImpl",
@@ -533,14 +581,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.SimpleWenoImpl",
   test_simple_weno_1d();
   test_simple_weno_2d();
   test_simple_weno_3d();
-
-  // Test with particular boundaries labeled as external
-  test_simple_weno_1d({{Direction<1>::lower_xi()}});
-  test_simple_weno_2d({{Direction<2>::lower_eta()}});
-  test_simple_weno_2d({{Direction<2>::lower_xi(), Direction<2>::lower_eta(),
-                        Direction<2>::upper_eta()}});
-  test_simple_weno_3d({{Direction<3>::lower_zeta()}});
-  test_simple_weno_3d({{Direction<3>::lower_xi(), Direction<3>::upper_xi(),
-                        Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
-                        Direction<3>::lower_zeta()}});
 }

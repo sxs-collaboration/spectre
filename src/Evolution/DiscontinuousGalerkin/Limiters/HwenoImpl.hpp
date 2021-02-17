@@ -24,6 +24,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -535,6 +536,18 @@ void hweno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
+  // Check that basis is LGL or LG
+  // The Hweno reconstruction implemented here is specialized to the case of a
+  // Legendre basis. While the underlying algorithm should work for other bases
+  // as well, the matrix computations would need to be generalized.
+  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+         "Unsupported basis: " << mesh);
+  ASSERT(mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
+             mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+         "Unsupported quadrature: " << mesh);
+
   ASSERT(
       modified_neighbor_solution_buffer->size() == neighbor_data.size(),
       "modified_neighbor_solution_buffer->size() = "

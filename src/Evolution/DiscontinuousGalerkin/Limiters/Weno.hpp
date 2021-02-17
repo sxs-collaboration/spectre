@@ -91,7 +91,8 @@ namespace Limiters {
 ///
 /// \warning
 /// Limitations:
-/// - Does not support h- or p-refinement; this is enforced with ASSERTIONS.
+/// - Does not support non-Legendre bases; this is ASSERTed.
+/// - Does not support h- or p-refinement; this is ASSERTed.
 /// - Does not support curved elements; this is not enforced.
 template <size_t VolumeDim, typename... Tags>
 class Weno<VolumeDim, tmpl::list<Tags...>> {
@@ -287,6 +288,17 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     // Do not modify input tensors
     return false;
   }
+
+  // Check that basis is LGL or LG
+  // A Legendre basis is assumed for the oscillation indicator (used in both
+  // SimpleWeno and Hweno) and in the Hweno reconstruction.
+  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+         "Unsupported basis: " << mesh);
+  ASSERT(mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
+             mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+         "Unsupported quadrature: " << mesh);
 
   // Enforce restrictions on h-refinement, p-refinement
   if (UNLIKELY(alg::any_of(element.neighbors(),

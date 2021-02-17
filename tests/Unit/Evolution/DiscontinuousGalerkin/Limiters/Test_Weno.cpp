@@ -528,7 +528,7 @@ void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
   INFO("Test simple WENO limiter");
   CAPTURE(VolumeDim);
   const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto);
+                                    Spectral::Quadrature::Gauss);
   const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
   const auto element_size = make_array<VolumeDim>(1.2);
 
@@ -680,6 +680,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno", "[Limiters][Unit]") {
   test_package_data_3d();
 
   // The simple WENO reconstruction is tested in Test_SimpleWenoImpl.cpp.
+  // There, both LGL and LG points are used. Here we only use Gauss points.
   // Here we test that
   // - the TCI correctly acts component-by-component
   // - the limiter is indeed calling `simple_weno_impl`
@@ -688,6 +689,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno", "[Limiters][Unit]") {
   test_simple_weno<3>({{3, 4, 5}});
 
   // The HWENO reconstruction is tested in Test_HwenoImpl.cpp.
+  // There, both LGL and LG points are used. Here we only use LGL points.
   // Here we test that
   // - the TCI correctly triggers limiting on all tensors at once
   // - the limiter is indeed calling `hweno_impl`

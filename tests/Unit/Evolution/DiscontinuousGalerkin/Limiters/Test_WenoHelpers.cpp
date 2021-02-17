@@ -23,10 +23,11 @@
 
 namespace {
 
-void test_reconstruction_1d() noexcept {
+void test_reconstruction_1d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.005;
-  const Mesh<1> mesh(5, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mesh(5, Spectral::Basis::Legendre, quadrature);
   const auto coords = logical_coordinates(mesh);
 
   const auto evaluate_polynomial =
@@ -67,10 +68,17 @@ void test_reconstruction_1d() noexcept {
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
 
-void test_reconstruction_2d() noexcept {
+void test_reconstruction_1d() noexcept {
+  INFO("Testing WENO reconstruction in 1D");
+  test_reconstruction_1d_impl(Spectral::Quadrature::GaussLobatto);
+  test_reconstruction_1d_impl(Spectral::Quadrature::Gauss);
+}
+
+void test_reconstruction_2d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.001;
-  const Mesh<2> mesh({{3, 3}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh({{3, 3}}, Spectral::Basis::Legendre, quadrature);
   const auto coords = logical_coordinates(mesh);
 
   const auto evaluate_polynomial =
@@ -124,10 +132,17 @@ void test_reconstruction_2d() noexcept {
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
 
-void test_reconstruction_3d() noexcept {
+void test_reconstruction_2d() noexcept {
+  INFO("Testing WENO reconstruction in 2D");
+  test_reconstruction_2d_impl(Spectral::Quadrature::GaussLobatto);
+  test_reconstruction_2d_impl(Spectral::Quadrature::Gauss);
+}
+
+void test_reconstruction_3d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.001;
-  const Mesh<3> mesh({{3, 3, 3}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh({{3, 3, 3}}, Spectral::Basis::Legendre, quadrature);
   const auto coords = logical_coordinates(mesh);
 
   // 3D case has so many modes... so we simplify by only setting 6 of them, the
@@ -183,6 +198,12 @@ void test_reconstruction_3d() noexcept {
       Limiters::Weno_detail::DerivativeWeight::Unity, mesh, neighbor_data);
   CHECK(mean_value(local_data, mesh) == approx(expected_local_mean));
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
+}
+
+void test_reconstruction_3d() noexcept {
+  INFO("Testing WENO reconstruction in 3D");
+  test_reconstruction_3d_impl(Spectral::Quadrature::GaussLobatto);
+  test_reconstruction_3d_impl(Spectral::Quadrature::Gauss);
 }
 
 }  // namespace
