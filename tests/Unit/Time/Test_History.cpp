@@ -7,7 +7,9 @@
 #include <cmath>
 #include <cstddef>
 #include <deque>
+#include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
@@ -105,7 +107,12 @@ void check_history_state(const HistoryType& hist) noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
-  HistoryType history;
+  HistoryType history{3};
+
+  CHECK(history.integration_order() == 3);
+  CHECK(std::as_const(history).integration_order() == 3);
+  history.integration_order(2);
+  CHECK(history.integration_order() == 2);
 
   CHECK(history.size() == 0);
   CHECK(history.capacity() == 0);
@@ -161,6 +168,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
 
   check_history_state(copy);
   check_iterator(copy.begin() + 1);
+  CHECK(copy.integration_order() == 2);
 }
 
 namespace {
@@ -194,7 +202,7 @@ size_t check_boundary_state(
 
   std::string local_arg;
   std::vector<int> remote_arg;
-  double coupling_return;
+  double coupling_return = std::numeric_limits<double>::signaling_NaN();
   const auto coupling = [&local_arg, &remote_arg, &coupling_return ](
       const std::string& local, const std::vector<int>& remote) noexcept {
     local_arg = local;

@@ -84,6 +84,8 @@ class RungeKutta4 : public TimeStepper::Inherit {
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
+  size_t order() const noexcept override;
+
   uint64_t number_of_substeps() const noexcept override;
 
   uint64_t number_of_substeps_for_error() const noexcept override;
@@ -132,6 +134,9 @@ void RungeKutta4::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->integration_order() == 4,
+         "Fixed-order stepper cannot run at order "
+         << history->integration_order());
   const size_t substep = history->size() - 1;
   const auto& dt_vars = (history->end() - 1).derivative();
   const auto& u0 = history->begin().value();
@@ -196,6 +201,9 @@ bool RungeKutta4::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->integration_order() == 4,
+         "Fixed-order stepper cannot run at order "
+         << history->integration_order());
   const size_t substep = history->size() - 1;
   if (substep < 3) {
     update_u(u, history, time_step);

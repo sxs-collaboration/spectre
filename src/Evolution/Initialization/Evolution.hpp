@@ -236,9 +236,14 @@ struct TimeStepperHistory {
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
 
+    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
+    const size_t starting_order =
+        time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
+
     // Will be overwritten before use
     DtVars dt_vars{num_grid_points};
-    typename ::Tags::HistoryEvolvedVariables<variables_tag>::type history;
+    typename ::Tags::HistoryEvolvedVariables<variables_tag>::type history{
+      starting_order};
 
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(dt_vars), std::move(history));

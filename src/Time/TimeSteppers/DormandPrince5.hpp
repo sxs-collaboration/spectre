@@ -83,6 +83,8 @@ class DormandPrince5 : public TimeStepper::Inherit {
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
+  size_t order() const noexcept override;
+
   uint64_t number_of_substeps() const noexcept override;
 
   uint64_t number_of_substeps_for_error() const noexcept override;
@@ -161,6 +163,9 @@ void DormandPrince5::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->integration_order() == 5,
+         "Fixed-order stepper cannot run at order "
+         << history->integration_order());
   const size_t substep = history->size() - 1;
   const auto& u0 = history->begin().value();
   const double dt = time_step.value();
@@ -202,6 +207,9 @@ bool DormandPrince5::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
+  ASSERT(history->integration_order() == 5,
+         "Fixed-order stepper cannot run at order "
+         << history->integration_order());
   const size_t substep = history->size() - 1;
   const auto& u0 = history->begin().value();
   const double dt = time_step.value();

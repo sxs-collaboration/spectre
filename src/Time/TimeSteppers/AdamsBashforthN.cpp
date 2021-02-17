@@ -16,6 +16,8 @@ AdamsBashforthN::AdamsBashforthN(const size_t order) noexcept : order_(order) {
   }
 }
 
+size_t AdamsBashforthN::order() const noexcept { return order_; }
+
 size_t AdamsBashforthN::number_of_past_steps() const noexcept {
   return order_ - 1;
 }
@@ -125,7 +127,7 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
     const auto& poly = polynomials[j];
     double integral = 0.;
     for (size_t i = 0; i < order; ++i) {
-      integral += poly[i] / (i + 1);
+      integral += poly[i] / (i + 1.);
     }
     result.push_back(overall_sign * integral / denominators[j]);
     overall_sign = -overall_sign;

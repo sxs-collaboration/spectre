@@ -171,7 +171,7 @@ void emplace_component_and_initialize(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<HasPrimitives>>>(
       runner, 0,
-      {initial_value, 0., typename history_tag::type{}, TimeStepId{},
+      {initial_value, 0., typename history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN()});
@@ -186,7 +186,7 @@ void emplace_component_and_initialize<true>(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<true>>>(
       runner, 0,
-      {initial_value, initial_value, 0., typename history_tag::type{},
+      {initial_value, initial_value, 0., typename history_tag::type{1},
        TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
@@ -328,7 +328,8 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
         }
         CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
                                              history_tag>(runner, 0)
-                  .size() == current_order);
+                  .integration_order() ==
+              (last_point ? current_order + 1 : current_order));
       }
     }
   }
@@ -367,7 +368,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
     CHECK(
         ActionTesting::get_databox_tag<Component<Metavariables<>>, history_tag>(
             runner, 0)
-            .size() == order - 1);
+            .integration_order() == order);
   }
 }
 

@@ -11,6 +11,8 @@
 
 namespace TimeSteppers {
 
+size_t RungeKutta4::order() const noexcept { return 4; }
+
 uint64_t RungeKutta4::number_of_substeps() const noexcept { return 4; }
 
 uint64_t RungeKutta4::number_of_substeps_for_error() const noexcept {

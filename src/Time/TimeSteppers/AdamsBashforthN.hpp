@@ -260,6 +260,8 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       double time) const noexcept;
 
+  size_t order() const noexcept override;
+
   size_t number_of_past_steps() const noexcept override;
 
   double stable_step() const noexcept override;
@@ -374,8 +376,15 @@ void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
-  update_u_impl(u, *history, time_step, order_);
-  history->mark_unneeded(history->begin() + 1);
+  ASSERT(history->size() >= history->integration_order(),
+         "Insufficient data to take an order-" << history->integration_order()
+         << " step.  Have " << history->size() << " times, need "
+         << history->integration_order());
+  history->mark_unneeded(
+      history->end() -
+      static_cast<typename decltype(history->end())::difference_type>(
+          history->integration_order()));
+  update_u_impl(u, *history, time_step, history->integration_order());
 }
 
 template <typename Vars, typename DerivVars>
@@ -383,16 +392,20 @@ bool AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
-  ASSERT(
-      history->size() > 0,
-      "Cannot meaningfully update the evolved variables with an empty history");
+  ASSERT(history->size() >= history->integration_order(),
+         "Insufficient data to take an order-" << history->integration_order()
+         << " step.  Have " << history->size() << " times, need "
+         << history->integration_order());
+  history->mark_unneeded(
+      history->end() -
+      static_cast<typename decltype(history->end())::difference_type>(
+          history->integration_order()));
   *u_error = *u;
-  update_u_impl(u, *history, time_step, history->size());
+  update_u_impl(u, *history, time_step, history->integration_order());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
-  update_u_impl(u_error, *history, time_step, history->size() - 1);
+  update_u_impl(u_error, *history, time_step, history->integration_order() - 1);
   *u_error = *u - *u_error;
-  history->mark_unneeded(history->begin() + 1);
   return true;
 }
 
@@ -400,8 +413,9 @@ template <typename Vars, typename DerivVars>
 void AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
                                      const History<Vars, DerivVars>& history,
                                      const double time) const noexcept {
-  const ApproximateTimeDelta time_step{
-      time - history[history.size() - 1].value()};
+  ASSERT(history.integration_order() == order_,
+         "Dense output is only supported at full order");
+  const ApproximateTimeDelta time_step{time - history.back().value()};
   update_u_impl(u, history, time_step, order_);
 }
 
@@ -410,15 +424,16 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
                                     const History<Vars, DerivVars>& history,
                                     const Delta& time_step,
                                     const size_t order) const noexcept {
-  ASSERT(history.size() <= order_,
-         "Length of history (" << history.size() << ") "
-         << "should not exceed target order (" << order_ << ")");
+  ASSERT(
+      history.size() > 0,
+      "Cannot meaningfully update the evolved variables with an empty history");
+  ASSERT(order <= order_,
+         "Requested integration order higher than integrator order");
 
-  const size_t update_order = std::min(history.size(), order);
   const auto& coefficients = get_coefficients(
       history.end() -
           static_cast<typename History<Vars, DerivVars>::difference_type>(
-              update_order),
+              order),
       history.end(), time_step);
 
   const auto do_update = [u, &time_step, &coefficients,
@@ -436,7 +451,7 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
 #pragma GCC diagnostic pop
           });
   };
-  switch (update_order) {
+  switch (order) {
     // note that the order-0 version should only be called when determining
     // error estimates -- it is not useful for actual integration
     case 0:
