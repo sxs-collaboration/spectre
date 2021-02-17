@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Contract.cpp
   Test_MixedOperations.cpp
   Test_Product.cpp
+  Test_SquareRoot.cpp
   Test_TensorExpressions.cpp
   )
 
