@@ -33,21 +33,19 @@ void assign_unique_values_to_tensor(
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the outer product of a `double` and tensor is correctly
-/// evaluated
-///
-/// \details
-/// The outer product cases tested are:
-/// - \f$L_{ij} = R * S_{ij}\f$
-/// - \f$L_{ij} = S_{ij} * R\f$
-/// - \f$L_{ij} = R * S_{ij} * T\f$
-///
-/// where \f$R\f$ and \f$T\f$ are `double`s and \f$S\f$ and \f$L\f$ are Tensors
-/// with data type `double` or DataVector.
-///
-/// \tparam DataType the type of data being stored in the tensor operand of the
-/// products
+// \brief Test the outer product of a `double` and tensor is correctly evaluated
+//
+// \details
+// The outer product cases tested are:
+// - \f$L_{ij} = R * S_{ij}\f$
+// - \f$L_{ij} = S_{ij} * R\f$
+// - \f$L_{ij} = R * S_{ij} * T\f$
+//
+// where \f$R\f$ and \f$T\f$ are `double`s and \f$S\f$ and \f$L\f$ are Tensors
+// with data type `double` or DataVector.
+//
+// \tparam DataType the type of data being stored in the tensor operand of the
+// products
 template <typename DataType>
 void test_outer_product_double(const DataType& used_for_size) noexcept {
   constexpr size_t dim = 3;
@@ -80,21 +78,20 @@ void test_outer_product_double(const DataType& used_for_size) noexcept {
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the outer product of a rank 0 tensor with another tensor is
-/// correctly evaluated
-///
-/// \details
-/// The outer product cases tested are:
-/// - \f$L = R * R\f$
-/// - \f$L = R * R * R\f$
-/// - \f$L^{a} = R * S^{a}\f$
-/// - \f$L_{ai} = R * T_{ai}\f$
-///
-/// For the last two cases, both operand orderings are tested. For the last
-/// case, both LHS index orderings are tested.
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the outer product of a rank 0 tensor with another tensor is
+// correctly evaluated
+//
+// \details
+// The outer product cases tested are:
+// - \f$L = R * R\f$
+// - \f$L = R * R * R\f$
+// - \f$L^{a} = R * S^{a}\f$
+// - \f$L_{ai} = R * T_{ai}\f$
+//
+// For the last two cases, both operand orderings are tested. For the last case,
+// both LHS index orderings are tested.
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_outer_product_rank_0_operand(const DataType& used_for_size) noexcept {
   Tensor<DataType> R{{{used_for_size}}};
@@ -174,21 +171,20 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) noexcept {
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the outer product of rank 1 tensors with another tensor is
-/// correctly evaluated
-///
-/// \details
-/// The outer product cases tested are:
-/// - \f$L^{a}{}_{i} = R_{i} * S^{a}\f$
-/// - \f$L^{ja}{}_{i} = R_{i} * S^{a} * T^{j}\f$
-/// - \f$L_{k}{}^{c}{}_{d} = S^{c} * G_{dk}\f$
-/// - \f$L^{c}{}_{dk} = G_{dk} * S^{c}\f$
-///
-/// For each case, the LHS index order is different from the order in the
-/// operands.
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the outer product of rank 1 tensors with another tensor is
+// correctly evaluated
+//
+// \details
+// The outer product cases tested are:
+// - \f$L^{a}{}_{i} = R_{i} * S^{a}\f$
+// - \f$L^{ja}{}_{i} = R_{i} * S^{a} * T^{j}\f$
+// - \f$L_{k}{}^{c}{}_{d} = S^{c} * G_{dk}\f$
+// - \f$L^{c}{}_{dk} = G_{dk} * S^{c}\f$
+//
+// For each case, the LHS index order is different from the order in the
+// operands.
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_outer_product_rank_1_operand(const DataType& used_for_size) noexcept {
   Tensor<DataType, Symmetry<1>,
@@ -269,14 +265,13 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) noexcept {
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the outer product of two rank 2 tensors is correctly evaluated
-///
-/// \details
-/// All LHS index orders are tested. One such example case:
-/// \f$L_{abc}{}^{i} = R_{ab} * S^{i}{}_{c}\f$
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the outer product of two rank 2 tensors is correctly evaluated
+//
+// \details
+// All LHS index orders are tested. One such example case:
+// \f$L_{abc}{}^{i} = R_{ab} * S^{i}{}_{c}\f$
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_outer_product_rank_2x2_operands(
     const DataType& used_for_size) noexcept {
@@ -430,17 +425,16 @@ void test_outer_product_rank_2x2_operands(
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the outer product of a rank 0, rank 1, and rank 2 tensor is
-/// correctly evaluated
-///
-/// \details
-/// The outer product cases tested are permutations of the form:
-/// - \f$L^{a}{}_{ib} = R * S^{a} * T_{bi}\f$
-///
-/// Each case represents an ordering for the operands and the LHS indices.
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the outer product of a rank 0, rank 1, and rank 2 tensor is
+// correctly evaluated
+//
+// \details
+// The outer product cases tested are permutations of the form:
+// - \f$L^{a}{}_{ib} = R * S^{a} * T_{bi}\f$
+//
+// Each case represents an ordering for the operands and the LHS indices.
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_outer_product_rank_0x1x2_operands(
     const DataType& used_for_size) noexcept {
@@ -714,15 +708,14 @@ void test_outer_product_rank_0x1x2_operands(
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the inner product of two rank 1 tensors is correctly evaluated
-///
-/// \details
-/// The inner product cases tested are:
-/// - \f$L = R^{a} * S_{a}\f$
-/// - \f$L = S_{a} * R^{a}\f$
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the inner product of two rank 1 tensors is correctly evaluated
+//
+// \details
+// The inner product cases tested are:
+// - \f$L = R^{a} * S_{a}\f$
+// - \f$L = S_{a} * R^{a}\f$
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_inner_product_rank_1x1_operands(
     const DataType& used_for_size) noexcept {
@@ -751,17 +744,16 @@ void test_inner_product_rank_1x1_operands(
   CHECK(L_from_Sa_RA.get() == expected_sum);
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the inner product of two rank 2 tensors is correctly evaluated
-///
-/// \details
-/// All cases in this test contract both pairs of indices of the two rank 2
-/// tensor operands to a resulting rank 0 tensor. For each case, the two tensor
-/// operands have one spacetime and one spatial index. Each case is a
-/// permutation of the positions of contracted pairs and their valences. One
-/// such example case: \f$L = R_{ai} * S^{ai}\f$
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the inner product of two rank 2 tensors is correctly evaluated
+//
+// \details
+// All cases in this test contract both pairs of indices of the two rank 2
+// tensor operands to a resulting rank 0 tensor. For each case, the two tensor
+// operands have one spacetime and one spatial index. Each case is a permutation
+// of the positions of contracted pairs and their valences. One such example
+// case: \f$L = R_{ai} * S^{ai}\f$
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_inner_product_rank_2x2_operands(
     const DataType& used_for_size) noexcept {
@@ -871,20 +863,19 @@ void test_inner_product_rank_2x2_operands(
   CHECK(L_AiIa_product.get() == L_AiIa_expected_product);
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the product of two tensors with one pair of indices to contract
-/// is correctly evaluated
-///
-/// \details
-/// The product cases tested are:
-/// - \f$L_{b} = R_{ab} * T^{a}\f$
-/// - \f$L_{ac} = R_{ab} * S^{b}_{c}\f$
-///
-/// All cases in this test contract one pair of indices of the two tensor
-/// operands. Each case is a permutation of the position of the contracted pair
-/// and the ordering of the LHS indices.
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the product of two tensors with one pair of indices to contract
+// is correctly evaluated
+//
+// \details
+// The product cases tested are:
+// - \f$L_{b} = R_{ab} * T^{a}\f$
+// - \f$L_{ac} = R_{ab} * S^{b}_{c}\f$
+//
+// All cases in this test contract one pair of indices of the two tensor
+// operands. Each case is a permutation of the position of the contracted pair
+// and the ordering of the LHS indices.
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_two_term_inner_outer_product(const DataType& used_for_size) noexcept {
   using R_index = SpacetimeIndex<3, UpLo::Lo, Frame::Grid>;
@@ -994,19 +985,18 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) noexcept {
   }
 }
 
-/// \ingroup TestingFrameworkGroup
-/// \brief Test the product of three tensors involving both inner and outer
-/// products of indices is correctly evaluated
-///
-/// \details
-/// The product cases tested are:
-/// - \f$L_{i} = R^{j} * S_{j} * T_{i}\f$
-/// - \f$L_{i}{}^{k} = S_{j} * T_{i} * G^{jk}\f$
-///
-/// For each case, multiple operand orderings are tested. For the second case,
-/// both LHS index orderings are also tested.
-///
-/// \tparam DataType the type of data being stored in the product operands
+// \brief Test the product of three tensors involving both inner and outer
+// products of indices is correctly evaluated
+//
+// \details
+// The product cases tested are:
+// - \f$L_{i} = R^{j} * S_{j} * T_{i}\f$
+// - \f$L_{i}{}^{k} = S_{j} * T_{i} * G^{jk}\f$
+//
+// For each case, multiple operand orderings are tested. For the second case,
+// both LHS index orderings are also tested.
+//
+// \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
 void test_three_term_inner_outer_product(
     const DataType& used_for_size) noexcept {
