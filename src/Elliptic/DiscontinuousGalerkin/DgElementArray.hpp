@@ -78,11 +78,11 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   const auto& initial_refinement_levels =
       get<domain::Tags::InitialRefinementLevels<volume_dim>>(
           initialization_items);
+  int which_proc = 0;
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs = initial_refinement_levels[block.id()];
     const std::vector<ElementId<volume_dim>> element_ids =
         initial_element_ids(block.id(), initial_ref_levs);
-    int which_proc = 0;
     const int number_of_procs = sys::number_of_procs();
     for (size_t i = 0; i < element_ids.size(); ++i) {
       dg_element_array(ElementId<volume_dim>(element_ids[i]))
