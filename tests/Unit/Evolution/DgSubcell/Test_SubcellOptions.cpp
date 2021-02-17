@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 
@@ -58,15 +59,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
       serialize_and_deserialize(options);
   CHECK(options == deserialized_options);
 
-  CHECK(options == TestHelpers::test_creation<SubcellOptions>(
-                       "InitialData:\n"
-                       "  RdmpDelta0: 1.0e-3\n"
-                       "  RdmpEpsilon: 1.0e-4\n"
-                       "  PerssonExponent: 5.0\n"
-                       "RdmpDelta0: 2.0e-3\n"
-                       "RdmpEpsilon: 2.0e-4\n"
-                       "PerssonExponent: 4.0\n"
-                       "AlwaysUseSubcells: true\n"));
+  CHECK(options ==
+        TestHelpers::test_creation<SubcellOptions, OptionTags::SubcellOptions>(
+            "InitialData:\n"
+            "  RdmpDelta0: 1.0e-3\n"
+            "  RdmpEpsilon: 1.0e-4\n"
+            "  PerssonExponent: 5.0\n"
+            "RdmpDelta0: 2.0e-3\n"
+            "RdmpEpsilon: 2.0e-4\n"
+            "PerssonExponent: 4.0\n"
+            "AlwaysUseSubcells: true\n"));
 }
 }  // namespace
 }  // namespace evolution::dg::subcell

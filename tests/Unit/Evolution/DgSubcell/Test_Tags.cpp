@@ -13,6 +13,7 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -69,6 +70,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags",
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Inactive<
       ::Tags::Variables<tmpl::list<Var1, Var2>>>>(
       "Inactive(Variables(Var1,Var2))");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::Tags::SubcellOptions>("SubcellOptions");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::TciGridHistory>("TciGridHistory");
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::TciStatus>(
