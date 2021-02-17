@@ -11,6 +11,7 @@ spectre_target_headers(
   LhsTensorSymmAndIndices.hpp
   Product.hpp
   NumberAsExpression.hpp
+  SquareRoot.hpp
   TensorAsExpression.hpp
   TensorExpression.hpp
   )
