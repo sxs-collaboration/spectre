@@ -12,4 +12,5 @@ spectre_target_headers(
   Inactive.hpp
   Mesh.hpp
   TciGridHistory.hpp
+  TciStatus.hpp
   )
