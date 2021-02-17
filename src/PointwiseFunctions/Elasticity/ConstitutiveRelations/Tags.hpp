@@ -3,37 +3,39 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Utilities/TMPL.hpp"
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 
 namespace Elasticity {
 namespace Tags {
 
-/// Base tag for the constitutive relation
-struct ConstitutiveRelationBase : db::BaseTag {};
-
 /*!
  * \brief The elastic material's constitutive relation.
  *
- * When constructing from options, copies the constitutive relation from the
- * `Metavariables::constitutive_relation_provider_option_tag` by calling its
- * constructed object's `constitutive_relation()` member function.
- *
- * The constitutive relation can be retrieved from the DataBox using its base
- * `Elasticity::Tags::ConstitutiveRelation` tag.
- *
  * \see `Elasticity::ConstitutiveRelations::ConstitutiveRelation`
  */
-template <typename ConstitutiveRelationType>
-struct ConstitutiveRelation : ConstitutiveRelationBase, db::SimpleTag {
-  using type = ConstitutiveRelationType;
+template <size_t Dim>
+struct ConstitutiveRelation : db::SimpleTag {
+  using type =
+      std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>;
+};
 
-  static constexpr bool pass_metavariables = true;
-  template <typename Metavariables>
-  using option_tags = tmpl::list<
-      typename Metavariables::constitutive_relation_provider_option_tag>;
-  template <typename Metavariables, typename ProviderType>
-  static type create_from_options(const ProviderType& provider) noexcept {
+/*!
+ * \brief Reference the constitutive relation provided by the `ProviderTag`
+ *
+ * \see `Elasticity::Tags::ConstitutiveRelation`
+ */
+template <size_t Dim, typename ProviderTag>
+struct ConstitutiveRelationReference : ConstitutiveRelation<Dim>,
+                                       db::ReferenceTag {
+  using base = ConstitutiveRelation<Dim>;
+  using parent_tag = ProviderTag;
+  using argument_tags = tmpl::list<ProviderTag>;
+  template <typename Provider>
+  static const ConstitutiveRelations::ConstitutiveRelation<Dim>& get(
+      const Provider& provider) noexcept {
     return provider.constitutive_relation();
   }
 };

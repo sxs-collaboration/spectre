@@ -57,7 +57,7 @@ struct PotentialEnergyDensityCompute
   using argument_tags =
       tmpl::list<Elasticity::Tags::Strain<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 Elasticity::Tags::ConstitutiveRelationBase>;
+                 Elasticity::Tags::ConstitutiveRelation<Dim>>;
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, Dim>&,
       const tnsr::I<DataVector, Dim>&,
