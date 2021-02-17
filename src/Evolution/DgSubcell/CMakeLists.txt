@@ -15,6 +15,7 @@ spectre_target_headers(
   Mesh.hpp
   Projection.hpp
   Reconstruction.hpp
+  TwoMeshRdmpTci.hpp
   )
 
 spectre_target_sources(

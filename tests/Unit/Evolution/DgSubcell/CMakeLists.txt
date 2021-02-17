@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Projection.cpp
   Test_Reconstruction.cpp
   Test_Tags.cpp
+  Test_TwoMeshRdmpTci.cpp
   )
 
 add_test_library(
