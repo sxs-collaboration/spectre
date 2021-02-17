@@ -15,6 +15,7 @@ spectre_target_headers(
   Mesh.hpp
   Projection.hpp
   Reconstruction.hpp
+  SubcellOptions.hpp
   TwoMeshRdmpTci.hpp
   )
 
@@ -26,6 +27,7 @@ spectre_target_sources(
   Mesh.cpp
   Projection.cpp
   Reconstruction.cpp
+  SubcellOptions.cpp
   )
 
 target_link_libraries(

@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Mesh.cpp
   Test_Projection.cpp
   Test_Reconstruction.cpp
+  Test_SubcellOptions.cpp
   Test_Tags.cpp
   Test_TwoMeshRdmpTci.cpp
   )
