@@ -15,10 +15,12 @@ DomainCreator:
   Brick:
     LowerBound: [0, 0, 0]
     UpperBound: [3.141592653589793, 3.141592653589793, 3.141592653589793]
-    IsPeriodicIn: [false, false, false]
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [2, 2, 2]
     TimeDependence: None
+    BoundaryCondition:
+      AnalyticSolution:
+        Field: Dirichlet
 
 NumericalFlux:
   InternalPenalty:

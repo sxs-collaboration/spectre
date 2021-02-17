@@ -9,8 +9,11 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
@@ -87,9 +90,24 @@ struct FirstOrderSystem {
   using fields_tag =
       ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
 
+  // Tags for the first-order fluxes. We just use the standard `Flux` prefix
+  // because the fluxes don't have symmetries and we don't need to give them a
+  // particular meaning.
+  using primal_fluxes =
+      tmpl::list<::Tags::Flux<field, tmpl::size_t<Dim>, Frame::Inertial>>;
+  using auxiliary_fluxes = tmpl::list<
+      ::Tags::Flux<field_gradient, tmpl::size_t<Dim>, Frame::Inertial>>;
+
   // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
   using sources_computer = Sources<Dim, BackgroundGeometry>;
+
+  // The supported boundary conditions. Boundary conditions can be
+  // factory-created from this base class.
+  using boundary_conditions_base =
+      elliptic::BoundaryConditions::BoundaryCondition<
+          Dim, tmpl::list<elliptic::BoundaryConditions::Registrars::
+                              AnalyticSolution<FirstOrderSystem>>>;
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element

@@ -249,6 +249,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
+        metavariables::system::boundary_conditions_base>,
+    &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<
         Trigger<metavariables::triggers>>};
