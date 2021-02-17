@@ -45,10 +45,10 @@ void test_cylindrical_endcap() {
   CAPTURE(radius_one);
 
   // Make sure z_plane intersects sphere_one on the +z side of the
-  // center. We don't allow the plane to be displaced by less than 10%
+  // center. We don't allow the plane to be displaced by less than 20%
   // or more than 90% of the radius.
   const double z_plane =
-      center_one[2] + (0.1 + 0.8 * unit_dis(gen)) * radius_one;
+      center_one[2] + (0.2 + 0.7 * unit_dis(gen)) * radius_one;
   CAPTURE(z_plane);
 
   // Now construct sphere_two which we make sure encloses sphere_one,
