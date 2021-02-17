@@ -9,5 +9,6 @@ spectre_target_headers(
   HEADERS
   ActiveGrid.hpp
   Inactive.hpp
+  Mesh.hpp
   TciGridHistory.hpp
   )
