@@ -16,5 +16,15 @@ add_test_library(
   ${LIBRARY}
   "Evolution/DgSubcell/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DgSubcell;DgSubcellHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Domain
+  DgSubcell
+  DgSubcellHelpers
+  Spectral
   )
