@@ -93,6 +93,17 @@ void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
 }
 // @}
 
+/*!
+ * \ingroup ParallelGroup
+ * \brief Invoke a local synchronous action on `proxy`
+ */
+template <typename Action, typename Proxy, typename... Args>
+decltype(auto) local_synchronous_action(Proxy&& proxy,
+                                        Args&&... args) noexcept {
+  return proxy.ckLocalBranch()->template local_synchronous_action<Action>(
+      std::forward<Args>(args)...);
+}
+
 // @{
 /*!
  * \ingroup ParallelGroup

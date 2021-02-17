@@ -572,6 +572,40 @@ calls on all array elements occurred in the same order. It is **undefined**
 behavior if the contribute calls are made in different orders on different array
 elements.
 
+## 4. Local Synchronous Actions {#dev_guide_parallelization_local_synchronous_actions}
+
+There is limited ability to retrieve data held by another parallel component via
+a direct synchronous call. Unlike the above actions, the invocation of a
+synchronous action is precisely a call to a member function of another parallel
+component; therefore, these invocations will run to completion, and return their
+result before the calling code proceeds in execution.
+Currently, it is only supported to invoke a local synchronous action on a
+`Nodegroup` chare (because nodegroups are already built to handle
+parallelization between threaded actions) -- generalization of this feature on
+other chares should pose no significant problem, but would need to be limited to
+elements that share a core with the calling code.
+
+Local synchronous actions' `apply` functions follow a signature motivated by
+threaded actions, but take fewer arguments:
+- The first template parameter is the `ParallelComponent` on which the action is
+  invoked
+- The first function argument is a `db::DataBox`
+- The second function argument is a `gsl::not_null<Parallel::NodeLock*>`
+- Any other function arguments are forwarded from the `local_synchronous_action`
+  call to the `apply` function of the action.
+- In addition, local synchronous actions must specify their return type in a
+  `return_type` type alias. This is to help simplify the logic with the
+  variant `db::DataBox` held by the parallel component.
+
+
+An example of a definition of a local synchronous action:
+
+\snippet Test_AlgorithmLocalSyncAction.cpp synchronous_action_example
+
+And the corresponding invocation:
+
+\snippet Test_AlgorithmLocalSyncAction.cpp synchronous_action_invocation_example
+
 # Mutable items in the GlobalCache
 
 Most items in the GlobalCache are constant, and are specified
