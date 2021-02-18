@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -430,8 +431,10 @@ void test_data_manager_with_dummy_buffer_updater(
   Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
       interpolated_boundary_variables{number_of_angular_points};
 
+  Parallel::NodeLock hdf5_lock{};
   boundary_data_manager.populate_hypersurface_boundary_data(
-      make_not_null(&interpolated_boundary_variables), target_time);
+      make_not_null(&interpolated_boundary_variables), target_time,
+      make_not_null(&hdf5_lock));
 
   // populate the expected variables with the result from the analytic modes
   // passed to the boundary data computation.

@@ -71,15 +71,18 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
     const gsl::not_null<Variables<
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
-    const double time) const noexcept {
+    const double time,
+    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept {
   if (buffer_updater_->time_is_outside_range(time)) {
     return false;
   }
+  hdf5_lock->lock();
   buffer_updater_->update_buffers_for_time(
       make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
       make_not_null(&time_span_end_), time, l_max_,
       interpolator_->required_number_of_points_before_and_after(),
       buffer_depth_);
+  hdf5_lock->unlock();
   const auto interpolation_time_span = detail::create_span_for_time_value(
       time, 0, interpolator_->required_number_of_points_before_and_after(),
       time_span_start_, time_span_end_, buffer_updater_->get_time_buffer());
@@ -305,15 +308,18 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
     const gsl::not_null<Variables<
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
-    const double time) const noexcept {
+    const double time,
+    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept {
   if (buffer_updater_->time_is_outside_range(time)) {
     return false;
   }
+  hdf5_lock->lock();
   buffer_updater_->update_buffers_for_time(
       make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
       make_not_null(&time_span_end_), time, l_max_,
       interpolator_->required_number_of_points_before_and_after(),
       buffer_depth_);
+  hdf5_lock->unlock();
   auto interpolation_time_span = detail::create_span_for_time_value(
       time, 0, interpolator_->required_number_of_points_before_and_after(),
       time_span_start_, time_span_end_, buffer_updater_->get_time_buffer());
