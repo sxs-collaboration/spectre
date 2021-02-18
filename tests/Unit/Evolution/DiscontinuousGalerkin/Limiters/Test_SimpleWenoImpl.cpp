@@ -274,7 +274,9 @@ void test_simple_weno_1d() noexcept {
   test_simple_weno_1d_impl(gl);
   test_simple_weno_1d_impl(gauss);
 
-  // Test with particular boundaries labeled as external
+  // Test with particular boundaries labeled as external. This is independent
+  // of the quadrature, since we only verify that we don't try to use a
+  // non-existent neighbor.
   test_simple_weno_1d_impl(gl, {{Direction<1>::lower_xi()}});
 }
 
@@ -397,7 +399,9 @@ void test_simple_weno_2d() noexcept {
   test_simple_weno_2d_impl(gl);
   test_simple_weno_2d_impl(gauss);
 
-  // Test with particular boundaries labeled as external
+  // Test with particular boundaries labeled as external. This is independent
+  // of the quadrature, since we only verify that we don't try to use a
+  // non-existent neighbor.
   test_simple_weno_2d_impl(gl, {{Direction<2>::lower_eta()}});
   test_simple_weno_2d_impl(
       gl, {{Direction<2>::lower_xi(), Direction<2>::lower_eta(),
@@ -566,7 +570,9 @@ void test_simple_weno_3d() noexcept {
   test_simple_weno_3d_impl(gl);
   test_simple_weno_3d_impl(gauss);
 
-  // Test with particular boundaries labeled as external
+  // Test with particular boundaries labeled as external. This is independent
+  // of the quadrature, since we only verify that we don't try to use a
+  // non-existent neighbor.
   test_simple_weno_3d_impl(gl, {{Direction<3>::lower_zeta()}});
   test_simple_weno_3d_impl(
       gl, {{Direction<3>::lower_xi(), Direction<3>::upper_xi(),
