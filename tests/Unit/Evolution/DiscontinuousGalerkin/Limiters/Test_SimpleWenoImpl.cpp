@@ -267,7 +267,7 @@ void test_simple_weno_1d_impl(
 }
 
 void test_simple_weno_1d() noexcept {
-  INFO("Test simple_weno_impl in 1D");
+  INFO("Testing simple_weno_impl in 1D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
 
@@ -284,7 +284,6 @@ void test_simple_weno_2d_impl(
     const Spectral::Quadrature quadrature,
     const std::unordered_set<Direction<2>>& directions_of_external_boundaries =
         {}) noexcept {
-  INFO("Test simple_weno_impl in 2D");
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
   const auto mesh =
@@ -392,7 +391,7 @@ void test_simple_weno_2d_impl(
 }
 
 void test_simple_weno_2d() noexcept {
-  INFO("Test simple_weno_impl in 2D");
+  INFO("Testing simple_weno_impl in 2D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
 
@@ -563,7 +562,7 @@ void test_simple_weno_3d_impl(
 }
 
 void test_simple_weno_3d() noexcept {
-  INFO("Test simple_weno_impl in 3D");
+  INFO("Testing simple_weno_impl in 3D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
 

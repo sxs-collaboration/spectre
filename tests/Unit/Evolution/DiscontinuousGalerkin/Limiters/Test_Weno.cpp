@@ -62,7 +62,7 @@ struct VectorTag : db::SimpleTag {
 };
 
 void test_weno_option_parsing() noexcept {
-  INFO("Test WENO option parsing");
+  INFO("Testing option parsing");
 
   const auto hweno_1d =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
@@ -141,7 +141,7 @@ void test_weno_option_parsing() noexcept {
 }
 
 void test_weno_serialization() noexcept {
-  INFO("Test WENO serialization");
+  INFO("Testing serialization");
   const Limiters::Weno<1, tmpl::list<ScalarTag>> weno(Limiters::WenoType::Hweno,
                                                       0.01, 1.0, true);
   test_serialization(weno);
@@ -196,7 +196,7 @@ void test_package_data_work(
 }
 
 void test_package_data_1d() noexcept {
-  INFO("Test WENO package_data in 1D");
+  INFO("Testing package_data in 1D");
   const Mesh<1> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
@@ -209,7 +209,7 @@ void test_package_data_1d() noexcept {
 }
 
 void test_package_data_2d() noexcept {
-  INFO("Test WENO package_data in 2D");
+  INFO("Testing package_data in 2D");
   const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
@@ -222,7 +222,7 @@ void test_package_data_2d() noexcept {
 }
 
 void test_package_data_3d() noexcept {
-  INFO("Test WENO package_data in 3D");
+  INFO("Testing package_data in 3D");
   const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
@@ -525,7 +525,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
 
 template <size_t VolumeDim>
 void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
-  INFO("Test simple WENO limiter");
+  INFO("Testing simple WENO limiter");
   CAPTURE(VolumeDim);
   const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::Gauss);
@@ -600,7 +600,7 @@ void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
 
 template <size_t VolumeDim>
 void test_hweno(const std::array<size_t, VolumeDim>& extents) noexcept {
-  INFO("Test HWENO limiter");
+  INFO("Testing HWENO limiter");
   CAPTURE(VolumeDim);
   const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::GaussLobatto);

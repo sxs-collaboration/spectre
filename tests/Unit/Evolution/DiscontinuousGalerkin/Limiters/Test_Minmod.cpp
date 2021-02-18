@@ -64,7 +64,7 @@ struct VectorTag : db::SimpleTag {
 };
 
 void test_minmod_option_parsing() noexcept {
-  INFO("Test Minmod option parsing");
+  INFO("Testing option parsing");
   const auto lambda_pi1 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
@@ -126,7 +126,7 @@ void test_minmod_option_parsing() noexcept {
 }
 
 void test_minmod_serialization() noexcept {
-  INFO("Test Minmod serialization");
+  INFO("Testing serialization");
   const Limiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
       Limiters::MinmodType::LambdaPi1, 1.0);
   test_serialization(minmod);
@@ -171,7 +171,7 @@ void test_package_data_work(
 }
 
 void test_package_data_1d() noexcept {
-  INFO("Test Minmod package_data in 1D");
+  INFO("Testing package_data in 1D");
   const Mesh<1> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
@@ -184,7 +184,7 @@ void test_package_data_1d() noexcept {
 }
 
 void test_package_data_2d() noexcept {
-  INFO("Test WENO package_data in 2D");
+  INFO("Testing package_data in 2D");
   const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
@@ -197,7 +197,7 @@ void test_package_data_2d() noexcept {
 }
 
 void test_package_data_3d() noexcept {
-  INFO("Test WENO package_data in 3D");
+  INFO("Testing package_data in 3D");
   const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
@@ -305,7 +305,7 @@ void test_minmod_does_not_activate(
 void test_minmod_slopes_on_linear_function(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing linear function...");
+  INFO("Testing minmod_limited_slopes with linear function");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
@@ -397,7 +397,7 @@ void test_minmod_slopes_on_linear_function(
 void test_minmod_slopes_on_quadratic_function(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing quadratic function...");
+  INFO("Testing minmod_limited_slopes with quadratic function");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
@@ -461,7 +461,7 @@ void test_minmod_slopes_on_quadratic_function(
 void test_minmod_slopes_with_tvb_correction(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing TVB correction...");
+  INFO("Testing minmod_limited_slopes with TVB correction");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
@@ -517,7 +517,7 @@ void test_minmod_slopes_with_tvb_correction(
 // TVB constant value.
 void test_lambda_pin_troubled_cell_tvb_correction(
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing LambdaPiN-TVB correction...");
+  INFO("Testing minmod_limited_slopes with LambdaPiN-TVB correction");
   CAPTURE(quadrature);
   const Mesh<1> mesh(4, Spectral::Basis::Legendre, quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
@@ -610,7 +610,7 @@ void test_lambda_pin_troubled_cell_tvb_correction(
 void test_minmod_slopes_at_boundary(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing limiter at boundary...");
+  INFO("Testing minmod_limited_slopes at boundary");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
@@ -672,7 +672,7 @@ void test_minmod_slopes_at_boundary(
 void test_minmod_slopes_with_different_size_neighbor(
     const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing limiter with neighboring elements of different size...");
+  INFO("Testing minmod_limited_slopes with different size neighbors");
   CAPTURE(number_of_grid_points);
   CAPTURE(minmod_type);
   CAPTURE(quadrature);
@@ -748,7 +748,7 @@ void test_minmod_slopes_with_different_size_neighbor(
 // In 1D, test combinations of MinmodType, TVB constant, polynomial order, etc.
 // Check that each combination reduces the slopes as expected.
 void test_minmod_limited_slopes_1d() noexcept {
-  INFO("Testing Minmod minmod_limited_slopes in 1D");
+  INFO("Testing minmod_limited_slopes in 1D");
   for (const auto quadrature :
        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
     for (const auto minmod_type :
@@ -833,7 +833,7 @@ void test_minmod_limited_slopes_2d_impl(
 }
 
 void test_minmod_limited_slopes_2d() noexcept {
-  INFO("Testing Minmod minmod_limited_slopes in 2D");
+  INFO("Testing minmod_limited_slopes in 2D");
   test_minmod_limited_slopes_2d_impl(Spectral::Quadrature::GaussLobatto);
   test_minmod_limited_slopes_2d_impl(Spectral::Quadrature::Gauss);
 }
@@ -904,7 +904,7 @@ void test_minmod_limited_slopes_3d_impl(
 }
 
 void test_minmod_limited_slopes_3d() noexcept {
-  INFO("Testing Minmod minmod_limited_slopes in 3D");
+  INFO("Testing minmod_limited_slopes in 3D");
   test_minmod_limited_slopes_3d_impl(Spectral::Quadrature::GaussLobatto);
   test_minmod_limited_slopes_3d_impl(Spectral::Quadrature::Gauss);
 }
@@ -1035,7 +1035,7 @@ void test_minmod_limiter_1d_impl(
 }
 
 void test_minmod_limiter_1d() noexcept {
-  INFO("Test Minmod limiter in 1D");
+  INFO("Testing Minmod limiter in 1D");
   test_minmod_limiter_1d_impl(Spectral::Quadrature::GaussLobatto);
   test_minmod_limiter_1d_impl(Spectral::Quadrature::Gauss);
 }
@@ -1131,7 +1131,7 @@ void test_minmod_limiter_2d_impl(
 }
 
 void test_minmod_limiter_2d() noexcept {
-  INFO("Test Minmod limiter in 2D");
+  INFO("Testing Minmod limiter in 2D");
   test_minmod_limiter_2d_impl(Spectral::Quadrature::GaussLobatto);
   test_minmod_limiter_2d_impl(Spectral::Quadrature::Gauss);
 }
@@ -1253,7 +1253,7 @@ void test_minmod_limiter_3d_impl(
 }
 
 void test_minmod_limiter_3d() noexcept {
-  INFO("Test Minmod limiter in 3D");
+  INFO("Testing Minmod limiter in 3D");
   test_minmod_limiter_3d_impl(Spectral::Quadrature::GaussLobatto);
   test_minmod_limiter_3d_impl(Spectral::Quadrature::Gauss);
 }
@@ -1292,6 +1292,7 @@ void test_limiter_activates_work(
 // Check that lower_xi data from two neighbors is correctly combined in the
 // limiting operation.
 void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
+  INFO("Testing Minmod limiter in 2D with two neighbors in one direction");
   const auto element = Element<2>{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
@@ -1356,6 +1357,7 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
 
 // See above, but in 3D and with 4 upper_xi neighbors
 void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
+  INFO("Testing Minmod limiter in 3D with four neighbors in one direction");
   const auto element = Element<3>{
       ElementId<3>{0},
       Element<3>::Neighbors_t{

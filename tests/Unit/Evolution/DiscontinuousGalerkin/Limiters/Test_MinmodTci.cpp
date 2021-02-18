@@ -80,7 +80,7 @@ void test_tci_detection(
 void test_tci_on_linear_function(
     const size_t number_of_grid_points,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing linear function...");
+  INFO("Testing TCI on linear function");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
@@ -130,7 +130,7 @@ void test_tci_on_linear_function(
 void test_tci_on_quadratic_function(
     const size_t number_of_grid_points,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing quadratic function...");
+  INFO("Testing TCI on quadratic function");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
@@ -202,7 +202,7 @@ void test_tci_on_quadratic_function(
 
 void test_tci_at_boundary(const size_t number_of_grid_points,
                           const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing limiter at boundary...");
+  INFO("Testing TCI at boundary");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
@@ -248,7 +248,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
 void test_tci_with_different_size_neighbor(
     const size_t number_of_grid_points,
     const Spectral::Quadrature quadrature) noexcept {
-  INFO("Testing limiter with neighboring elements of different size...");
+  INFO("Testing TCI with neighboring elements of different size");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
