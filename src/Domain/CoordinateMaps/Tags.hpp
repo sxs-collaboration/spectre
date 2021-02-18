@@ -30,7 +30,7 @@ template <size_t VolumeDim, typename SourceFrame, typename TargetFrame>
 struct CoordinateMap : db::SimpleTag {
 static constexpr size_t dim = VolumeDim;
   using target_frame = TargetFrame;
-  using source_frame = Frame::Logical;
+  using source_frame = SourceFrame;
 
   static std::string name() noexcept {
     return "CoordinateMap(" + get_output(SourceFrame{}) + "," +
