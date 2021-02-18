@@ -8,7 +8,7 @@
 #include <string>
 
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
@@ -81,7 +81,7 @@ void test(const size_t num_pts,
           const tuples::TaggedTuple<EosTag>& volume_data) {
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       NewtonianEuler::System<Dim, typename EosTag::type, DummyInitialData>>(
-      NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
+      NewtonianEuler::BoundaryCorrections::Hll<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data);
@@ -89,47 +89,49 @@ void test(const size_t num_pts,
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       NewtonianEuler::System<Dim, typename EosTag::type, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
-      "Rusanov",
+      "Hll",
       {{"dg_package_data_mass_density", "dg_package_data_momentum_density",
         "dg_package_data_energy_density",
         "dg_package_data_normal_dot_flux_mass_density",
         "dg_package_data_normal_dot_flux_momentum_density",
         "dg_package_data_normal_dot_flux_energy_density",
-        "dg_package_data_abs_char_speed"}},
+        "dg_package_data_largest_outgoing_char_speed",
+        "dg_package_data_largest_ingoing_char_speed"}},
       {{"dg_boundary_terms_mass_density", "dg_boundary_terms_momentum_density",
         "dg_boundary_terms_energy_density"}},
-      NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
+      NewtonianEuler::BoundaryCorrections::Hll<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data);
 
-  const auto rusanov = TestHelpers::test_factory_creation<
-      NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>("Rusanov:");
+  const auto hll = TestHelpers::test_factory_creation<
+      NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>("Hll:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       NewtonianEuler::System<Dim, typename EosTag::type, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
-      "Rusanov",
+      "Hll",
       {{"dg_package_data_mass_density", "dg_package_data_momentum_density",
         "dg_package_data_energy_density",
         "dg_package_data_normal_dot_flux_mass_density",
         "dg_package_data_normal_dot_flux_momentum_density",
         "dg_package_data_normal_dot_flux_energy_density",
-        "dg_package_data_abs_char_speed"}},
+        "dg_package_data_largest_outgoing_char_speed",
+        "dg_package_data_largest_ingoing_char_speed"}},
       {{"dg_boundary_terms_mass_density", "dg_boundary_terms_momentum_density",
         "dg_boundary_terms_energy_density"}},
-      dynamic_cast<const NewtonianEuler::BoundaryCorrections::Rusanov<Dim>&>(
-          *rusanov),
+      dynamic_cast<const NewtonianEuler::BoundaryCorrections::Hll<Dim>&>(
+          *hll),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data);
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.NewtonianEuler.Rusanov", "[Unit][Evolution]") {
-  PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<1>);
-  PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<2>);
-  PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<3>);
+SPECTRE_TEST_CASE("Unit.NewtonianEuler.Hll", "[Unit][Evolution]") {
+  PUPable_reg(NewtonianEuler::BoundaryCorrections::Hll<1>);
+  PUPable_reg(NewtonianEuler::BoundaryCorrections::Hll<2>);
+  PUPable_reg(NewtonianEuler::BoundaryCorrections::Hll<3>);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler/BoundaryCorrections"};
   test<1>(1, tuples::TaggedTuple<hydro::Tags::EquationOfState<
