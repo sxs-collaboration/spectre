@@ -31,21 +31,21 @@ void test_characteristic_helpers() noexcept {
   const auto nn_distribution = make_not_null(&distribution);
   const auto nn_distribution_positive = make_not_null(&distribution_positive);
 
-  // This computes a unit normal. It is NOT uniformly distributed in angle,
+  // This computes a unit vector. It is NOT uniformly distributed in angle,
   // but for this test the angular distribution is not important.
-  const auto unit_normal = [&nn_generator, &nn_distribution]() noexcept {
+  const auto unit_vector = [&nn_generator, &nn_distribution]() noexcept {
     const double double_used_for_size = 0.;
     auto result = make_with_random_values<tnsr::i<double, Dim>>(
         nn_generator, nn_distribution, double_used_for_size);
-    double normal_magnitude = get(magnitude(result));
-    // Though highly unlikely, the normal could have length nearly 0. If this
-    // happens, we edit the normal to make it non-zero.
-    if (normal_magnitude < 1e-3) {
+    double vector_magnitude = get(magnitude(result));
+    // Though highly unlikely, the vector could have length nearly 0. If this
+    // happens, we edit the vector to make it non-zero.
+    if (vector_magnitude < 1e-3) {
       get<0>(result) += 0.9;
-      normal_magnitude = get(magnitude(result));
+      vector_magnitude = get(magnitude(result));
     }
     for (auto& n_i : result) {
-      n_i /= normal_magnitude;
+      n_i /= vector_magnitude;
     }
     return result;
   }();
@@ -95,7 +95,7 @@ void test_characteristic_helpers() noexcept {
   const auto right_and_left =
       NewtonianEuler::Limiters::right_and_left_eigenvectors<Dim>(
           mean_mass_density, mean_momentum_density, mean_energy_density,
-          equation_of_state, unit_normal);
+          equation_of_state, unit_vector);
   const auto& right = right_and_left.first;
   const auto& left = right_and_left.second;
 

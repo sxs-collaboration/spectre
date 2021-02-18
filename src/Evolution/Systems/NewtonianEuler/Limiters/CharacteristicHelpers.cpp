@@ -37,7 +37,7 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const Scalar<double>& mean_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const tnsr::i<double, VolumeDim>& unit_normal) noexcept {
+    const tnsr::i<double, VolumeDim>& unit_vector) noexcept {
   // Compute fluid primitives from mean conserved state
   const auto velocity = [&mean_density, &mean_momentum]() noexcept {
     auto result = mean_momentum;
@@ -81,10 +81,10 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
 
   return std::make_pair(right_eigenvectors<VolumeDim>(
                             velocity, sound_speed_squared, specific_enthalpy,
-                            kappa_over_density, unit_normal),
+                            kappa_over_density, unit_vector),
                         left_eigenvectors<VolumeDim>(
                             velocity, sound_speed_squared, specific_enthalpy,
-                            kappa_over_density, unit_normal));
+                            kappa_over_density, unit_vector));
 }
 
 template <size_t VolumeDim>

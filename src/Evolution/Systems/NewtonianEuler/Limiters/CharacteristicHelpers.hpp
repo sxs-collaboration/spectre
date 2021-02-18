@@ -38,7 +38,7 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const Scalar<double>& mean_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const tnsr::i<double, VolumeDim>& unit_normal) noexcept;
+    const tnsr::i<double, VolumeDim>& unit_vector) noexcept;
 
 /// @{
 /// \brief Compute characteristic fields from conserved fields
