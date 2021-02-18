@@ -4,4 +4,5 @@
 #pragma once
 
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
