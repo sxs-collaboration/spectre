@@ -98,3 +98,111 @@ def dg_package_data_largest_ingoing_char_speed(
         return velocity_dot_normal - sound_speed
     else:
         return velocity_dot_normal - sound_speed - normal_dot_mesh_velocity
+
+
+def dg_boundary_terms_mass_density(
+    interior_mass_density, interior_momentum_density, interior_energy_density,
+    interior_normal_dot_flux_mass_density,
+    interior_normal_dot_flux_momentum_density,
+    interior_normal_dot_flux_energy_density,
+    interior_largest_outgoing_char_speed, interior_largest_ingoing_char_speed,
+    exterior_mass_density, exterior_momentum_density, exterior_energy_density,
+    exterior_normal_dot_flux_mass_density,
+    exterior_normal_dot_flux_momentum_density,
+    exterior_normal_dot_flux_energy_density,
+    exterior_largest_outgoing_char_speed, exterior_largest_ingoing_char_speed,
+    use_strong_form):
+
+    lambda_max = np.amax([
+        0., interior_largest_outgoing_char_speed,
+        -exterior_largest_ingoing_char_speed
+    ])
+    lambda_min = np.amin([
+        0., interior_largest_ingoing_char_speed,
+        -exterior_largest_outgoing_char_speed
+    ])
+
+    if use_strong_form:
+        return (lambda_min * (interior_normal_dot_flux_mass_density +
+                              exterior_normal_dot_flux_mass_density) +
+                lambda_max * lambda_min *
+                (exterior_mass_density - interior_mass_density)) / (
+                    lambda_max - lambda_min)
+    else:
+        return (
+            (lambda_max * interior_normal_dot_flux_mass_density + lambda_min *
+             exterior_normal_dot_flux_mass_density) + lambda_max * lambda_min *
+            (exterior_mass_density - interior_mass_density)) / (lambda_max -
+                                                                lambda_min)
+
+
+def dg_boundary_terms_momentum_density(
+    interior_mass_density, interior_momentum_density, interior_energy_density,
+    interior_normal_dot_flux_mass_density,
+    interior_normal_dot_flux_momentum_density,
+    interior_normal_dot_flux_energy_density,
+    interior_largest_outgoing_char_speed, interior_largest_ingoing_char_speed,
+    exterior_mass_density, exterior_momentum_density, exterior_energy_density,
+    exterior_normal_dot_flux_mass_density,
+    exterior_normal_dot_flux_momentum_density,
+    exterior_normal_dot_flux_energy_density,
+    exterior_largest_outgoing_char_speed, exterior_largest_ingoing_char_speed,
+    use_strong_form):
+
+    lambda_max = np.amax([
+        0., interior_largest_outgoing_char_speed,
+        -exterior_largest_ingoing_char_speed
+    ])
+    lambda_min = np.amin([
+        0., interior_largest_ingoing_char_speed,
+        -exterior_largest_outgoing_char_speed
+    ])
+
+    if use_strong_form:
+        return (lambda_min * (interior_normal_dot_flux_momentum_density +
+                              exterior_normal_dot_flux_momentum_density) +
+                lambda_max * lambda_min *
+                (exterior_momentum_density - interior_momentum_density)) / (
+                    lambda_max - lambda_min)
+    else:
+        return ((lambda_max * interior_normal_dot_flux_momentum_density +
+                 lambda_min * exterior_normal_dot_flux_momentum_density) +
+                lambda_max * lambda_min *
+                (exterior_momentum_density - interior_momentum_density)) / (
+                    lambda_max - lambda_min)
+
+
+def dg_boundary_terms_energy_density(
+    interior_mass_density, interior_momentum_density, interior_energy_density,
+    interior_normal_dot_flux_mass_density,
+    interior_normal_dot_flux_momentum_density,
+    interior_normal_dot_flux_energy_density,
+    interior_largest_outgoing_char_speed, interior_largest_ingoing_char_speed,
+    exterior_mass_density, exterior_momentum_density, exterior_energy_density,
+    exterior_normal_dot_flux_mass_density,
+    exterior_normal_dot_flux_momentum_density,
+    exterior_normal_dot_flux_energy_density,
+    exterior_largest_outgoing_char_speed, exterior_largest_ingoing_char_speed,
+    use_strong_form):
+
+    lambda_max = np.amax([
+        0., interior_largest_outgoing_char_speed,
+        -exterior_largest_ingoing_char_speed
+    ])
+    lambda_min = np.amin([
+        0., interior_largest_ingoing_char_speed,
+        -exterior_largest_outgoing_char_speed
+    ])
+
+    if use_strong_form:
+        return (lambda_min * (interior_normal_dot_flux_energy_density +
+                              exterior_normal_dot_flux_energy_density) +
+                lambda_max * lambda_min *
+                (exterior_energy_density - interior_energy_density)) / (
+                    lambda_max - lambda_min)
+    else:
+        return ((lambda_max * interior_normal_dot_flux_energy_density +
+                 lambda_min * exterior_normal_dot_flux_energy_density) +
+                lambda_max * lambda_min *
+                (exterior_energy_density - interior_energy_density)) / (
+                    lambda_max - lambda_min)
