@@ -7,6 +7,7 @@ set(LIBRARY "Test_IO")
 
 set(LIBRARY_SOURCES
   Observers/Test_ArrayComponentId.cpp
+  Observers/Test_GetLockPointer.cpp
   Observers/Test_Initialize.cpp
   Observers/Test_RegisterElements.cpp
   Observers/Test_RegisterEvents.cpp

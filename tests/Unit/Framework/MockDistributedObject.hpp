@@ -36,6 +36,9 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace ActionTesting {
+/// \cond
+struct MockNodeGroupChare;
+/// \endcond
 
 namespace detail {
 
@@ -577,6 +580,21 @@ class MockDistributedObject {
   SIMPLE_AND_THREADED_ACTIONS(1, simple_action)
   SIMPLE_AND_THREADED_ACTIONS(0, threaded_action)
 #undef SIMPLE_AND_THREADED_ACTIONS
+
+  // local synchronous actions are performed as direct function calls
+  // regardless, so their 'mocking' implementation is no different from their
+  // original implementation
+  template <typename Action, typename... Args>
+  typename Action::return_type local_synchronous_action(
+      Args&&... args) noexcept {
+    static_assert(std::is_same_v<typename Component::chare_type,
+                                 ActionTesting::MockNodeGroupChare>,
+                  "Cannot call a local synchronous action on a chare that is "
+                  "not a NodeGroup");
+    return Parallel::Algorithm_detail::local_synchronous_action_visitor<
+        Action, Component>(box_, make_not_null(&node_lock_),
+                           std::forward<Args>(args)...);
+  }
 
   bool is_simple_action_queue_empty() const noexcept {
     return simple_action_queue_.empty();
