@@ -216,7 +216,7 @@ template <size_t VolumeDim>
 bool wrap_minmod_limited_slopes(
     const gsl::not_null<double*> u_mean,
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
-    const Limiters::MinmodType& minmod_type, const double tvb_constant,
+    const Limiters::MinmodType minmod_type, const double tvb_constant,
     const DataVector& u, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
@@ -261,7 +261,7 @@ auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
 // mean and reduced slopes.
 template <size_t VolumeDim>
 void test_minmod_activates(
-    const Limiters::MinmodType& minmod_type, const double tvb_constant,
+    const Limiters::MinmodType minmod_type, const double tvb_constant,
     const DataVector& input, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
@@ -282,7 +282,7 @@ void test_minmod_activates(
 // Test that TCI does not detect a cell that is not troubled.
 template <size_t VolumeDim>
 void test_minmod_does_not_activate(
-    const Limiters::MinmodType& minmod_type, const double tvb_constant,
+    const Limiters::MinmodType minmod_type, const double tvb_constant,
     const DataVector& input, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
@@ -303,12 +303,11 @@ void test_minmod_does_not_activate(
 }
 
 void test_minmod_slopes_on_linear_function(
-    const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type,
+    const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing linear function...");
   CAPTURE(number_of_grid_points);
-  CAPTURE(get_output(minmod_type));
+  CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
@@ -396,12 +395,11 @@ void test_minmod_slopes_on_linear_function(
 }
 
 void test_minmod_slopes_on_quadratic_function(
-    const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type,
+    const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing quadratic function...");
   CAPTURE(number_of_grid_points);
-  CAPTURE(get_output(minmod_type));
+  CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
@@ -461,12 +459,11 @@ void test_minmod_slopes_on_quadratic_function(
 }
 
 void test_minmod_slopes_with_tvb_correction(
-    const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type,
+    const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing TVB correction...");
   CAPTURE(number_of_grid_points);
-  CAPTURE(get_output(minmod_type));
+  CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      quadrature);
@@ -611,12 +608,11 @@ void test_lambda_pin_troubled_cell_tvb_correction(
 }
 
 void test_minmod_slopes_at_boundary(
-    const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type,
+    const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
-  CAPTURE(get_output(minmod_type));
+  CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
@@ -674,12 +670,11 @@ void test_minmod_slopes_at_boundary(
 }
 
 void test_minmod_slopes_with_different_size_neighbor(
-    const size_t number_of_grid_points,
-    const Limiters::MinmodType& minmod_type,
+    const size_t number_of_grid_points, const Limiters::MinmodType minmod_type,
     const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing limiter with neighboring elements of different size...");
   CAPTURE(number_of_grid_points);
-  CAPTURE(get_output(minmod_type));
+  CAPTURE(minmod_type);
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
@@ -756,7 +751,7 @@ void test_minmod_limited_slopes_1d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 1D");
   for (const auto quadrature :
        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-    for (const auto& minmod_type :
+    for (const auto minmod_type :
          {Limiters::MinmodType::LambdaPi1, Limiters::MinmodType::LambdaPiN,
           Limiters::MinmodType::Muscl}) {
       for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
@@ -794,6 +789,8 @@ void test_minmod_limited_slopes_2d_impl(
           const DataVector& local_input,
           const std::array<double, 4>& neighbor_means,
           const std::array<double, 2>& expected_slopes) noexcept {
+        // Clang complains of unused lambda capture
+        (void)minmod_type;
         test_minmod_activates(
             minmod_type, tvb_constant, local_input, mesh, element, element_size,
             make_four_neighbors(neighbor_means),
@@ -804,6 +801,8 @@ void test_minmod_limited_slopes_2d_impl(
           const DataVector& local_input,
           const std::array<double, 4>& neighbor_means,
           const std::array<double, 2>& original_slopes) noexcept {
+        // Clang complains of unused lambda capture
+        (void)minmod_type;
         test_minmod_does_not_activate(
             minmod_type, tvb_constant, local_input, mesh, element, element_size,
             make_four_neighbors(neighbor_means),
@@ -854,6 +853,8 @@ void test_minmod_limited_slopes_3d_impl(
           const DataVector& local_input,
           const std::array<double, 6>& neighbor_means,
           const std::array<double, 3>& expected_slopes) noexcept {
+        // Clang complains of unused lambda capture
+        (void)minmod_type;
         test_minmod_activates(
             minmod_type, tvb_constant, local_input, mesh, element, element_size,
             make_six_neighbors(neighbor_means),
@@ -864,6 +865,8 @@ void test_minmod_limited_slopes_3d_impl(
           const DataVector& local_input,
           const std::array<double, 6>& neighbor_means,
           const std::array<double, 3>& original_slopes) noexcept {
+        // Clang complains of unused lambda capture
+        (void)minmod_type;
         test_minmod_does_not_activate(
             minmod_type, tvb_constant, local_input, mesh, element, element_size,
             make_six_neighbors(neighbor_means),
