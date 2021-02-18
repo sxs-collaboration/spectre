@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolveElasticBentBeam2D
+# Executable: SolveElasticity2D
 # Check: parse;execute
 # ExpectedOutput:
 #   ElasticBentBeam2DReductions.h5
 #   ElasticBentBeam2DVolume0.h5
 
-AnalyticSolution:
+Background:
   BentBeam:
     Length: 2.
     Height: 1.
@@ -16,6 +16,9 @@ AnalyticSolution:
       # Iron
       BulkModulus: 79.36507936507935
       ShearModulus: 38.75968992248062
+
+InitialGuess:
+  Zero:
 
 DomainCreator:
   Rectangle:
@@ -30,7 +33,7 @@ DomainCreator:
 
 NumericalFlux:
   InternalPenalty:
-    PenaltyParameter: 20.
+    PenaltyParameter: 1.
 
 Observers:
   VolumeFileName: "ElasticBentBeam2DVolume"

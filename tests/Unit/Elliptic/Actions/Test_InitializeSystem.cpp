@@ -25,11 +25,11 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeSystem.hpp"
+#include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -58,7 +58,7 @@ using linear_operator_applied_to_fields_tag =
                        typename System<Dim>::fields_tag>;
 
 template <size_t Dim>
-struct AnalyticSolution {
+struct Background {
   tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(
       const tnsr::I<DataVector, Dim>& x,
       tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) const noexcept {
@@ -87,19 +87,19 @@ struct ElementArray {
                              domain::Tags::InitialExtents<Dim>,
                              linear_operator_applied_to_fields_tag<Dim>>>,
               Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>>>,
-
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<elliptic::Actions::InitializeSystem<
-                                 typename Metavariables::system>>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<elliptic::Actions::InitializeSystem<
+              typename Metavariables::system,
+              elliptic::Tags::Background<Background<Dim>>>>>>;
 };
 
 template <size_t Dim>
 struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
-  using analytic_solution_tag = Tags::AnalyticSolution<AnalyticSolution<Dim>>;
-  using const_global_cache_tags = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tags =
+      tmpl::list<elliptic::Tags::Background<Background<Dim>>>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -118,7 +118,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {AnalyticSolution<1>{}, domain_creator.create_domain()}};
+        {std::make_unique<Background<1>>(), domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id,
         {domain_creator.initial_refinement_levels(),
@@ -162,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     using metavariables = Metavariables<2>;
     using element_array = ElementArray<2, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {AnalyticSolution<2>{}, domain_creator.create_domain()}};
+        {std::make_unique<Background<2>>(), domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id,
         {domain_creator.initial_refinement_levels(),
@@ -210,7 +210,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {AnalyticSolution<3>{}, domain_creator.create_domain()}};
+        {std::make_unique<Background<3>>(), domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id,
         {domain_creator.initial_refinement_levels(),

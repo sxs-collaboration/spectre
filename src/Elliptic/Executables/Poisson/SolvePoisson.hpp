@@ -16,8 +16,7 @@
 #include "Elliptic/DiscontinuousGalerkin/InitializeFirstOrderOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/NumericalFluxes/FirstOrderInternalPenalty.hpp"
 #include "Elliptic/FirstOrderOperator.hpp"
-#include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
-#include "Elliptic/Systems/Elasticity/Tags.hpp"
+#include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Elliptic/Triggers/EveryNIterations.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
@@ -42,23 +41,23 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/BentBeam.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/HalfSpaceMirror.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Zero.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace SolveElasticityProblem {
-namespace OptionTags {
+namespace SolvePoisson::OptionTags {
 struct LinearSolverGroup {
   static std::string name() noexcept { return "LinearSolver"; }
   static constexpr Options::String help =
@@ -69,34 +68,48 @@ struct GmresGroup {
   static constexpr Options::String help = "Options for the GMRES linear solver";
   using group = LinearSolverGroup;
 };
-}  // namespace OptionTags
-}  // namespace SolveElasticityProblem
+}  // namespace SolvePoisson::OptionTags
 
 /// \cond
-template <typename System, typename InitialGuess, typename BoundaryConditions>
+template <size_t Dim>
 struct Metavariables {
-  using system = System;
-  static constexpr size_t volume_dim = system::volume_dim;
-  using initial_guess = InitialGuess;
-  using boundary_conditions = BoundaryConditions;
+  static constexpr size_t volume_dim = Dim;
+  using system =
+      Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian>;
+
+  // List the possible backgrounds, i.e. the variable-independent part of the
+  // equations that define the problem to solve (along with the boundary
+  // conditions). We'll probably always have an analytic solution for Poisson
+  // problems, so we don't bother supporting non-solution backgrounds for now.
+  using analytic_solution_registrars = tmpl::flatten<tmpl::list<
+      Poisson::Solutions::Registrars::ProductOfSinusoids<Dim>,
+      tmpl::conditional_t<Dim == 1 or Dim == 2,
+                          Poisson::Solutions::Registrars::Moustache<Dim>,
+                          tmpl::list<>>,
+      tmpl::conditional_t<Dim == 3,
+                          Poisson::Solutions::Registrars::Lorentzian<Dim>,
+                          tmpl::list<>>>>;
+  using analytic_solution_tag = elliptic::Tags::Background<
+      Poisson::Solutions::AnalyticSolution<Dim, analytic_solution_registrars>>;
+
+  // List the possible initial guesses. We currently only support the trivial
+  // "zero" initial guess. This will be generalized ASAP.
+  using initial_guess_registrars =
+      tmpl::list<Poisson::Solutions::Registrars::Zero<Dim>>;
+  using initial_guess_tag = elliptic::Tags::InitialGuess<
+      ::AnalyticData<Dim, initial_guess_registrars>>;
 
   static constexpr Options::String help{
-      "Find the solution to a linear elasticity problem."};
+      "Find the solution to a Poisson problem."};
 
   using fluxes_computer_tag =
       elliptic::Tags::FluxesComputer<typename system::fluxes_computer>;
-
-  // Only Dirichlet boundary conditions are currently supported, and they are
-  // are all imposed by analytic solutions right now.
-  // We will add support for Neumann boundary conditions ASAP.
-  using analytic_solution = boundary_conditions;
-  using analytic_solution_tag = Tags::AnalyticSolution<analytic_solution>;
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
   using linear_solver =
       LinearSolver::gmres::Gmres<Metavariables, typename system::fields_tag,
-                                 SolveElasticityProblem::OptionTags::GmresGroup,
+                                 SolvePoisson::OptionTags::LinearSolverGroup,
                                  false>;
   using linear_solver_iteration_id =
       Convergence::Tags::IterationId<typename linear_solver::options_group>;
@@ -128,21 +141,18 @@ struct Metavariables {
   // (public for use by the Charm++ registration code)
   using observe_fields = typename system::fields_tag::tags_list;
   using analytic_solution_fields = observe_fields;
-  using events = tmpl::list<
-      dg::Events::Registrars::ObserveFields<
-          volume_dim, linear_solver_iteration_id, observe_fields,
-          analytic_solution_fields>,
-      dg::Events::Registrars::ObserveErrorNorms<linear_solver_iteration_id,
-                                                analytic_solution_fields>,
-      dg::Events::Registrars::ObserveVolumeIntegrals<
-          volume_dim, linear_solver_iteration_id,
-          tmpl::list<Elasticity::Tags::PotentialEnergyDensity<volume_dim>>>>;
+  using events =
+      tmpl::list<dg::Events::Registrars::ObserveFields<
+                     volume_dim, linear_solver_iteration_id, observe_fields,
+                     analytic_solution_fields>,
+                 dg::Events::Registrars::ObserveErrorNorms<
+                     linear_solver_iteration_id, analytic_solution_fields>>;
   using triggers = tmpl::list<elliptic::Triggers::Registrars::EveryNIterations<
       linear_solver_iteration_id>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<analytic_solution_tag, fluxes_computer_tag,
+      tmpl::list<analytic_solution_tag, initial_guess_tag, fluxes_computer_tag,
                  normal_dot_numerical_flux,
                  Tags::EventsAndTriggers<events, triggers>>;
 
@@ -159,15 +169,10 @@ struct Metavariables {
       dg::Actions::InitializeInterfaces<
           system, dg::Initialization::slice_tags_to_face<>,
           dg::Initialization::slice_tags_to_exterior<>,
-          dg::Initialization::face_compute_tags<
-              domain::Tags::BoundaryCoordinates<volume_dim>>,
+          dg::Initialization::face_compute_tags<>,
           dg::Initialization::exterior_compute_tags<>, false, false>,
       typename linear_solver::initialize_element,
-      elliptic::Actions::InitializeSystem<system>,
-      Initialization::Actions::AddComputeTags<tmpl::list<
-          Elasticity::Tags::ConstitutiveRelationReference<
-              volume_dim, analytic_solution_tag>,
-          Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
+      elliptic::Actions::InitializeSystem<system, analytic_solution_tag>,
       elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
                                                     analytic_solution_fields>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
@@ -242,8 +247,13 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &disable_openblas_multithreading,
+    &setup_error_handling,
+    &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
+    &Parallel::register_derived_classes_with_charm<
+        metavariables::analytic_solution_tag::type::element_type>,
+    &Parallel::register_derived_classes_with_charm<
+        metavariables::initial_guess_tag::type::element_type>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::system::boundary_conditions_base>,
     &Parallel::register_derived_classes_with_charm<

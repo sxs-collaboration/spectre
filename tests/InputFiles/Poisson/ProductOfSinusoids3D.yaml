@@ -1,15 +1,18 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolvePoissonProductOfSinusoids3D
+# Executable: SolvePoisson3D
 # Check: parse;execute
 # ExpectedOutput:
 #   PoissonProductOfSinusoids3DReductions.h5
 #   PoissonProductOfSinusoids3DVolume0.h5
 
-AnalyticSolution:
+Background:
   ProductOfSinusoids:
     WaveNumbers: [1, 1, 1]
+
+InitialGuess:
+  Zero:
 
 DomainCreator:
   Brick:

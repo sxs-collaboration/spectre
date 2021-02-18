@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolvePoissonProductOfSinusoids1D
+# Executable: SolvePoisson1D
 # Check: parse;execute_check_output
 # ExpectedOutput:
 #   PoissonProductOfSinusoids1DReductions.h5
@@ -13,9 +13,12 @@
 #     SkipColumns: [0, 1, 3]
 #     AbsoluteTolerance: 0.02
 
-AnalyticSolution:
+Background:
   ProductOfSinusoids:
     WaveNumbers: [1]
+
+InitialGuess:
+  Zero:
 
 DomainCreator:
   Interval:
