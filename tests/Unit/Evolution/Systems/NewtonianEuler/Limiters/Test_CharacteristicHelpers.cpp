@@ -22,7 +22,16 @@
 namespace {
 
 template <size_t Dim>
-void test_characteristic_helpers() noexcept {
+void prepare_hydro_data_for_test(
+    const gsl::not_null<Scalar<DataVector>*>& mass_density,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*>& momentum_density,
+    const gsl::not_null<Scalar<DataVector>*>& energy_density,
+    const gsl::not_null<Scalar<double>*>& mean_mass_density,
+    const gsl::not_null<tnsr::I<double, Dim>*>& mean_momentum_density,
+    const gsl::not_null<Scalar<double>*>& mean_energy_density,
+    const gsl::not_null<Matrix*>& right, const gsl::not_null<Matrix*>& left,
+    const Mesh<Dim>& mesh,
+    const EquationsOfState::IdealFluid<false>& equation_of_state) noexcept {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1., 1.);
   std::uniform_real_distribution<> distribution_positive(1e-3, 1.);
@@ -50,11 +59,8 @@ void test_characteristic_helpers() noexcept {
     return result;
   }();
 
-  const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
-  const DataVector used_for_size(pow<Dim>(3), 0.);
-
   // Derive all fluid quantities from the primitive variables
+  const DataVector used_for_size(mesh.number_of_grid_points(), 0.);
   const auto density = make_with_random_values<Scalar<DataVector>>(
       nn_generator, nn_distribution_positive, used_for_size);
   const auto velocity = make_with_random_values<tnsr::I<DataVector, Dim>>(
@@ -63,41 +69,53 @@ void test_characteristic_helpers() noexcept {
       make_with_random_values<Scalar<DataVector>>(
           nn_generator, nn_distribution_positive, used_for_size);
 
-  const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
   const auto pressure = equation_of_state.pressure_from_density_and_energy(
       density, specific_internal_energy);
 
-  const Scalar<DataVector>& mass_density = density;
-  const tnsr::I<DataVector, Dim> momentum_density = [&density,
-                                                     &velocity]() noexcept {
-    auto result = velocity;
-    for (size_t i = 0; i < Dim; ++i) {
-      result.get(i) *= get(density);
-    }
-    return result;
-  }();
-  const Scalar<DataVector> energy_density{
+  *mass_density = density;
+  *momentum_density = velocity;
+  for (size_t i = 0; i < Dim; ++i) {
+    momentum_density->get(i) *= get(density);
+  }
+  *energy_density = Scalar<DataVector>{
       get(density) * (get(specific_internal_energy) +
                       0.5 * get(dot_product(velocity, velocity)))};
 
-  const Scalar<double> mean_mass_density{mean_value(get(mass_density), mesh)};
-  const tnsr::I<double, Dim> mean_momentum_density = [&momentum_density,
-                                                      &mesh]() noexcept {
-    tnsr::I<double, Dim> result{};
-    for (size_t i = 0; i < Dim; ++i) {
-      result.get(i) = mean_value(momentum_density.get(i), mesh);
-    }
-    return result;
-  }();
-  const Scalar<double> mean_energy_density{
-      mean_value(get(energy_density), mesh)};
+  get(*mean_mass_density) = mean_value(get(*mass_density), mesh);
+  for (size_t i = 0; i < Dim; ++i) {
+    mean_momentum_density->get(i) = mean_value(momentum_density->get(i), mesh);
+  }
+  get(*mean_energy_density) = mean_value(get(*energy_density), mesh);
 
   const auto right_and_left =
       NewtonianEuler::Limiters::right_and_left_eigenvectors<Dim>(
-          mean_mass_density, mean_momentum_density, mean_energy_density,
+          *mean_mass_density, *mean_momentum_density, *mean_energy_density,
           equation_of_state, unit_vector);
-  const auto& right = right_and_left.first;
-  const auto& left = right_and_left.second;
+  *right = right_and_left.first;
+  *left = right_and_left.second;
+}
+
+template <size_t Dim>
+void test_characteristic_helpers() noexcept {
+  const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto);
+  const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
+
+  Scalar<DataVector> mass_density;
+  tnsr::I<DataVector, Dim> momentum_density;
+  Scalar<DataVector> energy_density;
+  Scalar<double> mean_mass_density;
+  tnsr::I<double, Dim> mean_momentum_density;
+  Scalar<double> mean_energy_density;
+  Matrix right;
+  Matrix left;
+
+  prepare_hydro_data_for_test(
+      make_not_null(&mass_density), make_not_null(&momentum_density),
+      make_not_null(&energy_density), make_not_null(&mean_mass_density),
+      make_not_null(&mean_momentum_density),
+      make_not_null(&mean_energy_density), make_not_null(&right),
+      make_not_null(&left), mesh, equation_of_state);
 
   // First test that the tensor-transform helpers are inverses of each
   // other. This is a sanity check of the two tensor-transform helpers and
