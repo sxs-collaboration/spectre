@@ -26,6 +26,12 @@ class FunctionOfTime;
 /// \endcond
 
 namespace GeneralizedHarmonic::ConstraintDamping {
+/// \cond
+template <size_t VolumeDim, typename Fr>
+GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
+    CkMigrateMessage* msg) noexcept
+    : DampingFunction<VolumeDim, Fr>(msg) {}
+/// \endcond
 
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
@@ -46,8 +52,8 @@ void GaussianPlusConstant<VolumeDim, Fr>::apply_call_operator(
     centered_coords.get(i) -= gsl::at(center_, i);
   }
   dot_product(value_at_x, centered_coords, centered_coords);
-  value_at_x->get() =
-      constant_ + amplitude_ * exp(-value_at_x->get() * square(inverse_width_));
+  get(*value_at_x) =
+      constant_ + amplitude_ * exp(-get(*value_at_x) * square(inverse_width_));
 }
 
 template <size_t VolumeDim, typename Fr>
@@ -56,7 +62,7 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const tnsr::I<double, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-    /*funtions_of_time*/) const noexcept {
+    /*functions_of_time*/) const noexcept {
   apply_call_operator(value_at_x, x);
 }
 template <size_t VolumeDim, typename Fr>
@@ -65,7 +71,7 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const tnsr::I<DataVector, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-    /*funtions_of_time*/) const noexcept {
+    /*functions_of_time*/) const noexcept {
   destructive_resize_components(value_at_x, get<0>(x).size());
   apply_call_operator(value_at_x, x);
 }
@@ -90,6 +96,9 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const noexcept
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                                  \
+  template GeneralizedHarmonic::ConstraintDamping::                           \
+      GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
+          CkMigrateMessage* msg) noexcept;                                    \
   template GeneralizedHarmonic::ConstraintDamping::                           \
       GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
           const double constant, const double amplitude, const double width,  \

@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -24,6 +25,7 @@ namespace GeneralizedHarmonic::ConstraintDamping {
 /// \cond
 template <size_t VolumeDim, typename Fr>
 class GaussianPlusConstant;
+class TimeDependentTripleGaussian;
 /// \endcond
 
 /*!
@@ -36,9 +38,14 @@ class GaussianPlusConstant;
 template <size_t VolumeDim, typename Fr>
 class DampingFunction : public PUP::able {
  public:
-  using creatable_classes =
+  using creatable_classes = tmpl::conditional_t<
+      (VolumeDim == 3 and std::is_same<Fr, Frame::Grid>::value),
+      tmpl::list<
+          GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
+              VolumeDim, Fr>,
+          GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>,
       tmpl::list<GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
-          VolumeDim, Fr>>;
+          VolumeDim, Fr>>>;
   constexpr static size_t volume_dim = VolumeDim;
   using frame = Fr;
 
@@ -50,6 +57,8 @@ class DampingFunction : public PUP::able {
   DampingFunction(DampingFunction&& /*rhs*/) noexcept = default;
   DampingFunction& operator=(DampingFunction&& /*rhs*/) noexcept = default;
   ~DampingFunction() override = default;
+
+  explicit DampingFunction(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
 
   //@{
   /// Returns the value of the function at the coordinate 'x'.
@@ -75,3 +84,4 @@ class DampingFunction : public PUP::able {
 }  // namespace GeneralizedHarmonic::ConstraintDamping
 
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/TimeDependentTripleGaussian.hpp"
