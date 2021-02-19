@@ -56,7 +56,22 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
            static_cast<Spectral::Quadrature (Mesh<Dim>::*)(const size_t) const>(
                &Mesh<Dim>::quadrature),
            py::arg("d"),
-           "The quadrature chosen in the requested dimension of the grid.");
+           "The quadrature chosen in the requested dimension of the grid.")
+
+      .def(py::pickle(
+          [](const Mesh<Dim>& mesh) {
+            return py::make_tuple(mesh.extents().indices(), mesh.basis(),
+                                  mesh.quadrature());
+          },
+          [](const py::tuple& state) {
+            if (state.size() != 3) {
+              throw std::runtime_error("Invalid state for mesh!");
+            }
+            return Mesh<Dim>(
+                state[0].cast<std::array<size_t, Dim>>(),
+                state[1].cast<std::array<Spectral::Basis, Dim>>(),
+                state[2].cast<std::array<Spectral::Quadrature, Dim>>());
+          }));
 }
 
 void bind_mesh(py::module& m) {  // NOLINT

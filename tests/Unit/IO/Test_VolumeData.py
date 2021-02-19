@@ -126,13 +126,19 @@ class TestVolumeData(unittest.TestCase):
         extents = self.vol_file.get_extents(observation_id=obs_id)
         expected_extents = [[2, 2, 2], [2, 2, 2]]
         self.assertEqual(extents, expected_extents)
+        # Test bases
         bases = self.vol_file.get_bases(obs_id)
         expected_bases = [["Legendre", "Legendre", "Legendre"],
                           ["Legendre", "Legendre", "Legendre"]]
         self.assertEqual(bases, expected_bases)
+        # Test quadratures
         quadratures = self.vol_file.get_quadratures(obs_id)
         expected_quadratures = [["Gauss", "Gauss", "Gauss"],
                                 ["Gauss", "Gauss", "Gauss"]]
+        self.assertEqual(quadratures, expected_quadratures)
+        # Test dimension
+        dim = self.vol_file.get_dimension()
+        self.assertEqual(dim, 3)
 
     # Test that the tensor components, and tensor data  are retrieved correctly
     def test_tensor_components(self):
@@ -144,8 +150,8 @@ class TestVolumeData(unittest.TestCase):
         self.assertEqual(tensor_component_names,
                          set(expected_tensor_component_names))
         # Test tensor component data at specified obs_id
-        for i, expected_tensor_component_data in\
-            enumerate(self.tensor_component_data[:2]):
+        for i, expected_tensor_component_data in \
+                enumerate(self.tensor_component_data[:2]):
             npt.assert_almost_equal(
                 np.asarray(
                     self.vol_file.get_tensor_component(

@@ -3,6 +3,10 @@
 
 from spectre.Spectral import Mesh1D, Mesh2D, Mesh3D
 from spectre.Spectral import Basis, Quadrature
+try:
+    import cPickle as pickle  # Use cPickle on Python 2.7
+except ImportError:
+    import pickle
 
 import numpy as np
 import unittest
@@ -73,7 +77,7 @@ class TestMesh(unittest.TestCase):
                     self.check_extents(m2, extents2D)
                     self.check_extents(m3, extents3D)
 
-    def test_nonuniform_all(self):
+    def test_nonuniform_all_with_pickle(self):
         for i in range(100):
             extents1D = [random.choice(self.extents) for _ in range(1)]
             extents2D = [random.choice(self.extents) for _ in range(2)]
@@ -90,6 +94,11 @@ class TestMesh(unittest.TestCase):
             m1 = Mesh1D(extents1D, bases1D, quadratures1D)
             m2 = Mesh2D(extents2D, bases2D, quadratures2D)
             m3 = Mesh3D(extents3D, bases3D, quadratures3D)
+
+            # Use pickle protocol 2 for Py2 compatibility
+            m1 = pickle.loads(pickle.dumps(m1, protocol=2))
+            m2 = pickle.loads(pickle.dumps(m2, protocol=2))
+            m3 = pickle.loads(pickle.dumps(m3, protocol=2))
 
             self.check_extents(m1, extents1D)
             self.check_extents(m2, extents2D)
