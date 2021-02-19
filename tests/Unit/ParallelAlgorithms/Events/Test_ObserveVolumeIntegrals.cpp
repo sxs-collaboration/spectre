@@ -236,8 +236,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
                                                       0);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  observe->run(box, runner.cache(), array_index,
-               std::add_pointer_t<element_component>{});
+  observe->run(box,
+               ActionTesting::cache<element_component>(runner, array_index),
+               array_index, std::add_pointer_t<element_component>{});
 
   // Process the data
   runner.invoke_queued_simple_action<observer_component>(0);

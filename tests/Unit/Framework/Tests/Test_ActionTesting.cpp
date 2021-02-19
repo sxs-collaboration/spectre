@@ -197,6 +197,7 @@ struct MockMetavariablesWithGlobalCacheTags {
 
 void test_mock_runtime_system_constructors() {
   using metavars = MockMetavariablesWithGlobalCacheTags;
+  using component = component_for_simple_action_mock<metavars>;
   // Test whether we can construct with tagged tuples in different orders.
   /// [constructor const global cache tags known]
   ActionTesting::MockRuntimeSystem<metavars> runner1{{3, 7.0}};
@@ -205,12 +206,14 @@ void test_mock_runtime_system_constructors() {
   ActionTesting::MockRuntimeSystem<metavars> runner2{
       tuples::TaggedTuple<PassedToB, ValueTag>{7.0, 3}};
   /// [constructor const global cache tags unknown]
-  CHECK(Parallel::get<ValueTag>(runner1.cache()) ==
-        Parallel::get<ValueTag>(runner2.cache()));
-  CHECK(Parallel::get<PassedToB>(runner1.cache()) ==
-        Parallel::get<PassedToB>(runner2.cache()));
-  CHECK(Parallel::get<ValueTag>(runner1.cache()) == 3);
-  CHECK(Parallel::get<PassedToB>(runner1.cache()) == 7);
+  ActionTesting::emplace_component<component>(&runner1, 0);
+  ActionTesting::emplace_component<component>(&runner2, 0);
+  const auto& cache1 = ActionTesting::cache<component>(runner1, 0_st);
+  const auto& cache2 = ActionTesting::cache<component>(runner2, 0_st);
+  CHECK(Parallel::get<ValueTag>(cache1) == Parallel::get<ValueTag>(cache2));
+  CHECK(Parallel::get<PassedToB>(cache1) == Parallel::get<PassedToB>(cache2));
+  CHECK(Parallel::get<ValueTag>(cache1) == 3);
+  CHECK(Parallel::get<PassedToB>(cache2) == 7);
 }
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {

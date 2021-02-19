@@ -693,13 +693,6 @@ class MockRuntimeSystem {
         mock_distributed_objects_);
   }
 
-  GlobalCache& cache(const NodeId node_id,
-                     const LocalCoreId local_core_id) noexcept {
-    return *caches_.at(mock_global_cores_.at(node_id).at(local_core_id).value);
-  }
-
-  GlobalCache& cache() noexcept { return cache(NodeId{0}, LocalCoreId{0}); }
-
   /// Set the phase of all parallel components to `next_phase`
   void set_phase(const typename Metavariables::Phase next_phase) noexcept {
     tmpl::for_each<mock_objects_tags>(

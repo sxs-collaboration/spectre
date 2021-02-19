@@ -618,6 +618,10 @@ class MockDistributedObject {
         std::forward<Data>(data));
   }
 
+  Parallel::GlobalCache<typename Component::metavariables>& cache() noexcept {
+    return *global_cache_;
+  }
+
   // {@
   /// Wrappers for charm++ informational functions.
 
