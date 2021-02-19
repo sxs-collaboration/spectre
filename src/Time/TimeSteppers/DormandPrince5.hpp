@@ -73,8 +73,8 @@ class DormandPrince5 : public TimeStepper::Inherit {
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
-  template <typename Vars, typename DerivVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+  template <typename Vars, typename ErrVars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
@@ -84,6 +84,8 @@ class DormandPrince5 : public TimeStepper::Inherit {
                       double time) const noexcept;
 
   size_t order() const noexcept override;
+
+  size_t error_estimate_order() const noexcept override;
 
   uint64_t number_of_substeps() const noexcept override;
 
@@ -178,7 +180,8 @@ void DormandPrince5::update_u(
   };
 
   if (substep == 0) {
-    *u += (a2_ * dt) * history->begin().derivative();
+    *u = (history->end() - 1).value() +
+         (a2_ * dt) * history->begin().derivative();
   } else if (substep < 6) {
     *u = u0;
     if (substep == 1) {
@@ -202,11 +205,11 @@ void DormandPrince5::update_u(
   }
 }
 
-template <typename Vars, typename DerivVars>
-bool DormandPrince5::update_u(
-    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
-    const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+template <typename Vars, typename ErrVars, typename DerivVars>
+bool DormandPrince5::update_u(gsl::not_null<Vars*> u,
+                              gsl::not_null<ErrVars*> u_error,
+                              gsl::not_null<History<Vars, DerivVars>*> history,
+                              const TimeDelta& time_step) const noexcept {
   ASSERT(history->integration_order() == 5,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
@@ -222,7 +225,8 @@ bool DormandPrince5::update_u(
     }
   };
   if (substep == 0) {
-    *u += (a2_ * dt) * history->begin().derivative();
+    *u = (history->end() - 1).value() +
+         (a2_ * dt) * history->begin().derivative();
   } else if (substep < 7) {
     *u = u0;
     if (substep == 1) {

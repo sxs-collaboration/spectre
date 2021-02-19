@@ -73,9 +73,9 @@ class TimeStepper : public PUP::able {
   /// when a sufficient number of steps are available in the `history` to
   /// compare two orders of step. Whenever the error measure is unavailable,
   /// `u_error` is unchanged and the function return is `false`.
-  template <typename Vars, typename DerivVars>
+  template <typename Vars, typename ErrVars, typename DerivVars>
   bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
       const TimeDelta& time_step) const noexcept {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
@@ -97,6 +97,9 @@ class TimeStepper : public PUP::able {
 
   /// The convergence order of the stepper
   virtual size_t order() const noexcept = 0;
+
+  /// The convergence order of the stepper error measure
+  virtual size_t error_estimate_order() const noexcept = 0;
 
   /// Number of substeps in this TimeStepper
   virtual uint64_t number_of_substeps() const noexcept = 0;
@@ -222,9 +225,9 @@ class LtsTimeStepper : public TimeStepper::Inherit {
     return TimeStepper::update_u(u, history, time_step);
   }
 
-  template <typename Vars, typename DerivVars>
+  template <typename Vars, typename ErrVars, typename DerivVars>
   bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
       const TimeDelta& time_step) const noexcept {
     return TimeStepper::update_u(u, u_error, history, time_step);

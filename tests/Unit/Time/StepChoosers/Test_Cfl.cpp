@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -52,9 +53,10 @@ struct Metavariables {
   };
 };
 
-double get_suggestion(const size_t stepper_order, const double safety_factor,
-                      const double characteristic_speed,
-                      const DataVector& coordinates) noexcept {
+std::pair<double, bool> get_suggestion(const size_t stepper_order,
+                                       const double safety_factor,
+                                       const double characteristic_speed,
+                                       const DataVector& coordinates) noexcept {
   const Parallel::GlobalCache<Metavariables> cache{};
   const auto box = db::create<
       db::AddSimpleTags<
@@ -75,8 +77,9 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
   const std::unique_ptr<StepChooserType> cfl_base = std::make_unique<Cfl>(cfl);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const double result =
+  const auto result =
       cfl(grid_spacing, box, time_stepper, current_step, cache);
+  CHECK(result.second);
   CHECK(cfl_base->desired_step(current_step, box, cache) == result);
   CHECK(serialize_and_deserialize(cfl)(grid_spacing, box, time_stepper,
                                        current_step, cache) == result);
@@ -89,11 +92,11 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Cfl", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepChooserType>();
 
-  CHECK(get_suggestion(1, 1., 1., {0., 2., 3., 5.}) == approx(1.));
-  CHECK(get_suggestion(2, 1., 1., {0., 2., 3., 5.}) < 1.);
-  CHECK(get_suggestion(1, 2., 1., {0., 2., 3., 5.}) == approx(2.));
-  CHECK(get_suggestion(1, 1., 2., {0., 2., 3., 5.}) == approx(0.5));
-  CHECK(get_suggestion(1, 1., 1., {0., 2., 2.5, 5.}) == approx(0.5));
+  CHECK(get_suggestion(1, 1., 1., {0., 2., 3., 5.}).first == approx(1.));
+  CHECK(get_suggestion(2, 1., 1., {0., 2., 3., 5.}).first < 1.);
+  CHECK(get_suggestion(1, 2., 1., {0., 2., 3., 5.}).first == approx(2.));
+  CHECK(get_suggestion(1, 1., 2., {0., 2., 3., 5.}).first == approx(0.5));
+  CHECK(get_suggestion(1, 1., 1., {0., 2., 2.5, 5.}).first == approx(0.5));
 
   TestHelpers::test_factory_creation<StepChooserType>(
       "Cfl:\n"

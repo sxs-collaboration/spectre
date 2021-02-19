@@ -54,8 +54,8 @@ class RungeKutta3 : public TimeStepper::Inherit {
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
-  template <typename Vars, typename DerivVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+  template <typename Vars, typename ErrVars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
@@ -65,6 +65,8 @@ class RungeKutta3 : public TimeStepper::Inherit {
                       double time) const noexcept;
 
   size_t order() const noexcept override;
+
+  size_t error_estimate_order() const noexcept override;
 
   uint64_t number_of_substeps() const noexcept override;
 
@@ -128,7 +130,7 @@ void RungeKutta3::update_u(
       // v^(1) = u^n + dt*RHS(u^n,t^n)
       // On entry V = u^n, U0 = u^n, rhs0 = RHS(u^n,t^n),
       // time = t^n
-      *u += time_step.value() * dt_vars;
+      *u = (history->end() - 1).value() + time_step.value() * dt_vars;
       // On exit v = v^(1), time = t^n + dt
       break;
     }
@@ -137,7 +139,8 @@ void RungeKutta3::update_u(
       // v^(2) = (1/4)*( 3*u^n + v^(1) + dt*RHS(v^(1),t^n + dt) )
       // On entry V = v^(1), U0 = u^n, rhs0 = RHS(v^(1),t^n + dt),
       // time = t^n + dt
-      *u += 0.25 * (3.0 * (U0 - vars) + time_step.value() * dt_vars);
+      *u = (history->end() - 1).value() +
+           0.25 * (3.0 * (U0 - vars) + time_step.value() * dt_vars);
       // On exit v = v^(2), time = t^n + (1/2)*dt
       break;
     }
@@ -146,7 +149,8 @@ void RungeKutta3::update_u(
       // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
       // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
       // time = t^n + (1/2)*dt
-      *u += (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
+      *u = (history->end() - 1).value() +
+           (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
       // On exit v = u^(n+1), time = t^n + dt
       break;
     }
@@ -160,9 +164,9 @@ void RungeKutta3::update_u(
   }
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars, typename ErrVars, typename DerivVars>
 bool RungeKutta3::update_u(
-    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+    const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(history->integration_order() == 3,
@@ -180,7 +184,8 @@ bool RungeKutta3::update_u(
     // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
     // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
     // time = t^n + (1/2)*dt
-    *u += (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
+    *u = (history->end() - 1).value() +
+         (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
     // On exit v = u^(n+1), time = t^n + dt
 
     // error is estimated by comparing the order 3 step result with an order 2
