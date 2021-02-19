@@ -17,6 +17,7 @@ spectre_python_add_module(
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Boost::boost
   DataStructures
   IO
   pybind11::module

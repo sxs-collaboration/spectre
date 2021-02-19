@@ -151,7 +151,7 @@ class H5File {
   void close_current_object() const noexcept { current_object_ = nullptr; }
 
   template <typename ObjectType>
-  bool exists(const std::string& path) noexcept {
+  bool exists(const std::string& path) const noexcept {
     auto exists_group_name = check_if_object_exists<ObjectType>(path);
     return std::get<0>(exists_group_name);
   }

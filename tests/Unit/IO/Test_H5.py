@@ -7,6 +7,11 @@ import unittest
 import numpy as np
 import os
 import numpy.testing as npt
+# For Py2 compatibility
+try:
+    unittest.TestCase.assertRaisesRegex
+except AttributeError:
+    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
 
 
 class TestIOH5File(unittest.TestCase):
@@ -26,15 +31,13 @@ class TestIOH5File(unittest.TestCase):
 
     # Test whether an H5 file is created correctly,
     def test_name(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         self.assertEqual(self.file_name, file_spec.name())
         file_spec.close()
 
     # Test whether a dat file can be added correctly
     def test_insert_dat(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
@@ -44,8 +47,7 @@ class TestIOH5File(unittest.TestCase):
 
     # Test whether data can be added to the dat file correctly
     def test_append(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
@@ -57,8 +59,7 @@ class TestIOH5File(unittest.TestCase):
 
     # More complicated test case for getting data subsets and dimensions
     def test_get_data_subset(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
@@ -75,8 +76,7 @@ class TestIOH5File(unittest.TestCase):
 
     # Getting Attributes
     def test_get_legend(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
@@ -87,8 +87,7 @@ class TestIOH5File(unittest.TestCase):
 
     # The header is not universal, just checking the part that is predictable
     def test_get_header(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
@@ -97,8 +96,7 @@ class TestIOH5File(unittest.TestCase):
         file_spec.close()
 
     def test_groups(self):
-        file_spec = spectre_h5.H5File(file_name=self.file_name,
-                                      append_to_file=True)
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
@@ -115,6 +113,54 @@ class TestIOH5File(unittest.TestCase):
         for group_name in groups_spec:
             self.assertTrue(group_name in file_spec.groups())
         file_spec.close()
+
+    def test_exceptions(self):
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
+
+        #create existing file
+        with self.assertRaisesRegex(RuntimeError,
+                                    "File pythontest.h5 already exists."):
+            spectre_h5.H5File(file_name=self.file_name, mode="w-")
+
+        file_spec.insert_dat(path="/element_data",
+                             legend=["Time", "Value"],
+                             version=0)
+
+        #insert existing data file
+        with self.assertRaisesRegex(
+                RuntimeError,
+                "`/element_data` already exists in file `pythontest.h5`"):
+            file_spec.insert_dat(path="/element_data",
+                                 legend=["Time", "Value"],
+                                 version=0)
+
+        # grab non-existing data file
+        with self.assertRaisesRegex(
+                RuntimeError,
+                "Subfile `/element_dat` was not found in file `pythontest.h5`.*"
+                "\n.*element_data.dat"):
+            file_spec.get_vol("/element_dat")
+
+        file_spec.insert_vol(path="/volume_data", version=0)
+
+        #insert existing volume data file
+        with self.assertRaisesRegex(
+                RuntimeError, "A subfile with name `/volume_data` "
+                "already exists in file `pythontest.h5`"):
+            file_spec.insert_vol(path="/volume_data", version=0)
+
+        # grab non-existing volume data file
+        with self.assertRaisesRegex(
+                RuntimeError,
+                "Subfile `/volume_dat` was not found in file `pythontest.h5`.*"
+                "\n.*element_data.dat.*volume_data.vol"):
+            file_spec.get_vol("/volume_dat")
+
+        file_spec.close()
+
+    def test_context_manager(self):
+        with spectre_h5.H5File(file_name=self.file_name, mode="a") as f:
+            self.assertEqual(f.name(), self.file_name)
 
 
 if __name__ == '__main__':
