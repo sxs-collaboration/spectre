@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
   Test_ProjectToBoundary.cpp
+  Test_UsingSubcell.cpp
   )
 
 add_test_library(
