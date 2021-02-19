@@ -139,6 +139,10 @@ class Wedge2D {
       const std::array<T, 2>& source_coords) const noexcept;
 
   /// Returns invalid if \f$x<=0\f$ (for a \f$+x\f$-oriented `Wedge2D`).
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   std::optional<std::array<double, 2>> inverse(
       const std::array<double, 2>& target_coords) const noexcept;
 

@@ -48,6 +48,10 @@ class ProductOf2Maps {
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
       const std::array<T, dim>& source_coords) const noexcept;
 
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords) const noexcept;
 

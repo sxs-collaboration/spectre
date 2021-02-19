@@ -185,6 +185,10 @@ class Frustum {
   /// the apex of the pyramid, tetrahedron, or triangular prism that is
   /// formed by extending the `Frustum` (for a
   /// \f$z\f$-oriented `Frustum`).
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 

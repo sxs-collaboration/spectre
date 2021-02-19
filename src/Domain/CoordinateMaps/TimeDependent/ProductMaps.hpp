@@ -61,6 +61,10 @@ class ProductOf2Maps {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept;
 
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords, double time,
       const std::unordered_map<

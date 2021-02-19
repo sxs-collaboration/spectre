@@ -108,6 +108,10 @@ class CoordinateMapBase : public PUP::able {
   /// at `target_point`, or if `target_point` can be easily determined to not
   /// make sense for the map.  An example of the latter is passing a
   /// point with a negative value of z into a positive-z Wedge3D inverse map.
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   virtual std::optional<tnsr::I<double, Dim, SourceFrame>> inverse(
       tnsr::I<double, Dim, TargetFrame> target_point,
       double time = std::numeric_limits<double>::signaling_NaN(),

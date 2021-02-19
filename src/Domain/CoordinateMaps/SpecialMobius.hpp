@@ -99,6 +99,10 @@ class SpecialMobius {
       const std::array<T, 3>& source_coords) const noexcept;
 
   /// Returns std::nullopt for target_coords outside the unit sphere.
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 
