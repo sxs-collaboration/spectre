@@ -33,9 +33,31 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace helpers = TestObservers_detail;
+
+namespace {
+// [formatter_example]
+struct FormatErrors
+    : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
+  using reduction_data = helpers::reduction_data_from_doubles;
+  std::string operator()(const double time, const size_t num_points,
+                         const double error1, const double error2) const
+      noexcept {
+    return "Errors at time " + std::to_string(time) + " over " +
+           std::to_string(num_points) +
+           " grid points:\n  Field1: " + std::to_string(error1) +
+           "\n  Field2: " + std::to_string(error2);
+  }
+  // NOLINTNEXTLINE
+  void pup(PUP::er& /*p*/) noexcept {}
+};
+// [formatter_example]
+static_assert(tt::assert_conforms_to<
+              FormatErrors, observers::protocols::ReductionDataFormatter>);
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
   using registration_list = tmpl::list<
@@ -165,13 +187,22 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
 
       auto reduction_data_fakes =
           make_fake_reduction_data(array_id, time, reduction_data{});
+      auto formatter = []() {
+        if constexpr (std::is_same_v<reduction_data,
+                                     helpers::reduction_data_from_doubles>) {
+          return std::make_optional(FormatErrors{});
+        } else {
+          return std::optional<observers::NoFormatter>{std::nullopt};
+        }
+      }();
       runner.simple_action<obs_component,
                            observers::Actions::ContributeReductionData>(
           0, observers::ObservationId{time, "ElementObservationType"},
           observers::ArrayComponentId{
               std::add_pointer_t<element_comp>{nullptr},
               Parallel::ArrayIndex<typename element_comp::array_index>(id)},
-          "/element_data", legend, std::move(reduction_data_fakes));
+          "/element_data", legend, std::move(reduction_data_fakes),
+          std::move(formatter));
     }
     // Invoke the threaded action 'WriteReductionData' to write reduction data
     // to disk.
