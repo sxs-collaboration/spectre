@@ -31,8 +31,47 @@ class er;
 
 namespace NewtonianEuler::BoundaryCorrections {
 /*!
- * \brief An HLL (Harten-Lax-van Leer) Riemann solver
+ * \brief An HLL (Harten-Lax-van Leer) Riemann solver for NewtonianEuler system
  *
+ * Let \f$U\f$ be the evolved variable, \f$F^i\f$ the flux, and \f$n_i\f$ be the
+ * outward directed unit normal to the interface. Denoting \f$F := n_i F^i\f$,
+ * the HLL boundary correction is \cite Harten1983
+ *
+ * \f{align*} G_\text{HLL} = \frac{\lambda_\text{max} F_\text{int} +
+ * \lambda_\text{min} F_\text{ext}}{\lambda_\text{max} - \lambda_\text{min}}
+ * - \frac{\lambda_\text{min}\lambda_\text{max}}{\lambda_\text{max} -
+ *   \lambda_\text{min}} \left(U_\text{int} - U_\text{ext}\right) \f}
+ *
+ * where "int" and "ext" stand for interior and exterior.
+ * \f$\lambda_\text{min}\f$ and \f$\lambda_\text{max}\f$ are defined as
+ *
+ * \f{align*} \lambda_\text{min} &=
+ * \text{min}\left(\lambda^{-}_\text{int},-\lambda^{+}_\text{ext}, 0\right) \\
+ * \lambda_\text{max} &=
+ * \text{max}\left(\lambda^{+}_\text{int},-\lambda^{-}_\text{ext}, 0\right) \f}
+ *
+ * where \f$\lambda^{+}\f$ (\f$\lambda^{-}\f$) is the characteristic speed
+ * largest in outgoing (ingoing) direction. Note the minus signs in front of
+ * \f$\lambda_\text{ext}\f$s, which is because outgoing speed for exterior
+ * corresponds to ingoing speed for interior, and vice versa. For NewtonianEuler
+ * system, \f$\lambda^\pm\f$ are given as
+ *
+ * \f{align*} \lambda^\pm = v^in_i \pm c_s \f}
+ *
+ * where \f$v^i\f$ is the spatial velocity and \f$c_s\f$ the sound speed.
+ *
+ * The positive sign in front of the \f$F_{\text{ext}}\f$ in \f$G_\text{HLL}\f$
+ * is necessary because the outward directed normal of the neighboring element
+ * has the opposite sign, i.e. \f$n_i^{\text{ext}}=-n_i^{\text{int}}\f$.
+ *
+ * \note
+ * - In the strong form the `dg_boundary_terms` function returns \f$G -
+ *   F_\text{int}\f$
+ * - For either \f$\lambda_\text{min} = 0\f$ or \f$\lambda_\text{max} = 0\f$
+ *   (i.e. all characteristics move in the same direction) the HLL boundary
+ *   correction reduces to pure upwinding.
+ * - Some references use \f$S\f$ instead of \f$\lambda\f$ for the
+ *   signal/characteristic speeds
  */
 template <size_t Dim>
 class Hll final : public BoundaryCorrection<Dim> {
