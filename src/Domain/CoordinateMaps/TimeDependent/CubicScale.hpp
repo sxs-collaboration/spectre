@@ -114,9 +114,12 @@ class CubicScale {
           functions_of_time) const noexcept;
 
   /// Returns std::nullopt if the point is outside the range of the map.
-  template <typename T>
-  std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> inverse(
-      const std::array<T, Dim>& target_coords, double time,
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
+  std::optional<std::array<double, Dim>> inverse(
+      const std::array<double, Dim>& target_coords, double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
