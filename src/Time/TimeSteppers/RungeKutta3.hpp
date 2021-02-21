@@ -218,13 +218,12 @@ void RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
          << ", " << step_end << "]");
 
   // arXiv:1605.02429
-  *u += (1.0 - output_fraction * (1.0 - output_fraction / 3.0)) *
-            history.begin().value() +
-        output_fraction * (1.0 - output_fraction) *
-            (history.begin() + 1).value() +
-        (2.0 / 3.0 * square(output_fraction) - 1.0) *
-            (history.begin() + 2).value() +
-        2.0 / 3.0 * square(output_fraction) * time_step *
-            (history.begin() + 2).derivative();
+  *u = (1.0 - output_fraction * (1.0 - output_fraction / 3.0)) *
+           history.begin().value() +
+       output_fraction * (1.0 - output_fraction) *
+           (history.begin() + 1).value() +
+       2.0 / 3.0 * square(output_fraction) * (history.begin() + 2).value() +
+       2.0 / 3.0 * square(output_fraction) * time_step *
+           (history.begin() + 2).derivative();
 }
 }  // namespace TimeSteppers

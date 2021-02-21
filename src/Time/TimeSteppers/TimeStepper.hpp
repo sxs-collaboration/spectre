@@ -85,8 +85,7 @@ class TimeStepper : public PUP::able {
   /// Compute the solution value at a time between steps.  To evaluate
   /// at a time within a given step, this must be called before the
   /// step is completed but after any intermediate substeps have been
-  /// taken.  The value of `*u` before this function is called should
-  /// be the value at the last substep.
+  /// taken.
   template <typename Vars, typename DerivVars>
   void dense_update_u(const gsl::not_null<Vars*> u,
                       const TimeSteppers::History<Vars, DerivVars>& history,

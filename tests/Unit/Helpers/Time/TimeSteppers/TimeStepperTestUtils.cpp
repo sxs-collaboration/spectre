@@ -489,8 +489,9 @@ void check_dense_output(const TimeStepper& stepper) noexcept {
       history.insert(time_id, y, y);
       if (next_time_id.substep() == 0 and
           before(time, next_time_id.step_time().value())) {
-        stepper.dense_update_u(make_not_null(&y), history, time);
-        return y;
+        double result = std::numeric_limits<double>::signaling_NaN();
+        stepper.dense_update_u(make_not_null(&result), history, time);
+        return result;
       }
       stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
       time_id = next_time_id;
