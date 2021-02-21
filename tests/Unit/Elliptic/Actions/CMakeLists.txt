@@ -5,6 +5,7 @@ set(LIBRARY "Test_EllipticActions")
 
 set(LIBRARY_SOURCES
   Test_InitializeAnalyticSolution.cpp
+  Test_InitializeBackgroundFields.cpp
   Test_InitializeFields.cpp
   Test_InitializeFixedSources.cpp
   )
