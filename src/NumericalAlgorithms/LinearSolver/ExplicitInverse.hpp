@@ -66,8 +66,7 @@ CREATE_IS_CALLABLE_V(reset)
  *   corresponding cost of re-building the matrix and its inverse if the
  *   operator only changes "a little". In that case the preconditioner solves
  *   subdomain problems only approximately, but possibly still sufficiently to
- *   provide effective preconditioning. You can toggle this behaviour with the
- *   `EnableResets` option.
+ *   provide effective preconditioning.
  */
 template <typename LinearSolverRegistrars =
               tmpl::list<Registrars::ExplicitInverse>>
@@ -76,20 +75,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   using Base = LinearSolver<LinearSolverRegistrars>;
 
  public:
-  struct EnableResets {
-    using type = bool;
-    static constexpr Options::String help =
-        "Enable or disable resets. This only has an effect in cases where the "
-        "operator changes, e.g. between nonlinear-solver iterations. Only "
-        "disable resets when using this solver as preconditioner and thus "
-        "approximate solutions are desirable. Disabling resets avoids "
-        "expensive re-building of the operator, but comes at the cost of less "
-        "accurate preconditioning and thus potentially more preconditioned "
-        "iterations. Whether or not this helps convergence overall is highly "
-        "problem-dependent.";
-  };
-
-  using options = tmpl::list<EnableResets>;
+  using options = tmpl::list<>;
   static constexpr Options::String help =
       "Build a matrix representation of the linear operator and invert it "
       "directly. This means that the first solve has a large initialization "
@@ -101,9 +87,6 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   ExplicitInverse(ExplicitInverse&& /*rhs*/) = default;
   ExplicitInverse& operator=(ExplicitInverse&& /*rhs*/) = default;
   ~ExplicitInverse() = default;
-
-  explicit ExplicitInverse(bool enable_resets) noexcept
-      : enable_resets_(enable_resets) {}
 
   /// \cond
   explicit ExplicitInverse(CkMigrateMessage* m) noexcept : Base(m) {}
@@ -134,9 +117,6 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   /// Flags the operator to require re-initialization. No memory is released.
   /// Call this function to rebuild the solver when the operator changed.
   void reset() noexcept override {
-    if (not enable_resets_) {
-      return;
-    }
     size_ = std::numeric_limits<size_t>::max();
   }
 
@@ -151,7 +131,6 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
-    p | enable_resets_;
     p | size_;
     p | inverse_;
     if (p.isUnpacking() and size_ != std::numeric_limits<size_t>::max()) {
@@ -165,8 +144,6 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   }
 
  private:
-  bool enable_resets_{};
-
   // Caches for successive solves of the same operator
   mutable size_t size_ = std::numeric_limits<size_t>::max();
   mutable DenseMatrix<double, blaze::columnMajor> inverse_{};

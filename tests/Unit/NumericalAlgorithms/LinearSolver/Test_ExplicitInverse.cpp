@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     const DenseVector<double> source{1., 2.};
     const DenseVector<double> expected_solution{-1., 5.};
     DenseVector<double> solution(2);
-    const ExplicitInverse<> solver{true};
+    const ExplicitInverse<> solver{};
     const auto has_converged =
         solver.solve(make_not_null(&solution), linear_operator, source);
     REQUIRE(has_converged);
@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     CHECK_ITERABLE_APPROX(solution, expected_solution);
     {
       INFO("Resetting");
-      ExplicitInverse<> resetting_solver{true};
+      ExplicitInverse<> resetting_solver{};
       resetting_solver.solve(make_not_null(&solution), linear_operator, source);
       // Solving a different operator after resetting should work
       resetting_solver.reset();
@@ -62,18 +62,12 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
       CHECK_MATRIX_APPROX(resetting_solver.matrix_representation(),
                           blaze::inv(matrix2));
       CHECK_ITERABLE_APPROX(solution, expected_solution2);
-      // When resetting is disabled, the solver should keep applying the cached
+      // Without resetting, the solver should keep applying the cached
       // inverse even when solving a different operator
-      ExplicitInverse<> non_resetting_solver{false};
-      non_resetting_solver.solve(make_not_null(&solution), linear_operator,
-                                 source);
-      non_resetting_solver.reset();
-      non_resetting_solver.solve(make_not_null(&solution), linear_operator2,
-                                 source);
+      solver.solve(make_not_null(&solution), linear_operator2, source);
       // Still the inverse of the operator we solved first
-      CHECK_MATRIX_APPROX(non_resetting_solver.matrix_representation(),
-                          blaze::inv(matrix));
-      CHECK_ITERABLE_APPROX(solution, blaze::inv(matrix) * source);
+      CHECK_MATRIX_APPROX(solver.matrix_representation(), blaze::inv(matrix));
+      CHECK_ITERABLE_APPROX(solution, expected_solution);
     }
   }
   {
@@ -112,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     get(get<ScalarFieldTag>(expected_solution.overlap_data.at(overlap_id))) =
         DataVector{-1., 5.};
 
-    const ExplicitInverse<> solver{true};
+    const ExplicitInverse<> solver{};
     auto solution = make_with_value<SubdomainData>(source, 0.);
     solver.solve(make_not_null(&solution), linear_operator, source);
     CHECK(solver.size() == 5);
