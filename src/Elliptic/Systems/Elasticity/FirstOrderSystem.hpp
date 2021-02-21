@@ -72,6 +72,10 @@ struct FirstOrderSystem {
   using auxiliary_fluxes =
       tmpl::list<::Tags::Flux<strain, tmpl::size_t<Dim>, Frame::Inertial>>;
 
+  // The variable-independent background fields in the equations
+  using background_fields = tmpl::list<>;
+  using inv_metric_tag = void;
+
   // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim>;
   using sources_computer = Sources<Dim>;
