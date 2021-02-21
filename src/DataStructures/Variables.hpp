@@ -445,6 +445,7 @@ class Variables<tmpl::list<Tags...>> {
 template <>
 class Variables<tmpl::list<>> {
  public:
+  using tags_list = tmpl::list<>;
   Variables() noexcept = default;
   explicit Variables(const size_t /*number_of_grid_points*/) noexcept {};
   static constexpr size_t size() noexcept { return 0; }
