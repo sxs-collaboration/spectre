@@ -98,6 +98,17 @@ struct FirstOrderSystem {
   using auxiliary_fluxes = tmpl::list<
       ::Tags::Flux<field_gradient, tmpl::size_t<Dim>, Frame::Inertial>>;
 
+  // The variable-independent background fields in the equations
+  using background_fields = tmpl::conditional_t<
+      BackgroundGeometry == Geometry::FlatCartesian, tmpl::list<>,
+      tmpl::list<
+          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+          gr::Tags::SpatialChristoffelSecondKindContracted<Dim, Frame::Inertial,
+                                                           DataVector>>>;
+  using inv_metric_tag = tmpl::conditional_t<
+      BackgroundGeometry == Geometry::FlatCartesian, void,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+
   // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
   using sources_computer = Sources<Dim, BackgroundGeometry>;
@@ -111,9 +122,6 @@ struct FirstOrderSystem {
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element
-  using inv_metric_tag = tmpl::conditional_t<
-      BackgroundGeometry == Geometry::FlatCartesian, void,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
   template <typename Tag>
   using magnitude_tag =
       tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian,
