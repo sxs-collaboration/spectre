@@ -42,6 +42,7 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -353,6 +354,24 @@ ComputeTimeDerivative<Metavariables>::apply(
   const Mesh<volume_dim>& mesh = db::get<::domain::Tags::Mesh<volume_dim>>(box);
   const ::dg::Formulation dg_formulation =
       db::get<::dg::Tags::Formulation>(box);
+  ASSERT(alg::all_of(mesh.basis(),
+                     [&mesh](const Spectral::Basis current_basis) noexcept {
+                       return current_basis == mesh.basis(0);
+                     }),
+         "An isotropic basis must be used in the evolution code. While "
+         "theoretically this restriction could be lifted, the simplification "
+         "it offers are quite substantial. Relaxing this assumption is likely "
+         "to require quite a bit of careful code refactoring and debugging.");
+  ASSERT(alg::all_of(
+             mesh.quadrature(),
+             [&mesh](const Spectral::Quadrature current_quadrature) noexcept {
+               return current_quadrature == mesh.quadrature(0);
+             }),
+         "An isotropic quadrature must be used in the evolution code. While "
+         "theoretically this restriction could be lifted, the simplification "
+         "it offers are quite substantial. Relaxing this assumption is likely "
+         "to require quite a bit of careful code refactoring and debugging.");
+
   // Allocate the Variables classes needed for the time derivative
   // computation.
   //
