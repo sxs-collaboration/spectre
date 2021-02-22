@@ -16,9 +16,9 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AnalyticSolution.hpp
   ConstantDensityStar.hpp
   Schwarzschild.hpp
-  Solutions.hpp
   )
 
 target_link_libraries(
@@ -28,6 +28,7 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   Options
+  Parallel
   Utilities
   Xcts
   )
