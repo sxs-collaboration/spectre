@@ -222,6 +222,24 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   template <typename Action>
   void simple_action() noexcept;
 
+  /// \brief Call the `Action` sychronously, returning a result without any
+  /// parallelization. The action is called immediately and control flow returns
+  /// to the caller immediately upon completion.
+  ///
+  /// \note `Action` must have a type alias `return_type` specifying its return
+  /// type. This constraint is to simplify the variant visitation logic for the
+  /// \ref DataBoxGroup "DataBox".
+  template <typename Action, typename... Args>
+  typename Action::return_type local_synchronous_action(
+      Args&&... args) noexcept {
+    static_assert(Parallel::is_node_group_proxy<cproxy_type>::value,
+                  "Cannot call a (blocking) local synchronous action on a "
+                  "chare that is not a NodeGroup");
+    return Algorithm_detail::local_synchronous_action_visitor<
+        Action, ParallelComponent>(box_, make_not_null(&node_lock_),
+                                   std::forward<Args>(args)...);
+  }
+
   // @{
   /// Call an Action on a local nodegroup requiring the Action to handle thread
   /// safety.

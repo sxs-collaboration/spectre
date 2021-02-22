@@ -35,6 +35,7 @@ endfunction()
 add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmBadBoxApply)
 add_algorithm_test(Test_AlgorithmGlobalCache)
+add_algorithm_test(Test_AlgorithmLocalSyncAction)
 add_algorithm_test(Test_AlgorithmNestedApply1)
 add_algorithm_test(Test_AlgorithmNestedApply2)
 add_algorithm_test(Test_AlgorithmParallel)
@@ -154,6 +155,7 @@ add_algorithm_test(
   "AlgorithmBadBoxApply"
   "Cannot call apply function of 'error_size_zero' with DataBox \
 type 'db::DataBox<brigand::list<")
+add_algorithm_test("AlgorithmLocalSyncAction" "")
 add_algorithm_test(
   "AlgorithmNestedApply1"
   "Already performing an Action and cannot execute additional Actions \

@@ -131,5 +131,89 @@ void simple_action_visitor(boost::variant<Variants...>& box, Args&&... args) {
       simple_action_visitor_helper<Invokable, ParallelComponent, Variants>(
           box, &iter, &already_visited, std::forward<Args>(args)...));
 }
+
+template <typename ReturnType>
+struct assignable_from_return_type {
+  using type = std::remove_const_t<ReturnType>;
+};
+
+// need to handle const refs separately because the const in that case is not
+// top-level
+template <typename ReturnType>
+struct assignable_from_return_type<const ReturnType&> {
+  using type = const ReturnType*;
+};
+
+template <typename ReturnType>
+struct assignable_from_return_type<ReturnType&> {
+  using type = ReturnType*;
+};
+
+template <typename ReturnType>
+struct assignable_from_return_type<const ReturnType*> {
+  using type = ReturnType*;
+};
+
+template <typename Invokable, typename ParallelComponent, typename... Variants,
+          typename... Args>
+typename Invokable::return_type local_synchronous_action_visitor(
+    boost::variant<Variants...>& box, Args&&... args) {
+  // iter is the current element of the variant in the "for loop"
+  int iter = 0;
+  // already_visited ensures that only one visitor is invoked
+  bool already_visited = false;
+  // when the requested return type is a reference, we need to handle it locally
+  // as a pointer, then dereference upon return (because C++ references cannot
+  // be assigned to placeholder values in this wider scope).
+  tmpl::conditional_t<std::is_same_v<typename Invokable::return_type, void>,
+                      NoSuchType,
+                      typename assignable_from_return_type<
+                          typename Invokable::return_type>::type>
+      return_value{};
+  auto helper = [&return_value, &box, &args..., &already_visited,
+                 &iter](auto this_variant_v) {
+    using this_variant = typename decltype(this_variant_v)::type;
+    if (box.which() == iter and not already_visited) {
+      if constexpr (is_apply_callable_v<
+                        Invokable, ParallelComponent,
+                        std::add_lvalue_reference_t<this_variant>, Args&&...>) {
+        try {
+          if constexpr (std::is_same_v<typename Invokable::return_type, void>) {
+            (void)return_value;
+            Invokable::template apply<ParallelComponent>(
+                boost::get<this_variant>(box), std::forward<Args>(args)...);
+          } else if constexpr (std::is_reference_v<
+                                   typename Invokable::return_type>) {
+            return_value = &(Invokable::template apply<ParallelComponent>(
+                boost::get<this_variant>(box), std::forward<Args>(args)...));
+          } else {
+            return_value = Invokable::template apply<ParallelComponent>(
+                boost::get<this_variant>(box), std::forward<Args>(args)...);
+          }
+        } catch (std::exception& e) {
+          ERROR("Fatal error: Failed to call local sync action '"
+                << pretty_type::get_name<Invokable>() << "' on iteration '"
+                << iter << "' with DataBox type '"
+                << pretty_type::get_name<this_variant>()
+                << "'\nThe exception is: '" << e.what() << "'\n");
+        }
+        already_visited = true;
+      } else {
+        ERROR("\nCannot call apply function of '"
+              << pretty_type::get_name<Invokable>() << "' with DataBox type '"
+              << pretty_type::get_name<this_variant>() << "'.\n");
+      }
+    }
+    ++iter;
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Variants>{}));
+  if constexpr (not std::is_same_v<typename Invokable::return_type, void>) {
+    if constexpr (std::is_reference_v<typename Invokable::return_type>) {
+      return *return_value;
+    } else {
+      return return_value;
+    }
+  }
+}
 }  // namespace Algorithm_detail
 }  // namespace Parallel
