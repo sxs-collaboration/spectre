@@ -7,5 +7,6 @@ spectre_python_add_module(
   Visualization
   PYTHON_EXECUTABLES
   GenerateXdmf.py
+  InterpolateVolumeData.py
   Render1D.py
   )
