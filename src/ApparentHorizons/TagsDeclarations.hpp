@@ -51,6 +51,8 @@ template <typename Frame>
 struct RicciScalarCompute;
 struct MaxRicciScalar;
 struct MaxRicciScalarCompute;
+struct MinRicciScalar;
+struct MinRicciScalarCompute;
 
 }  // namespace StrahlkorperTags
 

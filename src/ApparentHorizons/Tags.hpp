@@ -384,6 +384,24 @@ struct MaxRicciScalarCompute : MaxRicciScalar, db::ComputeTag {
   using argument_tags = tmpl::list<RicciScalar>;
 };
 
+/// The pointwise minimum of the Strahlkorper’s intrinsic Ricci scalar
+/// curvature.
+struct MinRicciScalar : db::SimpleTag {
+  using type = double;
+};
+
+/// Computes the pointwise minimum of the Strahlkorper’s intrinsic Ricci
+/// scalar curvature.
+struct MinRicciScalarCompute : MinRicciScalar, db::ComputeTag {
+  using base = MinRicciScalar;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> min_ricci_scalar,
+                       const Scalar<DataVector>& ricci_scalar) noexcept {
+    *min_ricci_scalar = min(get(ricci_scalar));
+  }
+  using argument_tags = tmpl::list<RicciScalar>;
+};
+
 // @{
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
