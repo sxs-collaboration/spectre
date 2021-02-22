@@ -58,12 +58,11 @@ void test_solution() {
   using system = Elasticity::FirstOrderSystem<Dim>;
   Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>
       constitutive_relation{1., 1.};
-  const typename system::fluxes_computer fluxes_computer{};
   const Mesh<Dim> mesh{12, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   const auto coord_map = make_coord_map<Dim>();
   FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
-      solution, fluxes_computer, mesh, coord_map, 1.e-14,
+      solution, mesh, coord_map, 1.e-14,
       std::make_tuple(constitutive_relation,
                       coord_map(logical_coordinates(mesh))));
 }

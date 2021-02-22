@@ -51,8 +51,7 @@ template <size_t Dim, Poisson::Geometry BackgroundGeometry>
 void test_computers(const DataVector& used_for_size) {
   CAPTURE(Dim);
   using system = Poisson::FirstOrderSystem<Dim, BackgroundGeometry>;
-  helpers::test_first_order_fluxes_computer<system>(
-      typename system::fluxes_computer{}, used_for_size);
+  helpers::test_first_order_fluxes_computer<system>(used_for_size);
   helpers::test_first_order_sources_computer<system>(used_for_size);
 }
 
