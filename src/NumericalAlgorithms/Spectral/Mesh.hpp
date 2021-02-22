@@ -12,6 +12,7 @@
 #include "DataStructures/Index.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
@@ -96,6 +97,8 @@ class Mesh {
   Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
        const Spectral::Quadrature quadrature) noexcept
       : extents_(isotropic_extents) {
+    ASSERT(basis != Spectral::Basis::SphericalHarmonic,
+           "SphericalHarmonic is not a valid basis for the Mesh");
     bases_.fill(basis);
     quadratures_.fill(quadrature);
   }
@@ -113,6 +116,8 @@ class Mesh {
   Mesh(std::array<size_t, Dim> extents, const Spectral::Basis basis,
        const Spectral::Quadrature quadrature) noexcept
       : extents_(std::move(extents)) {
+    ASSERT(basis != Spectral::Basis::SphericalHarmonic,
+           "SphericalHarmonic is not a valid basis for the Mesh");
     bases_.fill(basis);
     quadratures_.fill(quadrature);
   }
@@ -129,9 +134,13 @@ class Mesh {
    */
   Mesh(std::array<size_t, Dim> extents, std::array<Spectral::Basis, Dim> bases,
        std::array<Spectral::Quadrature, Dim> quadratures) noexcept
-      : extents_(std::move(extents)),
-        bases_(std::move(bases)),
-        quadratures_(std::move(quadratures)) {}
+      : extents_(std::move(extents)), quadratures_(std::move(quadratures)) {
+    for (auto it = bases.begin(); it != bases.end(); it++) {
+      ASSERT(*it != Spectral::Basis::SphericalHarmonic,
+             "SphericalHarmonic is not a valid basis for the Mesh");
+    }
+    bases_ = std::move(bases);
+  }
 
   /*!
    * \brief The number of grid points in each dimension of the grid.

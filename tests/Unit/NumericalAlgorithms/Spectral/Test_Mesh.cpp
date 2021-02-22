@@ -320,6 +320,32 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
 #endif
 }
 
+// [[OutputRegex, SphericalHarmonic is not a valid basis for the Mesh]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.Mesh.InvalidBasis",
+    "[NumericalAlgorithms][Spectral][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const Mesh<1> mesh1d{2, Spectral::Basis::SphericalHarmonic,
+                       Spectral::Quadrature::GaussLobatto};
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, SphericalHarmonic is not a valid basis for the Mesh]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.Mesh.InvalidBases",
+    "[NumericalAlgorithms][Spectral][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const Mesh<2> mesh2d{
+      {{2, 2}},
+      {{Spectral::Basis::SphericalHarmonic, Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}}};
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
 // [[OutputRegex, Failed to convert ".*" to Spectral::Basis.]]
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh.WrongBasis",
                   "[NumericalAlgorithms][Spectral][Unit]") {
