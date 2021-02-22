@@ -53,6 +53,17 @@ void check_single_not_null2(const gsl::not_null<T*> result, const T& t0,
 }
 
 template <typename T>
+void check_single_not_null3(const gsl::not_null<T*> result,
+                            const T& t0) noexcept {
+  // This function _adds_ to the result tensor, instead of assigning to it
+  if constexpr (tt::is_a_v<Tensor, T>) {
+    get(*result) += get(t0) + 3.0;
+  } else {
+    *result += t0 + 3.0;
+  }
+}
+
+template <typename T>
 void check_double_not_null0(const gsl::not_null<T*> result0,
                             const gsl::not_null<T*> result1,
                             const T& t0) noexcept {
@@ -337,6 +348,9 @@ void test_free(const T& value) {
   pypp::check_with_random_values<2>(&check_single_not_null2<T>, "PyppPyTests",
                                     {"check_single_not_null2"},
                                     {{{0.0, 10.0}, {-10.0, 0.0}}}, value);
+  pypp::check_with_random_values<1>(&check_single_not_null3<T>, "PyppPyTests",
+                                    {"check_single_not_null0"},
+                                    {{{-10.0, 10.0}}}, value, 1.e-12, {}, 2.);
 
   pypp::check_with_random_values<1>(
       &check_double_not_null0<T>, "PyppPyTests",
