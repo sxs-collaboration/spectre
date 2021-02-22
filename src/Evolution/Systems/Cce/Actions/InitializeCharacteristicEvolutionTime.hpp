@@ -93,11 +93,14 @@ struct InitializeCharacteristicEvolutionTime {
     TimeStepId second_time_id =
         time_stepper.next_time_id(initial_time_id, fixed_time_step);
 
-    typename ::Tags::HistoryEvolvedVariables<
-        EvolvedCoordinatesVariablesTag>::type coordinate_history;
+    const size_t starting_order =
+        time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
+
+    typename ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>::
+        type coordinate_history(starting_order);
 
     typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
-        swsh_history;
+        swsh_history(starting_order);
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box),
         std::move(initial_time_id),  // NOLINT
