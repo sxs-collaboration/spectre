@@ -44,6 +44,7 @@ environment differently, read on!
 * [SciPy](https://www.scipy.org)
 * [matplotlib](https://matplotlib.org/)
 * [PyYAML](https://pyyaml.org/)
+* [h5py](https://www.h5py.org)
 
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
