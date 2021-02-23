@@ -13,6 +13,7 @@ spectre_target_headers(
   DgSubcell.hpp
   Matrices.hpp
   Mesh.hpp
+  NeighborData.hpp
   PerssonTci.hpp
   Projection.hpp
   Reconstruction.hpp
@@ -26,6 +27,7 @@ spectre_target_sources(
   ActiveGrid.cpp
   Matrices.cpp
   Mesh.cpp
+  NeighborData.cpp
   PerssonTci.cpp
   Projection.cpp
   Reconstruction.cpp
