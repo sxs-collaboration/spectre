@@ -67,15 +67,14 @@ struct SizeOfElement;
 
 namespace Limiters {
 /// \ingroup LimitersGroup
-/// \brief A general minmod slope limiter
+/// \brief A minmod-based generalized slope limiter
 ///
-/// Provides an implementation for the three minmod-based generalized slope
-/// limiters from \cite Cockburn1999 Sec. 2.4: \f$\Lambda\Pi^1\f$,
-/// \f$\Lambda\Pi^N\f$, and MUSCL. Below we summarize these three limiters, but
-/// the reader should refer to the reference for full details. The limiter has a
-/// general implementation that can work on an arbitrary set of tensors; the
-/// limiting algorithm is applied to each component of each tensor
-/// independently.
+/// Implements the three minmod-based generalized slope limiters from
+/// \cite Cockburn1999 Sec. 2.4: \f$\Lambda\Pi^1\f$, \f$\Lambda\Pi^N\f$, and
+/// MUSCL. The implementation is system-agnostic and can act on an arbitrary
+/// set of tensors.
+///
+/// #### Summary of the generalized slope limiter algorithms:
 ///
 /// The MUSCL and \f$\Lambda\Pi^1\f$ limiters are both intended for use on
 /// piecewise-linear solutions, i.e., on linear-order elements with two points
@@ -117,21 +116,31 @@ namespace Limiters {
 /// shock tests, but in general the value \f$m\f$ that optimizes between
 /// robustness and minimal loss of accuracy is problem dependent.
 ///
+/// #### Notes on the SpECTRE implementation of the generalized slope limiters:
+///
+/// This implementation can act on an arbitrary set of tensors; the limiting
+/// algorithm is applied to each component of each tensor independently. This
+/// is a convenient and general interface. However, when the evolution system
+/// has multiple evolved variables, the recommendation of the reference is to
+/// apply the limiter to the system's characteristic variables to reduce
+/// spurious post-limiting oscillations. In SpECTRE, applying the limiter to
+/// the characteristic variables requires specializing the limiter to each
+/// evolution system.
+///
 /// The limiter acts in the `Frame::Logical` coordinates, because in these
 /// coordinates it is straightforward to formulate the algorithm. This means the
-/// limiter can operate on generic deformed grids. However, if the grid is too
-/// strongly deformed, some things can start to break down:
-/// 1. When an element is deformed so that the Jacobian (from `Frame::Logical`
-///    to `Frame::Inertial`) varies across the element, then the limiter fails
-///    to be conservative. In other words, the integral of a tensor `u` over the
-///    element will change after the limiter activates on `u`. This error is
-///    typically small.
+/// limiter can operate on generic deformed grids --- however, some things can
+/// start to break down, especially on strongly deformed grids:
+/// 1. When the Jacobian (from `Frame::Logical` to `Frame::Inertial`) varies
+///    across the element, then the limiter fails to be conservative. This is
+///    because the integral of a tensor `u` over the element will change after
+///    the limiter activates on `u`.
 /// 2. When there is a sudden change in the size of the elements (perhaps at an
 ///    h-refinement boundary, or at the boundary between two blocks with very
 ///    different mappings), a smooth solution in `Frame::Inertial` can appear
 ///    to have a kink in `Frame::Logical`. The Minmod implementation includes
-///    some (untested) tweaks that try to reduce spurious limiter activations
-///    near these fake kinks.
+///    some (tested but unproven) corrections based on the size of the elements
+///    that try to reduce spurious limiter activations near these fake kinks.
 ///
 /// When an element has multiple neighbors in any direction, an effective mean
 /// and neighbor size in this direction are computed by averaging over the
@@ -173,7 +182,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   };
   using options = tmpl::list<Type, TvbConstant, DisableForDebugging>;
   static constexpr Options::String help = {
-      "A minmod-based slope limiter.\n"
+      "A minmod-based generalized slope limiter.\n"
       "The different types of minmod are more or less aggressive in trying\n"
       "to reduce slopes. The TVB correction allows the limiter to ignore\n"
       "'small' slopes, and helps to avoid limiting of smooth extrema in the\n"
@@ -252,8 +261,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// no longer looks oscillatory.
   ///
   /// \param tensors The tensors to be limited.
-  /// \param element The element on which the tensors to limit live.
   /// \param mesh The mesh on which the tensor values are measured.
+  /// \param element The element on which the tensors to limit live.
   /// \param logical_coords The logical coordinates of the mesh gridpoints.
   /// \param element_size The size of the element, in the inertial coordinates.
   /// \param neighbor_data The data from each neighbor.
