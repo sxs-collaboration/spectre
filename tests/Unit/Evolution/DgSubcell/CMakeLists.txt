@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Projection.cpp
   Test_RdmpTci.cpp
   Test_Reconstruction.cpp
+  Test_SliceData.cpp
   Test_SubcellOptions.cpp
   Test_Tags.cpp
   Test_TciStatus.cpp
