@@ -19,6 +19,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                       // IWYU pragma: keep
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
@@ -40,6 +41,54 @@ namespace {
 using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 using Translation3D = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
     Translation, Translation, Translation>;
+using BoundaryCondVector = std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_inner_boundary_condition() {
+  return std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
+      Direction<3>::lower_zeta(), 50);
+}
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_outer_boundary_condition() {
+  return std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
+      Direction<3>::upper_zeta(), 50);
+}
+
+auto create_boundary_conditions(const bool excise_A, const bool excise_B) {
+  size_t total_blocks = 54;
+  if (not excise_A) {
+    total_blocks++;
+  }
+  if (not excise_B) {
+    total_blocks++;
+  }
+  BoundaryCondVector boundary_conditions_all_blocks{total_blocks};
+  if (excise_A) {
+    for (size_t block_id = 0; block_id < 6; ++block_id) {
+      boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
+          create_inner_boundary_condition();
+    }
+  }
+  if (excise_B) {
+    const size_t block_offset = 12;
+    for (size_t block_id = block_offset; block_id < block_offset + 6;
+         ++block_id) {
+      boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
+          create_inner_boundary_condition();
+    }
+  }
+  const size_t block_offset = 44;
+  for (size_t block_id = block_offset; block_id < block_offset + 10;
+       ++block_id) {
+    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
+        create_outer_boundary_condition();
+  }
+  return boundary_conditions_all_blocks;
+}
 
 template <typename... FuncsOfTime>
 void test_binary_compact_object_construction(
@@ -49,12 +98,36 @@ void test_binary_compact_object_construction(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time = {},
     const std::tuple<std::pair<std::string, FuncsOfTime>...>&
-        expected_functions_of_time = {}) {
+        expected_functions_of_time = {},
+    const BoundaryCondVector& expected_external_boundary_conditions = {}) {
   const auto domain = binary_compact_object.create_domain();
   test_initial_domain(domain,
                       binary_compact_object.initial_refinement_levels());
   test_physical_separation(binary_compact_object.create_domain().blocks(), time,
                            functions_of_time);
+
+  for (size_t block_id = 0;
+       block_id < expected_external_boundary_conditions.size(); ++block_id) {
+    CAPTURE(block_id);
+    const auto& block = domain.blocks()[block_id];
+    REQUIRE(block.external_boundaries().size() ==
+            expected_external_boundary_conditions[block_id].size());
+    for (const auto& [direction, expected_bc_ptr] :
+         expected_external_boundary_conditions[block_id]) {
+      CAPTURE(direction);
+      REQUIRE(block.external_boundary_conditions().count(direction) == 1);
+      REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
+      const auto& bc =
+          dynamic_cast<const TestHelpers::domain::BoundaryConditions::
+                           TestBoundaryCondition<3>&>(
+              *block.external_boundary_conditions().at(direction));
+      const auto& expected_bc =
+          dynamic_cast<const TestHelpers::domain::BoundaryConditions::
+                           TestBoundaryCondition<3>&>(*expected_bc_ptr);
+      CHECK(bc.direction() == expected_bc.direction());
+      CHECK(bc.block_id() == expected_bc.block_id());
+    }
+  }
 
   TestHelpers::domain::creators::test_functions_of_time(
       binary_compact_object, expected_functions_of_time);
@@ -83,11 +156,15 @@ void test_connectivity() {
   // Options for outer sphere
   constexpr size_t addition_to_outer_layer_radial_refinement_level = 3;
 
-  for (const bool excise_interiorA : {true, false}) {
-    for (const bool excise_interiorB : {true, false}) {
-      for (const bool use_equiangular_map : {true, false}) {
+  for (const bool with_boundary_conditions : {true, false}) {
+    CAPTURE(with_boundary_conditions);
+    for (const bool excise_interiorA : {true, false}) {
+      CAPTURE(excise_interiorA);
+      for (const bool excise_interiorB : {true, false}) {
+        CAPTURE(excise_interiorB);
         for (const bool use_logarithmic_map_outer_spherical_shell :
              {true, false}) {
+          CAPTURE(use_logarithmic_map_outer_spherical_shell);
           const domain::creators::BinaryCompactObject binary_compact_object{
               inner_radius_objectA,
               outer_radius_objectA,
@@ -101,11 +178,29 @@ void test_connectivity() {
               radius_enveloping_sphere,
               refinement,
               grid_points,
-              use_equiangular_map,
               use_projective_map,
               use_logarithmic_map_outer_spherical_shell,
-              addition_to_outer_layer_radial_refinement_level};
-          test_binary_compact_object_construction(binary_compact_object);
+              addition_to_outer_layer_radial_refinement_level,
+              false,
+              0,
+              false,
+              0,
+              nullptr,
+              with_boundary_conditions
+                  ? (excise_interiorA or excise_interiorB
+                         ? create_inner_boundary_condition()
+                         : std::make_unique<
+                               TestHelpers::domain::BoundaryConditions::
+                                   TestNoneBoundaryCondition<3>>())
+                  : nullptr,
+              with_boundary_conditions ? create_outer_boundary_condition()
+                                       : nullptr};
+          test_binary_compact_object_construction(
+              binary_compact_object,
+              std::numeric_limits<double>::signaling_NaN(), {}, {},
+              with_boundary_conditions ? create_boundary_conditions(
+                                             excise_interiorA, excise_interiorB)
+                                       : BoundaryCondVector{});
 
           // Also check whether the radius of the inner boundary of Layer 5 is
           // chosen correctly.
@@ -117,8 +212,8 @@ void test_connectivity() {
                              .get_clone()};
           tnsr::I<double, 3, Frame::Logical> logical_point(
               std::array<double, 3>{{0.0, 0.0, -1.0}});
-          const double layer_5_inner_radius = get(
-              magnitude(std::move(map)->operator()(logical_point)));
+          const double layer_5_inner_radius =
+              get(magnitude(std::move(map)->operator()(logical_point)));
           // The number of radial divisions in layers 4 and 5, excluding those
           // resulting from InitialRefinement > 0.
           const auto radial_divisions_in_outer_layers = static_cast<double>(
@@ -132,44 +227,176 @@ void test_connectivity() {
                   approx((radius_enveloping_sphere - radius_enveloping_cube) /
                          radial_divisions_in_outer_layers));
           }
+          if (with_boundary_conditions) {
+            CHECK_THROWS_WITH(
+                domain::creators::BinaryCompactObject(
+                    inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
+                    excise_interiorA, inner_radius_objectB,
+                    outer_radius_objectB, xcoord_objectB, excise_interiorB,
+                    radius_enveloping_cube, radius_enveloping_sphere,
+                    refinement, grid_points, use_projective_map,
+                    use_logarithmic_map_outer_spherical_shell,
+                    addition_to_outer_layer_radial_refinement_level, false, 0,
+                    false, 0, nullptr,
+                    excise_interiorA or excise_interiorB
+                        ? create_inner_boundary_condition()
+                        : std::make_unique<
+                              TestHelpers::domain::BoundaryConditions::
+                                  TestNoneBoundaryCondition<3>>(),
+                    std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                         TestPeriodicBoundaryCondition<3>>(),
+                    Options::Context{false, {}, 1, 1}),
+                Catch::Matchers::Contains("Cannot have periodic boundary "
+                                          "conditions with a binary domain"));
+            if (excise_interiorA or excise_interiorB) {
+              CHECK_THROWS_WITH(
+                  domain::creators::BinaryCompactObject(
+                      inner_radius_objectA, outer_radius_objectA,
+                      xcoord_objectA, excise_interiorA, inner_radius_objectB,
+                      outer_radius_objectB, xcoord_objectB, excise_interiorB,
+                      radius_enveloping_cube, radius_enveloping_sphere,
+                      refinement, grid_points, use_projective_map,
+                      use_logarithmic_map_outer_spherical_shell,
+                      addition_to_outer_layer_radial_refinement_level, false, 0,
+                      false, 0, nullptr,
+                      std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>(),
+                      create_outer_boundary_condition(),
+                      Options::Context{false, {}, 1, 1}),
+                  Catch::Matchers::Contains("Cannot have periodic boundary "
+                                            "conditions with a binary domain"));
+            }
+            CHECK_THROWS_WITH(
+                domain::creators::BinaryCompactObject(
+                    inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
+                    excise_interiorA, inner_radius_objectB,
+                    outer_radius_objectB, xcoord_objectB, excise_interiorB,
+                    radius_enveloping_cube, radius_enveloping_sphere,
+                    refinement, grid_points, use_projective_map,
+                    use_logarithmic_map_outer_spherical_shell,
+                    addition_to_outer_layer_radial_refinement_level, false, 0,
+                    false, 0, nullptr,
+                    excise_interiorA or excise_interiorB
+                        ? create_inner_boundary_condition()
+                        : std::make_unique<
+                              TestHelpers::domain::BoundaryConditions::
+                                  TestNoneBoundaryCondition<3>>(),
+                    nullptr, Options::Context{false, {}, 1, 1}),
+                Catch::Matchers::Contains(
+                    "Must specify either both inner and outer boundary "
+                    "conditions or neither."));
+            CHECK_THROWS_WITH(
+                domain::creators::BinaryCompactObject(
+                    inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
+                    excise_interiorA, inner_radius_objectB,
+                    outer_radius_objectB, xcoord_objectB, excise_interiorB,
+                    radius_enveloping_cube, radius_enveloping_sphere,
+                    refinement, grid_points, use_projective_map,
+                    use_logarithmic_map_outer_spherical_shell,
+                    addition_to_outer_layer_radial_refinement_level, false, 0,
+                    false, 0, nullptr, nullptr,
+                    create_outer_boundary_condition(),
+                    Options::Context{false, {}, 1, 1}),
+                Catch::Matchers::Contains(
+                    excise_interiorA or excise_interiorB
+                        ? std::string{"Must specify either both inner and "
+                                      "outer boundary "
+                                      "conditions or neither."}
+                        : std::string{"Inner boundary condition must be None "
+                                      "if ExciseInteriorA and ExciseInteriorB "
+                                      "are both false"}));
+          }
         }
       }
+    }
   }
 }
+
+std::string stringize(const bool t) { return t ? "true" : "false"; }
+
+std::string create_option_string(const bool excise_A, const bool excise_B,
+                                 const bool add_time_dependence,
+                                 const bool use_logarithmic_map_AB,
+                                 const size_t additional_refinement_outer,
+                                 const size_t additional_refinement_A,
+                                 const size_t additional_refinement_B,
+                                 const bool add_boundary_condition) {
+  const std::string time_dependence{
+      add_time_dependence
+          ? "  TimeDependence:\n"
+            "    UniformTranslation:\n"
+            "      InitialTime: 1.0\n"
+            "      InitialExpirationDeltaT: 9.0\n"
+            "      Velocity: [2.3, -0.3, 0.5]\n"
+            "      FunctionOfTimeNames: [TranslationX, TranslationY, "
+            "TranslationZ]\n"
+          : "  TimeDependence: None\n"};
+  const std::string boundary_conditions{
+      add_boundary_condition
+          ? std::string{"  BoundaryConditions:\n"
+                        "    InnerBoundary:\n" +
+                        std::string{excise_A or excise_B
+                                        ? "      TestBoundaryCondition:\n"
+                                          "        Direction: lower-zeta\n"
+                                          "        BlockId: 50\n"
+                                        : "      None:\n"} +
+                        "    OuterBoundary:\n"
+                        "      TestBoundaryCondition:\n"
+                        "        Direction: upper-zeta\n"
+                        "        BlockId: 50\n"}
+          : ""};
+  return "BinaryCompactObject:\n"
+         "  InnerRadiusObjectA: 0.2\n"
+         "  OuterRadiusObjectA: 1.0\n"
+         "  XCoordObjectA: -2.0\n"
+         "  ExciseInteriorA: " +
+         stringize(excise_A) +
+         "\n"
+         "  InnerRadiusObjectB: 1.0\n"
+         "  OuterRadiusObjectB: 2.0\n"
+         "  XCoordObjectB: 3.0\n"
+         "  ExciseInteriorB: " +
+         stringize(excise_B) +
+         "\n"
+         "  RadiusOuterCube: 22.0\n"
+         "  RadiusOuterSphere: 25.0\n"
+         "  InitialRefinement: 1\n"
+         "  InitialGridPoints: 3\n"
+         "  UseProjectiveMap: true\n"
+         "  UseLogarithmicMapOuterSphericalShell: false\n"
+         "  AdditionToOuterLayerRadialRefinementLevel: " +
+         std::to_string(additional_refinement_outer) +
+         "\n"
+         "  UseLogarithmicMapObjectA: " +
+         stringize(use_logarithmic_map_AB) +
+         "\n"
+         "  AdditionToObjectARadialRefinementLevel: " +
+         std::to_string(additional_refinement_A) +
+         "\n"
+         "  UseLogarithmicMapObjectB: " +
+         stringize(use_logarithmic_map_AB) +
+         "\n"
+         "  AdditionToObjectBRadialRefinementLevel: " +
+         std::to_string(additional_refinement_B) + "\n" + time_dependence +
+         boundary_conditions;
 }
-void test_bbh_time_dependent_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence:\n"
-      "      UniformTranslation:\n"
-      "        InitialTime: 1.0\n"
-      "        InitialExpirationDeltaT: 9.0\n"
-      "        Velocity: [2.3, -0.3, 0.5]\n"
-      "        FunctionOfTimeNames: [TranslationX, TranslationY, "
-      "TranslationZ]");
+
+void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
+  const auto binary_compact_object = [&with_boundary_conditions]() {
+    if (with_boundary_conditions) {
+      return TestHelpers::test_factory_creation<
+          DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+          TestHelpers::domain::BoundaryConditions::
+              MetavariablesWithBoundaryConditions<3>>(create_option_string(
+          true, true, true, false, 0, 0, 0, with_boundary_conditions));
+    } else {
+      return TestHelpers::test_factory_creation<
+          DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+          TestHelpers::domain::BoundaryConditions::
+              MetavariablesWithoutBoundaryConditions<3>>(create_option_string(
+          true, true, true, false, 0, 0, 0, with_boundary_conditions));
+    }
+  }();
   const std::array<double, 4> times_to_check{{0.0, 4.4, 7.8}};
 
   constexpr double initial_time = 0.0;
@@ -221,443 +448,129 @@ void test_bbh_time_dependent_factory() {
     test_binary_compact_object_construction(
         dynamic_cast<const domain::creators::BinaryCompactObject&>(
             *binary_compact_object),
-        time, functions_of_time, expected_functions_of_time);
+        time, functions_of_time, expected_functions_of_time,
+        with_boundary_conditions ? create_boundary_conditions(true, true)
+                                 : BoundaryCondVector{});
   }
 }
 
-void test_bbh_equiangular_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
+void test_binary_factory() {
+  const auto check_impl = [](const std::string& opt_string,
+                             const bool with_boundary_conditions) {
+    const auto binary_compact_object = [&opt_string,
+                                        &with_boundary_conditions]() {
+      if (with_boundary_conditions) {
+        return TestHelpers::test_factory_creation<
+            DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithBoundaryConditions<3>>(opt_string);
+      } else {
+        return TestHelpers::test_factory_creation<
+            DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithoutBoundaryConditions<3>>(opt_string);
+      }
+    }();
+    test_binary_compact_object_construction(
+        dynamic_cast<const domain::creators::BinaryCompactObject&>(
+            *binary_compact_object));
+  };
+  for (const bool with_boundary_conds : {true, false}) {
+    check_impl(create_option_string(true, true, false, false, 2, 0, 2,
+                                    with_boundary_conds),
+               with_boundary_conds);
+    check_impl(create_option_string(true, true, false, true, 3, 3, 0,
+                                    with_boundary_conds),
+               with_boundary_conds);
+    check_impl(create_option_string(true, true, false, false, 0, 0, 0,
+                                    with_boundary_conds),
+               with_boundary_conds);
+    check_impl(create_option_string(false, false, false, false, 0, 0, 0,
+                                    with_boundary_conds),
+               with_boundary_conds);
+    check_impl(create_option_string(true, false, false, false, 0, 0, 0,
+                                    with_boundary_conds),
+               with_boundary_conds);
+    check_impl(create_option_string(false, true, false, false, 0, 0, 0,
+                                    with_boundary_conds),
+               with_boundary_conds);
+  }
 }
 
-void test_bbh_2_outer_radial_refinements_linear_map_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 2\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 2\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_bbh_3_outer_radial_refinements_log_map_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 3\n"
-      "    UseLogarithmicMapObjectA: true\n"
-      "    AdditionToObjectARadialRefinementLevel: 3\n"
-      "    UseLogarithmicMapObjectB: true\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_bbh_equidistant_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: false\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_bns_equiangular_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: false\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: false\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_bns_equidistant_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: false\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: false\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: false\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_bhns_equiangular_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: false\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_bhns_equidistant_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: true\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: false\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: false\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_nsbh_equiangular_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: false\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: true\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
-}
-
-void test_nsbh_equidistant_factory() {
-  const auto binary_compact_object = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  BinaryCompactObject:\n"
-      "    InnerRadiusObjectA: 0.2\n"
-      "    OuterRadiusObjectA: 1.0\n"
-      "    XCoordObjectA: -2.0\n"
-      "    ExciseInteriorA: false\n"
-      "    InnerRadiusObjectB: 1.0\n"
-      "    OuterRadiusObjectB: 2.0\n"
-      "    XCoordObjectB: 3.0\n"
-      "    ExciseInteriorB: true\n"
-      "    RadiusOuterCube: 22.0\n"
-      "    RadiusOuterSphere: 25.0\n"
-      "    InitialRefinement: 1\n"
-      "    InitialGridPoints: 3\n"
-      "    UseEquiangularMap: false\n"
-      "    UseProjectiveMap: true\n"
-      "    UseLogarithmicMapOuterSphericalShell: false\n"
-      "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectA: false\n"
-      "    AdditionToObjectARadialRefinementLevel: 0\n"
-      "    UseLogarithmicMapObjectB: false\n"
-      "    AdditionToObjectBRadialRefinementLevel: 0\n"
-      "    TimeDependence: None\n");
-  test_binary_compact_object_construction(
-      dynamic_cast<const domain::creators::BinaryCompactObject&>(
-          *binary_compact_object));
+void test_parse_errors() {
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, 1.0, true, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "The x-coordinate of ObjectA's center is expected to be negative."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, true, 0.3, 1.0, -1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "The x-coordinate of ObjectB's center is expected to be positive."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -7.0, true, 0.3, 1.0, 8.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("The radius for the enveloping cube is too "
+                                "small! The Frustums will be malformed."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          1.5, 1.0, -1.0, true, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "ObjectA's inner radius must be less than its outer radius."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, true, 3.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "ObjectB's inner radius must be less than its outer radius."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, false, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
+          false, 0, true, 0, false, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "excise_interior_A must be true if use_logarithmic_map_object_A is "
+          "true; that is, using a logarithmically spaced radial grid in the "
+          "part of Layer 1 enveloping Object A requires excising the interior "
+          "of Object A"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          0.5, 1.0, -1.0, true, 0.3, 1.0, 1.0, false, 25.5, 32.4, 2, 6, true,
+          false, 0, false, 0, true, 0, nullptr,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "excise_interior_B must be true if use_logarithmic_map_object_B is "
+          "true; that is, using a logarithmically spaced radial grid in the "
+          "part of Layer 1 enveloping Object B requires excising the interior "
+          "of Object B"));
+  // Note: the boundary condition-related parse errors are checked in the
+  // test_connectivity function.
 }
 }  // namespace
 
-// [[Timeout, 6]]
+// [[Timeout, 15]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
                   "[Domain][Unit]") {
   test_connectivity();
-  test_bbh_time_dependent_factory();
-  test_bbh_2_outer_radial_refinements_linear_map_factory();
-  test_bbh_3_outer_radial_refinements_log_map_factory();
-  test_bbh_time_dependent_factory();
-  test_bbh_equiangular_factory();
-  test_bbh_equidistant_factory();
-  test_bns_equiangular_factory();
-  test_bns_equidistant_factory();
-  test_bhns_equiangular_factory();
-  test_bhns_equidistant_factory();
-  test_nsbh_equiangular_factory();
-  test_nsbh_equidistant_factory();
-}
-
-// [[OutputRegex, The radius for the enveloping cube is too small! The Frustums
-// will be malformed.]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.Options1",
-                  "[Domain][Unit]") {
-  ERROR_TEST();
-  // ObjectA:
-  const double inner_radius_objectA = 0.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -7.0;
-  const bool excise_interiorA = true;
-
-  // ObjectB:
-  const double inner_radius_objectB = 0.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 8.0;
-  const bool excise_interiorB = true;
-
-  // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
-
-  // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
-  const bool use_equiangular_map = true;
-
-  domain::creators::BinaryCompactObject binary_compact_object{
-      inner_radius_objectA,     outer_radius_objectA, xcoord_objectA,
-      excise_interiorA,         inner_radius_objectB, outer_radius_objectB,
-      xcoord_objectB,           excise_interiorB,     radius_enveloping_cube,
-      radius_enveloping_sphere, refinement,           grid_points,
-      use_equiangular_map};
-}
-// [[OutputRegex, ObjectA's inner radius must be less than its outer radius.]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.Options2",
-                  "[Domain][Unit]") {
-  ERROR_TEST();
-  // ObjectA:
-  const double inner_radius_objectA = 1.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -1.0;
-  const bool excise_interiorA = true;
-
-  // ObjectB:
-  const double inner_radius_objectB = 0.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 1.0;
-  const bool excise_interiorB = true;
-
-  // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
-
-  // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
-  const bool use_equiangular_map = true;
-
-  domain::creators::BinaryCompactObject binary_compact_object{
-      inner_radius_objectA,     outer_radius_objectA, xcoord_objectA,
-      excise_interiorA,         inner_radius_objectB, outer_radius_objectB,
-      xcoord_objectB,           excise_interiorB,     radius_enveloping_cube,
-      radius_enveloping_sphere, refinement,           grid_points,
-      use_equiangular_map};
-}
-// [[OutputRegex, ObjectB's inner radius must be less than its outer radius.]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.Options3",
-                  "[Domain][Unit]") {
-  ERROR_TEST();
-  // ObjectA:
-  const double inner_radius_objectA = 0.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -1.0;
-  const bool excise_interiorA = true;
-
-  // ObjectB:
-  const double inner_radius_objectB = 3.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 1.0;
-  const bool excise_interiorB = true;
-
-  // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
-
-  // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
-  const bool use_equiangular_map = true;
-
-  domain::creators::BinaryCompactObject binary_compact_object{
-      inner_radius_objectA,     outer_radius_objectA, xcoord_objectA,
-      excise_interiorA,         inner_radius_objectB, outer_radius_objectB,
-      xcoord_objectB,           excise_interiorB,     radius_enveloping_cube,
-      radius_enveloping_sphere, refinement,           grid_points,
-      use_equiangular_map};
+  test_bbh_time_dependent_factory(true);
+  test_bbh_time_dependent_factory(false);
+  test_binary_factory();
+  test_parse_errors();
 }

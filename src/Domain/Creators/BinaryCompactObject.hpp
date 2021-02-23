@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -208,12 +210,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "Initial number of grid points in each dim per element."};
   };
 
-  struct UseEquiangularMap {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Use equiangular instead of equidistant coordinates."};
-  };
-
   struct UseProjectiveMap {
     using type = bool;
     static constexpr Options::String help = {
@@ -270,14 +266,49 @@ class BinaryCompactObject : public DomainCreator<3> {
         "The time dependence of the moving mesh domain."};
   };
 
-  using options = tmpl::list<
+  struct BoundaryConditions {
+    static constexpr Options::String help = "The boundary conditions to apply.";
+  };
+  template <typename BoundaryConditionsBase>
+  struct InnerBoundaryCondition {
+    static std::string name() noexcept { return "InnerBoundary"; }
+    static constexpr Options::String help =
+        "Options for the inner boundary conditions.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+    using group = BoundaryConditions;
+  };
+
+  template <typename BoundaryConditionsBase>
+  struct OuterBoundaryCondition {
+    static std::string name() noexcept { return "OuterBoundary"; }
+    static constexpr Options::String help =
+        "Options for the outer boundary conditions.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+    using group = BoundaryConditions;
+  };
+
+  using basic_options = tmpl::list<
       InnerRadiusObjectA, OuterRadiusObjectA, XCoordObjectA, ExciseInteriorA,
       InnerRadiusObjectB, OuterRadiusObjectB, XCoordObjectB, ExciseInteriorB,
       RadiusOuterCube, RadiusOuterSphere, InitialRefinement, InitialGridPoints,
-      UseEquiangularMap, UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
+      UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
       AdditionToOuterLayerRadialRefinementLevel, UseLogarithmicMapObjectA,
       AdditionToObjectARadialRefinementLevel, UseLogarithmicMapObjectB,
       AdditionToObjectBRadialRefinementLevel, TimeDependence>;
+
+  template <typename Metavariables>
+  using options = tmpl::conditional_t<
+      domain::BoundaryConditions::has_boundary_conditions_base_v<
+          typename Metavariables::system>,
+      tmpl::push_back<
+          basic_options,
+          InnerBoundaryCondition<
+              domain::BoundaryConditions::get_boundary_conditions_base<
+                  typename Metavariables::system>>,
+          OuterBoundaryCondition<
+              domain::BoundaryConditions::get_boundary_conditions_base<
+                  typename Metavariables::system>>>,
+      basic_options>;
 
   static constexpr Options::String help{
       "The BinaryCompactObject domain is a general domain for two compact "
@@ -319,7 +350,6 @@ class BinaryCompactObject : public DomainCreator<3> {
       typename RadiusOuterSphere::type radius_enveloping_sphere,
       typename InitialRefinement::type initial_refinement,
       typename InitialGridPoints::type initial_grid_points_per_dim,
-      typename UseEquiangularMap::type use_equiangular_map,
       typename UseProjectiveMap::type use_projective_map = true,
       typename UseLogarithmicMapOuterSphericalShell::type
           use_logarithmic_map_outer_spherical_shell = false,
@@ -335,6 +365,10 @@ class BinaryCompactObject : public DomainCreator<3> {
           addition_to_object_B_radial_refinement_level = 0,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          inner_boundary_condition = nullptr,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          outer_boundary_condition = nullptr,
       const Options::Context& context = {});
 
   BinaryCompactObject() = default;
@@ -368,7 +402,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   typename RadiusOuterSphere::type radius_enveloping_sphere_{};
   typename InitialRefinement::type initial_refinement_{};
   typename InitialGridPoints::type initial_grid_points_per_dim_{};
-  typename UseEquiangularMap::type use_equiangular_map_ = true;
+  static constexpr bool use_equiangular_map_ =
+      false;  // Doesn't work properly yet
   typename UseProjectiveMap::type use_projective_map_ = true;
   typename UseLogarithmicMapOuterSphericalShell::type
       use_logarithmic_map_outer_spherical_shell_ = false;
@@ -387,6 +422,10 @@ class BinaryCompactObject : public DomainCreator<3> {
   size_t number_of_blocks_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      inner_boundary_condition_;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      outer_boundary_condition_;
 };
 }  // namespace creators
 }  // namespace domain
