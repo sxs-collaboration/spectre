@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -27,6 +28,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
@@ -1466,7 +1468,10 @@ static_assert(
             test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
             test_databox_tags::Tag4Compute,
             test_databox_tags::MultiplyScalarByTwoCompute,
-            test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>>,
+            ::Tags::Subitem<test_databox_tags::ScalarTag2,
+                            test_databox_tags::MultiplyScalarByTwoCompute>,
+            ::Tags::Subitem<test_databox_tags::VectorTag2,
+                            test_databox_tags::MultiplyScalarByTwoCompute>>>>,
     "Failed testing db::compute_databox_type");
 
 static_assert(
@@ -1904,51 +1909,23 @@ struct Subitems<Parent<N>> {
   using type = tmpl::list<First<N>, Second<N>>;
   using tag = Parent<N>;
 
-  template <typename Subtag, typename LocalTag = tag>
+  template <typename Subtag>
   static void create_item(
-      const gsl::not_null<detail::item_type<LocalTag>*> parent_value,
-      const gsl::not_null<detail::item_type<Subtag>*> sub_value) noexcept {
+      const gsl::not_null<typename tag::type*> parent_value,
+      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
     *sub_value = std::get<Subtag::index>(*parent_value);
   }
-
-  template <typename Subtag>
-  static std::decay_t<detail::const_item_type<Subtag>> create_compute_item(
-      detail::const_item_type<tag> parent_value) noexcept {
-    // clang-tidy: do not use const_cast
-    // We need a non-const object to set up the aliasing since in the
-    // simple-item case the alias can be used to modify the original
-    // item.  That should not be allowed for compute items, but the
-    // DataBox will only allow access to a const version of the result
-    // and we ensure in the definition of Boxed that that will not
-    // allow modification of the original item.
-    return const_cast<detail::item_type<Subtag>&>(  // NOLINT
-        std::get<Subtag::index>(parent_value));
-  }
 };
+
 template <size_t N>
 struct Subitems<ParentCompute<N>> {
   using type = tmpl::list<First<N>, Second<N>>;
   using tag = ParentCompute<N>;
 
-  template <typename Subtag, typename LocalTag = tag>
-  static void create_item(
-      const gsl::not_null<detail::item_type<LocalTag>*> parent_value,
-      const gsl::not_null<detail::item_type<Subtag>*> sub_value) noexcept {
-    *sub_value = std::get<Subtag::index>(*parent_value);
-  }
-
   template <typename Subtag>
-  static std::decay_t<detail::const_item_type<Subtag>> create_compute_item(
-      detail::const_item_type<tag> parent_value) noexcept {
-    // clang-tidy: do not use const_cast
-    // We need a non-const object to set up the aliasing since in the
-    // simple-item case the alias can be used to modify the original
-    // item.  That should not be allowed for compute items, but the
-    // DataBox will only allow access to a const version of the result
-    // and we ensure in the definition of Boxed that that will not
-    // allow modification of the original item.
-    return const_cast<detail::item_type<Subtag>&>(  // NOLINT
-        std::get<Subtag::index>(parent_value));
+  static const typename Subtag::type& create_compute_item(
+      const typename tag::type& parent_value) noexcept {
+    return std::get<Subtag::index>(parent_value);
   }
 };
 }  // namespace db
@@ -1961,6 +1938,9 @@ void test_subitems() noexcept {
                         db::AddComputeTags<ParentCompute<1>>>(
       std::make_pair(Boxed<int>(std::make_shared<int>(5)),
                      Boxed<double>(std::make_shared<double>(3.5))));
+
+  TestHelpers::db::test_reference_tag<
+      ::Tags::Subitem<First<1>, ParentCompute<1>>>("First");
 
   CHECK(*db::get<First<0>>(box) == 5);
   CHECK(*db::get<First<1>>(box) == 6);

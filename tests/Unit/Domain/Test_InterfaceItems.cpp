@@ -460,6 +460,16 @@ void test_interface_subitems() {
   CHECK((db::get<Tags::Interface<Dirs, VarPlusFive<3>>>(box)) ==
         make_interface_tensor({5., 9., 13.}, {13., 14., 15., 16.}));
 
+  TestHelpers::db::test_compute_tag<::Tags::Subitem<
+      Tags::Interface<Dirs, Var<2>>,
+      Tags::Slice<Dirs, ::Tags::Variables<tmpl::list<Var<2>>>>>>(
+      "Interface<Dirs, Var>");
+
+  TestHelpers::db::test_compute_tag<
+      ::Tags::Subitem<Tags::Interface<Dirs, Var<1>>,
+                      Tags::InterfaceCompute<Dirs, ComputeCompute<1>>>>(
+      "Interface<Dirs, Var>");
+
   db::mutate<Tags::Interface<Dirs, Var<0>>>(
       make_not_null(&box), [](const auto boundary_tensor) noexcept {
         get(boundary_tensor->at(Direction<dim>::lower_xi())) *= 3.;

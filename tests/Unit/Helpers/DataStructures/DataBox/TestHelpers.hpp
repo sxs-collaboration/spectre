@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
@@ -24,6 +25,8 @@ CREATE_HAS_TYPE_ALIAS(argument_tags)
 CREATE_HAS_TYPE_ALIAS_V(argument_tags)
 CREATE_HAS_TYPE_ALIAS(base)
 CREATE_HAS_TYPE_ALIAS_V(base)
+CREATE_HAS_TYPE_ALIAS(parent_tag)
+CREATE_HAS_TYPE_ALIAS_V(parent_tag)
 CREATE_HAS_TYPE_ALIAS(return_type)
 CREATE_HAS_TYPE_ALIAS_V(return_type)
 CREATE_HAS_TYPE_ALIAS(tag)
@@ -78,6 +81,20 @@ void test_prefix_tag(const std::string& expected_name) {
                 "A prefix tag should also be a simple tag");
   static_assert(detail::has_type_v<Tag>);
   static_assert(detail::has_tag_v<Tag>);
+  detail::check_tag_name<Tag>(expected_name);
+}
+
+template <typename Tag>
+void test_reference_tag(const std::string& expected_name) {
+  static_assert(::db::is_reference_tag_v<Tag>,
+                "A reference tag must be derived from db::ReferenceTag");
+  static_assert(detail::has_argument_tags_v<Tag>);
+  static_assert(detail::has_base_v<Tag>);
+  static_assert(detail::has_parent_tag_v<Tag>);
+  static_assert(::db::is_simple_tag_v<typename Tag::base>,
+                "The base type alias of a reference tag must be a simple tag.");
+  static_assert(std::is_same_v<typename Tag::parent_tag,
+                               tmpl::front<typename Tag::argument_tags>>);
   detail::check_tag_name<Tag>(expected_name);
 }
 

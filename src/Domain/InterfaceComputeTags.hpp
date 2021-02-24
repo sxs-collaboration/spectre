@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -246,3 +247,51 @@ struct Subitems<domain::Tags::Slice<DirectionsTag, VariablesTag>,
                 Requires<tt::is_a_v<Variables, typename VariablesTag::type>>>
     : detail::InterfaceSubitemsImpl<DirectionsTag, VariablesTag> {};
 }  // namespace db
+
+namespace Tags {
+/// \brief specialization of a subitem tag for an interface compute tag of a
+/// Variables
+///
+/// This is a compute tag for an unordered map from ::Direction (with the set of
+/// directions being those produced by `DirectionsTag`) to a Tensor (whose
+/// type comes from `TensorTag`) that is contained in a Variables (labeled by
+/// `VariablesTag`) for a ::domain::Tags::InterfaceCompute<DirectionsTag,
+/// VariablesTag>>.
+template <typename DirectionsTag, typename TensorTag, typename VariablesTag>
+struct Subitem<::domain::Tags::Interface<DirectionsTag, TensorTag>,
+               ::domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>>
+    : db::ComputeTag, ::domain::Tags::Interface<DirectionsTag, TensorTag> {
+  using base = ::domain::Tags::Interface<DirectionsTag, TensorTag>;
+  using return_type = typename base::type;
+  using parent_tag =
+      ::domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>;
+  static void function(const gsl::not_null<return_type*> subitems,
+                       const typename parent_tag::type& parent_value) noexcept {
+    ::db::Subitems<parent_tag>::template create_compute_item<base>(
+        subitems, parent_value);
+  }
+  using argument_tags = tmpl::list<parent_tag>;
+};
+
+/// \brief specialization of a subitem tag for an interface compute tag of a
+/// sliced Variables
+///
+/// This is a compute tag for an unordered map from ::Direction (with the set of
+/// directions being those produced by `DirectionsTag`) to a Tensor (whose
+/// type comes from `TensorTag`) that is contained in a Variables (labeled by
+/// `VariablesTag`) for a domain::Tags::Slice<DirectionsTag, VariablesTag>>.
+template <typename DirectionsTag, typename TensorTag, typename VariablesTag>
+struct Subitem<::domain::Tags::Interface<DirectionsTag, TensorTag>,
+               ::domain::Tags::Slice<DirectionsTag, VariablesTag>>
+    : db::ComputeTag, ::domain::Tags::Interface<DirectionsTag, TensorTag> {
+  using base = ::domain::Tags::Interface<DirectionsTag, TensorTag>;
+  using return_type = typename base::type;
+  using parent_tag = ::domain::Tags::Slice<DirectionsTag, VariablesTag>;
+  static void function(const gsl::not_null<return_type*> subitems,
+                       const typename parent_tag::type& parent_value) noexcept {
+    ::db::Subitems<parent_tag>::template create_compute_item<base>(
+        subitems, parent_value);
+  }
+  using argument_tags = tmpl::list<parent_tag>;
+};
+}  // namespace Tags

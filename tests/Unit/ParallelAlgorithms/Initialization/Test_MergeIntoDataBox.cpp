@@ -124,6 +124,7 @@ void test_failure_value() {
   auto box1 = Initialization::merge_into_databox<FakeAction,
                                                  db::AddSimpleTags<Tags::Int>>(
       std::move(box0), 3);
+  (void)box1;
 }
 }  // namespace TestAddToBox_detail
 

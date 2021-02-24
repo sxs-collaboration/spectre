@@ -94,13 +94,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   TestHelpers::db::test_base_tag<Tags::GlobalCache>("GlobalCache");
   TestHelpers::db::test_simple_tag<Tags::GlobalCacheImpl<Metavars>>(
       "GlobalCache");
-  // In a near-future PR this tag will be converted to a new type of tag called
-  // a db::ReferenceTag as it can not be a mutating compute tag.
-  // TestHelpers::db::test_compute_tag<
-  //     Tags::FromGlobalCache<Tags::IntegerList>>(
-  //     "FromGlobalCache(IntegerList)");
-  // TestHelpers::db::test_compute_tag<
-  //     Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>(
-  //     "FromGlobalCache(UniquePtrIntegerList)");
+  TestHelpers::db::test_reference_tag<Tags::FromGlobalCache<Tags::IntegerList>>(
+      "IntegerList");
+  TestHelpers::db::test_reference_tag<
+      Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>(
+      "UniquePtrIntegerList");
 }
 }  // namespace Parallel
