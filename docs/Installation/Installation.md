@@ -79,7 +79,7 @@ Linux machine. Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
 as outlined below is a supported alternative to Docker images.
 
-**NOTE**: If you have SELinux active
+**Note**: If you have SELinux active
 on your system you must figure out how to enable sharing files with the host
 OS. If you receive errors that you do not have permission to access a shared
 directory it is likely that your system has SELinux enabled. One option is to
@@ -88,6 +88,12 @@ disable SELinux at the expense of reducing the security of your system.
 To build with the docker image:
 
 1. Clone SpECTRE into SPECTRE_ROOT, a directory of your choice.
+   You may `git clone` the [SpECTRE
+   repository](https://github.com/sxs-collaboration/spectre) on GitHub, in which
+   case SPECTRE_ROOT will be `<your_current_directory>/spectre`. That is, inside
+   SPECTRE_ROOT are `docs`, `src`, `support`, `tests` etc. You can also download
+   the source and extract them to your desired working directory. Make sure not
+   to leave out hidden files when you `cp` or `mv` the source files!
 2. Retrieve the docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
@@ -97,6 +103,14 @@ To build with the docker image:
    docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \
               -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
+   - `-v SPECTRE_ROOT:SPECTRE_ROOT` binds the directory SPECTRE_ROOT outside the
+   container to SPECTRE_ROOT inside the container. In this way, files in the
+   SPECTRE_ROOT on your host system (outside the container) become accessible
+   within the container through the directory SPECTRE_ROOT inside the
+   container. If you wonder why the same SPECTRE_ROOT needs to be used for
+   both inside and outside the container, which is why `SPECTRE_ROOT` is
+   repeated in the command above with seperated by a colon, please see one of
+   the notes below regarding `-v` flag.
    - The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
    of your choice. If you don't name your container, docker will generate an
    arbitrary name.
@@ -109,24 +123,35 @@ To build with the docker image:
    bindings (see \ref spectre_using_python) or a Python web server to view the
    documentation. To do so, append the `-p` option, e.g. `-p 8000:8000`.
 
-   You will end up in a shell in the docker container,
+   You will end up in a bash shell in the docker container,
    as root (you need to be root).
-   Within the container, the files in SPECTRE_ROOT are available and
-   Charm++ is installed in `/work/charm`. For the following steps, stay inside
-   the docker container as root.
+   Within the container, the files in SPECTRE_ROOT are available and Charm++ is
+   installed in `/work/charm_6_10_2`. For the following steps, stay inside the
+   docker container as root.
 4. Make a build directory somewhere inside the container, e.g.
-   `/work/spectre-build-gcc`, and cd into it.
+   `/work/spectre-build-gcc`, and `cd` into it.
 5. Build SpECTRE with
-```
+   ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
-```
-   then
-   `make -jN`
-   to compile the code, `make test-executables -jN` to compile the test
-   executables, and `ctest` to run the tests.
+         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
+         SPECTRE_ROOT
+   ```
+   To build with clang, the CMake command is
+   ```
+   cmake -D CMAKE_CXX_COMPILER=clang++ \
+         -D CMAKE_C_COMPILER=clang \
+         -D CMAKE_Fortran_COMPILER=gfortran-8 \
+         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+         SPECTRE_ROOT
+   ```
+   When cmake configuration is done, you are ready to build target executables.
+   Compile unit tests with `make unit-tests -jN` where `N` is the number of
+   cores to build on in parallel (e.g. `-j4`).
+   * You can see the list of available targets by running `make list`.
+   * Run `make test-executables -jN` to compile the test executables, and
+     `ctest` to run the tests.
 
-Notes:
+**Notes:**
   * Everything in your build directory is owned by root, and is
     accessible only within the container.
   * You should edit source files in SPECTRE_ROOT in a separate terminal
@@ -134,7 +159,7 @@ Notes:
     running the code.
   * If you exit the container (e.g. ctrl-d),
     your compilation directories are still saved, as is the patch
-    that you have applied to /work/charm and any other changes to
+    that you have applied to `/work/charm_6_10_2` and any other changes to
     the container that you have made.
     To restart the container, try the following commands
     (you may need `sudo`):
@@ -142,45 +167,36 @@ Notes:
       to list all containers with their CONTAINER_IDs and CONTAINER_NAMEs,
     2. `docker start -i CONTAINER_NAME` or `docker start -i CONTAINER_ID`,
       to restart your container.
+  * When the Docker container gets updated, you can stop it with
+    `docker stop CONTAINER_NAME`, remove it with `docker rm CONTAINER_NAME`
+    and then start at step 2 above to run it again.
   * You can run more than one shell in the same container, for instance
     one shell for compiling with gcc and another for compiling
     with clang.
     To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
     (or `docker exec -it CONTAINER_ID /bin/bash`) from
     a terminal outside the container.
-  * In step 3 above, the `-v SPECTRE_ROOT:SPECTRE_ROOT` maps the directory
-    SPECTRE_ROOT outside the container to SPECTRE_ROOT inside the container.
-    Technically docker allows you to say `-v SPECTRE_ROOT:/my/new/path`
-    to map SPECTRE_ROOT outside the container to any path you want inside
-    the container, but **do not do this**.  Compiling inside the container
-    sets up git hooks in SPECTRE_ROOT that
-    contain hardcoded pathnames to SPECTRE_ROOT *as seen from
-    inside the container*. So if your source paths inside and outside the
-    container are different, commands like `git commit` run *from
-    outside the container* will die with `No such file or directory`.
-  * To compile with clang, the cmake command is
-```
-    cmake -D CMAKE_CXX_COMPILER=clang++ \
-          -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-clang SPECTRE_ROOT
-```
+  * In step 3 above, technically docker allows you to say `-v
+    SPECTRE_ROOT:/my/new/path` to map SPECTRE_ROOT outside the container to any
+    path you want inside the container, but **do not do this**.  Compiling
+    inside the container sets up git hooks in SPECTRE_ROOT that contain
+    hardcoded pathnames to SPECTRE_ROOT *as seen from inside the container*. So
+    if your source paths inside and outside the container are different,
+    commands like `git commit` run *from outside the container* will die with
+    `No such file or directory`.
   * To compile the Python bindings, add the option
     `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command (see
     \ref spectre_writing_python_bindings). You can specify the Python version,
     interpreter and libraries used for compiling and testing the bindings by
     setting the `-D Python_EXECUTABLE` to an absolute path such as
     `/usr/bin/python3`.
-  * When the Docker container gets updated, you can stop it with
-    `docker stop CONTAINER_NAME`, remove it with `docker rm CONTAINER_NAME`
-    and then start at step 2 above to run it again.
 
 ## Using Singularity to obtain a SpECTRE environment
 
 [Singularity](https://sylabs.io) is a container alternative
 to Docker with better security and nicer integration.
 
-To use Singularity you must:
+To build SpECTRE with Singularity you must:
 
 1. Build [Singularity](https://sylabs.io) and add it to your
    `$PATH`
@@ -207,19 +223,32 @@ To use Singularity you must:
    using `sudo`.
 4. To start the container run `singularity shell spectre.img` and you
    will be dropped into a bash shell.
-5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
+5. `cd` into SPECTRE_ROOT and run `mkdir build && cd build` to set up a build
    directory.
-6. To build SpECTRE run
-```
+6. To build SpECTRE, run
+   ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
-```
-   followed by
-   `make -jN` where `N` is the number of cores to build on in parallel.
+         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
+         SPECTRE_ROOT
+   ```
+   To build with clang, the CMake command is
+   ```
+    cmake -D CMAKE_CXX_COMPILER=clang++ \
+          -D CMAKE_C_COMPILER=clang \
+          -D CMAKE_Fortran_COMPILER=gfortran-8 \
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+          SPECTRE_ROOT
+   ```
+   Compile unit tests with `make unit-tests -jN` where `N` is the number of
+   cores to build on in parallel (e.g. `-j4`).
+   * You can see the list of available targets by running `make list`.
+   * Run `make test-executables -jN` to compile the test executables, and
+     `ctest` to run the tests.
 
-Notes:
-- You should edit source files in SPECTRE_ROOT in a separate terminal outside
-  the container, and use the container only for compiling and running the code.
+**Notes:**
+- You should edit source files in SPECTRE_ROOT in a separate terminal
+  outside the container, and use the container only for compiling and running
+  the code.
 - Unlike Docker, Singularity does not keep the state between runs. However, it
   shares the home directory with the host OS so you should do all your work
   somewhere in your home directory.
@@ -228,13 +257,6 @@ Notes:
 - Since the data you modify lives on the host OS there is no need to worry about
   losing any data, needing to clean up old containers, or sharing data between
   containers and the host.
-- To build with clang, the CMake command is:
-```
-    cmake -D CMAKE_CXX_COMPILER=clang++ \
-          -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-clang SPECTRE_ROOT
-```
 
 ## Using Spack to set up a SpECTRE environment
 
