@@ -16,6 +16,7 @@ spectre_target_headers(
   NeighborData.hpp
   PerssonTci.hpp
   Projection.hpp
+  RdmpTci.hpp
   Reconstruction.hpp
   SubcellOptions.hpp
   TciStatus.hpp
