@@ -157,4 +157,4 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       const Scalar<DataVector>& abs_char_speed_ext,
       dg::Formulation dg_formulation) const noexcept;
 };
-}  // namespace Burgers::BoundaryCorrections
+}  // namespace NewtonianEuler::BoundaryCorrections
