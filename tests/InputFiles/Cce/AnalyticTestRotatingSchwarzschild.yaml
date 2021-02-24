@@ -1,0 +1,43 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: AnalyticTestCharacteristicExtract
+# Check: parse;execute_check_output
+# Timeout: 10
+# OutputFileChecks:
+#   - Label: "check_news"
+#     Subfile: "/News.dat"
+#     FileGlob: "CharacteristicExtractVolume*.h5"
+#     ExpectedDataSubfile: "/News_expected.dat"
+#     AbsoluteTolerance: 1e-11
+
+Evolution:
+  TimeStepper: RungeKutta3
+
+Observers:
+  VolumeFileName: "CharacteristicExtractVolume"
+  ReductionFileName: "CharacteristicExtractUnusedReduction"
+
+Cce:
+  LMax: 8
+  NumberOfRadialPoints: 8
+  ObservationLMax: 8
+
+  StartTime: 0.0
+  EndTime: 2.4
+  TargetStepSize: 0.2
+  ExtractionRadius: 20.0
+
+  AnalyticSolution:
+    RotatingSchwarzschild:
+      ExtractionRadius: 20.0
+      Mass: 1.0
+      Frequency: 0.0
+
+  Filtering:
+    RadialFilterHalfPower: 24
+    RadialFilterAlpha: 35.0
+    FilterLMax: 6
+
+  ScriInterpOrder: 3
+  ScriOutputDensity: 1

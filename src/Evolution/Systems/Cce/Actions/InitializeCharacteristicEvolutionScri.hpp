@@ -16,8 +16,14 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace Cce {
+
+/// \cond
+template <class Metavariables>
+struct AnalyticWorldtubeBoundary;
+/// \endcond
 namespace Actions {
 
 /*!
@@ -39,10 +45,16 @@ namespace Actions {
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
  * phase action list prior to this action.
  */
-template <typename ScriValuesToObserve>
+template <typename ScriValuesToObserve, typename BoundaryComponent>
 struct InitializeCharacteristicEvolutionScri {
-  using initialization_tags =
-      tmpl::list<InitializationTags::ScriInterpolationOrder>;
+  using initialization_tags = tmpl::flatten<tmpl::list<
+      InitializationTags::ScriInterpolationOrder,
+      tmpl::conditional_t<
+          tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,
+          tmpl::list<Tags::AnalyticBoundaryDataManager>, tmpl::list<>>>>;
+  using initialization_tags_to_keep = tmpl::conditional_t<
+      tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,
+      tmpl::list<Tags::AnalyticBoundaryDataManager>, tmpl::list<>>;
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
 

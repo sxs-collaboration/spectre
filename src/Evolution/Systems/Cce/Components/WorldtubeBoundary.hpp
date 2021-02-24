@@ -39,10 +39,6 @@ struct WorldtubeComponentBase {
                                         Metavariables::Phase::Evolve,
                                         worldtube_boundary_computation_steps>>;
 
-  using const_global_cache_tag_list =
-      Parallel::detail::get_const_global_cache_tags_from_pdal<
-          phase_dependent_action_list>;
-
   using options = tmpl::list<>;
 
   static void initialize(Parallel::CProxy_GlobalCache<
@@ -91,7 +87,7 @@ struct H5WorldtubeBoundary
   using base_type::execute_next_phase;
   using base_type::initialize;
   using typename base_type::chare_type;
-  using typename base_type::const_global_cache_tag_list;
+  using const_global_cache_tags = tmpl::list<Tags::InitializeJ>;
   using typename base_type::initialization_tags;
   using typename base_type::metavariables;
   using typename base_type::options;
@@ -133,7 +129,7 @@ struct AnalyticWorldtubeBoundary
   using base_type::execute_next_phase;
   using base_type::initialize;
   using typename base_type::chare_type;
-  using typename base_type::const_global_cache_tag_list;
+  using const_global_cache_tags = tmpl::list<Tags::AnalyticInitializeJ>;
   using typename base_type::initialization_tags;
   using typename base_type::metavariables;
   using typename base_type::options;
@@ -175,7 +171,7 @@ struct GhWorldtubeBoundary
   using base_type::execute_next_phase;
   using base_type::initialize;
   using typename base_type::chare_type;
-  using typename base_type::const_global_cache_tag_list;
+  using const_global_cache_tags = tmpl::list<Tags::InitializeJ>;
   using typename base_type::initialization_tags;
   using typename base_type::metavariables;
   using typename base_type::options;

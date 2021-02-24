@@ -18,6 +18,14 @@ add_spectre_parallel_executable(
   CharacteristicExtract
   CharacteristicExtract
   Evolution/Executables/Cce
-  EvolutionMetavars
+  EvolutionMetavars<Cce::H5WorldtubeBoundary>
+  "${LIBS_TO_LINK}"
+  )
+
+add_spectre_parallel_executable(
+  AnalyticTestCharacteristicExtract
+  CharacteristicExtract
+  Evolution/Executables/Cce
+  EvolutionMetavars<Cce::AnalyticWorldtubeBoundary>
   "${LIBS_TO_LINK}"
   )

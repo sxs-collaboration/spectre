@@ -100,7 +100,8 @@ struct CharacteristicEvolution {
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
       Actions::InitializeCharacteristicEvolutionScri<
-          typename Metavariables::scri_values_to_observe>,
+          typename Metavariables::scri_values_to_observe,
+          typename Metavariables::cce_boundary_component>,
       Actions::RequestBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,

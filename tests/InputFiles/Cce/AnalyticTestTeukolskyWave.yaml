@@ -1,0 +1,43 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: AnalyticTestCharacteristicExtract
+# Check: parse;execute_check_output
+# Timeout: 10
+# OutputFileChecks:
+#   - Label: "check_news"
+#     Subfile: "/News.dat"
+#     FileGlob: "CharacteristicExtractVolume*.h5"
+#     ExpectedDataSubfile: "/News_expected.dat"
+#     AbsoluteTolerance: 5e-10
+
+Evolution:
+  TimeStepper: RungeKutta3
+
+Observers:
+  VolumeFileName: "CharacteristicExtractVolume"
+  ReductionFileName: "CharacteristicExtractUnusedReduction"
+
+Cce:
+  LMax: 8
+  NumberOfRadialPoints: 8
+  ObservationLMax: 8
+
+  StartTime: -6.0
+  EndTime: -1.0
+  TargetStepSize: 0.5
+  ExtractionRadius: 40.0
+
+  AnalyticSolution:
+    TeukolskyWave:
+      ExtractionRadius: 40.0
+      Amplitude: 0.1
+      Duration: 2.0
+
+  Filtering:
+    RadialFilterHalfPower: 24
+    RadialFilterAlpha: 35.0
+    FilterLMax: 6
+
+  ScriInterpOrder: 3
+  ScriOutputDensity: 1

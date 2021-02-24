@@ -33,5 +33,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.TeukolskyWave", "[Unit][Cce]") {
                                           extraction_radius, amplitude,
                                           duration);
   boundary_solution.test_serialize_and_deserialize(l_max, time);
+  TestHelpers::test_initialize_j(l_max, 5_st, extraction_radius, time,
+                                 std::make_unique<InitializeJ::InverseCubic>(),
+                                 boundary_solution.get_clone());
 }
 }  // namespace Cce::Solutions
