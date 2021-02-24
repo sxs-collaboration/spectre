@@ -216,6 +216,8 @@ struct EvolutionMetavars {
               tmpl::list<evolution::Tags::AnalyticCompute<
                   1, initial_data_tag, analytic_solution_fields>>>,
           tmpl::list<>>,
+      Initialization::Actions::AddComputeTags<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       dg::Actions::InitializeMortars<boundary_scheme>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<1>,

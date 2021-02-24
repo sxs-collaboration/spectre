@@ -250,6 +250,8 @@ struct EvolutionMetavars {
               tmpl::list<evolution::Tags::AnalyticCompute<
                   Dim, initial_data_tag, analytic_variables_tags>>>,
           tmpl::list<>>,
+      Initialization::Actions::AddComputeTags<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       dg::Actions::InitializeMortars<boundary_scheme>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<Dim>,

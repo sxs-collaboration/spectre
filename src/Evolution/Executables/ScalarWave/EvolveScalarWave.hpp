@@ -222,9 +222,10 @@ struct EvolutionMetavars {
           dg::Initialization::exterior_compute_tags<
               ScalarWave::Tags::CharacteristicFieldsCompute<volume_dim>>,
           true, true>,
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<evolution::Tags::AnalyticCompute<
-              Dim, initial_data_tag, analytic_solution_fields>>>,
+      Initialization::Actions::AddComputeTags<tmpl::push_back<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
+          evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
+                                           analytic_solution_fields>>>,
       dg::Actions::InitializeMortars<boundary_scheme>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;

@@ -10,12 +10,16 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Registration.hpp"
+#include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+template <typename StepChooserRegistrars>
+class StepChooser;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -28,6 +32,41 @@ namespace StepChoosers {
 /// These can be passed in a list to the template argument of
 /// StepChooser to choose which StepChoosers can be constructed.
 namespace Registrars {}
+
+namespace detail {
+CREATE_HAS_TYPE_ALIAS(slab_choosers)
+CREATE_HAS_TYPE_ALIAS_V(slab_choosers)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(slab_choosers)
+CREATE_HAS_TYPE_ALIAS(step_choosers)
+CREATE_HAS_TYPE_ALIAS_V(step_choosers)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(step_choosers)
+CREATE_HAS_TYPE_ALIAS(compute_tags)
+CREATE_HAS_TYPE_ALIAS_V(compute_tags)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
+CREATE_HAS_TYPE_ALIAS(simple_tags)
+CREATE_HAS_TYPE_ALIAS_V(simple_tags)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(simple_tags)
+}  // namespace detail
+
+template <typename Metavariables>
+using step_chooser_compute_tags =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        typename StepChooser<tmpl::remove_duplicates<tmpl::append<
+            detail::get_step_choosers_or_default_t<Metavariables, tmpl::list<>>,
+            detail::get_slab_choosers_or_default_t<
+                Metavariables, tmpl::list<>>>>>::creatable_classes,
+        tmpl::bind<detail::get_compute_tags_or_default_t, tmpl::_1,
+                   tmpl::pin<tmpl::list<>>>>>>;
+
+template <typename Metavariables>
+using step_chooser_simple_tags =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        typename StepChooser<tmpl::remove_duplicates<tmpl::append<
+            detail::get_step_choosers_or_default_t<Metavariables, tmpl::list<>>,
+            detail::get_slab_choosers_or_default_t<
+                Metavariables, tmpl::list<>>>>>::creatable_classes,
+        tmpl::bind<detail::get_simple_tags_or_default_t, tmpl::_1,
+                   tmpl::pin<tmpl::list<>>>>>>;
 }  // namespace StepChoosers
 
 /// \ingroup TimeSteppersGroup

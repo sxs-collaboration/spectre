@@ -69,6 +69,8 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
 
   using argument_tags = tmpl::list<domain::Tags::MinimumGridSpacing<Dim, Frame>,
                                    Tags::DataBox, Tags::TimeStepper<>>;
+  using compute_tags =
+      tmpl::list<domain::Tags::MinimumGridSpacingCompute<Dim, Frame>>;
 
   template <typename Metavariables, typename DbTags>
   std::pair<double, bool> operator()(

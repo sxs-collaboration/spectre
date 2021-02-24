@@ -83,9 +83,10 @@ struct TimeAndTimeStep {
                  Tags::InitialSlabSize<Metavariables::local_time_stepping>>;
 
   using simple_tags =
-      tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                 ::Tags::Time, ::Tags::TimeStep,
-                 ::Tags::Next<::Tags::TimeStep>>;
+      tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
+                      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
+                      ::Tags::Time, ::Tags::TimeStep,
+                      ::Tags::Next<::Tags::TimeStep>>;
   using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
 
   template <
