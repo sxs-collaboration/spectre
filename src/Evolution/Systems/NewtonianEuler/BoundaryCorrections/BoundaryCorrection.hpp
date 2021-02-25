@@ -15,6 +15,8 @@ namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
 class Hll;
 template <size_t Dim>
+class Hllc;
+template <size_t Dim>
 class Rusanov;
 /// \endcond
 
@@ -38,7 +40,7 @@ class BoundaryCorrection : public PUP::able {
   WRAPPED_PUPable_abstract(BoundaryCorrection<Dim>);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<Hll<Dim>, Rusanov<Dim>>;
+  using creatable_classes = tmpl::list<Hll<Dim>, Hllc<Dim>, Rusanov<Dim>>;
 
   virtual std::unique_ptr<BoundaryCorrection<Dim>> get_clone()
       const noexcept = 0;
