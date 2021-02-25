@@ -19,6 +19,15 @@
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank3TestHelpers.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank4TestHelpers.hpp"
 
+namespace {
+template <auto&... TensorIndices>
+void test_contains_indices_to_contract(const bool expected) {
+  CHECK(TensorExpressions::detail::contains_indices_to_contract<sizeof...(
+            TensorIndices)>(
+            {{std::decay_t<decltype(TensorIndices)>::value...}}) == expected);
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Evaluate",
                   "[DataStructures][Unit]") {
   // Rank 0: double
@@ -246,6 +255,20 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Evaluate",
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>>,
       ti_F, ti_A, ti_C, ti_D>();
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Tensor.Expression.ContainsIndicesToContract",
+    "[DataStructures][Unit]") {
+  test_contains_indices_to_contract<ti_a, ti_b, ti_c>(false);
+  test_contains_indices_to_contract<ti_I, ti_j>(false);
+  test_contains_indices_to_contract<ti_j>(false);
+  test_contains_indices_to_contract(false);
+
+  test_contains_indices_to_contract<ti_d, ti_D>(true);
+  test_contains_indices_to_contract<ti_I, ti_i>(true);
+  test_contains_indices_to_contract<ti_a, ti_K, ti_B, ti_b>(true);
+  test_contains_indices_to_contract<ti_j, ti_c, ti_J, ti_A, ti_a>(true);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.ComputeRhsTensorIndex",

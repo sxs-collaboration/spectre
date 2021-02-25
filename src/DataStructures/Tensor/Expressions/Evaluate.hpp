@@ -9,9 +9,32 @@
 #include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 
 namespace TensorExpressions {
+
+namespace detail {
+template <size_t NumIndices>
+constexpr bool contains_indices_to_contract(
+    const std::array<size_t, NumIndices>& tensorindices) noexcept {
+  if constexpr (NumIndices < 2) {
+    return false;
+  } else {
+    for (size_t i = 0; i < NumIndices - 1; i++) {
+      for (size_t j = i + 1; j < NumIndices; j++) {
+        if (gsl::at(tensorindices, i) ==
+            get_tensorindex_value_with_opposite_valence(
+                gsl::at(tensorindices, j))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+}
+}  // namespace detail
+
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Evaluate a RHS tensor expression to a tensor with the LHS index order
@@ -47,22 +70,26 @@ namespace TensorExpressions {
 template <auto&... LhsTensorIndices, typename T,
           Requires<std::is_base_of<Expression, T>::value> = nullptr>
 auto evaluate(const T& rhs_te) {
-  static_assert(
-      sizeof...(LhsTensorIndices) == tmpl::size<typename T::args_list>::value,
-      "Must have the same number of indices on the LHS and RHS of a tensor "
-      "equation.");
-  using rhs = tmpl::transform<tmpl::remove_duplicates<typename T::args_list>,
-                              std::decay<tmpl::_1>>;
-  static_assert(
-      tmpl::equal_members<
-          tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>, rhs>::value,
-      "All indices on the LHS of a Tensor Expression (that is, those specified "
-      "in evaluate<Indices::...>) must be present on the RHS of the expression "
-      "as well.");
-
-  using rhs_tensorindex_list = typename T::args_list;
   using lhs_tensorindex_list =
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
+  using rhs_tensorindex_list = typename T::args_list;
+  static_assert(
+      tmpl::equal_members<lhs_tensorindex_list, rhs_tensorindex_list>::value,
+      "The generic indices on the LHS of a tensor equation (that is, the "
+      "template parameters specified in evaluate<...>) must match the generic "
+      "indices of the RHS TensorExpression. This error occurs as a result of a "
+      "call like evaluate<ti_a, ti_b>(R(ti_A, ti_b) * S(ti_a, ti_c)), where "
+      "the generic indices of the evaluated RHS expression are ti_b and ti_c, "
+      "but the indices provided for the LHS are ti_a and ti_b.");
+  static_assert(
+      tmpl::is_set<std::decay_t<decltype(LhsTensorIndices)>...>::value,
+      "Cannot evaluate a tensor expression to a LHS tensor with a repeated "
+      "generic index, e.g. evaluate<ti_a, ti_a>.");
+  static_assert(
+      not detail::contains_indices_to_contract<sizeof...(LhsTensorIndices)>(
+          {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
+      "Cannot evaluate a tensor expression to a LHS tensor with generic "
+      "indices that would be contracted, e.g. evaluate<ti_A, ti_a>.");
   using rhs_symmetry = typename T::symmetry;
   using rhs_tensorindextype_list = typename T::index_list;
 
