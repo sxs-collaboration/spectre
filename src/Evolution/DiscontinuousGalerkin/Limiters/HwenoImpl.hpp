@@ -82,8 +82,8 @@ namespace Limiters::Weno_detail {
 template <size_t VolumeDim>
 class ConstrainedFitCache {
  public:
-  ConstrainedFitCache(const Element<VolumeDim>& element,
-                      const Mesh<VolumeDim>& mesh) noexcept;
+  ConstrainedFitCache(const Mesh<VolumeDim>& mesh,
+                      const Element<VolumeDim>& element) noexcept;
 
   // Valid calls must satisfy these constraints on directions_to_exclude:
   // - the vector is empty, OR
@@ -111,10 +111,10 @@ class ConstrainedFitCache {
   DirectionMap<VolumeDim, DirectionMap<VolumeDim, Matrix>> inverse_a_matrices;
 };
 
-// Return the appropriate cache for the given element and mesh.
+// Return the appropriate cache for the given mesh and element.
 template <size_t VolumeDim>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh) noexcept;
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept;
 
 // Compute the inverse of the matrix A_st for the constrained fit.
 // See the documentation of `hweno_modified_neighbor_solution`.
@@ -302,7 +302,7 @@ void solve_constrained_fit(
 
   // Get the cache of linear algebra quantities for this element
   const ConstrainedFitCache<VolumeDim>& cache =
-      constrained_fit_cache(element, mesh);
+      constrained_fit_cache(mesh, element);
 
   // Because we don't support h-refinement, the direction is the only piece
   // of the neighbor information that we actually need.
@@ -557,7 +557,7 @@ void hweno_impl(
              "before calling hweno_impl.");
 
   alg::for_each(
-      neighbor_data, [&element, &mesh](const auto& neighbor_and_data) noexcept {
+      neighbor_data, [&mesh, &element](const auto& neighbor_and_data) noexcept {
         ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
                    element, neighbor_and_data.first.first),
                "Found some amount of h-refinement; this is not supported");

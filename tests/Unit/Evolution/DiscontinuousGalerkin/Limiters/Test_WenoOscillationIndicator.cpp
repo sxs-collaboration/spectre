@@ -17,7 +17,7 @@
 namespace {
 
 void test_derivative_weight() noexcept {
-  INFO("Test DerivativeWeight");
+  INFO("Testing DerivativeWeight");
 
   CHECK(get_output(Limiters::Weno_detail::DerivativeWeight::Unity) == "Unity");
   CHECK(get_output(Limiters::Weno_detail::DerivativeWeight::PowTwoEll) ==
@@ -69,7 +69,7 @@ void test_oscillation_indicator_1d_impl(
 }
 
 void test_oscillation_indicator_1d() noexcept {
-  INFO("Test oscillation_indicator in 1D");
+  INFO("Testing oscillation_indicator in 1D");
   // Call with multiple resolutions to verify that the caching of the indicator
   // matrix correctly accounts for the input mesh
   test_oscillation_indicator_1d_impl(5, Spectral::Quadrature::GaussLobatto);
@@ -118,7 +118,7 @@ void test_oscillation_indicator_2d_impl(
 }
 
 void test_oscillation_indicator_2d() noexcept {
-  INFO("Test oscillation_indicator in 2D");
+  INFO("Testing oscillation_indicator in 2D");
   test_oscillation_indicator_2d_impl(Spectral::Quadrature::GaussLobatto);
   test_oscillation_indicator_2d_impl(Spectral::Quadrature::Gauss);
 }
@@ -171,7 +171,7 @@ void test_oscillation_indicator_3d_impl(
 }
 
 void test_oscillation_indicator_3d() noexcept {
-  INFO("Test oscillation_indicator in 3D");
+  INFO("Testing oscillation_indicator in 3D");
   test_oscillation_indicator_3d_impl(Spectral::Quadrature::GaussLobatto);
   test_oscillation_indicator_3d_impl(Spectral::Quadrature::Gauss);
 }

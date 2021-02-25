@@ -185,7 +185,7 @@ Matrix inverse_a_matrix(
 
 template <size_t VolumeDim>
 ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh) noexcept
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept
     : quadrature_weights(volume_quadrature_weights(mesh)) {
   // Cache will only store quantities for directions that have neighbors.
   const std::vector<Direction<VolumeDim>> directions_with_neighbors =
@@ -258,7 +258,7 @@ namespace {
 
 template <size_t VolumeDim, size_t DummyIndex>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache_impl(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh) noexcept {
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept {
   // For the cache to be valid,
   // - the mesh must always be the same, so we check it below
   // - the element can be different, as long as it has the same configuration
@@ -274,17 +274,17 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache_impl(
              << "\n"
                 "Argument mesh: "
              << mesh);
-  static const ConstrainedFitCache<VolumeDim> result(element, mesh);
+  static const ConstrainedFitCache<VolumeDim> result(mesh, element);
   return result;
 }
 
 template <size_t VolumeDim, size_t... Is>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     std::index_sequence<Is...> /*dummy_indices*/) noexcept {
   static const std::array<
-      const ConstrainedFitCache<VolumeDim>& (*)(const Element<VolumeDim>&,
-                                                const Mesh<VolumeDim>&),
+      const ConstrainedFitCache<VolumeDim>& (*)(const Mesh<VolumeDim>&,
+                                                const Element<VolumeDim>&),
       sizeof...(Is)>
       cache{{&constrained_fit_cache_impl<VolumeDim, Is>...}};
 
@@ -311,16 +311,16 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
          "Got index_from_boundary_types = "
              << index_from_boundary_types << ", but expect only "
              << sizeof...(Is) << " configurations");
-  return gsl::at(cache, index_from_boundary_types)(element, mesh);
+  return gsl::at(cache, index_from_boundary_types)(mesh, element);
 }
 
 }  // namespace
 
 template <size_t VolumeDim>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh) noexcept {
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept {
   return constrained_fit_cache<VolumeDim>(
-      element, mesh, std::make_index_sequence<two_to_the(2 * VolumeDim)>{});
+      mesh, element, std::make_index_sequence<two_to_the(2 * VolumeDim)>{});
 }
 
 // Explicit instantiations
@@ -334,7 +334,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
       const std::vector<Direction<DIM(data)>>&) noexcept;                      \
   template class ConstrainedFitCache<DIM(data)>;                               \
   template const ConstrainedFitCache<DIM(data)>& constrained_fit_cache(        \
-      const Element<DIM(data)>&, const Mesh<DIM(data)>&) noexcept;
+      const Mesh<DIM(data)>&, const Element<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

@@ -267,14 +267,16 @@ void test_simple_weno_1d_impl(
 }
 
 void test_simple_weno_1d() noexcept {
-  INFO("Test simple_weno_impl in 1D");
+  INFO("Testing simple_weno_impl in 1D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
 
   test_simple_weno_1d_impl(gl);
   test_simple_weno_1d_impl(gauss);
 
-  // Test with particular boundaries labeled as external
+  // Test with particular boundaries labeled as external. This is independent
+  // of the quadrature, since we only verify that we don't try to use a
+  // non-existent neighbor.
   test_simple_weno_1d_impl(gl, {{Direction<1>::lower_xi()}});
 }
 
@@ -282,7 +284,6 @@ void test_simple_weno_2d_impl(
     const Spectral::Quadrature quadrature,
     const std::unordered_set<Direction<2>>& directions_of_external_boundaries =
         {}) noexcept {
-  INFO("Test simple_weno_impl in 2D");
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
   const auto mesh =
@@ -390,14 +391,16 @@ void test_simple_weno_2d_impl(
 }
 
 void test_simple_weno_2d() noexcept {
-  INFO("Test simple_weno_impl in 2D");
+  INFO("Testing simple_weno_impl in 2D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
 
   test_simple_weno_2d_impl(gl);
   test_simple_weno_2d_impl(gauss);
 
-  // Test with particular boundaries labeled as external
+  // Test with particular boundaries labeled as external. This is independent
+  // of the quadrature, since we only verify that we don't try to use a
+  // non-existent neighbor.
   test_simple_weno_2d_impl(gl, {{Direction<2>::lower_eta()}});
   test_simple_weno_2d_impl(
       gl, {{Direction<2>::lower_xi(), Direction<2>::lower_eta(),
@@ -559,14 +562,16 @@ void test_simple_weno_3d_impl(
 }
 
 void test_simple_weno_3d() noexcept {
-  INFO("Test simple_weno_impl in 3D");
+  INFO("Testing simple_weno_impl in 3D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
 
   test_simple_weno_3d_impl(gl);
   test_simple_weno_3d_impl(gauss);
 
-  // Test with particular boundaries labeled as external
+  // Test with particular boundaries labeled as external. This is independent
+  // of the quadrature, since we only verify that we don't try to use a
+  // non-existent neighbor.
   test_simple_weno_3d_impl(gl, {{Direction<3>::lower_zeta()}});
   test_simple_weno_3d_impl(
       gl, {{Direction<3>::lower_xi(), Direction<3>::upper_xi(),
