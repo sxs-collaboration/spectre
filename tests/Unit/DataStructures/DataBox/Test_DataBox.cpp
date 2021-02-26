@@ -512,6 +512,23 @@ void test_mutate() noexcept {
   /// [databox_mutate_example]
   CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 10.32 * 2.0);
 
+  auto result = db::mutate<test_databox_tags::Tag0>(
+      make_not_null(&original_box),
+      [](const gsl::not_null<double*> tag0, const double compute_tag0) {
+        return *tag0 * compute_tag0;
+      },
+      db::get<test_databox_tags::Tag4>(original_box));
+  CHECK(result == square(10.32) * 2.0);
+  auto pointer_to_result = db::mutate<test_databox_tags::Tag0>(
+      make_not_null(&original_box),
+      [&result](const gsl::not_null<double*> tag0, const double compute_tag0) {
+        *tag0 /= compute_tag0;
+        return &result;
+      },
+      db::get<test_databox_tags::Tag4>(original_box));
+  CHECK(db::get<test_databox_tags::Tag0>(original_box) == 0.5);
+  CHECK(pointer_to_result == &result);
+
   db::mutate<test_databox_tags::Pointer>(
       make_not_null(&original_box), [](auto p) noexcept {
         static_assert(
@@ -1372,6 +1389,18 @@ void test_mutate_apply() noexcept {
           Scalar<DataVector>(DataVector(2, 24.)));
     CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+    // check with a forwarded return value
+    size_t size_of_internal_string =
+        db::mutate_apply<tmpl::list<test_databox_tags::ScalarTagBase>,
+                         tmpl::list<test_databox_tags::Tag2Base>>(
+            [](const gsl::not_null<Scalar<DataVector>*> scalar,
+               const std::string& tag2) {
+              CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
+              CHECK(tag2 == "My Sample String"s);
+              return tag2.size();
+            },
+            make_not_null(&box));
+    CHECK(size_of_internal_string == 16_st);
 
     db::mutate_apply<
         tmpl::list<Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
