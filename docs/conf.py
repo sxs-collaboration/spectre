@@ -26,7 +26,7 @@ sys.path.insert(0, '@CMAKE_SOURCE_DIR@/docs')
 # -- Project information -----------------------------------------------------
 
 project = 'SpECTRE'
-copyright = '2017-2020, SXS Collaboration'
+copyright = '2017-2021, SXS Collaboration'
 author = 'SXS Collaboration'
 
 # -- General configuration ---------------------------------------------------
