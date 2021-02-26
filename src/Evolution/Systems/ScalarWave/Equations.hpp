@@ -35,10 +35,4 @@ struct ComputeNormalDotFluxes {
                     gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
                     const Scalar<DataVector>& pi) noexcept;
 };
-
-/// Compute the maximum magnitude of the characteristic speeds.
-struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<>;
-  SPECTRE_ALWAYS_INLINE static constexpr double apply() noexcept { return 1.0; }
-};
 }  // namespace ScalarWave

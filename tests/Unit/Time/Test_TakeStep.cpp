@@ -31,14 +31,24 @@ struct EvolvedVariable : db::SimpleTag {
 };
 
 struct Metavariables {
+  static constexpr bool local_time_stepping = true;
   struct system {
     using variables_tag = EvolvedVariable;
-    struct compute_largest_characteristic_speed {
+    struct largest_characteristic_speed : db::SimpleTag {
+      using type = double;
+    };
+
+    struct compute_largest_characteristic_speed : largest_characteristic_speed,
+                                                  db::ComputeTag {
       using argument_tags = tmpl::list<>;
-      static constexpr double apply() noexcept { return 1.0; }
+      using return_type = double;
+      using base = largest_characteristic_speed;
+      SPECTRE_ALWAYS_INLINE static constexpr void function(
+          const gsl::not_null<double*> speed) noexcept {
+        *speed = 1.0;
+      }
     };
   };
-  static constexpr bool local_time_stepping = true;
   using time_stepper_tag = Tags::TimeStepper<LtsTimeStepper>;
   using component_list = tmpl::list<>;
 };
@@ -47,7 +57,8 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
   using step_chooser_list =
       tmpl::list<StepChoosers::Registrars::Increase,
-                 StepChoosers::Registrars::Cfl<1, Frame::Inertial>>;
+                 StepChoosers::Registrars::Cfl<1, Frame::Inertial,
+                                               typename Metavariables::system>>;
   const Slab slab{0.0, 1.00};
   const TimeDelta time_step = slab.duration() / 4;
 
@@ -57,7 +68,8 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
       std::make_unique<StepChoosers::Increase<step_chooser_list>>(2.0));
   step_choosers.emplace_back(
       std::make_unique<
-          StepChoosers::Cfl<1, Frame::Inertial, step_chooser_list>>(1.0));
+          StepChoosers::Cfl<1, Frame::Inertial, typename Metavariables::system,
+                            step_chooser_list>>(1.0));
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist{-1.0, 1.0};
@@ -81,13 +93,17 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
       [](const auto y, const auto /*t*/) noexcept { return 1.0e-2 * y; },
       time_step, 4);
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-      Tags::Next<Tags::TimeStep>, EvolvedVariable, Tags::dt<EvolvedVariable>,
-      Tags::HistoryEvolvedVariables<EvolvedVariable>,
-      Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers<step_chooser_list>,
-      domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
-      Tags::StepController>>(
+  auto box = db::create<
+      db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                        Tags::TimeStep, Tags::Next<Tags::TimeStep>,
+                        EvolvedVariable, Tags::dt<EvolvedVariable>,
+                        Tags::HistoryEvolvedVariables<EvolvedVariable>,
+                        Tags::TimeStepper<LtsTimeStepper>,
+                        Tags::StepChoosers<step_chooser_list>,
+                        domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
+                        Tags::StepController>,
+      db::AddComputeTags<typename Metavariables::system::
+                             compute_largest_characteristic_speed>>(
       TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),

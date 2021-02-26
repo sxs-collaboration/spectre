@@ -36,8 +36,14 @@ SPECTRE_TEST_CASE("Unit.Burgers.Characteristics", "[Unit][Burgers]") {
 
 SPECTRE_TEST_CASE("Unit.Burgers.ComputeLargestCharacteristicSpeed",
                   "[Unit][Burgers]") {
-  CHECK(Burgers::ComputeLargestCharacteristicSpeed::apply(
-            Scalar<DataVector>{{{{1., 2., 4., 3.}}}}) == 4.);
-  CHECK(Burgers::ComputeLargestCharacteristicSpeed::apply(
-            Scalar<DataVector>{{{{1., 2., 4., -5.}}}}) == 5.);
+  double largest_characteristic_speed =
+      std::numeric_limits<double>::signaling_NaN();
+  Burgers::Tags::ComputeLargestCharacteristicSpeed::function(
+      make_not_null(&largest_characteristic_speed),
+      Scalar<DataVector>{{{{1., 2., 4., 3.}}}});
+  CHECK(largest_characteristic_speed == 4.0);
+  Burgers::Tags::ComputeLargestCharacteristicSpeed::function(
+      make_not_null(&largest_characteristic_speed),
+      Scalar<DataVector>{{{{1., 2., 4., -5.}}}});
+  CHECK(largest_characteristic_speed == 5.0);
 }

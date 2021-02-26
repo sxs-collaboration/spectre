@@ -127,11 +127,10 @@ struct EvolutionMetavars {
           db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
           normal_dot_numerical_flux, Tags::TimeStepId>>;
 
-  using step_choosers_common =
-      tmpl::list<StepChoosers::Registrars::ByBlock<volume_dim>,
-                 StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+  using step_choosers_common = tmpl::list<
+      StepChoosers::Registrars::ByBlock<volume_dim>,
+      StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
+      StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
   using step_choosers_for_slab_only =

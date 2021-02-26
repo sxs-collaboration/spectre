@@ -49,7 +49,7 @@ struct System {
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 
   using compute_largest_characteristic_speed =
-      ComputeLargestCharacteristicSpeed;
+      Tags::ComputeLargestCharacteristicSpeed;
 
   using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
   using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;

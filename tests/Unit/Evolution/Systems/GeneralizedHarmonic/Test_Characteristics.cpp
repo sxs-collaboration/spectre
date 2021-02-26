@@ -583,9 +583,10 @@ void check_max_char_speed(const DataVector& used_for_size) noexcept {
   std::uniform_real_distribution<> gamma_1_dist(-5.0, 5.0);
   const auto gamma_1 = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&gen), make_not_null(&gamma_1_dist), used_for_size);
-  const double max_char_speed =
-      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-          Dim, Frame::Inertial>::apply(gamma_1, lapse, shift, spatial_metric);
+  double max_char_speed = std::numeric_limits<double>::signaling_NaN();
+  GeneralizedHarmonic::Tags::ComputeLargestCharacteristicSpeed<
+      Dim, Frame::Inertial>::function(make_not_null(&max_char_speed), gamma_1,
+                                      lapse, shift, spatial_metric);
 
   double maximum_observed = -std::numeric_limits<double>::infinity();
   for (size_t i = 0; i < trials; ++i) {

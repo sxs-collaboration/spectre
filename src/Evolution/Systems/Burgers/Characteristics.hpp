@@ -23,8 +23,7 @@ struct U;
 }  // namespace Burgers
 /// \endcond
 
-namespace Burgers {
-namespace Tags {
+namespace Burgers::Tags {
 /// Computes the characteristic speeds
 struct CharacteristicSpeedsCompute : CharacteristicSpeeds, db::ComputeTag {
   using base = CharacteristicSpeeds;
@@ -35,10 +34,17 @@ struct CharacteristicSpeedsCompute : CharacteristicSpeeds, db::ComputeTag {
                        const Scalar<DataVector>& u,
                        const tnsr::i<DataVector, 1>& normal) noexcept;
 };
-}  // namespace Tags
 
-struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<Tags::U>;
-  static double apply(const Scalar<DataVector>& u) noexcept;
+struct LargestCharacteristicSpeed : db::SimpleTag {
+  using type = double;
 };
-}  // namespace Burgers
+
+struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
+                                           db::ComputeTag {
+  using argument_tags = tmpl::list<Tags::U>;
+  using return_type = double;
+  using base = LargestCharacteristicSpeed;
+  static void function(const gsl::not_null<double*> speed,
+                       const Scalar<DataVector>& u) noexcept;
+};
+}  // namespace Burgers::Tags

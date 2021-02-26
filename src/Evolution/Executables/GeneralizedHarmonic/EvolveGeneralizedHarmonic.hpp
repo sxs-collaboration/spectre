@@ -157,10 +157,9 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
-  using step_choosers_common =
-      tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+  using step_choosers_common = tmpl::list<
+      StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
+      StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
   using step_choosers_for_slab_only =

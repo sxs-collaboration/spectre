@@ -69,7 +69,7 @@ struct System {
       Tags::CharacteristicSpeedsCompute<EquationOfStateType>;
   using char_speeds_tag = Tags::CharacteristicSpeeds;
   using compute_largest_characteristic_speed =
-      ComputeLargestCharacteristicSpeed;
+      Tags::ComputeLargestCharacteristicSpeed;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
