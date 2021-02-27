@@ -251,7 +251,11 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
     }();
 
-    Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
+    // Fit procedure has somewhat larger error scale than default
+    // Error further increases when using Gauss points
+    const double gauss_tol =
+        (quadrature == Spectral::Quadrature::Gauss ? 10. : 1.);
+    Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     CHECK(mean_value(constrained_fit, mesh) ==
           local_approx(mean_value(local_data, mesh)));
@@ -299,6 +303,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
     }();
 
+    // Fit procedure has somewhat larger error scale than default
     Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     CHECK(mean_value(constrained_fit, mesh) ==
@@ -510,7 +515,10 @@ void test_constrained_fit_2d_vector(
     }();
 
     // Fit procedure has somewhat larger error scale than default
-    Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.);
+    // Error further increases when using Gauss points
+    const double gauss_tol =
+        (quadrature == Spectral::Quadrature::Gauss ? 10. : 1.);
+    Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-10).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     // Verify that the constraint is in fact satisfied
     CHECK(mean_value(get<0>(constrained_fit), mesh) ==
@@ -583,7 +591,10 @@ void test_constrained_fit_2d_vector(
     }();
 
     // Fit procedure has somewhat larger error scale than default
-    Approx local_approx = Approx::custom().epsilon(1e-9).scale(1.);
+    // Error further increases when using Gauss points
+    const double gauss_tol =
+        (quadrature == Spectral::Quadrature::Gauss ? 100. : 1.);
+    Approx local_approx = Approx::custom().epsilon(gauss_tol * 1e-10).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
     // Verify that the constraint is in fact satisfied
     CHECK(mean_value(get<0>(constrained_fit), mesh) ==
