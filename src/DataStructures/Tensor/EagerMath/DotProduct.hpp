@@ -9,6 +9,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 // @{
@@ -35,7 +36,7 @@ template <typename DataType, typename Index>
 Scalar<DataType> dot_product(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b) noexcept {
-  Scalar<DataType> dot_product(vector_a.size());
+  Scalar<DataType> dot_product(get_size(get<0>(vector_a)));
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
@@ -70,7 +71,7 @@ Scalar<DataType> dot_product(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>&
         vector_b) noexcept {
-  Scalar<DataType> dot_product(vector_a.size());
+  Scalar<DataType> dot_product(get_size(get<0>(vector_a)));
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
@@ -114,7 +115,7 @@ Scalar<DataType> dot_product(
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) noexcept {
-  Scalar<DataType> dot_product(vector_a.size());
+  Scalar<DataType> dot_product(get_size(get<0>(vector_a)));
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b, metric);
   return dot_product;
 }
