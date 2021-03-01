@@ -14,3 +14,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;EllipticTestHelpers;Poisson;Utilities"
   )
+
+add_subdirectory(BoundaryConditions)
