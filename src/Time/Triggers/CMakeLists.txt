@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   NearTimes.hpp
   PastTime.hpp
+  SlabCompares.hpp
   Slabs.hpp
   TimeTriggers.hpp
   Times.hpp
