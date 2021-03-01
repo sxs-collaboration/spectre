@@ -654,8 +654,8 @@ then it can be used.  `Parallel::mutable_cache_item_is_ready` takes a
 lambda as an argument.  This lambda is passed a single argument: a
 const reference to the item being retrieved.  The lambda should
 determine whether the item is up-to-date. If so, it should return a
-default_constructed `std::optional<CkCallback>`; if not, it should
-return a `std::optional<CkCallback>` to a callback function that will
+default_constructed `std::unique_ptr<Parallel::Callback>`; if not, it should
+return a `std::unique_ptr<Parallel::Callback>` to a callback function that will
 be called on the next `Parallel::mutate` of that item. The callback
 will typically check again if the item is up-to-date and if so will
 execute some code that gets the item via `Parallel::get`.
@@ -663,7 +663,10 @@ execute some code that gets the item via `Parallel::get`.
 For the case of iterable actions, `Parallel::mutable_cache_item_is_ready`
 is typically called from the `is_ready` function of the iterable action,
 and the callback is `perform_algorithm()`.  In the example below, the
-vector is considered up-to-date if it is non-empty:
+vector is considered up-to-date if it is non-empty. If the vector is not
+up-to-date, then when it becomes up-to-date the callback function will
+be invoked; in this case the callback function re-runs `perform_algorithm`,
+which will call the same `is_ready` function again.
 
 \snippet Test_AlgorithmGlobalCache.cpp check_mutable_cache_item_is_ready
 
