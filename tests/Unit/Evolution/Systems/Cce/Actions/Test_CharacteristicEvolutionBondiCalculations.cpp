@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size,
+      &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::RungeKutta3>()));
 

@@ -314,13 +314,13 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
             "- Increase:\n"
             "    Factor: 2\n"
             "- Constant: 0.5");
-    CHECK(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+    CHECK(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
           Metavariables<true>>(step_choosers_collection_0));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
                 Metavariables<true>>(step_choosers_collection_1));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
                 Metavariables<false>>(step_choosers_collection_2));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
                 Metavariables<true>>({}));
   }
 }

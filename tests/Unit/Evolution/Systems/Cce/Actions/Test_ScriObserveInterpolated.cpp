@@ -268,7 +268,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
+      &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::RungeKutta3>()),
       scri_interpolation_size, serialize_and_deserialize(analytic_manager));

@@ -183,7 +183,7 @@ SPECTRE_TEST_CASE(
                                                               1.0, frequency)};
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
+      &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::DormandPrince5>()),
       scri_plus_interpolation_order,

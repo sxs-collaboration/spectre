@@ -277,13 +277,25 @@ PUP::able::PUP_ID
 }  // namespace StepChoosers
 
 namespace Tags {
+namespace detail {
+template <typename Tag>
+using NoPrefix = Tag;
+}  // detail
+
+/// \ingroup TimeGroup
+/// \brief Base tag for reporting whether the `ErrorControl` step chooser is in
+/// use.
+struct IsUsingTimeSteppingErrorControlBase : db::BaseTag {};
+
 /// \ingroup TimeGroup
 /// \brief A tag that is true if the `ErrorControl` step chooser is one of the
 /// option-created `Event`s.
-struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
+template <template <typename> typename Prefix = detail::NoPrefix>
+struct IsUsingTimeSteppingErrorControl : db::SimpleTag,
+                                         IsUsingTimeSteppingErrorControlBase {
   using type = bool;
   template <typename Metavariables>
-  using option_tags = tmpl::list<::OptionTags::StepChoosers>;
+  using option_tags = tmpl::list<Prefix<::OptionTags::StepChoosers>>;
 
   static constexpr bool pass_metavariables = true;
   template <typename Metavariables>
@@ -317,5 +329,21 @@ struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
         });
     return is_using_error_control;
   }
+};
+
+/// \ingroup TimeGroup
+/// \brief Tag indicating that the `ErrorControl` step chooser will not be used.
+///
+/// \details This can be useful when e.g. local time stepping is disabled and it
+/// is known at compile-time that the `ErrorControl` step chooser cannot be
+/// used.
+struct NeverUsingTimeSteppingErrorControl
+    : db::SimpleTag,
+      IsUsingTimeSteppingErrorControlBase {
+  using type = bool;
+  using option_tags = tmpl::list<>;
+
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options() noexcept { return false; }
 };
 }  // namespace Tags

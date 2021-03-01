@@ -235,7 +235,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   ActionTesting::emplace_component_and_initialize<writer_component>(
       &runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
+      &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::RungeKutta3>()));
   ActionTesting::emplace_component<worldtube_component>(
