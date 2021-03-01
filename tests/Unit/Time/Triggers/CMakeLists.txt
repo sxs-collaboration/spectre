@@ -7,5 +7,6 @@ set(LIBRARY_SOURCES
   Triggers/Test_PastTime.cpp
   Triggers/Test_SlabCompares.cpp
   Triggers/Test_Slabs.cpp
+  Triggers/Test_TimeCompares.cpp
   Triggers/Test_Times.cpp
   PARENT_SCOPE)

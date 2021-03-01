@@ -9,6 +9,7 @@ spectre_target_headers(
   PastTime.hpp
   SlabCompares.hpp
   Slabs.hpp
+  TimeCompares.hpp
   TimeTriggers.hpp
   Times.hpp
   )
