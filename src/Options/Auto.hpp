@@ -24,7 +24,8 @@ std::ostream& operator<<(std::ostream& os, AutoLabel label) noexcept;
 /// When an `Auto<T>` is parsed from an input file, the value may be specified
 /// either as the `AutoLabel` (defaults to "Auto") or as a value of type `T`.
 /// When this class is passed to the constructor of the class taking it as an
-/// option, it can be implicitly converted to a `std::optional<T>`.
+/// option, it can be implicitly converted to a `std::optional<U>`, for any
+/// type `U` implicitly creatable from a `T`.
 ///
 /// \snippet Test_Auto.cpp example_class
 /// \snippet Test_Auto.cpp example_create
@@ -35,7 +36,8 @@ class Auto {
   explicit Auto(T value) noexcept : value_(std::move(value)) {}
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  operator std::optional<T>() && { return std::move(value_); }
+  template <typename U>
+  operator std::optional<U>() && { return std::move(value_); }
 
   // NOLINTNEXTLINE(google-explicit-constructor)
   operator const std::optional<T>&() const { return value_; }

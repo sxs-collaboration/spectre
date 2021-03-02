@@ -16,6 +16,23 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+struct Derived;
+
+struct Base {
+  Base() = default;
+  Base(const Base&) = default;
+  Base& operator=(Base&&) = default;
+  Base(Base&&) = default;
+  Base& operator=(const Base&) = default;
+  virtual ~Base() = default;
+  using creatable_classes = tmpl::list<Derived>;
+};
+
+struct Derived : Base {
+  using options = tmpl::list<>;
+  static constexpr Options::String help = "halp";
+};
+
 template <typename T>
 void test_instance(Options::Auto<T> value,
                    const std::optional<T> expected) noexcept {
@@ -36,6 +53,21 @@ void test_class() noexcept {
     CHECK((extracted and *extracted and **extracted == 3));
   }
 
+  {
+    struct A {};
+    struct B {
+      // NOLINTNEXTLINE(google-explicit-constructor)
+      B(A /*unused*/) noexcept {}
+    };
+
+    // Test that converting the contained class compiles.
+    (void)static_cast<std::optional<B>>(Options::Auto<A>{});
+
+    // Similarly, but for the specific case we care about most.
+    (void)static_cast<std::optional<std::unique_ptr<Base>>>(
+        Options::Auto<std::unique_ptr<Derived>>{});
+  }
+
   CHECK(Options::Auto<int>{} == Options::Auto<int>{});
   CHECK_FALSE(Options::Auto<int>{} != Options::Auto<int>{});
   CHECK(Options::Auto<int>{3} == Options::Auto<int>{3});
@@ -50,23 +82,6 @@ void test_class() noexcept {
   CHECK(get_output(Options::Auto<std::vector<int>>{{1, 2}}) ==
         get_output(std::vector<int>{1, 2}));
 }
-
-struct Derived;
-
-struct Base {
-  Base() = default;
-  Base(const Base&) = default;
-  Base& operator=(Base&&) = default;
-  Base(Base&&) = default;
-  Base& operator=(const Base&) = default;
-  virtual ~Base() = default;
-  using creatable_classes = tmpl::list<Derived>;
-};
-
-struct Derived : Base {
-  using options = tmpl::list<>;
-  static constexpr Options::String help = "halp";
-};
 
 template <typename T>
 void check_create(const std::string& creation_string,
