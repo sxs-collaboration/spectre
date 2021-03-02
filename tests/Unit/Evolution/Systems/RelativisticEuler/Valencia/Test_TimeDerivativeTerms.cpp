@@ -43,8 +43,9 @@ void forward_to_time_deriv(
     const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
     const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-        extrinsic_curvature) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature,
+    // For Riemann solvers
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
   Variables<typename TimeDerivativeTerms<Dim>::temporary_tags> temp{
       get(lapse).size(), 0.0};
 
@@ -63,13 +64,20 @@ void forward_to_time_deriv(
       make_not_null(
           &get<typename TimeDerivativeTerms<Dim>::DensitizedStress>(temp)),
 
+      make_not_null(&get<typename gr::Tags::Lapse<>>(temp)),
+      make_not_null(&get<typename gr::Tags::Shift<Dim>>(temp)),
+      make_not_null(&get<typename gr::Tags::SpatialMetric<Dim>>(temp)),
+
       // For fluxes
       tilde_d, tilde_tau, tilde_s, lapse, shift, sqrt_det_spatial_metric,
       pressure, spatial_velocity,
 
       // For sources
       d_lapse, d_shift, d_spatial_metric, inv_spatial_metric,
-      extrinsic_curvature);
+      extrinsic_curvature,
+
+      // For Riemann solvers
+      spatial_metric);
 }
 }  // namespace
 
