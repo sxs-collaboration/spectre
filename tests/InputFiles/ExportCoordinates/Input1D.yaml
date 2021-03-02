@@ -24,9 +24,10 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Quadrature: GaussLobatto
 
-# To export a time-independent mesh, replace `? PastTime: 1.0` with `Always:`
 EventsAndTriggers:
-  ? PastTime: 1.0
+  ? TimeCompares:
+      Comparison: GreaterThanOrEqualTo
+      Value: 1.0
   : - Completion
 
 Evolution:
