@@ -100,13 +100,6 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       "allowed. While other types are technically possible it is not "
       "clear that Tensor is the correct container for them. Please "
       "seek advice on the topic by discussing with the SpECTRE developers.");
-  /// The Tensor_detail::Structure for the particular tensor index structure
-  ///
-  /// Each tensor index structure, e.g. \f$T_{ab}\f$, \f$T_a{}^b\f$ or
-  /// \f$T^{ab}\f$ has its own Tensor_detail::TensorStructure that holds
-  /// information about how the data is stored, what the multiplicity of the
-  /// stored indices are, the number of (independent) components, etc.
-  using structure = Tensor_detail::Structure<Symm, Indices...>;
 
  public:
   /// The type of the sequence that holds the data
@@ -124,6 +117,13 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// Typelist of the \ref SpacetimeIndex "TensorIndexType"'s that the
   /// Tensor has
   using index_list = tmpl::list<Indices...>;
+  /// The Tensor_detail::Structure for the particular tensor index structure
+  ///
+  /// Each tensor index structure, e.g. \f$T_{ab}\f$, \f$T_a{}^b\f$ or
+  /// \f$T^{ab}\f$ has its own Tensor_detail::TensorStructure that holds
+  /// information about how the data is stored, what the multiplicity of the
+  /// stored indices are, the number of (independent) components, etc.
+  using structure = Tensor_detail::Structure<Symm, Indices...>;
   /// The type of the TensorExpression that would represent this Tensor in a
   /// tensor expression.
   template <typename ArgsList>
@@ -136,30 +136,6 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   Tensor(Tensor&&) noexcept = default;
   Tensor& operator=(const Tensor&) = default;
   Tensor& operator=(Tensor&&) noexcept = default;
-
-  /// \cond HIDDEN_SYMBOLS
-  /// Constructor from a TensorExpression.
-  ///
-  /// \tparam LhsIndices the indices on the LHS of the tensor expression
-  /// \tparam T the type of the TensorExpression
-  /// \param tensor_expression the tensor expression being evaluated
-  template <typename... LhsIndices, typename T,
-            Requires<std::is_base_of<Expression, T>::value> = nullptr>
-  Tensor(const T& tensor_expression,
-         tmpl::list<LhsIndices...> /*meta*/) noexcept {
-    static_assert(
-        sizeof...(LhsIndices) == sizeof...(Indices),
-        "When calling evaluate<...>(...) you must pass the same "
-        "number of indices as template parameters as there are free "
-        "indices on the resulting tensor. For example, auto F = "
-        "evaluate<_a_t, _b_t>(G); if G has 2 free indices and you want "
-        "the LHS of the equation to be F_{ab} rather than F_{ba}.");
-    for (size_t i = 0; i < size(); ++i) {
-      gsl::at(data_, i) = tensor_expression.template get<LhsIndices...>(
-          structure::get_canonical_tensor_index(i));
-    }
-  }
-  /// \endcond
 
   /// Initialize a vector or scalar from an array
   ///
