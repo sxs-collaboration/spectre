@@ -2,7 +2,7 @@
 SpECTRE Release License
 ==============================================================================
 
-Copyright 2017 - 2020 Simulating eXtreme Spacetimes Collaboration
+Copyright 2017 - 2021 Simulating eXtreme Spacetimes Collaboration
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
