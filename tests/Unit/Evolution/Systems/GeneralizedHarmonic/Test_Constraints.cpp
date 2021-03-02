@@ -1293,6 +1293,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
       std::numeric_limits<double>::signaling_NaN());
 }
 
+// This is the most expensive test as it requires the computation of
+// all constraints. It randomly times out with clang-8.
+// [[TimeOut, 11]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
