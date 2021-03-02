@@ -9,7 +9,8 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
-#include "Elliptic/Actions/InitializeSystem.hpp"
+#include "Elliptic/Actions/InitializeFields.hpp"
+#include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
@@ -172,7 +173,8 @@ struct Metavariables {
           dg::Initialization::face_compute_tags<>,
           dg::Initialization::exterior_compute_tags<>, false, false>,
       typename linear_solver::initialize_element,
-      elliptic::Actions::InitializeSystem<system, analytic_solution_tag>,
+      elliptic::Actions::InitializeFields<system, initial_guess_tag>,
+      elliptic::Actions::InitializeFixedSources<system, analytic_solution_tag>,
       elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
                                                     analytic_solution_fields>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<

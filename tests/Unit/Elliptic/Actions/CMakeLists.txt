@@ -5,17 +5,28 @@ set(LIBRARY "Test_EllipticActions")
 
 set(LIBRARY_SOURCES
   Test_InitializeAnalyticSolution.cpp
-  Test_InitializeSystem.cpp
+  Test_InitializeFields.cpp
+  Test_InitializeFixedSources.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "Elliptic/Actions/"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;DataStructures;Domain;DomainCreators;DomainStructure;Elliptic;ErrorHandling;Parallel;AnalyticSolutions;Utilities"
+  ""
   )
 
-add_dependencies(
+target_link_libraries(
   ${LIBRARY}
-  module_GlobalCache
+  PRIVATE
+  AnalyticSolutions
+  CoordinateMaps
+  DataStructures
+  Domain
+  DomainCreators
+  DomainStructure
+  Elliptic
+  ErrorHandling
+  Parallel
+  Utilities
   )
