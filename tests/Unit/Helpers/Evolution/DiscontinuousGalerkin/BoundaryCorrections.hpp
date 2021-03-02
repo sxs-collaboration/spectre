@@ -72,7 +72,7 @@ using get_system_primitive_vars = typename get_system_primitive_vars_impl<
 template <typename BoundaryCorrection, typename... PackageTags,
           typename... FaceTags, typename... VolumeTags,
           typename... FaceTagsToForward, size_t Dim>
-void call_dg_package_data(
+double call_dg_package_data(
     const gsl::not_null<Variables<tmpl::list<PackageTags...>>*> package_data,
     const BoundaryCorrection& correction,
     const Variables<tmpl::list<FaceTags...>>& face_variables,
@@ -86,16 +86,17 @@ void call_dg_package_data(
     normal_dot_mesh_velocity =
         dot_product(*mesh_velocity, unit_normal_covector);
   }
-  correction.dg_package_data(
+  const double max_speed = correction.dg_package_data(
       make_not_null(&get<PackageTags>(*package_data))...,
       get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
       mesh_velocity, normal_dot_mesh_velocity, get<VolumeTags>(volume_data)...);
+  return max_speed;
 }
 
 template <typename BoundaryCorrection, typename... PackageTags,
           typename... FaceTags, typename... VolumeTags,
           typename... FaceTagsToForward, size_t Dim>
-void call_dg_package_data(
+double call_dg_package_data(
     const gsl::not_null<Variables<tmpl::list<PackageTags...>>*> package_data,
     const BoundaryCorrection& correction,
     const Variables<tmpl::list<FaceTags...>>& face_variables,
@@ -110,11 +111,12 @@ void call_dg_package_data(
     normal_dot_mesh_velocity =
         dot_product(*mesh_velocity, unit_normal_covector);
   }
-  correction.dg_package_data(make_not_null(&get<PackageTags>(*package_data))...,
-                             get<FaceTagsToForward>(face_variables)...,
-                             unit_normal_covector, unit_normal_vector,
-                             mesh_velocity, normal_dot_mesh_velocity,
-                             get<VolumeTags>(volume_data)...);
+  const double max_speed = correction.dg_package_data(
+      make_not_null(&get<PackageTags>(*package_data))...,
+      get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
+      unit_normal_vector, mesh_velocity, normal_dot_mesh_velocity,
+      get<VolumeTags>(volume_data)...);
+  return max_speed;
 }
 
 template <typename BoundaryCorrection, typename... BoundaryCorrectionTags,
