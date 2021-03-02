@@ -220,8 +220,10 @@ struct SetLocalMortarData {
             make_not_null(&box), [&face_mesh, &mortar_id, &time_step_id,
                                   &type_erased_boundary_data_on_mortar](
                                      const auto mortar_data_ptr) noexcept {
-              // when using local time stepping, the ApplyBoundaryCorrections
-              // action copies the local data into the MortarDataHistory tag.
+              // when using local time stepping, we reset the local mortar data
+              // at the end of the SetLocalMortarData action since the
+              // ComputeTimeDerivative action would've moved the data into the
+              // boundary history.
               mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
                   time_step_id, face_mesh,
                   std::move(type_erased_boundary_data_on_mortar));
@@ -341,6 +343,7 @@ struct SetLocalMortarData {
                 }
                 mortar_data_history_ptr->at(mortar_id).local_insert(
                     time_step_id, std::move(local_mortar_data));
+                local_mortar_data = {};
               },
               db::get<domain::Tags::Mesh<Metavariables::volume_dim>>(box),
               db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<
@@ -444,6 +447,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(Dim);
   CAPTURE(SystemType);
   CAPTURE(quadrature);
+  CAPTURE(UseLocalTimeStepping);
   Parallel::register_derived_classes_with_charm<BoundaryCorrection<Dim>>();
   using metavars = Metavariables<Dim, SystemType, UseLocalTimeStepping>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -937,6 +941,16 @@ void test_impl(const Spectral::Quadrature quadrature,
     });
     CHECK(expected_evolved_variables ==
           get_tag<variables_tag>(runner, self_id));
+  }
+
+  for (const auto& mortar_data :
+       get_tag<::evolution::dg::Tags::MortarData<Dim>>(runner, self_id)) {
+    // The MortarData currently requires there to be no data already inserted.
+    // In theory we could re-use the allocation, but that is a future
+    // optimization. For now, we require that there is nothing in the MortarData
+    // after `ApplyBoundaryCorrections` was called.
+    CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
+    CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
   }
 }
 

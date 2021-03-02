@@ -1929,6 +1929,15 @@ void test_impl(const Spectral::Quadrature quadrature,
                                        mortar_id_south.second, false));
     }
   }
+  if constexpr (LocalTimeStepping) {
+    for (const auto& mortar_data :
+         get_tag(::evolution::dg::Tags::MortarData<Dim>{})) {
+      // When doing local time stepping the MortarData should've been moved into
+      // the MortarDataHistory.
+      CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
+      CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
+    }
+  }
 }
 
 template <SystemType system_type, UseBoundaryCorrection use_boundary_correction,
