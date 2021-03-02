@@ -18,6 +18,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/UpwindPenaltyCorrection.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/RandomUnitNormal.hpp"
@@ -49,8 +50,9 @@ namespace {
 // Test CSW upwind flux using random fields
 template <size_t Dim>
 void test_upwind_flux_random() noexcept {
-  static_assert(tt::assert_conforms_to<CurvedScalarWave::UpwindFlux<Dim>,
-                                       dg::protocols::NumericalFlux>);
+  static_assert(
+      tt::assert_conforms_to<CurvedScalarWave::UpwindPenaltyCorrection<Dim>,
+                             dg::protocols::NumericalFlux>);
 
   const DataVector used_for_size{5,
                                  std::numeric_limits<double>::signaling_NaN()};
@@ -184,7 +186,7 @@ void test_upwind_flux_random() noexcept {
   // (except that the normal vector gets multiplied by -1.0) that the
   // numerical flux reduces to the flux
   INFO("test consistency of the curved-scalar-wave upwind flux")
-  CurvedScalarWave::UpwindFlux<Dim> flux_computer{};
+  CurvedScalarWave::UpwindPenaltyCorrection<Dim> flux_computer{};
   auto packaged_data_int = ::TestHelpers::NumericalFluxes::get_packaged_data(
       flux_computer, used_for_size, pi_int, phi_int, psi_int, lapse_int,
       shift_int, inverse_spatial_metric_int, gamma_1, gamma_2,
@@ -228,8 +230,9 @@ void test_upwind_flux_random() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.UpwindFlux",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.CurvedScalarWave.UpwindPenaltyCorrection",
+    "[Unit][Evolution]") {
   test_upwind_flux_random<1>();
   test_upwind_flux_random<2>();
   test_upwind_flux_random<3>();
