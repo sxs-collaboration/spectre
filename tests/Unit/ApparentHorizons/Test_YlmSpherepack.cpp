@@ -6,7 +6,6 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <memory>
 #include <random>
 #include <utility>
 #include <vector>
@@ -14,7 +13,6 @@
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ApparentHorizons/YlmTestFunctions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -64,7 +62,8 @@ void test_loop_over_offset(
   // Fill data vectors
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * physical_stride;
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill analytic solution
   const std::vector<double>& theta = ylm_spherepack.theta_points();
@@ -100,7 +99,9 @@ void test_loop_over_offset(
 
   // Test gradient
   {
-    std::vector<std::vector<double>> duteststor(2), dustor(2), duSpecstor(2);
+    std::vector<std::vector<double>> duteststor(2);
+    std::vector<std::vector<double>> dustor(2);
+    std::vector<std::vector<double>> duSpecstor(2);
     for (size_t i = 0; i < 2; ++i) {
       dustor[i].resize(physical_size);
       duteststor[i].resize(physical_size);
@@ -186,7 +187,8 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -197,7 +199,8 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
 
   // Test whether phys_to_spec and spec_to_phys are inverses.
   {
-    std::vector<double> u_test(physical_size), u_spec_test(spectral_size);
+    std::vector<double> u_test(physical_size);
+    std::vector<double> u_spec_test(spectral_size);
     ylm_spherepack.phys_to_spec(u_spec_test.data(), u.data(), physical_stride,
                                 0, spectral_stride, 0);
     ylm_spherepack.spec_to_phys(u_test.data(), u_spec.data(), spectral_stride,
@@ -230,7 +233,8 @@ void test_gradient(const size_t l_max, const size_t m_max,
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -241,7 +245,9 @@ void test_gradient(const size_t l_max, const size_t m_max,
 
   // Test gradient
   {
-    std::vector<std::vector<double>> duteststor(2), dustor(2), duSpecstor(2);
+    std::vector<std::vector<double>> duteststor(2);
+    std::vector<std::vector<double>> dustor(2);
+    std::vector<std::vector<double>> duSpecstor(2);
     for (size_t i = 0; i < 2; ++i) {
       dustor[i].resize(physical_size);
       duteststor[i].resize(physical_size);
@@ -322,7 +328,8 @@ void test_second_derivative(
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -333,7 +340,8 @@ void test_second_derivative(
 
   // Test second_derivative
   {
-    SecondDeriv ddu(physical_size), ddutest(physical_size);
+    SecondDeriv ddu(physical_size);
+    SecondDeriv ddutest(physical_size);
 
     std::vector<std::vector<double>> dustor(2);
     for (size_t i = 0; i < 2; ++i) {
@@ -388,7 +396,8 @@ void test_scalar_laplacian(
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -399,8 +408,9 @@ void test_scalar_laplacian(
 
   // Test scalar_laplacian
   {
-    DataVector slaptest(physical_size), slap(physical_size),
-        slapSpec(physical_size);
+    DataVector slaptest(physical_size);
+    DataVector slap(physical_size);
+    DataVector slapSpec(physical_size);
 
     // Differentiate
     ylm_spherepack.scalar_laplacian(slap.data(), u.data(), physical_stride, 0);
@@ -442,7 +452,8 @@ void test_interpolation(
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -560,7 +571,8 @@ void test_integral(const size_t l_max, const size_t m_max,
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);

@@ -638,11 +638,12 @@ YlmSpherepack::InterpolationInfo<T> YlmSpherepack::set_up_interpolation_info(
     // First do m=0.
     size_t idx = 0;
     for (size_t n = n_theta_ - 1; n > 0; --n, ++idx) {
-      const double tnp1 = 2.0 * n + 1;
-      const double np1sq = n * n + 2.0 * n + 1.0;
+      const auto n_dbl = static_cast<double>(n);
+      const double tnp1 = 2.0 * n_dbl + 1;
+      const double np1sq = n_dbl * n_dbl + 2.0 * n_dbl + 1.0;
       alpha[idx] = sqrt(tnp1 * (tnp1 + 2.0) / np1sq);
-      beta[idx] = -sqrt((tnp1 + 4.0) / tnp1 * np1sq / (np1sq + 2 * n + 3));
-      index[idx] = n * l1;
+      beta[idx] = -sqrt((tnp1 + 4.0) / tnp1 * np1sq / (np1sq + 2 * n_dbl + 3));
+      index[idx] = n_dbl * l1;
     }
     // The next value of beta stores beta(n=1,m=0).
     // The next value of alpha stores Pbar(n=1,m=0)/(x*Pbar(n=0,m=0)).
@@ -915,8 +916,8 @@ DataVector YlmSpherepack::prolong_or_restrict(
   ASSERT(spectral_coefs.size() == spectral_size(),
          "Expecting " << spectral_size() << ", got " << spectral_coefs.size());
   DataVector result(target.spectral_size(), 0.0);
-  SpherepackIterator src_it(l_max_, m_max_),
-      dest_it(target.l_max_, target.m_max_);
+  SpherepackIterator src_it(l_max_, m_max_);
+  SpherepackIterator dest_it(target.l_max_, target.m_max_);
   for (; dest_it; ++dest_it) {
     if (dest_it.l() <= src_it.l_max() and dest_it.m() <= src_it.m_max()) {
       src_it.set(dest_it.l(), dest_it.m(), dest_it.coefficient_array());
