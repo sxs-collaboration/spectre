@@ -79,6 +79,12 @@ class YlmSpherepack {
 
   ///@{
   /// Collocation points theta and phi.
+  ///
+  /// The phi points are uniform in phi, with the first point
+  /// at phi=0.
+  ///
+  /// The theta points are Gauss-Legendre in \f$\cos(\theta)\f$,
+  /// so there are no points at the poles.
   const std::vector<double>& theta_points() const noexcept;
   const std::vector<double>& phi_points() const noexcept;
   std::array<DataVector, 2> theta_phi_points() const noexcept;
