@@ -11,6 +11,7 @@
 
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/DynamicBuffer.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -78,20 +79,25 @@ class YlmSpherepack {
   /// Type returned by second derivative function.
   using SecondDeriv = tnsr::ij<DataVector, 2, Frame::Logical>;
 
-  /// Cached information to interpolate to the `target` point.
-  struct InterpolationInfoPerPoint {
-    InterpolationInfoPerPoint(size_t m_max, const std::vector<double>& pmm,
-                              const std::array<double, 2>& target);
-    double cos_theta;
-    // cos(m*phi) and sin(m*phi)
-    std::vector<double> cos_m_phi, sin_m_phi;
-    // pbar_factor[m] = Pbar(m,m)*sin(theta)^m
-    std::vector<double> pbar_factor;
-  };
-
-  /// Type to hold cached information at a set of target interpolation
+  /// Struct to hold cached information at a set of target interpolation
   /// points.
-  using InterpolationInfo = std::vector<InterpolationInfoPerPoint>;
+  template <typename T>
+  struct InterpolationInfo {
+    InterpolationInfo(size_t m_max, const std::vector<double>& pmm,
+                      const std::array<T, 2>& target_points);
+    T cos_theta;
+    // cos(m*phi)
+    DynamicBuffer<T> cos_m_phi;
+    // sin(m*phi)
+    DynamicBuffer<T> sin_m_phi;
+    // pbar_factor[m] = Pbar(m,m)*sin(theta)^m
+    DynamicBuffer<T> pbar_factor;
+
+    size_t size() const { return num_points_; };
+
+   private:
+    size_t num_points_;
+  };
 
   /// Here l_max and m_max are the largest fully-represented l and m in
   /// the Ylm expansion.
@@ -358,8 +364,9 @@ class YlmSpherepack {
   /// Sets up the `InterpolationInfo` structure for interpolating onto
   /// a set of target \f$(\theta,\phi)\f$ points.  Does not depend on
   /// the function being interpolated.
-  InterpolationInfo set_up_interpolation_info(
-      const std::vector<std::array<double, 2>>& target_points) const noexcept;
+  template <typename T>
+  InterpolationInfo<T> set_up_interpolation_info(
+      const std::array<T, 2>& target_points) const noexcept;
 
   /// Interpolates from `collocation_values` onto the points that have
   /// been passed into the `set_up_interpolation_info` function.
@@ -367,9 +374,10 @@ class YlmSpherepack {
   /// is no need to recompute `interpolation_info`.
   /// If you specify stride and offset, acts on a slice of the input values.
   /// The output has unit stride.
-  void interpolate(gsl::not_null<std::vector<double>*> result,
+  template <typename T>
+  void interpolate(gsl::not_null<T*> result,
                    gsl::not_null<const double*> collocation_values,
-                   const InterpolationInfo& interpolation_info,
+                   const InterpolationInfo<T>& interpolation_info,
                    size_t physical_stride = 1,
                    size_t physical_offset = 0) const noexcept;
 
@@ -378,10 +386,9 @@ class YlmSpherepack {
   /// available.
   /// If you specify stride and offset, acts on a slice of the input coefs.
   /// The output has unit stride.
-  template <typename T>
-  void interpolate_from_coefs(gsl::not_null<std::vector<double>*> result,
-                              const T& spectral_coefs,
-                              const InterpolationInfo& interpolation_info,
+  template <typename T, typename R>
+  void interpolate_from_coefs(gsl::not_null<T*> result, const R& spectral_coefs,
+                              const InterpolationInfo<T>& interpolation_info,
                               size_t spectral_stride = 1,
                               size_t spectral_offset = 0) const noexcept;
 
@@ -390,12 +397,13 @@ class YlmSpherepack {
   /// for the same target points, this is inefficient; instead use
   /// `set_up_interpolation_info` and the functions that use
   /// `InterpolationInfo`.
-  std::vector<double> interpolate(
-      const DataVector& collocation_values,
-      const std::vector<std::array<double, 2>>& target_points) const noexcept;
-  std::vector<double> interpolate_from_coefs(
+  template <typename T>
+  T interpolate(const DataVector& collocation_values,
+                const std::array<T, 2>& target_points) const noexcept;
+  template <typename T>
+  T interpolate_from_coefs(
       const DataVector& spectral_coefs,
-      const std::vector<std::array<double, 2>>& target_points) const noexcept;
+      const std::array<T, 2>& target_points) const noexcept;
 
   /// Takes spectral coefficients compatible with `*this`, and either
   /// prolongs them or restricts them to be compatible with `target`.

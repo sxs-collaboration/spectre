@@ -454,51 +454,63 @@ void test_interpolation(
   // Test interpolation
   {
     // Choose random points
-    std::vector<std::array<double, 2>> points;
+    DataVector thetas(50);
+    DataVector phis(50);
     {
       std::uniform_real_distribution<double> ran(0.0, 1.0);
       MAKE_GENERATOR(gen);
-      for (int n = 0; n < 10; ++n) {
+      // Here we generate 10 * 5 different random (theta, phi) pairs. Each
+      // iteration adds five more elements to the vectors of `thetas` and
+      // `phis`, so the index increases by five.
+      for (size_t n = 0; n < 10; ++n) {
         const double th = (2.0 * ran(gen) - 1.0) * M_PI;
         const double ph = 2.0 * ran(gen) * M_PI;
-        points.emplace_back(std::array<double, 2>{{th, ph}});
+
+        thetas.at(n * 5) = th;
+        phis.at(n * 5) = ph;
 
         // For the next point, increase ph by 2pi so it is out of range.
         // Should be equivalent to the first point.
-        points.emplace_back(std::array<double, 2>{{th, ph + 2.0 * M_PI}});
+        thetas.at(n * 5 + 1) = th;
+        phis.at(n * 5 + 1) = ph + 2.0 * M_PI;
 
         // For the next point, decrease ph by 2pi so it is out of range.
         // Should be equivalent to the first point.
-        points.emplace_back(std::array<double, 2>{{th, ph - 2.0 * M_PI}});
+        thetas.at(n * 5 + 2) = th;
+        phis.at(n * 5 + 2) = ph - 2.0 * M_PI;
 
         // For the next point, use negative theta so it is out of range,
         // and also add pi to phi.
         // Should be equivalent to the first point.
-        points.emplace_back(std::array<double, 2>{{-th, ph + M_PI}});
+        thetas.at(n * 5 + 3) = -th;
+        phis.at(n * 5 + 3) = ph + M_PI;
 
         // For the next point, theta -> 2pi - theta so that theta is out of
         // range.  Also add pi to Phi.
         // Should be equivalent to the first point.
-        points.emplace_back(
-            std::array<double, 2>{{2.0 * M_PI - th, ph + M_PI}});
+        thetas.at(n * 5 + 4) = 2.0 * M_PI - th;
+        phis.at(n * 5 + 4) = ph + M_PI;
       }
     }
+
+    std::array<DataVector, 2> points{std::move(thetas), std::move(phis)};
 
     // Get interp info
     auto interpolation_info = ylm_spherepack.set_up_interpolation_info(points);
 
     // Interpolate
-    std::vector<double> uintPhys(interpolation_info.size()),
-        uintSpec(interpolation_info.size());
-    ylm_spherepack.interpolate(&uintPhys, u.data(), interpolation_info,
-                               physical_stride, 0);
-    ylm_spherepack.interpolate_from_coefs(&uintSpec, u_spec, interpolation_info,
-                                          spectral_stride);
+    DataVector uintPhys(interpolation_info.size());
+    DataVector uintSpec(interpolation_info.size());
+
+    ylm_spherepack.interpolate(make_not_null(&uintPhys), u.data(),
+                               interpolation_info, physical_stride, 0);
+    ylm_spherepack.interpolate_from_coefs(make_not_null(&uintSpec), u_spec,
+                                          interpolation_info, spectral_stride);
 
     // Test vs analytic solution
     DataVector uintanal(interpolation_info.size());
     for (size_t s = 0; s < uintanal.size(); ++s) {
-      func.func(&uintanal, 1, s, {points[s][0]}, {points[s][1]});
+      func.func(&uintanal, 1, s, {points[0][s]}, {points[1][s]});
       CHECK(uintanal[s] == approx(uintPhys[s]));
       CHECK(uintanal[s] == approx(uintSpec[s]));
     }
@@ -515,7 +527,8 @@ void test_interpolation(
 
     // Tests default values of stride and offset.
     if (physical_stride == 1 && spectral_stride == 1) {
-      ylm_spherepack.interpolate(&uintPhys, u.data(), interpolation_info);
+      ylm_spherepack.interpolate(make_not_null(&uintPhys), u.data(),
+                                 interpolation_info);
       for (size_t s = 0; s < uintanal.size(); ++s) {
         CHECK(uintanal[s] == approx(uintPhys[s]));
       }
