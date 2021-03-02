@@ -11,4 +11,5 @@ spectre_target_headers(
   InterpolationTargetSendPoints.hpp
   InterpolationTargetVarsFromElement.hpp
   SendPointsToInterpolator.hpp
+  VerifyTemporalIdsAndSendPoints.hpp
   )
