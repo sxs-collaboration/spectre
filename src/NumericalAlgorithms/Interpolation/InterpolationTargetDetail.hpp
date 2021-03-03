@@ -14,8 +14,10 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Requires.hpp"
@@ -267,6 +269,13 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
           .number_of_grid_points();
   return (invalid_size + filled_size == interp_size);
 }
+
+/// Is domain::Tags::FunctionsOfTime in the mutable global cache?
+/// Result is either std::true_type or std::false_type.
+template <typename Metavariables>
+using cache_contains_functions_of_time =
+    tmpl::found<Parallel::get_mutable_global_cache_tags<Metavariables>,
+                std::is_same<tmpl::_1, domain::Tags::FunctionsOfTime>>;
 
 /// Tells an InterpolationTarget that it should interpolate at
 /// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
