@@ -10,10 +10,16 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/Gsl.hpp"
+
+/// \cond
+class DataVector;
+/// \endcond
 
 namespace evolution::dg {
 /*!
@@ -69,6 +75,74 @@ class MortarData {
       std::vector<double> neighbor_mortar_vars) noexcept;
   //@}
 
+  /*!
+   * \brief Insert the magnitude of the local face normal, the determinant
+   * of the volume inverse Jacobian, and the determinant of the face Jacobian.
+   * Used for local time stepping with Gauss points.
+   *
+   * The magnitude of the face normal is given by:
+   *
+   * \f{align*}{
+   *  \sqrt{
+   *   \frac{\partial\xi}{\partial x^i} \gamma^{ij}
+   *   \frac{\partial\xi}{\partial x^j}}
+   * \f}
+   *
+   * for a face in the \f$\xi\f$-direction, with inverse spatial metric
+   * \f$\gamma^{ij}\f$.
+   */
+  void insert_local_geometric_quantities(
+      const Scalar<DataVector>& local_volume_det_inv_jacobian,
+      const Scalar<DataVector>& local_face_det_jacobian,
+      const Scalar<DataVector>& local_face_normal_magnitude) noexcept;
+
+  /*!
+   * \brief Insert the magnitude of the local face normal. Used for local time
+   * stepping with Gauss-Lobatto points.
+   *
+   * The magnitude of the face normal is given by:
+   *
+   * \f{align*}{
+   *  \sqrt{
+   *   \frac{\partial\xi}{\partial x^i} \gamma^{ij}
+   *   \frac{\partial\xi}{\partial x^j}}
+   * \f}
+   *
+   * for a face in the \f$\xi\f$-direction, with inverse spatial metric
+   * \f$\gamma^{ij}\f$.
+   */
+  void insert_local_face_normal_magnitude(
+      const Scalar<DataVector>& local_face_normal_magnitude) noexcept;
+
+  /*!
+   * \brief Sets the `local_volume_det_inv_jacobian` by setting the DataVector
+   * to point into the `MortarData`'s internal storage.
+   *
+   * \warning The result should never be changed.
+   */
+  void get_local_volume_det_inv_jacobian(
+      gsl::not_null<Scalar<DataVector>*> local_volume_det_inv_jacobian)
+      const noexcept;
+
+  /*!
+   * \brief Sets the `local_face_det_jacobian` by setting the DataVector to
+   * point into the `MortarData`'s internal storage.
+   *
+   * \warning The result should never be changed.
+   */
+  void get_local_face_det_jacobian(gsl::not_null<Scalar<DataVector>*>
+                                       local_face_det_jacobian) const noexcept;
+
+  /*!
+   * \brief Sets the `local_face_normal_magnitude` by setting the DataVector to
+   * point into the `MortarData`'s internal storage.
+   *
+   * \warning The result should never be changed.
+   */
+  void get_local_face_normal_magnitude(
+      gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude)
+      const noexcept;
+
   /// Return the inserted data and reset the state to empty.
   ///
   /// The first element is the local data while the second element is the
@@ -93,16 +167,21 @@ class MortarData {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE
+  friend bool operator==(const MortarData<LocalDim>& lhs,
+                         const MortarData<LocalDim>& rhs) noexcept;
+
   TimeStepId time_step_id_{};
   std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>
       local_mortar_data_{};
   std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>
       neighbor_mortar_data_{};
+  std::vector<double> local_geometric_quantities_{};
+  bool using_volume_and_face_jacobians_{false};
+  bool using_only_face_normal_magnitude_{false};
 };
 
-template <size_t Dim>
-bool operator==(const MortarData<Dim>& lhs,
-                const MortarData<Dim>& rhs) noexcept;
 template <size_t Dim>
 bool operator!=(const MortarData<Dim>& lhs,
                 const MortarData<Dim>& rhs) noexcept;

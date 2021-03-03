@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -41,6 +42,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
@@ -50,7 +52,10 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
+#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -706,7 +711,8 @@ struct component {
       domain::Tags::BoundaryDirectionsInterior<Metavariables::volume_dim>;
 
   using common_simple_tags = tmpl::list<
-      ::Tags::TimeStepId, ::evolution::dg::Tags::Quadrature,
+      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
+      ::evolution::dg::Tags::Quadrature,
       typename Metavariables::system::variables_tag,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
@@ -790,7 +796,7 @@ struct component {
                                       typename Metavariables::boundary_scheme>,
                                   tmpl::list<>>,
               ::evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim>>>>,
+                  Metavariables::volume_dim, typename Metavariables::system>>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
@@ -798,15 +804,15 @@ struct component {
 };
 
 template <size_t Dim, SystemType SystemTypeIn,
-          UseBoundaryCorrection UseBoundaryCorrectionIn, bool UseMovingMesh,
-          bool HasPrimitiveVariables>
+          UseBoundaryCorrection UseBoundaryCorrectionIn, bool LocalTimeStepping,
+          bool UseMovingMesh, bool HasPrimitiveVariables>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
   static constexpr UseBoundaryCorrection use_boundary_correction =
       UseBoundaryCorrectionIn;
   static constexpr bool use_moving_mesh = UseMovingMesh;
-  static constexpr bool local_time_stepping = false;
+  static constexpr bool local_time_stepping = LocalTimeStepping;
   using system =
       System<Dim, system_type, use_boundary_correction, HasPrimitiveVariables>;
   using boundary_scheme = ::dg::FirstOrderScheme::FirstOrderScheme<
@@ -842,10 +848,12 @@ double dg_package_data(
       mesh_velocity, normal_dot_mesh_velocity, get_tag(VolumeTags{})...);
 }
 
-template <bool UseMovingMesh, size_t Dim, SystemType system_type,
-          UseBoundaryCorrection use_boundary_correction, bool HasPrims>
+template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
+          SystemType system_type, UseBoundaryCorrection use_boundary_correction,
+          bool HasPrims>
 void test_impl(const Spectral::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) noexcept {
+  CAPTURE(LocalTimeStepping);
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
   CAPTURE(system_type);
@@ -853,7 +861,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, use_boundary_correction,
-                                 UseMovingMesh, HasPrims>;
+                                 LocalTimeStepping, UseMovingMesh, HasPrims>;
   using system = typename metavars::system;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using variables_tag = typename system::variables_tag;
@@ -861,6 +869,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   using flux_variables_tag = ::Tags::Variables<flux_variables>;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
                                         tmpl::size_t<Dim>, Frame::Inertial>;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   // The reference element in 2d denoted by X below:
   // ^ eta
   // +-+-+> xi
@@ -1068,14 +1077,20 @@ void test_impl(const Spectral::Quadrature quadrature,
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{});
 
-  const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
+  const Slab time_slab{0.2, 3.4};
+  const TimeDelta time_step{time_slab, {4, 100}};
+  const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 100}}};
+  const TimeStepId next_time_step_id{time_step_id.time_runs_forward(),
+                                     time_step_id.slab_number(),
+                                     time_step_id.step_time() + time_step};
   if constexpr (not std::is_same_v<tmpl::list<>, flux_variables> and
                 use_boundary_correction == UseBoundaryCorrection::No) {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
-         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
-         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity,
+        {time_step_id, next_time_step_id, quadrature, evolved_vars,
+         dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
+         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
+         mesh_velocity, div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>{
              mesh.number_of_grid_points(), -100.}});
@@ -1084,8 +1099,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
-             mesh, grid_to_inertial_map->get_clone(),
+            {time_step_id, next_time_step_id, quadrature, evolved_vars,
+             dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
              normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
              mesh_velocity, div_mesh_velocity,
              Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
@@ -1096,16 +1111,17 @@ void test_impl(const Spectral::Quadrature quadrature,
   } else {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
-         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
-         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity});
+        {time_step_id, next_time_step_id, quadrature, evolved_vars,
+         dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
+         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
+         mesh_velocity, div_mesh_velocity});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
-             mesh, grid_to_inertial_map->get_clone(),
+            {time_step_id, next_time_step_id, quadrature, evolved_vars,
+             dt_evolved_vars, var3, mesh, grid_to_inertial_map->get_clone(),
              normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
              mesh_velocity, div_mesh_velocity});
       }
@@ -1494,13 +1510,70 @@ void test_impl(const Spectral::Quadrature quadrature,
           }
         };
 
-    CHECK_ITERABLE_APPROX(
-        get_tag(::evolution::dg::Tags::MortarData<Dim>{})
-            .at(mortar_id_east)
-            .local_mortar_data()
-            ->second,
-        compute_expected_mortar_data(mortar_id_east.first,
-                                     mortar_id_east.second, true));
+    const auto check_mortar_data = [&compute_expected_mortar_data,
+                                    &det_inv_jacobian, &get_tag, &mesh,
+                                    &quadrature](const auto& mortar_data,
+                                                 const auto& mortar_id) {
+      CHECK_ITERABLE_APPROX(mortar_data.local_mortar_data()->second,
+                            compute_expected_mortar_data(
+                                mortar_id.first, mortar_id.second, true));
+
+      // Check face normal and/or Jacobians
+      const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
+
+      Scalar<DataVector> local_face_normal_magnitude{};
+      mortar_data.get_local_face_normal_magnitude(
+          make_not_null(&local_face_normal_magnitude));
+      CHECK(
+          local_face_normal_magnitude ==
+          get<::evolution::dg::Tags::MagnitudeOfNormal>(
+              *get_tag(::evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{})
+                   .at(mortar_id.first)));
+
+      if (using_gauss_points) {
+        Scalar<DataVector> local_volume_det_inv_jacobian{};
+        mortar_data.get_local_volume_det_inv_jacobian(
+            make_not_null(&local_volume_det_inv_jacobian));
+        CHECK(local_volume_det_inv_jacobian == det_inv_jacobian);
+
+        // We use IrregularGridInterpolant to avoid reusing/copying the
+        // apply_matrices-based interpolation in the source tree.
+        const Mesh<Dim - 1> face_mesh =
+            mesh.slice_away(mortar_id.first.dimension());
+        const intrp::Irregular<Dim> interpolator{
+            mesh,
+            interface_logical_coordinates(face_mesh, mortar_id.first)};
+        Variables<tmpl::list<::Tags::TempScalar<0>>> volume_det_jacobian{
+            mesh.number_of_grid_points()};
+        get(get<::Tags::TempScalar<0>>(volume_det_jacobian)) =
+            1.0 / get(det_inv_jacobian);
+        const Scalar<DataVector> expected_local_face_det_jacobian =
+            get<::Tags::TempScalar<0>>(
+                interpolator.interpolate(volume_det_jacobian));
+
+        Scalar<DataVector> local_face_det_jacobian{};
+        mortar_data.get_local_face_det_jacobian(
+            make_not_null(&local_face_det_jacobian));
+        CHECK_ITERABLE_APPROX(local_face_det_jacobian,
+                              expected_local_face_det_jacobian);
+      }
+    };
+    if (LocalTimeStepping) {
+      const auto& east_mortar_data =
+          get_tag(::evolution::dg::Tags::MortarDataHistory<
+                      Dim, typename dt_variables_tag::type>{})
+              .at(mortar_id_east)
+              .local_data(time_step_id);
+      check_mortar_data(east_mortar_data, mortar_id_east);
+    } else {
+      CHECK_ITERABLE_APPROX(
+          get_tag(::evolution::dg::Tags::MortarData<Dim>{})
+              .at(mortar_id_east)
+              .local_mortar_data()
+              ->second,
+          compute_expected_mortar_data(mortar_id_east.first,
+                                       mortar_id_east.second, true));
+    }
     CHECK_ITERABLE_APPROX(
         *std::get<2>(
             ActionTesting::get_inbox_tag<
@@ -1516,15 +1589,50 @@ void test_impl(const Spectral::Quadrature quadrature,
         compute_expected_mortar_data(mortar_id_east.first,
                                      mortar_id_east.second, false));
 
+    CHECK(std::get<3>(
+              ActionTesting::get_inbox_tag<
+                  component<metavars>,
+                  ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim>>(runner, mortar_id_east.second)
+                  .at(time_step_id)
+                  .at(std::pair{
+                      element.neighbors()
+                          .at(mortar_id_east.first)
+                          .orientation()(mortar_id_east.first.opposite()),
+                      element.id()})) ==
+          (LocalTimeStepping ? next_time_step_id : time_step_id));
+
     if constexpr (Dim > 1) {
       const auto mortar_id_south =
           std::make_pair(Direction<Dim>::lower_eta(), south_id);
-      CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
-                                .at(mortar_id_south)
-                                .local_mortar_data()
-                                ->second,
-                            compute_expected_mortar_data(
-                                Direction<Dim>::lower_eta(), south_id, true));
+      CHECK(std::get<3>(
+                ActionTesting::get_inbox_tag<
+                    component<metavars>,
+                    ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                        Dim>>(runner, mortar_id_south.second)
+                    .at(time_step_id)
+                    .at(std::pair{
+                        element.neighbors()
+                            .at(mortar_id_south.first)
+                            .orientation()(mortar_id_south.first.opposite()),
+                        element.id()})) ==
+            (LocalTimeStepping ? next_time_step_id : time_step_id));
+
+      if (LocalTimeStepping) {
+        const auto& south_mortar_data =
+            get_tag(::evolution::dg::Tags::MortarDataHistory<
+                        Dim, typename dt_variables_tag::type>{})
+                .at(mortar_id_south)
+                .local_data(time_step_id);
+        check_mortar_data(south_mortar_data, mortar_id_south);
+      } else {
+        CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
+                                  .at(mortar_id_south)
+                                  .local_mortar_data()
+                                  ->second,
+                              compute_expected_mortar_data(
+                                  Direction<Dim>::lower_eta(), south_id, true));
+      }
       CHECK_ITERABLE_APPROX(
           *std::get<2>(
               ActionTesting::get_inbox_tag<
@@ -1543,8 +1651,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
 }
 
-template <SystemType system_type, UseBoundaryCorrection use_boundary_correction,
-          size_t Dim>
+template <SystemType system_type,
+          UseBoundaryCorrection use_boundary_correction, size_t Dim>
 void test() noexcept {
   // The test impl is structured in the following way:
   // - the static mesh volume contributions are computed "by-hand" and used more
@@ -1614,7 +1722,11 @@ void test() noexcept {
             (void)moving_mesh;
             if constexpr (not(decltype(use_prims)::value and system_type ==
                               SystemType::Nonconservative)) {
-              test_impl<std::decay_t<decltype(moving_mesh)>::value, Dim,
+              test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                        system_type, use_boundary_correction,
+                        std::decay_t<decltype(use_prims)>::value>(
+                  quadrature, local_dg_formulation);
+              test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
                         system_type, use_boundary_correction,
                         std::decay_t<decltype(use_prims)>::value>(
                   quadrature, local_dg_formulation);
