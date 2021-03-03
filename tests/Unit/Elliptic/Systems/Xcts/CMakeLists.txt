@@ -13,3 +13,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructuresHelpers;Xcts"
   )
+
+add_subdirectory(BoundaryConditions)
