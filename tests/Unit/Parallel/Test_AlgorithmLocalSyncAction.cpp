@@ -247,6 +247,8 @@ struct TestMetavariables {
 
   template <typename... Tags>
   static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<
           TestMetavariables>& /*cache_proxy*/) noexcept {

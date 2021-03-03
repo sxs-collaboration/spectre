@@ -396,7 +396,10 @@ struct EvolutionMetavars {
       "The analytic solution is: KerrSchild\n"
       "The numerical flux is:    UpwindFlux\n"};
 
+  template <typename... Tags>
   static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<
           EvolutionMetavars>& /*cache_proxy*/) noexcept {

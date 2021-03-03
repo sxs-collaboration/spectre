@@ -92,9 +92,12 @@ struct Metavars {
 
   enum class Phase { Initialization, Execute, Exit };
 
-  static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_GlobalCache<
-                                        Metavars>& /*cache_proxy*/) noexcept {
+  template <typename... Tags>
+  static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
+      const Phase& current_phase,
+      const Parallel::CProxy_GlobalCache<Metavars>& /*cache_proxy*/) noexcept {
     return current_phase == Phase::Initialization ? Phase::Execute
                                                   : Phase::Exit;
   }

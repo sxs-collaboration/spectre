@@ -195,10 +195,13 @@ enum class Phase {
   Exit
 };
 
-template <typename Metavariables>
-Phase determine_next_phase(const Phase& current_phase,
-                           const Parallel::CProxy_GlobalCache<
-                               Metavariables>& /*cache_proxy*/) noexcept {
+template <typename Metavariables, typename... Tags>
+static Phase determine_next_phase(
+    const gsl::not_null<
+        tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
+    const Phase& current_phase,
+    const Parallel::CProxy_GlobalCache<
+        Metavariables>& /*cache_proxy*/) noexcept {
   switch (current_phase) {
     case Phase::Initialization:
       return Phase::RegisterWithObserver;

@@ -19,7 +19,9 @@ struct Metavariables {
 
   enum class Phase { Initialization, Exit };
 
+  template <typename... Tags>
   static Phase determine_next_phase(
+      const gsl::not_null<TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& /*current_phase*/,
       const Parallel::CProxy_GlobalCache<
           Metavariables>& /*cache_proxy*/) noexcept {

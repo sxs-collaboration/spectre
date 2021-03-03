@@ -127,7 +127,7 @@ class UniformCustomDistribution
       std::uniform_real_distribution<std::remove_const_t<T>>>;
   static_assert(std::is_integral_v<T> or std::is_floating_point_v<T>,
                 "UniformCustomDistribution currently supports only floating"
-                "point and integral values");
+                "point, integral, or boolean values");
 
  public:
   using base::base;
@@ -136,6 +136,25 @@ class UniformCustomDistribution
       : base(arr[0], arr[1]) {}
   using base::operator=;
   using base::operator();
+};
+
+template <>
+class UniformCustomDistribution<bool> {
+  using base = NoSuchType;
+ public:
+  using result_type = bool;
+  /// \cond
+  UniformCustomDistribution() = default;
+  UniformCustomDistribution(const UniformCustomDistribution&) = default;
+  UniformCustomDistribution(UniformCustomDistribution&&) = default;
+  UniformCustomDistribution& operator=(const UniformCustomDistribution&) =
+      default;
+  UniformCustomDistribution& operator=(UniformCustomDistribution&&) = default;
+  /// \endcond
+  template <typename Generator>
+  bool operator()(Generator& gen) noexcept {
+    return static_cast<bool>(gen() % 2);
+  }
 };
 // @}
 
