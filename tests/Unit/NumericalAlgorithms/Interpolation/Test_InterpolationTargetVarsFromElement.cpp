@@ -160,6 +160,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
        std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
        std::deque<temporal_id_type>{}, std::deque<temporal_id_type>{},
+       std::deque<temporal_id_type>{},
        std::unordered_map<temporal_id_type,
                           Variables<typename metavars::InterpolationTargetA::
                                         vars_to_interpolate_to_target>>{},
