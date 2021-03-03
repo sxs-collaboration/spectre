@@ -18,6 +18,7 @@ spectre_target_headers(
   HEADERS
   AnalyticSolution.hpp
   ConstantDensityStar.hpp
+  Flatness.hpp
   Schwarzschild.hpp
   )
 
