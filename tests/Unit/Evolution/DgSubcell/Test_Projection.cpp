@@ -106,14 +106,14 @@ void test_project_fd() noexcept {
         tmpl::list<Tags::Prefix<Tags::Scalar>, Tags::Prefix<Tags::Vector<Dim>>>>
         prefixed_vars(dg_mesh.number_of_grid_points());
     prefixed_vars = vars;
-    subcell_vars.initialize(0.0, subcell_mesh.number_of_grid_points());
+    subcell_vars.initialize(0);
     evolution::dg::subcell::fd::project(make_not_null(&subcell_vars),
                                         prefixed_vars, dg_mesh,
                                         subcell_mesh.extents());
     check_each_field_in_vars(subcell_vars);
 
     // Check with the prefix on the DG and subcell vars
-    prefixed_subcell_vars.initialize(0.0, subcell_mesh.number_of_grid_points());
+    prefixed_subcell_vars.initialize(0);
     evolution::dg::subcell::fd::project(make_not_null(&prefixed_subcell_vars),
                                         prefixed_vars, dg_mesh,
                                         subcell_mesh.extents());
