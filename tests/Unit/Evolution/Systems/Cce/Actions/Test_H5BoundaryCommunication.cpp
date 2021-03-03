@@ -48,6 +48,25 @@
 namespace Cce {
 namespace {
 template <typename Metavariables>
+struct mock_observer_writer {
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+  using replace_these_simple_actions = tmpl::list<>;
+  using with_these_simple_actions = tmpl::list<>;
+
+  using simple_tags = tmpl::list<observers::Tags::H5FileLock>;
+
+  using const_global_cache_tags = tmpl::list<>;
+
+  using metavariables = Metavariables;
+  using array_index = size_t;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
+};
+
+template <typename Metavariables>
 struct mock_h5_worldtube_boundary {
   using component_being_mocked = H5WorldtubeBoundary<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
@@ -156,7 +175,8 @@ struct test_metavariables {
 
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<test_metavariables>,
-                 mock_characteristic_evolution<test_metavariables>>;
+                 mock_characteristic_evolution<test_metavariables>,
+                 mock_observer_writer<test_metavariables>>;
   enum class Phase { Initialization, Evolve, Exit };
 };
 }  // namespace
@@ -166,6 +186,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component = mock_h5_worldtube_boundary<test_metavariables>;
+  using writer_component = mock_observer_writer<test_metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
 
@@ -208,6 +229,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
 
   ActionTesting::set_phase(make_not_null(&runner),
                            test_metavariables::Phase::Initialization);
+  ActionTesting::emplace_component_and_initialize<writer_component>(
+      &runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<evolution_component>(&runner, 0,
                                                         target_step_size);
   ActionTesting::emplace_component<worldtube_component>(

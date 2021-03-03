@@ -15,6 +15,8 @@
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
+#include "IO/Observer/Actions/GetLockPointer.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -94,12 +96,18 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
+    auto hdf5_lock = Parallel::get_parallel_component<
+                         observers::ObserverWriter<Metavariables>>(cache)
+                         .ckLocalBranch()
+                         ->template local_synchronous_action<
+                             observers::Actions::GetLockPointer<
+                                 observers::Tags::H5FileLock>>();
     bool successfully_populated = false;
     db::mutate<Tags::H5WorldtubeBoundaryDataManager,
                ::Tags::Variables<
                    typename Metavariables::cce_boundary_communication_tags>>(
         make_not_null(&box),
-        [&successfully_populated, &time](
+        [&successfully_populated, &time, &hdf5_lock](
             const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager>*>
                 worldtube_data_manager,
             const gsl::not_null<Variables<
@@ -108,7 +116,8 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
           successfully_populated =
               (*worldtube_data_manager)
                   ->populate_hypersurface_boundary_data(
-                      boundary_variables, time.substep_time().value());
+                      boundary_variables, time.substep_time().value(),
+                      hdf5_lock);
         });
     if (not successfully_populated) {
       ERROR("Insufficient boundary data to proceed, exiting early at time " +

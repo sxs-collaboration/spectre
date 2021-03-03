@@ -7,9 +7,6 @@ See LICENSE.txt for details.
 The basic instructions for getting up and running with a stand-alone
 CCE using external data are:
 - Clone spectre and build the CharacteristicExtract target
-- *Note*: CCE currently requires the linked HDF5 library to be built
-  thread-safe. As this is a significant restriction on many systems,
-  we hope to eliminate this requirement in the future.
 - At this point (provided the build succeeds) you should have the
   executable `bin/CharacteristicExtract` in the build directory; You can now
   run it using an input file to provide options. The input file

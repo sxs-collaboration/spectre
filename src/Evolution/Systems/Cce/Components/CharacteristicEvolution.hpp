@@ -25,6 +25,7 @@
 #include "Evolution/Systems/Cce/ScriPlusValues.hpp"
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -36,6 +37,8 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
+
+struct CceEvolutionLabelTag {};
 
 /*!
  * \brief The component for handling the CCE evolution and waveform output.
@@ -102,11 +105,6 @@ struct CharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
-      Actions::RequestBoundaryData<
-          typename Metavariables::cce_boundary_component,
-          CharacteristicEvolution<Metavariables>>,
-      Actions::ReceiveWorldtubeData<Metavariables>,
-      Actions::InitializeFirstHypersurface,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialization_tags =
@@ -160,6 +158,12 @@ struct CharacteristicEvolution {
                  ::Actions::AdvanceTime>;
 
   using extract_action_list = tmpl::list<
+      Actions::RequestBoundaryData<
+          typename Metavariables::cce_boundary_component,
+          CharacteristicEvolution<Metavariables>>,
+      Actions::ReceiveWorldtubeData<Metavariables>,
+      Actions::InitializeFirstHypersurface,
+      ::Actions::Label<CceEvolutionLabelTag>,
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
@@ -169,7 +173,8 @@ struct CharacteristicEvolution {
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe, record_time_stepper_data_and_step,
       Actions::ExitIfEndTimeReached,
-      Actions::ReceiveWorldtubeData<Metavariables>>;
+      Actions::ReceiveWorldtubeData<Metavariables>,
+      ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,

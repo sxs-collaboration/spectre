@@ -5,6 +5,7 @@ spectre_target_headers(
   IO
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  GetLockPointer.hpp
   ObserverRegistration.hpp
   RegisterEvents.hpp
   RegisterSingleton.hpp

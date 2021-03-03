@@ -14,6 +14,7 @@
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -58,7 +59,8 @@ class WorldtubeDataManager : public PUP::able {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time) const noexcept = 0;
+      double time,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept = 0;
 
   virtual std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept = 0;
 
@@ -117,7 +119,8 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time) const noexcept override;
+      double time,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept override;
 
   std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept override;
 
@@ -204,7 +207,8 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time) const noexcept override;
+      double time,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept override;
 
   std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept override;
 
