@@ -16,6 +16,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
+#include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"

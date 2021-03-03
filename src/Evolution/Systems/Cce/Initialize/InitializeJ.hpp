@@ -320,6 +320,7 @@ template <bool uses_partially_flat_cartesian_coordinates>
 struct InverseCubic;
 template <bool uses_partially_flat_cartesian_coordinates>
 struct InitializeJ;
+struct ConformalFactor;
 /// \endcond
 
 /*!
@@ -356,6 +357,9 @@ struct InitializeJ<true> : public PUP::able {
   // The evolution of inertial coordinates are allowed only when InverseCubic is
   // used
   using creatable_classes = tmpl::list<InverseCubic<true>>;
+
+  InitializeJ() = default;
+  explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
@@ -407,8 +411,11 @@ struct InitializeJ<false> : public PUP::able {
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
-  using creatable_classes =
-      tmpl::list<InverseCubic<false>, NoIncomingRadiation, ZeroNonSmooth>;
+  using creatable_classes = tmpl::list<ConformalFactor, InverseCubic<false>,
+                                       NoIncomingRadiation, ZeroNonSmooth>;
+
+  InitializeJ() = default;
+  explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
