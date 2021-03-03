@@ -124,6 +124,7 @@ struct LineSegment {
   using const_global_cache_tags =
       tmpl::list<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>;
   using is_sequential = std::false_type;
+  using frame = Frame::Inertial;
 
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(

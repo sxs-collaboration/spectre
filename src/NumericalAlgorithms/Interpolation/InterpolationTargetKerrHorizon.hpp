@@ -158,6 +158,7 @@ struct KerrHorizon {
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::false_type;
+  using frame = Frame;
 
   using simple_tags = typename StrahlkorperTags::items_tags<Frame>;
   using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
@@ -181,27 +182,23 @@ struct KerrHorizon {
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
-  static tnsr::I<DataVector, 3, ::Frame::Inertial> points(
+  static tnsr::I<DataVector, 3, Frame> points(
       const db::DataBox<DbTags>& box,
       const tmpl::type_<Metavariables>& /*meta*/,
       const TemporalId& /*temporal_id*/) noexcept {
-    // In the future, when we add support for multiple Frames,
-    // the code that transforms coordinates from the Strahlkorper Frame
-    // to Frame::Inertial will go here.  That transformation
-    // may depend on `temporal_id`.
     const auto& kerr_horizon =
         db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
     if (kerr_horizon.theta_varies_fastest_memory_layout) {
-      return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+      return db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
     } else {
       const auto& strahlkorper =
-          db::get<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>(box);
+          db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);
       const auto& coords =
-          db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+          db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
       const auto physical_extents =
           strahlkorper.ylm_spherepack().physical_extents();
       auto transposed_coords =
-          tnsr::I<DataVector, 3, ::Frame::Inertial>(get<0>(coords).size());
+          tnsr::I<DataVector, 3, Frame>(get<0>(coords).size());
       for (size_t i = 0; i < 3; ++i) {
         transpose(make_not_null(&transposed_coords.get(i)), coords.get(i),
                   physical_extents[0], physical_extents[1]);
@@ -210,10 +207,10 @@ struct KerrHorizon {
     }
   }
   template <typename Metavariables, typename DbTags>
-  static tnsr::I<DataVector, 3, ::Frame::Inertial> points(
+  static tnsr::I<DataVector, 3, Frame> points(
       const db::DataBox<DbTags>& box,
       const tmpl::type_<Metavariables>& /*meta*/) noexcept {
-    return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+    return db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
   }
 };
 

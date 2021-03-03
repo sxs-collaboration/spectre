@@ -191,6 +191,7 @@ struct WedgeSectionTorus {
   using const_global_cache_tags =
       tmpl::list<Tags::WedgeSectionTorus<InterpolationTargetTag>>;
   using is_sequential = std::false_type;
+  using frame = Frame::Inertial;
 
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
