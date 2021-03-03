@@ -134,5 +134,43 @@ struct build_databox_types<
 };
 
 CREATE_IS_CALLABLE(is_ready)
+
+// for checking the DataBox return of an iterable action
+template <typename FirstIterableActionType>
+struct is_databox_or_databox_rvalue : std::false_type {};
+
+template <typename TypeList>
+struct is_databox_or_databox_rvalue<db::DataBox<TypeList>>
+    : std::true_type {};
+
+template <typename TypeList>
+struct is_databox_or_databox_rvalue<db::DataBox<TypeList>&&>
+    : std::true_type {};
+
+// for checking that iterable action has the correct return type. The second
+// template parameter is unused, but required to be passed so that the generated
+// template error from a failing static_assert displays the action for which the
+// return type is invalid.
+template <typename ParallelComponentType, typename ActionType,
+          typename GeneralType>
+struct check_iterable_action_return_type : std::false_type {};
+
+template <typename ParallelComponentType, typename ActionType,
+          typename FirstType>
+struct check_iterable_action_return_type<ParallelComponentType, ActionType,
+                                         std::tuple<FirstType>>
+    : is_databox_or_databox_rvalue<FirstType> {};
+
+template <typename ParallelComponentType, typename ActionType,
+          typename FirstType>
+struct check_iterable_action_return_type<ParallelComponentType, ActionType,
+                                         std::tuple<FirstType, bool>>
+    : is_databox_or_databox_rvalue<FirstType> {};
+
+template <typename ParallelComponentType, typename ActionType,
+          typename FirstType>
+struct check_iterable_action_return_type<ParallelComponentType, ActionType,
+                                         std::tuple<FirstType, bool, size_t>>
+    : is_databox_or_databox_rvalue<FirstType> {};
 }  // namespace Algorithm_detail
 }  // namespace Parallel
