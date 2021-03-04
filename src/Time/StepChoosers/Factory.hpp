@@ -7,6 +7,8 @@
 
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Constant.hpp"
+#include "Time/StepChoosers/ElementSizeCfl.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
@@ -24,7 +26,9 @@ template <typename Use, typename System, bool HasCharSpeedFunctions>
 using common_step_choosers = tmpl::push_back<
     tmpl::conditional_t<
         HasCharSpeedFunctions,
-        tmpl::list<StepChoosers::Cfl<Use, Frame::Inertial, System>>,
+        tmpl::list<
+            StepChoosers::Cfl<Use, Frame::Inertial, System>,
+            StepChoosers::ElementSizeCfl<Use, System::volume_dim, System>>,
         tmpl::list<>>,
     StepChoosers::Constant<Use>, StepChoosers::Increase<Use>>;
 template <typename Use>
@@ -42,7 +46,8 @@ template <typename System, bool HasCharSpeedFunctions = true>
 using standard_step_choosers = tmpl::append<
     Factory_detail::common_step_choosers<StepChooserUse::LtsStep, System,
                                          HasCharSpeedFunctions>,
-    Factory_detail::step_choosers_for_step_only<StepChooserUse::LtsStep>>;
+    Factory_detail::step_choosers_for_step_only<StepChooserUse::LtsStep>,
+    tmpl::list<StepChoosers::ErrorControl<typename System::variables_tag>>>;
 
 template <typename System, bool LocalTimeStepping,
           bool HasCharSpeedFunctions = true>
