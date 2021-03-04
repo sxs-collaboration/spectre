@@ -228,7 +228,9 @@ struct Initialize {
 
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
-/// Exits the self-start loop if the required order has been reached.
+/// Resets the state for the next iteration if the current order is
+/// complete, and exits the self-start loop if the required order has
+/// been reached.
 ///
 /// Uses:
 /// - GlobalCache: nothing
@@ -249,6 +251,24 @@ struct CheckForCompletion {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    using system = typename Metavariables::system;
+
+    const bool done_with_order =
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
+
+    if (done_with_order) {
+      tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {
+        using Tag = tmpl::type_from<decltype(tag)>;
+        db::mutate<Tag>(
+            make_not_null(&box),
+            [](const gsl::not_null<typename Tag::type*> value,
+               const std::tuple<typename Tag::type>& initial_value) noexcept {
+              *value = get<0>(initial_value);
+            },
+            db::get<Tags::InitialValue<Tag>>(box));
+      });
+    }
+
     // The self start procedure begins with slab number
     // -number_of_past_steps and counts up.  When we reach 0 we should
     // start the evolution proper.  The first thing the evolution loop
@@ -325,66 +345,6 @@ struct CheckForOrderIncrease {
 
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
-/// Jumps to the start of the self-start algorithm (skipping taking a
-/// step from the last point) if the generation of the points for the
-/// current order is complete.
-///
-/// Uses:
-/// - GlobalCache: nothing
-/// - DataBox:
-///   - Tags::Next<Tags::TimeStepId>
-///   - SelfStart::Tags::InitialValue<variables_tag>
-///   - SelfStart::Tags::InitialValue<primitive_variables_tag> if the system
-///     has primitives
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   - variables_tag if there is an order increase
-///   - primitive_variables_tag if there is an order increase and the system
-///     has primitives
-template <typename RestartTag>
-struct StartNextOrderIfReady {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-
-    constexpr size_t restart_index =
-        tmpl::index_of<ActionList, ::Actions::Label<RestartTag>>::value + 1;
-    constexpr size_t continue_index =
-        tmpl::index_of<ActionList, StartNextOrderIfReady>::value + 1;
-
-    const bool done_with_order =
-        db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
-
-    if (done_with_order) {
-      tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {
-        using Tag = tmpl::type_from<decltype(tag)>;
-        db::mutate<Tag>(
-            make_not_null(&box),
-            [](const gsl::not_null<typename Tag::type*> value,
-               const std::tuple<typename Tag::type>& initial_value) noexcept {
-              *value = get<0>(initial_value);
-            },
-            db::get<Tags::InitialValue<Tag>>(box));
-      });
-    }
-
-    return {std::move(box), false,
-            done_with_order ? restart_index : continue_index};
-  }
-};
-
-/// \ingroup ActionsGroup
-/// \ingroup TimeGroup
 /// Cleans up after the self-start procedure
 ///
 /// Resets the time step to that requested for the evolution and
@@ -417,7 +377,7 @@ struct Cleanup {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     // Reset the time step to the value requested by the user.  The
-    // variables were reset in StartNextOrderIfReady.
+    // variables were reset in CheckForCompletion.
     db::mutate<::Tags::TimeStep>(
         make_not_null(&box),
         [](const gsl::not_null<::TimeDelta*> time_step,
@@ -445,32 +405,6 @@ struct Cleanup {
 namespace detail {
 struct PhaseStart;
 struct PhaseEnd;
-
-template <typename StepActions, typename System>
-struct self_start_procedure_impl {
-  using flat_actions = tmpl::flatten<tmpl::list<StepActions>>;
-  static_assert(
-      tmpl::list_contains_v<flat_actions, ::Actions::RecordTimeStepperData<>>,
-      "Self-start action loop must call Actions::RecordTimeStepperData to "
-      "update the history.");
-  // clang-format off
-  using type = tmpl::flatten<tmpl::list<
-      SelfStart::Actions::Initialize<System>,
-      ::Actions::Label<detail::PhaseStart>,
-      SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
-      ::Actions::AdvanceTime,
-      SelfStart::Actions::CheckForOrderIncrease,
-      tmpl::replace<flat_actions, ::Actions::RecordTimeStepperData<>,
-                    tmpl::list<::Actions::RecordTimeStepperData<>,
-                               SelfStart::Actions::StartNextOrderIfReady<
-                                   detail::PhaseStart>>>,
-      ::Actions::Goto<detail::PhaseStart>,
-      ::Actions::Label<detail::PhaseEnd>,
-      SelfStart::Actions::Cleanup,
-      ::Actions::AdvanceTime,
-      Parallel::Actions::TerminatePhase>>;
-  // clang-format on
-};
 }  // namespace detail
 
 /// \ingroup TimeGroup
@@ -482,6 +416,18 @@ struct self_start_procedure_impl {
 ///
 /// \see SelfStart
 template <typename StepActions, typename System>
-using self_start_procedure =
-    typename detail::self_start_procedure_impl<StepActions, System>::type;
+using self_start_procedure = tmpl::flatten<tmpl::list<
+// clang-format off
+    SelfStart::Actions::Initialize<System>,
+    ::Actions::Label<detail::PhaseStart>,
+    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
+    ::Actions::AdvanceTime,
+    SelfStart::Actions::CheckForOrderIncrease,
+    StepActions,
+    ::Actions::Goto<detail::PhaseStart>,
+    ::Actions::Label<detail::PhaseEnd>,
+    SelfStart::Actions::Cleanup,
+    ::Actions::AdvanceTime,
+    Parallel::Actions::TerminatePhase>>;
+// clang-format on
 }  // namespace SelfStart

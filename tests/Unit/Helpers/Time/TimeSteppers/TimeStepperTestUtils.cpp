@@ -392,7 +392,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   TimeStepId time_id(forward, 0, forward ? slab.start() : slab.end());
   double y = analytic(time_id.substep_time().value());
   TimeSteppers::History<double, double> volume_history{order};
-  TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
+  TimeSteppers::BoundaryHistory<double, double, double> boundary_history{order};
 
   {
     Time history_time = time_id.substep_time();
@@ -572,7 +572,8 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
     return TimeStepId(true, 0, t);
   };
 
-  TimeSteppers::BoundaryHistory<double, double, double> history;
+  TimeSteppers::BoundaryHistory<double, double, double> history{
+    stepper.order()};
   {
     const Slab init_slab = slab.retreat();
     for (size_t i = 0; i < stepper.number_of_past_steps(); ++i) {

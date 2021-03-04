@@ -69,6 +69,7 @@ struct Component {
   using normal_dot_fluxes_tag = domain::Tags::Interface<
       domain::Tags::InternalDirections<1>,
       db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
+  using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
   using mortar_data_tag =
       Tags::Mortars<typename boundary_scheme::mortar_data_tag, 1>;
 
@@ -80,7 +81,7 @@ struct Component {
       domain::Tags::Element<1>, domain::Tags::MeshVelocity<1>,
       domain::Tags::DivMeshVelocity, domain::Tags::ElementMap<1>, variables_tag,
       db::add_tag_prefix<Tags::dt, variables_tag>,
-      ScalarWave::Tags::ConstraintGamma2, normal_dot_fluxes_tag,
+      ScalarWave::Tags::ConstraintGamma2, normal_dot_fluxes_tag, history_tag,
       mortar_data_tag, Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>,
       Tags::Mortars<domain::Tags::Mesh<0>, 1>,
       Tags::Mortars<Tags::MortarSize<0>, 1>,
@@ -192,6 +193,7 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
             dt_variables(2);
 
         typename component::normal_dot_fluxes_tag::type normal_dot_fluxes;
+        typename component::history_tag::type history{4};
         typename component::mortar_data_tag::type mortar_history{};
         typename Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>::type
             mortar_next_temporal_ids{};
@@ -212,9 +214,9 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
              std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>{},
              std::optional<Scalar<DataVector>>{}, std::move(map),
              std::move(variables), std::move(dt_variables), std::move(gamma_2),
-             std::move(normal_dot_fluxes), std::move(mortar_history),
-             std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
-             std::move(mortar_sizes),
+             std::move(normal_dot_fluxes), std::move(history),
+             std::move(mortar_history), std::move(mortar_next_temporal_ids),
+             std::move(mortar_meshes), std::move(mortar_sizes),
              std::unordered_map<Direction<1>, Scalar<DataVector>>{}});
 
         auto& box = ActionTesting::get_databox<

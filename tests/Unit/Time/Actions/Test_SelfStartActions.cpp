@@ -211,7 +211,6 @@ using not_self_start_action = std::negation<std::disjunction<
     is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
     is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
     std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
-    is_a_lambda<SelfStart::Actions::StartNextOrderIfReady, tmpl::_1>,
     std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>>>;
 
 // Run until an action satisfying the Stop metalambda is executed.
@@ -294,13 +293,15 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
     CAPTURE(current_order);
     for (size_t points = 0; points <= current_order; ++points) {
       CAPTURE(points);
-      const bool last_point = points == current_order;
       {
         INFO("CheckForCompletion");
         const bool jumped = run_past<
             is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
+        CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                             history_tag>(runner, 0)
+                  .integration_order() == current_order);
       }
       {
         INFO("CheckForOrderIncrease");
@@ -313,23 +314,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
                                            Tags::Next<Tags::TimeStepId>>(runner,
                                                                          0)
                 .step_time();
-        CHECK((next_time == initial_time) == last_point);
-      }
-      {
-        INFO("StartNextOrderIfReady");
-        const bool jumped = run_past<
-            is_a_lambda<SelfStart::Actions::StartNextOrderIfReady, tmpl::_1>,
-            not_self_start_action>(make_not_null(&runner));
-        CHECK(jumped == last_point);
-        if (points != 0) {
-          CHECK(
-              (ActionTesting::get_databox_tag<Component<Metavariables<>>, Var>(
-                   runner, 0) == initial_value) == last_point);
-        }
-        CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
-                                             history_tag>(runner, 0)
-                  .integration_order() ==
-              (last_point ? current_order + 1 : current_order));
+        CHECK((next_time == initial_time) == (points == current_order));
       }
     }
   }

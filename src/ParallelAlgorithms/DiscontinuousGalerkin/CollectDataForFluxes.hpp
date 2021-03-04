@@ -134,6 +134,23 @@ struct CollectDataForFluxes<BoundaryScheme, domain::Tags::InternalDirections<
               all_mortar_data->at(mortar_id).local_insert(
                   temporal_id, std::move(boundary_data_on_mortar));
             });
+
+        // In elliptic executables there is no history.
+        if constexpr (db::tag_is_retrievable_v<
+                          ::Tags::HistoryEvolvedVariables<>,
+                          std::decay_t<decltype(box)>>) {
+          const auto integration_order =
+              db::get<::Tags::HistoryEvolvedVariables<>>(box)
+                  .integration_order();
+          db::mutate<all_mortar_data_tag>(
+              make_not_null(&box),
+              [&mortar_id, &integration_order](
+                  const gsl::not_null<typename all_mortar_data_tag::type*>
+                      all_mortar_data) noexcept {
+                all_mortar_data->at(mortar_id).integration_order(
+                    integration_order);
+              });
+        }
       }
     }
     return {std::move(box)};
