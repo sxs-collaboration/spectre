@@ -136,7 +136,7 @@ void call_dg_boundary_terms(
 
 template <typename System, typename BoundaryCorrection, size_t FaceDim,
           typename... VolumeTags>
-void test_boundary_correction_impl(
+void test_boundary_correction_conservation_impl(
     const BoundaryCorrection& correction_in, const Mesh<FaceDim>& face_mesh,
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const bool use_moving_mesh, const ::dg::Formulation dg_formulation,
@@ -447,7 +447,7 @@ void test_boundary_correction_conservation(
   for (const auto use_moving_mesh : {true, false}) {
     for (const auto& dg_formulation :
          {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
-      detail::test_boundary_correction_impl<System>(
+      detail::test_boundary_correction_conservation_impl<System>(
           correction, face_mesh, volume_data, use_moving_mesh, dg_formulation,
           zero_on_smooth_solution);
     }
