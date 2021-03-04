@@ -54,7 +54,6 @@ EventsAndTriggers:
   #       Offset: 0
   # : - ObserveFields:
   #       VariablesToObserve: [MassDensity]
-  # ? PastTime: 0.7501
   ? Slabs:
       Specified:
         Values: [10]
