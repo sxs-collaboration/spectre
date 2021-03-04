@@ -99,6 +99,17 @@ bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
  * and we demand that the \f$\sigma=0\f$ and \f$\sigma=1\f$ surfaces do
  * not intersect; otherwise the map is singular.
  *
+ * Also note that the quadratic Eq. (2) typically has more than one
+ * root, corresponding to two intersections of the sphere.  The
+ * boolean parameter `source_is_between_focus_and_target` that is
+ * passed into the constructor of `FocallyLiftedMap` is used to choose the
+ * appropriate root, or to error if a suitable
+ * root is not found. `source_is_between_focus_and_target` should be
+ * true if the source point lies between the projection point
+ * \f$P^i\f$ and the sphere.  `source_is_between_focus_and_target` is
+ * known only by each particular `CoordinateMap` that uses
+ * `FocallyLiftedMap`.
+ *
  * ### Jacobian
  *
  * Differentiating Eq. (1) above yields
@@ -304,6 +315,7 @@ class FocallyLiftedMap {
   static constexpr size_t dim = 3;
   FocallyLiftedMap(const std::array<double, 3>& center,
                    const std::array<double, 3>& proj_center, double radius,
+                   bool source_is_between_focus_and_target,
                    InnerMap inner_map) noexcept;
 
   FocallyLiftedMap() = default;
@@ -339,6 +351,7 @@ class FocallyLiftedMap {
                  const FocallyLiftedMap<InnerMap>& rhs) noexcept;
   std::array<double, 3> center_{}, proj_center_{};
   double radius_{std::numeric_limits<double>::signaling_NaN()};
+  bool source_is_between_focus_and_target_;
   InnerMap inner_map_;
 };
 template <typename InnerMap>

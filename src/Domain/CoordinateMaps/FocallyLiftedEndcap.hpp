@@ -422,7 +422,8 @@ class Endcap {
 
   std::optional<double> lambda_tilde(
       const std::array<double, 3>& parent_mapped_target_coords,
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point,
+      bool source_is_between_focus_and_target) const noexcept;
 
   template <typename T>
   void deriv_lambda_tilde(
@@ -435,10 +436,6 @@ class Endcap {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
   static bool is_identity() noexcept { return false; }
-
-  static bool projection_source_is_between_focus_and_target() noexcept {
-    return true;
-  }
 
  private:
   friend bool operator==(const Endcap& lhs, const Endcap& rhs) noexcept;

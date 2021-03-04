@@ -23,10 +23,11 @@ template <typename InnerMap>
 FocallyLiftedMap<InnerMap>::FocallyLiftedMap(
     const std::array<double, 3>& center,
     const std::array<double, 3>& proj_center, double radius,
-    InnerMap inner_map) noexcept
+    const bool source_is_between_focus_and_target, InnerMap inner_map) noexcept
     : center_(center),
       proj_center_(proj_center),
       radius_(radius),
+      source_is_between_focus_and_target_(source_is_between_focus_and_target),
       inner_map_(std::move(inner_map)) {}
 
 template <typename InnerMap>
@@ -47,7 +48,7 @@ operator()(const std::array<T, 3>& source_coords) const noexcept {
   ReturnType& lambda = temp_scalar;
   FocallyLiftedMapHelpers::scale_factor(
       &lambda, lower_coords, proj_center_, center_, radius_,
-      InnerMap::projection_source_is_between_focus_and_target());
+      source_is_between_focus_and_target_);
 
   std::array<ReturnType, 3> upper_coords{};
   for (size_t i = 0; i < 3; ++i) {
@@ -92,7 +93,7 @@ FocallyLiftedMap<InnerMap>::jacobian(
   ReturnType lambda{};
   FocallyLiftedMapHelpers::scale_factor(
       &lambda, lower_coords, proj_center_, center_, radius_,
-      InnerMap::projection_source_is_between_focus_and_target());
+      source_is_between_focus_and_target_);
 
   // upper_coords are the mapped coords on the surface of the sphere.
   std::array<ReturnType, 3>& upper_coords = temp_vector_one;
@@ -183,7 +184,7 @@ FocallyLiftedMap<InnerMap>::inv_jacobian(
   ReturnType lambda{};
   FocallyLiftedMapHelpers::scale_factor(
       &lambda, lower_coords, proj_center_, center_, radius_,
-      InnerMap::projection_source_is_between_focus_and_target());
+      source_is_between_focus_and_target_);
 
   // upper_coords are the mapped coords on the surface of the sphere.
   std::array<ReturnType, 3> upper_coords{};
@@ -266,8 +267,8 @@ template <typename InnerMap>
 std::optional<std::array<double, 3>> FocallyLiftedMap<InnerMap>::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   // Scale factor taking target_coords to lower_coords.
-  const auto lambda_tilde =
-      inner_map_.lambda_tilde(target_coords, proj_center_);
+  const auto lambda_tilde = inner_map_.lambda_tilde(
+      target_coords, proj_center_, source_is_between_focus_and_target_);
 
   // Cannot find scale factor, so we are out of range of the map.
   if (not lambda_tilde) {
@@ -277,8 +278,8 @@ std::optional<std::array<double, 3>> FocallyLiftedMap<InnerMap>::inverse(
   // Try to find lambda_bar going from target_coords to sphere.
   const auto lambda_bar = FocallyLiftedMapHelpers::try_scale_factor(
       target_coords, proj_center_, center_, radius_,
-      not InnerMap::projection_source_is_between_focus_and_target(),
-      InnerMap::projection_source_is_between_focus_and_target());
+      not source_is_between_focus_and_target_,
+      source_is_between_focus_and_target_);
 
   // Cannot find scale factor, so we are out of range of the map.
   if (not lambda_bar) {
@@ -334,6 +335,7 @@ void FocallyLiftedMap<InnerMap>::pup(PUP::er& p) noexcept {
   p | center_;
   p | proj_center_;
   p | radius_;
+  p | source_is_between_focus_and_target_;
   p | inner_map_;
 }
 
@@ -347,7 +349,10 @@ template <typename InnerMap>
 bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
                 const FocallyLiftedMap<InnerMap>& rhs) noexcept {
   return lhs.center_ == rhs.center_ and lhs.proj_center_ == rhs.proj_center_ and
-         lhs.radius_ == rhs.radius_ and lhs.inner_map_ == rhs.inner_map_;
+         lhs.radius_ == rhs.radius_ and
+         lhs.source_is_between_focus_and_target_ ==
+             rhs.source_is_between_focus_and_target_ and
+         lhs.inner_map_ == rhs.inner_map_;
 }
 
 // Explicit instantiations
