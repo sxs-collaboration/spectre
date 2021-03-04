@@ -25,7 +25,7 @@ void test(const size_t num_pts) {
       GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      {});
+      {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       GeneralizedHarmonic::System<Dim>>(
@@ -43,7 +43,7 @@ void test(const size_t num_pts) {
       GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      {});
+      {}, {});
 
   const auto upwind_penalty = TestHelpers::test_factory_creation<
       GeneralizedHarmonic::BoundaryCorrections::BoundaryCorrection<Dim>>(
@@ -63,12 +63,11 @@ void test(const size_t num_pts) {
       {{"dg_boundary_terms_spacetime_metric", "dg_boundary_terms_pi",
         "dg_boundary_terms_phi"}},
       dynamic_cast<
-          const
-          GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>&>(
+          const GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>&>(
           *upwind_penalty),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      {});
+      {}, {});
 }
 }  // namespace
 

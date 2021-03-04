@@ -26,7 +26,7 @@ void test(const size_t num_pts) {
       ScalarWave::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      {});
+      {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       ScalarWave::System<Dim>>(
@@ -43,7 +43,7 @@ void test(const size_t num_pts) {
       ScalarWave::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      {});
+      {}, {});
 
   const auto upwind_penalty = TestHelpers::test_factory_creation<
       ScalarWave::BoundaryCorrections::BoundaryCorrection<Dim>>(
@@ -65,7 +65,7 @@ void test(const size_t num_pts) {
           *upwind_penalty),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      {});
+      {}, {});
 }
 }  // namespace
 

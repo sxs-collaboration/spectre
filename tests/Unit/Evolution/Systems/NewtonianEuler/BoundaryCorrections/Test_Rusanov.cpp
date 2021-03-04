@@ -13,6 +13,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryCorrections.hpp"
+#include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
@@ -76,19 +77,27 @@ struct DummyInitialData {
   };
 };
 
+namespace helpers = TestHelpers::evolution::dg;
+
 template <size_t Dim, typename EosType>
 void test(const size_t num_pts, const EosType& equation_of_state) {
   tuples::TaggedTuple<hydro::Tags::EquationOfState<EosType>> volume_data{
       equation_of_state};
+  tuples::TaggedTuple<
+      helpers::Tags::Range<NewtonianEuler::Tags::MassDensityCons>,
+      helpers::Tags::Range<
+          NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>
+      ranges{std::array<double, 2>{{1.0e-30, 1.0}},
+             std::array<double, 2>{{1.0e-30, 1.0}}};
 
-  TestHelpers::evolution::dg::test_boundary_correction_conservation<
+  helpers::test_boundary_correction_conservation<
       NewtonianEuler::System<Dim, EosType, DummyInitialData>>(
       NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      volume_data);
+      volume_data, ranges);
 
-  TestHelpers::evolution::dg::test_boundary_correction_with_python<
+  helpers::test_boundary_correction_with_python<
       NewtonianEuler::System<Dim, EosType, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       "Rusanov",
@@ -103,12 +112,12 @@ void test(const size_t num_pts, const EosType& equation_of_state) {
       NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      volume_data);
+      volume_data, ranges);
 
   const auto rusanov = TestHelpers::test_factory_creation<
       NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>("Rusanov:");
 
-  TestHelpers::evolution::dg::test_boundary_correction_with_python<
+  helpers::test_boundary_correction_with_python<
       NewtonianEuler::System<Dim, EosType, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       "Rusanov",
@@ -124,7 +133,7 @@ void test(const size_t num_pts, const EosType& equation_of_state) {
           *rusanov),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      volume_data);
+      volume_data, ranges);
 }
 }  // namespace
 

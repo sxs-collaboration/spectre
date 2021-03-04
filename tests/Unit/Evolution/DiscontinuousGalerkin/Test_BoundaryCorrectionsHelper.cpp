@@ -283,7 +283,8 @@ void test_impl() {
       System<Dim, CurvedBackground>>(
       correction, face_mesh,
       tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
-          VolumeDoubleType{2.3}});
+          VolumeDoubleType{2.3}},
+      tuples::TaggedTuple<>{});
   const std::string curved_suffix =
       CurvedBackground ? std::string{"_curved"} : std::string{""};
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
@@ -297,7 +298,8 @@ void test_impl() {
       {{"dg_boundary_terms_var1", "dg_boundary_terms_var2"}}, correction,
       face_mesh,
       tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
-          VolumeDoubleType{2.3}});
+          VolumeDoubleType{2.3}},
+      tuples::TaggedTuple<>{});
 }
 
 template <size_t Dim>

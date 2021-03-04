@@ -30,7 +30,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<system>(
       grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
       "Rusanov",
@@ -46,7 +47,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
         "dg_boundary_terms_tilde_s", "dg_boundary_terms_tilde_b",
         "dg_boundary_terms_tilde_phi"}},
       grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 
   const auto rusanov = TestHelpers::test_factory_creation<
       grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>(
@@ -68,5 +70,6 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
       dynamic_cast<
           const grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov&>(
           *rusanov),
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 }
