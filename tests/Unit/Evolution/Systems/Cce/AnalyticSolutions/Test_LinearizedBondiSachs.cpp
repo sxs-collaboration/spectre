@@ -12,6 +12,7 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/BoundaryDataTags.hpp"
@@ -156,10 +157,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
           l_max, 1, get(get<Tags::Dr<Tags::BondiU>>(dr_bondi_quantities))),
       l_max);
   const std::complex<double> expected_time_factor =
-      cos(frequency * time) -
+      cos(frequency * time) +
       std::complex<double>(0.0, 1.0) * sin(frequency * time);
   const std::complex<double> expected_dt_time_factor =
-      frequency * (std::complex<double>(0.0, 1.0) * cos(frequency * time) +
+      frequency * (std::complex<double>(0.0, 1.0) * cos(frequency * time) -
                    sin(frequency * time));
 
   const std::complex<double> expected_bondi_u_22_mode =
@@ -315,7 +316,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
       real(expected_time_factor * (0.25 * c_2a / extraction_radius -
                                    c_2b / (12.0 * pow<3>(extraction_radius))));
   const std::complex<double> expected_bondi_j_33_mode =
-      sqrt(30.0) * real(expected_time_factor *
+      sqrt(60.0) * real(expected_time_factor *
                         (0.1 * c_3a / extraction_radius -
                          0.25 * c_3b / pow<4>(extraction_radius) +
                          std::complex<double>(0.0, 1.0) * frequency *
@@ -325,7 +326,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
                         (0.25 * c_2a / extraction_radius -
                          c_2b / (12.0 * pow<3>(extraction_radius))));
   const std::complex<double> expected_dt_bondi_j_33_mode =
-      sqrt(30.0) * real(expected_dt_time_factor *
+      sqrt(60.0) * real(expected_dt_time_factor *
                         (0.1 * c_3a / extraction_radius -
                          0.25 * c_3b / pow<4>(extraction_radius) +
                          std::complex<double>(0.0, 1.0) * frequency *
@@ -337,7 +338,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
                          c_2b / (4.0 * pow<4>(extraction_radius))));
   const std::complex<double> expected_dr_bondi_j_33_mode =
       -expected_dt_bondi_j_33_mode +
-      sqrt(30.0) * real(expected_time_factor *
+      sqrt(60.0) * real(expected_time_factor *
                         (-0.1 * c_3a / square(extraction_radius) +
                          c_3b / pow<5>(extraction_radius) +
                          std::complex<double>(0.0, 1.0) * frequency *
@@ -360,9 +361,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
   }
   const std::complex<double> expected_news_22_mode =
       real(std::complex<double>(0.0, 1.0) * pow<3>(frequency) * c_2b *
-           expected_time_factor / sqrt(48.0));
+           expected_time_factor / sqrt(12.0));
   const std::complex<double> expected_news_33_mode =
-      real(-pow<4>(frequency) * c_3b * expected_time_factor / sqrt(60.0));
+      real(-pow<4>(frequency) * c_3b * expected_time_factor / sqrt(15.0));
   const auto news_goldberg_modes = Spectral::Swsh::libsharp_to_goldberg_modes(
       Spectral::Swsh::swsh_transform(l_max, 1,
                                      get(get<Tags::News>(boundary_data))),
@@ -376,7 +377,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
       boundary_data, spacetime_metric, dt_spacetime_metric, d_spacetime_metric);
   Solutions::TestHelpers::test_initialize_j(
       l_max, 5_st, extraction_radius, time,
-      std::make_unique<InitializeJ::InverseCubic>(),
+      std::make_unique<
+          LinearizedBondiSachs_detail::InitializeJ::LinearizedBondiSachs>(
+          time, frequency, c_2a, c_2b, c_3a, c_3b),
       boundary_solution.get_clone());
 }
 }  // namespace

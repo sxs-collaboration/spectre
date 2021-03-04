@@ -16,6 +16,7 @@
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
+#include "Evolution/Systems/Cce/Initialize/RegisterInitializeJWithCharm.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -129,8 +130,7 @@ struct EvolutionMetavars {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &disable_openblas_multithreading,
-    &Parallel::register_derived_classes_with_charm<
-        Cce::InitializeJ::InitializeJ>,
+    &Cce::register_initialize_j_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
     &Parallel::register_derived_classes_with_charm<
