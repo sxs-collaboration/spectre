@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   DgElementArray.hpp
   InboxTags.hpp
+  InterpolateFromBoundary.hpp
   LiftFromBoundary.hpp
   MortarData.hpp
   MortarTags.hpp
@@ -17,6 +18,7 @@ spectre_target_headers(
 spectre_target_sources(
   Evolution
   PRIVATE
+  InterpolateFromBoundary.cpp
   LiftFromBoundary.cpp
   MortarData.cpp
   )
