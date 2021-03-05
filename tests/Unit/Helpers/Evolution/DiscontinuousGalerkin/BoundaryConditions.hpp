@@ -33,6 +33,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/NormalVectors.hpp"
+#include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -69,14 +70,6 @@ template <typename BoundaryCorrection = NoSuchType>
 struct PythonFunctionForErrorMessage {
   using boundary_correction = BoundaryCorrection;
   using type = std::string;
-};
-
-/// Tag for a `TaggedTuple` that holds the range of validity for the variable
-/// associated with `Tag`.
-template <typename Tag>
-struct Range {
-  using tag = Tag;
-  using type = std::array<double, 2>;
 };
 }  // namespace Tags
 
