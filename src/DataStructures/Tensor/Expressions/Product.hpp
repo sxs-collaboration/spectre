@@ -12,7 +12,6 @@
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
-#include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -75,11 +74,6 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   using index_list = typename detail::OuterProductType<T1, T2>::index_list;
   using args_list = typename detail::OuterProductType<T1, T2>::tensorindex_list;
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
-
-  using first_op_structure =
-      Tensor_detail::Structure<typename T1::symmetry, Indices1...>;
-  using second_op_structure =
-      Tensor_detail::Structure<typename T2::symmetry, Indices2...>;
   static constexpr auto num_tensor_indices_first_operand =
       tmpl::size<typename T1::index_list>::value;
   static constexpr auto num_tensor_indices_second_operand =
@@ -154,50 +148,39 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   };
 
   /// \brief Return the value of the component of the outer product tensor at a
-  /// given storage index
+  /// given multi-index
   ///
   /// \details
-  /// This function takes the storage index of some component of the LHS outer
-  /// product to compute. The function first computes the storage indices of the
+  /// This function takes the multi-index of some component of the LHS outer
+  /// product to compute. The function first computes the multi-indices of the
   /// pair of components in the two RHS operand expressions, then multiplies the
-  /// values at these storage indices to obtain the value of the LHS outer
-  /// product component. For example, say we are evaluating
-  /// \f$L_abc = R_{b} * S_{ca}\f$. Let `lhs_storage_index` refer to the
-  /// component \f$L_{012}\f$, the component we wish to compute. This function
-  /// will compute the storage indices of the operands that correspond to
-  /// \f$R_{1}\f$ and \f$S_{20}\f$, retrieve their values, and return their
-  /// product.
+  /// values at these multi-indices to obtain the value of the LHS outer product
+  /// component. For example, say we are evaluating
+  /// \f$L_abc = R_{b} * S_{ca}\f$. Let `lhs_multi_index == {0, 1, 2}`, which
+  /// refers to the component \f$L_{012}\f$, the component we wish to compute.
+  /// This function will compute the multi-indices of the operands that
+  /// correspond to \f$R_{1}\f$ and \f$S_{20}\f$, retrieve their values, and
+  /// return their product.
   ///
-  /// \tparam LhsStructure the Structure of the outer product tensor
   /// \tparam LhsIndices the TensorIndexs of the outer product tensor
-  /// \param lhs_storage_index the storage index of the component of the outer
+  /// \param lhs_multi_index the multi-index of the component of the outer
   /// product tensor to retrieve
-  /// \return the value of the component at `lhs_storage_index` in the
-  /// outer product tensor
-  template <typename LhsStructure, typename... LhsIndices>
+  /// \return the value of the component at `lhs_multi_index` in the outer
+  /// product tensor
+  template <typename... LhsIndices>
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const size_t lhs_storage_index) const {
-    const std::array<size_t, num_tensor_indices>& lhs_tensor_multi_index =
-        LhsStructure::get_canonical_tensor_index(lhs_storage_index);
-
+      const std::array<size_t, num_tensor_indices>& lhs_multi_index) const {
     const std::array<size_t, num_tensor_indices_first_operand>
         first_op_tensor_multi_index =
             GetOpTensorMultiIndex<ArgsList1<Args1...>>::template apply<
-                LhsIndices...>(lhs_tensor_multi_index);
+                LhsIndices...>(lhs_multi_index);
     const std::array<size_t, num_tensor_indices_second_operand>
         second_op_tensor_multi_index =
             GetOpTensorMultiIndex<ArgsList2<Args2...>>::template apply<
-                LhsIndices...>(lhs_tensor_multi_index);
+                LhsIndices...>(lhs_multi_index);
 
-    const size_t first_op_storage_index =
-        first_op_structure::get_storage_index(first_op_tensor_multi_index);
-    const size_t second_op_storage_index =
-        second_op_structure::get_storage_index(second_op_tensor_multi_index);
-
-    return t1_.template get<first_op_structure, Args1...>(
-               first_op_storage_index) *
-           t2_.template get<second_op_structure, Args2...>(
-               second_op_storage_index);
+    return t1_.template get<Args1...>(first_op_tensor_multi_index) *
+           t2_.template get<Args2...>(second_op_tensor_multi_index);
   }
 
  private:

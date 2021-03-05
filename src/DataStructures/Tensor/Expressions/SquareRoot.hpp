@@ -3,12 +3,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
-#include "DataStructures/Tensor/Structure.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
@@ -32,7 +32,6 @@ struct SquareRoot
   using symmetry = tmpl::list<>;
   using index_list = tmpl::list<>;
   using args_list = tmpl::list<>;
-  using structure = Tensor_detail::Structure<symmetry>;
   static constexpr auto num_tensor_indices = 0;
 
   SquareRoot(T t) : t_(std::move(t)) {}
@@ -43,27 +42,20 @@ struct SquareRoot
   ///
   /// \details
   /// SquareRoot only supports tensor expressions that evaluate to a rank 0
-  /// Tensor. This is why, unlike other derived TensorExpression types, there is
-  /// no second variadic template parameter for the generic indices. In
-  /// addition, this is why this template is only instantiated for the case
-  /// where `Structure` is equal to the Structure of a rank 0 Tensor.
+  /// Tensor. This is why this template is only defined for the case where
+  /// `TensorIndices` is empty.
   ///
-  /// \tparam Structure the Structure of the rank 0 Tensor represented by this
+  /// \tparam TensorIndices the TensorIndexs of the LHS tensor and RHS tensor
   /// expression
-  /// \param storage_index the storage index of the component of which to take
-  /// the square root
+  /// \param multi_index the multi-index of the component of which to take the
+  /// square root
   /// \return the square root of the component of the tensor evaluated from the
   /// RHS tensor expression
-  template <typename Structure>
+  template <typename... TensorIndices,
+            Requires<sizeof...(TensorIndices) == 0> = nullptr>
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const size_t storage_index) const noexcept {
-    static_assert(std::is_same_v<Structure, structure>,
-                  "In retrieving the square root of a tensor expression, the "
-                  "provided Structure should be that of a rank 0 Tensor.");
-    ASSERT(storage_index == 0,
-           "In retrieving the square root of a tensor expression, the provided "
-           "storage_index should be 0.");
-    return sqrt(t_.template get<Structure>(storage_index));
+      const std::array<size_t, 0>& multi_index) const noexcept {
+    return sqrt(t_.template get(multi_index));
   }
 
  private:
