@@ -193,18 +193,6 @@ void test_boundary_correction_conservation_impl(
       "There are primitive tags needed by the boundary correction that are not "
       "listed in the system as being primitive variables");
 
-  MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> dist(-1.0, 1.0);
-  DataVector used_for_size{face_mesh.number_of_grid_points()};
-
-  std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
-      mesh_velocity{};
-  if (use_moving_mesh) {
-    mesh_velocity = make_with_random_values<
-        tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>(
-        make_not_null(&gen), make_not_null(&dist), used_for_size);
-  }
-
   using face_tags =
       tmpl::append<variables_tags, flux_tags, package_temporary_tags,
                    package_primitive_tags>;
@@ -214,6 +202,10 @@ void test_boundary_correction_conservation_impl(
           face_tags, typename detail::inverse_spatial_metric_tag<
                          curved_background>::template f<System>>>,
       face_tags>;
+
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist(-1.0, 1.0);
+  DataVector used_for_size{face_mesh.number_of_grid_points()};
 
   // Fill all fields with random values in [-1,1), then, for each tag with a
   // specified range, overwrite with new random values in [min,max)
@@ -296,6 +288,14 @@ void test_boundary_correction_conservation_impl(
         make_not_null(&exterior_unit_normal_covector),
         make_not_null(&exterior_unit_normal_vector),
         get<inv_spatial_metric>(exterior_fields_on_face));
+  }
+
+  std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
+      mesh_velocity{};
+  if (use_moving_mesh) {
+    mesh_velocity = make_with_random_values<
+        tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>(
+        make_not_null(&gen), make_not_null(&dist), used_for_size);
   }
 
   if constexpr (curved_background) {
@@ -503,10 +503,6 @@ void test_with_python(
   using dg_package_field_tags =
       typename BoundaryCorrection::dg_package_field_tags;
 
-  MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> dist(-1.0, 1.0);
-  DataVector used_for_size{face_mesh.number_of_grid_points()};
-
   using face_tags = tmpl::list<FaceTags...>;
   using face_tags_with_curved_background = tmpl::conditional_t<
       curved_background,
@@ -528,6 +524,10 @@ void test_with_python(
   static_assert(std::is_same_v<tmpl::list<>, ranges_unused>,
                 "Received Tags::Range for Tags that are neither arguments to "
                 "dg_package_data nor dg_boundary_terms");
+
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist(-1.0, 1.0);
+  DataVector used_for_size{face_mesh.number_of_grid_points()};
 
   // Fill all fields with random values in [-1,1), then, for each tag with a
   // specified range, overwrite with new random values in [min,max)
