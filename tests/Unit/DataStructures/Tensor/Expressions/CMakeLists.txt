@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_MixedOperations.cpp
   Test_Product.cpp
   Test_SquareRoot.cpp
+  Test_TensorAsExpression.cpp
   Test_TensorExpressions.cpp
   )
 
