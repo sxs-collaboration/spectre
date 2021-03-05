@@ -18,11 +18,6 @@ spectre_target_sources(
   Evolution
   PRIVATE
   LiftFromBoundary.cpp
-  )
-
-spectre_target_sources(
-  Evolution
-  PRIVATE
   MortarData.cpp
   )
 
