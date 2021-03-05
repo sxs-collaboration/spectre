@@ -493,7 +493,6 @@ void test_with_python(
                              curved_background>::template f<System>>>,
       face_tags>;
 
-  Variables<dg_package_field_tags> package_data{used_for_size.size()};
   auto fields_on_face =
       make_with_random_values<Variables<face_tags_with_curved_background>>(
           make_not_null(&gen), make_not_null(&dist), used_for_size);
@@ -532,6 +531,7 @@ void test_with_python(
   }
 
   // Call C++ implementation of dg_package_data
+  Variables<dg_package_field_tags> package_data{used_for_size.size()};
   if constexpr (curved_background) {
     call_dg_package_data(make_not_null(&package_data), correction,
                          fields_on_face, volume_data, unit_normal_covector,
