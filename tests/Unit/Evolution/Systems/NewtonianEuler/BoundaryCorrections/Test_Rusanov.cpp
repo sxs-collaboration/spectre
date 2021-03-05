@@ -76,18 +76,20 @@ struct DummyInitialData {
   };
 };
 
-template <size_t Dim, typename EosTag>
-void test(const size_t num_pts,
-          const tuples::TaggedTuple<EosTag>& volume_data) {
+template <size_t Dim, typename EosType>
+void test(const size_t num_pts, const EosType& equation_of_state) {
+  tuples::TaggedTuple<hydro::Tags::EquationOfState<EosType>> volume_data{
+      equation_of_state};
+
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      NewtonianEuler::System<Dim, typename EosTag::type, DummyInitialData>>(
+      NewtonianEuler::System<Dim, EosType, DummyInitialData>>(
       NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data);
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      NewtonianEuler::System<Dim, typename EosTag::type, DummyInitialData>,
+      NewtonianEuler::System<Dim, EosType, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       "Rusanov",
       {{"dg_package_data_mass_density", "dg_package_data_momentum_density",
@@ -107,7 +109,7 @@ void test(const size_t num_pts,
       NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>("Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      NewtonianEuler::System<Dim, typename EosTag::type, DummyInitialData>,
+      NewtonianEuler::System<Dim, EosType, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       "Rusanov",
       {{"dg_package_data_mass_density", "dg_package_data_momentum_density",
@@ -130,28 +132,15 @@ SPECTRE_TEST_CASE("Unit.NewtonianEuler.Rusanov", "[Unit][Evolution]") {
   PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<1>);
   PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<2>);
   PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<3>);
+
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler/BoundaryCorrections"};
-  test<1>(1, tuples::TaggedTuple<hydro::Tags::EquationOfState<
-                 EquationsOfState::PolytropicFluid<false>>>{
-                 EquationsOfState::PolytropicFluid<false>{1.0e-3, 2.0}});
-  test<2>(5, tuples::TaggedTuple<hydro::Tags::EquationOfState<
-                 EquationsOfState::PolytropicFluid<false>>>{
-                 EquationsOfState::PolytropicFluid<false>{1.0e-3, 2.0}});
-  test<3>(5, tuples::TaggedTuple<hydro::Tags::EquationOfState<
-                 EquationsOfState::PolytropicFluid<false>>>{
-                 EquationsOfState::PolytropicFluid<false>{1.0e-3, 2.0}});
 
-  test<1>(
-      1, tuples::TaggedTuple<
-             hydro::Tags::EquationOfState<EquationsOfState::IdealFluid<false>>>{
-             EquationsOfState::IdealFluid<false>{1.3}});
-  test<2>(
-      5, tuples::TaggedTuple<
-             hydro::Tags::EquationOfState<EquationsOfState::IdealFluid<false>>>{
-             EquationsOfState::IdealFluid<false>{1.3}});
-  test<3>(
-      5, tuples::TaggedTuple<
-             hydro::Tags::EquationOfState<EquationsOfState::IdealFluid<false>>>{
-             EquationsOfState::IdealFluid<false>{1.3}});
+  test<1>(1, EquationsOfState::PolytropicFluid<false>{1.0e-3, 2.0});
+  test<2>(5, EquationsOfState::PolytropicFluid<false>{1.0e-3, 2.0});
+  test<3>(5, EquationsOfState::PolytropicFluid<false>{1.0e-3, 2.0});
+
+  test<1>(1, EquationsOfState::IdealFluid<false>{1.3});
+  test<2>(5, EquationsOfState::IdealFluid<false>{1.3});
+  test<3>(5, EquationsOfState::IdealFluid<false>{1.3});
 }
