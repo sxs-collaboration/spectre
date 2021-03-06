@@ -263,7 +263,8 @@ void test_boundary_condition_with_python_impl(
   if constexpr (has_inv_spatial_metric) {
     auto& inv_spatial_metric =
         get<tmpl::front<inverse_spatial_metric_list>>(interior_face_fields);
-    detail::adjust_inverse_spatial_metric(make_not_null(&inv_spatial_metric));
+    detail::adjust_spatial_metric_or_inverse(
+        make_not_null(&inv_spatial_metric));
     auto& normal_vector =
         get<::evolution::dg::Actions::detail::NormalVector<FaceDim + 1>>(
             interior_face_fields);

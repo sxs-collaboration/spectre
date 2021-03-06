@@ -28,21 +28,25 @@ struct inverse_spatial_metric_tag<true> {
   using f = typename System::inverse_spatial_metric_tag;
 };
 
-// On input `inv_spatial_metric` is expected to have components on the interval
-// [0, 1]. The components are rescaled by 0.01, and 1 is added to the diagonal.
+// Takes in a spatial metric, or inverse spatial metric, with random components
+// in the range [-1,1]. Adjusts the metric (or inverse) by scaling all
+// components to lie in [0,0.01] and then adding 1 to the diagonal.
 // This is to give an inverse spatial metric of the form:
 //  \delta^{ij} + small^{ij}
-// This is done to give a physically reasonable inverse spatial metric
-template <size_t Dim>
-void adjust_inverse_spatial_metric(
-    const gsl::not_null<tnsr::II<DataVector, Dim>*> inv_spatial_metric) {
-  for (size_t i = 0; i < Dim; ++i) {
-    for (size_t j = i; j < Dim; ++j) {
-      inv_spatial_metric->get(i, j) *= 0.01;
+// This is done to give a physically reasonable spatial metric (or inverse)
+template <typename Index>
+void adjust_spatial_metric_or_inverse(
+    const gsl::not_null<
+        Tensor<DataVector, Symmetry<1, 1>, index_list<Index, Index>>*>
+        spatial_metric_or_inverse) {
+  for (size_t i = 0; i < Index::dim; ++i) {
+    for (size_t j = i; j < Index::dim; ++j) {
+      spatial_metric_or_inverse->get(i, j) += 1.0;
+      spatial_metric_or_inverse->get(i, j) *= 0.005;
     }
   }
-  for (size_t i = 0; i < Dim; ++i) {
-    inv_spatial_metric->get(i, i) += 1.0;
+  for (size_t i = 0; i < Index::dim; ++i) {
+    spatial_metric_or_inverse->get(i, i) += 1.0;
   }
 }
 
