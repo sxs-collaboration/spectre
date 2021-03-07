@@ -11,7 +11,6 @@ spectre_target_sources(
   Characteristics.cpp
   Divergence.cpp
   Fluxes.cpp
-  Minmod.cpp
   TimeDerivativeTerms.cpp
   VolumeTermsInstantiation.cpp
   )

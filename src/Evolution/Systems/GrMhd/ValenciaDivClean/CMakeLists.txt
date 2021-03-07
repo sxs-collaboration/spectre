@@ -12,7 +12,6 @@ spectre_target_sources(
   ConservativeFromPrimitive.cpp
   FixConservatives.cpp
   Fluxes.cpp
-  Minmod.cpp
   NewmanHamlin.cpp
   PalenzuelaEtAl.cpp
   PrimitiveFromConservative.cpp
