@@ -233,12 +233,11 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param element_size The size of the element in inertial coordinates, along
   ///        each dimension of logical coordinates.
   /// \param orientation_map The orientation of the neighbor
-  void package_data(gsl::not_null<PackagedData*> packaged_data,
-                    const typename Tags::type&... tensors,
-                    const Mesh<VolumeDim>& mesh,
-                    const std::array<double, VolumeDim>& element_size,
-                    const OrientationMap<VolumeDim>& orientation_map) const
-      noexcept;
+  void package_data(
+      gsl::not_null<PackagedData*> packaged_data,
+      const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
+      const std::array<double, VolumeDim>& element_size,
+      const OrientationMap<VolumeDim>& orientation_map) const noexcept;
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
