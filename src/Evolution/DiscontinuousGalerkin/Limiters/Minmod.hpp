@@ -12,7 +12,7 @@
 
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
@@ -67,28 +67,6 @@ struct SizeOfElement;
 /// \endcond
 
 namespace Limiters {
-
-namespace Minmod_detail {
-// This function combines the evaluation of the troubled-cell indicator with the
-// computation of the post-limiter reduced slopes. The returned bool indicates
-// whether the slopes are to be reduced. The slopes themselves are returned by
-// pointer.
-//
-// Note: This function is only made available in this header file to facilitate
-// testing.
-template <size_t VolumeDim>
-bool minmod_limited_slopes(
-    gsl::not_null<DataVector*> u_lin_buffer,
-    gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
-    gsl::not_null<double*> u_mean,
-    gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
-    Limiters::MinmodType minmod_type, double tvb_constant, const DataVector& u,
-    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const std::array<double, VolumeDim>& element_size,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
-}  // namespace Minmod_detail
-
 /// \ingroup LimitersGroup
 /// \brief A general minmod slope limiter
 ///
@@ -378,18 +356,18 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
   Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
 
   bool limiter_activated = false;
-  const auto wrap_limit_one_tensor = [this, &limiter_activated, &element, &mesh,
-                                      &logical_coords, &element_size,
-                                      &neighbor_data, &u_lin_buffer, &buffer](
-                                         auto tag, const auto tensor) noexcept {
+  const auto wrap_minmod_impl = [this, &limiter_activated, &element, &mesh,
+                                 &logical_coords, &element_size, &neighbor_data,
+                                 &u_lin_buffer, &buffer](
+                                    auto tag, const auto tensor) noexcept {
     limiter_activated =
-        Minmod_detail::limit_one_tensor<VolumeDim, decltype(tag)>(
+        Minmod_detail::minmod_impl<VolumeDim, decltype(tag)>(
             &u_lin_buffer, &buffer, tensor, minmod_type_, tvb_constant_, mesh,
             element, logical_coords, element_size, neighbor_data) or
         limiter_activated;
     return '0';
   };
-  expand_pack(wrap_limit_one_tensor(Tags{}, tensors)...);
+  expand_pack(wrap_minmod_impl(Tags{}, tensors)...);
   return limiter_activated;
 }
 

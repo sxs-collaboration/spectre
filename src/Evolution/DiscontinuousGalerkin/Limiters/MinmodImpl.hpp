@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
-
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstdlib>
@@ -34,12 +32,30 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Limiters {
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
+
+// This function combines the evaluation of the troubled-cell indicator with the
+// computation of the post-limiter reduced slopes. The returned bool indicates
+// whether the slopes are to be reduced. The slopes themselves are returned by
+// pointer.
+//
+// Note: This function is only made available in this header file to facilitate
+// testing.
+template <size_t VolumeDim>
+bool minmod_limited_slopes(
+    gsl::not_null<DataVector*> u_lin_buffer,
+    gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
+    gsl::not_null<double*> u_mean,
+    gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
+    Limiters::MinmodType minmod_type, double tvb_constant, const DataVector& u,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
+    const std::array<double, VolumeDim>& element_size,
+    const DirectionMap<VolumeDim, double>& effective_neighbor_means,
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 
 // Implements the minmod limiter for one Tensor<DataVector> at a time.
 template <size_t VolumeDim, typename Tag, typename PackagedData>
-bool limit_one_tensor(
+bool minmod_impl(
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
     const gsl::not_null<typename Tag::type*> tensor,
@@ -96,5 +112,4 @@ bool limit_one_tensor(
   return some_component_was_limited;
 }
 
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail
