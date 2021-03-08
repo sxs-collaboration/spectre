@@ -547,6 +547,16 @@ class MockRuntimeSystem {
         .is_simple_action_queue_empty();
   }
 
+  /// Return the number of queued simple actions on the
+  /// `Component` labeled by `array_index`.
+  template <typename Component>
+  size_t number_of_queued_simple_actions(
+      const typename Component::array_index& array_index) const noexcept {
+    return mock_distributed_objects<Component>()
+        .at(array_index)
+        .simple_action_queue_size();
+  }
+
   /// Invoke the next queued simple action on the `Component` labeled by
   /// `array_index`.
   template <typename Component>
@@ -565,6 +575,16 @@ class MockRuntimeSystem {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .is_threaded_action_queue_empty();
+  }
+
+  /// Return the number of queued threaded actions on the
+  /// `Component` labeled by `array_index`.
+  template <typename Component>
+  size_t number_of_queued_threaded_actions(
+      const typename Component::array_index& array_index) const noexcept {
+    return mock_distributed_objects<Component>()
+        .at(array_index)
+        .threaded_action_queue_size();
   }
 
   /// Invoke the next queued threaded action on the `Component` labeled by

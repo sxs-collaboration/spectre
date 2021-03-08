@@ -329,6 +329,15 @@ bool is_simple_action_queue_empty(
   return runner.template is_simple_action_queue_empty<Component>(array_index);
 }
 
+/// Returns the number of simple actions in the queue.
+template <typename Component, typename Metavariables>
+size_t number_of_queued_simple_actions(
+    const MockRuntimeSystem<Metavariables>& runner,
+    const typename Component::array_index& array_index) noexcept {
+  return runner.template number_of_queued_simple_actions<Component>(
+      array_index);
+}
+
 /// Runs the next queued threaded action on the `array_index`th element of
 /// the parallel component `Component`.
 template <typename Component, typename Metavariables>
@@ -344,6 +353,15 @@ bool is_threaded_action_queue_empty(
     const MockRuntimeSystem<Metavariables>& runner,
     const typename Component::array_index& array_index) noexcept {
   return runner.template is_threaded_action_queue_empty<Component>(array_index);
+}
+
+/// Returns the number of threaded actions in the queue.
+template <typename Component, typename Metavariables>
+size_t number_of_queued_threaded_actions(
+    const MockRuntimeSystem<Metavariables>& runner,
+    const typename Component::array_index& array_index) noexcept {
+  return runner.template number_of_queued_threaded_actions<Component>(
+      array_index);
 }
 
 /// Returns whether or not the `Component` with index `array_index` has been

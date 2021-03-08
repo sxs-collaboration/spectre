@@ -600,6 +600,10 @@ class MockDistributedObject {
     return simple_action_queue_.empty();
   }
 
+  size_t simple_action_queue_size() const noexcept {
+    return simple_action_queue_.size();
+  }
+
   void invoke_queued_simple_action() noexcept {
     if (simple_action_queue_.empty()) {
       ERROR(
@@ -612,6 +616,10 @@ class MockDistributedObject {
 
   bool is_threaded_action_queue_empty() const noexcept {
     return threaded_action_queue_.empty();
+  }
+
+  size_t threaded_action_queue_size() const noexcept {
+    return threaded_action_queue_.size();
   }
 
   void invoke_queued_threaded_action() noexcept {
