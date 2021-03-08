@@ -18,6 +18,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Requires.hpp"
@@ -276,6 +277,20 @@ template <typename Metavariables>
 using cache_contains_functions_of_time =
     tmpl::found<Parallel::get_mutable_global_cache_tags<Metavariables>,
                 std::is_same<tmpl::_1, domain::Tags::FunctionsOfTime>>;
+
+/// Returns true if at least one Block in the Domain has
+/// time-dependent maps.
+template <typename InterpolationTargetTag, typename DbTags,
+          typename Metavariables>
+bool maps_are_time_dependent(
+    const db::DataBox<DbTags>& box,
+    const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+  const auto& domain =
+      db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+  return alg::any_of(domain.blocks(), [](const auto& block) noexcept {
+    return block.is_time_dependent();
+  });
+}
 
 /// Tells an InterpolationTarget that it should interpolate at
 /// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
