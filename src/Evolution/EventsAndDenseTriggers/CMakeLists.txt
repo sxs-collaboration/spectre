@@ -16,6 +16,7 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   DataStructures
+  EventsAndTriggers
   Options
   Parallel
   Time

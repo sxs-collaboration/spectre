@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/EventsAndDenseTriggers/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DenseTriggerHelpers;EventsAndDenseTriggers;Options;Parallel;Time;Utilities"
+  "DataStructures;DenseTriggerHelpers;EventsAndDenseTriggers;EventsAndTriggers;Options;Parallel;Time;Utilities"
   )
 
 add_dependencies(
