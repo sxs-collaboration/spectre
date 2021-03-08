@@ -17,6 +17,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/ScalarWaveGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -36,10 +37,10 @@ struct Metavariables {
   };
 };
 
-template <typename ScalarFieldData>
-void test_tag_retrieval(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
-                        ScalarFieldData, gr::Solutions::KerrSchild>&
-                            curved_wave_data) noexcept {
+template <typename ScalarFieldData, typename BackgroundData>
+void test_tag_retrieval(
+    const CurvedScalarWave::AnalyticData::ScalarWaveGr<
+        ScalarFieldData, BackgroundData>& curved_wave_data) noexcept {
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
@@ -48,14 +49,13 @@ void test_tag_retrieval(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
   TestHelpers::AnalyticData::test_tag_retrieval(
       curved_wave_data, x,
       typename CurvedScalarWave::AnalyticData::ScalarWaveGr<
-          ScalarFieldData, gr::Solutions::KerrSchild>::tags());
+          ScalarFieldData, BackgroundData>::tags());
 }
 
-template <typename ScalarFieldData>
-void test_no_hole(
-    const CurvedScalarWave::AnalyticData::ScalarWaveGr<
-        ScalarFieldData, gr::Solutions::KerrSchild>& curved_wave_data,
-    const ScalarFieldData& flat_wave_solution) noexcept {
+template <typename ScalarFieldData, typename BackgroundData>
+void test_no_hole(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                      ScalarFieldData, BackgroundData>& curved_wave_data,
+                  const ScalarFieldData& flat_wave_solution) noexcept {
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
@@ -225,6 +225,96 @@ void test_construct_from_options() noexcept {
     test_kerr(curved_wave_data_constructed_from_opts, bh_solution,
               flat_wave_solution);
   }
+  {  // test flat spacetime with wave profile = plane in 3D
+    const auto curved_wave_data_constructed_from_opts =
+        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                                       ScalarWave::Solutions::PlaneWave<3>,
+                                       gr::Solutions::Minkowski<3>>,
+                                   Metavariables>(
+            "Background:\n"
+            "ScalarField:\n"
+            "  WaveVector: [1.0, 1.0, 1.0]\n"
+            "  Center: [0.0, 0.0, 0.0]\n"
+            "  Profile:\n"
+            "    Gaussian:\n"
+            "      Amplitude: 11.\n"
+            "      Width: 1.4\n"
+            "      Center: 0.3");
+
+    // construct internals of data constructed from options
+    const gr::Solutions::Minkowski<3> flat_space_solution{};
+
+    CHECK(curved_wave_data_constructed_from_opts ==
+          CurvedScalarWave::AnalyticData::ScalarWaveGr<
+              ScalarWave::Solutions::PlaneWave<3>, gr::Solutions::Minkowski<3>>(
+              flat_space_solution,
+              // cannot use a `flat_wave_solution` object in construction here
+              // as it has a `std::unique_ptr` member
+              ScalarWave::Solutions::PlaneWave<3>(
+                  {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}},
+                  std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                      11., 1.4, 0.3))));
+  }
+  {  // test flat spacetime with wave profile = plane in 2D
+    const auto curved_wave_data_constructed_from_opts =
+        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                                       ScalarWave::Solutions::PlaneWave<2>,
+                                       gr::Solutions::Minkowski<2>>,
+                                   Metavariables>(
+            "Background:\n"
+            "ScalarField:\n"
+            "  WaveVector: [1.0, 1.0]\n"
+            "  Center: [0.0, 0.0]\n"
+            "  Profile:\n"
+            "    Gaussian:\n"
+            "      Amplitude: 11.\n"
+            "      Width: 1.4\n"
+            "      Center: 0.3");
+
+    // construct internals of data constructed from options
+    const gr::Solutions::Minkowski<2> flat_space_solution{};
+
+    CHECK(curved_wave_data_constructed_from_opts ==
+          CurvedScalarWave::AnalyticData::ScalarWaveGr<
+              ScalarWave::Solutions::PlaneWave<2>, gr::Solutions::Minkowski<2>>(
+              flat_space_solution,
+              // cannot use a `flat_wave_solution` object in construction here
+              // as it has a `std::unique_ptr` member
+              ScalarWave::Solutions::PlaneWave<2>(
+                  {{1.0, 1.0}}, {{0.0, 0.0}},
+                  std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                      11., 1.4, 0.3))));
+  }
+  {  // test flat spacetime with wave profile = plane in 1D
+    const auto curved_wave_data_constructed_from_opts =
+        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                                       ScalarWave::Solutions::PlaneWave<1>,
+                                       gr::Solutions::Minkowski<1>>,
+                                   Metavariables>(
+            "Background:\n"
+            "ScalarField:\n"
+            "  WaveVector: [1.0]\n"
+            "  Center: [0.0]\n"
+            "  Profile:\n"
+            "    Gaussian:\n"
+            "      Amplitude: 11.\n"
+            "      Width: 1.4\n"
+            "      Center: 0.3");
+
+    // construct internals of data constructed from options
+    const gr::Solutions::Minkowski<1> flat_space_solution{};
+
+    CHECK(curved_wave_data_constructed_from_opts ==
+          CurvedScalarWave::AnalyticData::ScalarWaveGr<
+              ScalarWave::Solutions::PlaneWave<1>, gr::Solutions::Minkowski<1>>(
+              flat_space_solution,
+              // cannot use a `flat_wave_solution` object in construction here
+              // as it has a `std::unique_ptr` member
+              ScalarWave::Solutions::PlaneWave<1>(
+                  {{1.0}}, {{0.0}},
+                  std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                      11., 1.4, 0.3))));
+  }
 }
 
 void test_serialize(const double mass, const std::array<double, 3>& spin,
@@ -318,8 +408,7 @@ void test_move(const double mass, const std::array<double, 3>& spin,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
-                  "[PointwiseFunctions][Unit]") {
+void test_scalarwave_bh() {
   const double mass = 0.7;
   const std::array<double, 3> spin{{0.1, -0.2, 0.3}};
   const std::array<double, 3> center{{0.3, 0.2, 0.4}};
@@ -383,6 +472,33 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
     test_kerr(curved_wave_data, bh_solution, flat_wave_solution);
     test_kerr_schild_vars(curved_wave_data, bh_solution);
   }
+}
+
+void test_scalarwave_minkowski() {
+  // test with wave profile = plane in flat space in 3D
+  using flat_background_tag = gr::Solutions::Minkowski<3>;
+  using sw_tag = ScalarWave::Solutions::PlaneWave<3>;
+  const CurvedScalarWave::AnalyticData::ScalarWaveGr<sw_tag,
+                                                     flat_background_tag>
+      curved_wave_data{
+          flat_background_tag{},
+          sw_tag({{1., 1., 1.}}, {{0., 0., 0.}},
+                 std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                     11., 1.5, 0.))};
+  const sw_tag flat_wave_solution{
+      {{1., 1., 1.}},
+      {{0., 0., 0.}},
+      std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.5,
+                                                                    0.)};
+
+  test_tag_retrieval(curved_wave_data);
+  test_no_hole(curved_wave_data, flat_wave_solution);
+}
+
+SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
+                  "[PointwiseFunctions][Unit]") {
+  test_scalarwave_bh();
+  test_scalarwave_minkowski();
 }
 
 // Check restrictions on input options below

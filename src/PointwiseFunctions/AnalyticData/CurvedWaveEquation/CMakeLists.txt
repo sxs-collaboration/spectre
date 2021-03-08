@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   PlaneWave3DKerrSchild.cpp
+  PlaneWaveMinkowski.cpp
   RegularSphericalWave3DKerrSchild.cpp
   )
 
