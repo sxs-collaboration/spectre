@@ -50,6 +50,8 @@ struct InterpolatedVars;
 template <typename TemporalId>
 struct CompletedTemporalIds;
 template <typename TemporalId>
+struct PendingTemporalIds;
+template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
@@ -302,8 +304,7 @@ bool maps_are_time_dependent(
 /// flag_temporal_ids_for_interpolation is called by an Action
 /// of InterpolationTarget
 ///
-/// Currently two Actions call flag_temporal_ids_for_interpolation:
-/// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
+/// Currently one Action calls flag_temporal_ids_for_interpolation:
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 std::vector<TemporalId> flag_temporal_ids_for_interpolation(
@@ -334,6 +335,60 @@ std::vector<TemporalId> flag_temporal_ids_for_interpolation(
                   completed_ids.end() and
               std::find(ids->begin(), ids->end(), id) == ids->end()) {
             ids->push_back(id);
+            new_temporal_ids.push_back(id);
+          }
+        }
+      },
+      box);
+
+  return new_temporal_ids;
+}
+
+/// Tells an InterpolationTarget that it should interpolate at
+/// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
+/// accordingly.
+///
+/// Returns the temporal_ids that have actually been newly flagged
+/// (since some of them may have been flagged already).
+///
+/// flag_temporal_ids_as_pending is called by an Action
+/// of InterpolationTarget
+///
+/// Currently one Action calls flag_temporal_ids_as_pending:
+/// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
+template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
+std::vector<TemporalId> flag_temporal_ids_as_pending(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    const std::vector<TemporalId>& temporal_ids) noexcept {
+  // We allow this function to be called multiple times with the same
+  // temporal_ids (e.g. from each element, or from each node of a
+  // NodeGroup ParallelComponent such as Interpolator). If multiple
+  // calls occur, we care only about the first one, and ignore the
+  // others.  The first call will often begin interpolation.  So if
+  // multiple calls occur, it is possible that some of them may arrive
+  // late, even after interpolation has been completed on one or more
+  // of the temporal_ids (and after that id has already been removed
+  // from `ids`).  If this happens, we don't want to add the
+  // temporal_ids again. For that reason we keep track of the
+  // temporal_ids that we have already completed interpolation on.  So
+  // here we do not add any temporal_ids that are already present in
+  // `ids` or `completed_ids`.
+  std::vector<TemporalId> new_temporal_ids{};
+
+  db::mutate_apply<tmpl::list<Tags::PendingTemporalIds<TemporalId>>,
+                   tmpl::list<Tags::TemporalIds<TemporalId>,
+                              Tags::CompletedTemporalIds<TemporalId>>>(
+      [&temporal_ids, &new_temporal_ids](
+          const gsl::not_null<std::deque<TemporalId>*> pending_ids,
+          const std::deque<TemporalId>& ids,
+          const std::deque<TemporalId>& completed_ids) noexcept {
+        for (auto& id : temporal_ids) {
+          if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
+                  completed_ids.end() and
+              std::find(ids.begin(), ids.end(), id) == ids.end() and
+              std::find(pending_ids->begin(), pending_ids->end(), id) ==
+                  pending_ids->end()) {
+            pending_ids->push_back(id);
             new_temporal_ids.push_back(id);
           }
         }
