@@ -43,7 +43,7 @@ struct SendPointsToInterpolator {
                     const ArrayIndex& /*array_index*/,
                     const TemporalId& temporal_id) noexcept {
     auto coords = InterpolationTarget_detail::block_logical_coords<
-        InterpolationTargetTag>(box, tmpl::type_<Metavariables>{}, temporal_id);
+        InterpolationTargetTag>(box, cache, temporal_id);
     InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
         make_not_null(&box), temporal_id, coords);
     auto& receiver_proxy =

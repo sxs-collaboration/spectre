@@ -423,13 +423,52 @@ void add_received_variables(
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
 auto block_logical_coords(const db::DataBox<DbTags>& box,
-                          const tmpl::type_<Metavariables>& meta,
+                          Parallel::GlobalCache<Metavariables>& cache,
                           const TemporalId& temporal_id) noexcept {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+  if constexpr (std::is_same_v<typename InterpolationTargetTag::
+                                   compute_target_points::frame,
+                               ::Frame::Grid>) {
+    // Frame is grid frame, so don't need any FunctionsOfTime,
+    // whether or not the maps are time_dependent.
+    return ::block_logical_coordinates(
+        domain, InterpolationTargetTag::compute_target_points::points(
+                    box, tmpl::type_<Metavariables>{}, temporal_id));
+  }
+
+  if (maps_are_time_dependent<InterpolationTargetTag>(
+          box, tmpl::type_<Metavariables>{})) {
+    if constexpr (cache_contains_functions_of_time<Metavariables>::value) {
+      // Whoever calls block_logical_coords when the maps are
+      // time-dependent is responsible for ensuring
+      // that functions_of_time are up to date at temporal_id.
+      const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+      return ::block_logical_coordinates(
+          domain,
+          InterpolationTargetTag::compute_target_points::points(
+              box, tmpl::type_<Metavariables>{}, temporal_id),
+          temporal_id.step_time().value(), functions_of_time);
+    } else {
+      // We error here because the maps are time-dependent, yet
+      // the cache does not contain FunctionsOfTime.  It would be
+      // nice to make this a compile-time error; however, we want
+      // the code to compile for the completely time-independent
+      // case where there are no FunctionsOfTime in the cache at
+      // all.  Unfortunately, checking whether the maps are
+      // time-dependent is currently not constexpr.
+      ERROR(
+          "There is a time-dependent CoordinateMap in at least one "
+          "of the Blocks, but FunctionsOfTime are not in the "
+          "GlobalCache.  If you intend to use a time-dependent "
+          "CoordinateMap, please add FunctionsOfTime to the GlobalCache.");
+    }
+  }
+
+  // Time-independent case.
   return ::block_logical_coordinates(
       domain, InterpolationTargetTag::compute_target_points::points(
-                  box, meta, temporal_id));
+                  box, tmpl::type_<Metavariables>{}, temporal_id));
 }
 
 /// This is a version of block_logical_coords for when the coords
