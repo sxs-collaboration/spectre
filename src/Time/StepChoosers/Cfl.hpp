@@ -75,17 +75,17 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
       const double minimum_grid_spacing, const db::DataBox<DbTags>& box,
       const typename Metavariables::time_stepper_tag::type::element_type&
           time_stepper,
-      const double /*last_step_magnitude*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const
-      noexcept {
+      const double last_step_magnitude,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
     using compute_largest_characteristic_speed =
         typename Metavariables::system::compute_largest_characteristic_speed;
     const double speed = db::apply<compute_largest_characteristic_speed>(box);
     const double time_stepper_stability_factor = time_stepper.stable_step();
 
-    return std::make_pair(safety_factor_ * time_stepper_stability_factor *
-                              minimum_grid_spacing / speed,
-                          true);
+    const double step_size = safety_factor_ * time_stepper_stability_factor *
+                             minimum_grid_spacing / speed;
+    // Reject the step if the CFL condition is violated.
+    return std::make_pair(step_size, last_step_magnitude <= step_size);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
