@@ -59,6 +59,11 @@ target_link_libraries(
   Utilities
   )
 
+add_dependencies(
+  ${LIBRARY}
+  module_Main          # GlobalCache module depends on Main module
+  )
+
 add_subdirectory(Actions)
 add_subdirectory(Algorithms)
 add_subdirectory(PhaseControl)
