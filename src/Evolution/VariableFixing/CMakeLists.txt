@@ -14,7 +14,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  Evolution
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Actions.hpp
