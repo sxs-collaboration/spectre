@@ -12,6 +12,12 @@ spectre_target_headers(
   GetSourcesComputer.hpp
   )
 
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  Utilities
+  )
+
 add_subdirectory(Elasticity)
 add_subdirectory(Poisson)
 add_subdirectory(Xcts)
