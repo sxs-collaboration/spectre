@@ -400,17 +400,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
 
   // Invoke remaining actions in random order.
   MAKE_GENERATOR(generator);
-  auto array_indices_with_queued_actions =
-      ActionTesting::array_indices_with_queued_actions<
+  auto array_indices_with_queued_simple_actions =
+      ActionTesting::array_indices_with_queued_simple_actions<
           metavars::component_list>(make_not_null(&runner));
-  while (ActionTesting::number_of_queued_actions<
+  while (ActionTesting::number_of_elements_with_queued_simple_actions<
              typename metavars::component_list>(
-             array_indices_with_queued_actions) > 0) {
-    ActionTesting::invoke_random_queued_action<metavars::component_list>(
+             array_indices_with_queued_simple_actions) > 0) {
+    ActionTesting::invoke_random_queued_simple_action<metavars::component_list>(
         make_not_null(&runner), make_not_null(&generator),
-        array_indices_with_queued_actions);
-    array_indices_with_queued_actions =
-        ActionTesting::array_indices_with_queued_actions<
+        array_indices_with_queued_simple_actions);
+    array_indices_with_queued_simple_actions =
+        ActionTesting::array_indices_with_queued_simple_actions<
             metavars::component_list>(make_not_null(&runner));
   }
 

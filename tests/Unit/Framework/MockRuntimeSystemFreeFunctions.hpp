@@ -329,6 +329,15 @@ bool is_simple_action_queue_empty(
   return runner.template is_simple_action_queue_empty<Component>(array_index);
 }
 
+/// Returns the number of simple actions in the queue.
+template <typename Component, typename Metavariables>
+size_t number_of_queued_simple_actions(
+    const MockRuntimeSystem<Metavariables>& runner,
+    const typename Component::array_index& array_index) noexcept {
+  return runner.template number_of_queued_simple_actions<Component>(
+      array_index);
+}
+
 /// Runs the next queued threaded action on the `array_index`th element of
 /// the parallel component `Component`.
 template <typename Component, typename Metavariables>
@@ -344,6 +353,15 @@ bool is_threaded_action_queue_empty(
     const MockRuntimeSystem<Metavariables>& runner,
     const typename Component::array_index& array_index) noexcept {
   return runner.template is_threaded_action_queue_empty<Component>(array_index);
+}
+
+/// Returns the number of threaded actions in the queue.
+template <typename Component, typename Metavariables>
+size_t number_of_queued_threaded_actions(
+    const MockRuntimeSystem<Metavariables>& runner,
+    const typename Component::array_index& array_index) noexcept {
+  return runner.template number_of_queued_threaded_actions<Component>(
+      array_index);
 }
 
 /// Returns whether or not the `Component` with index `array_index` has been
@@ -368,11 +386,11 @@ Parallel::GlobalCache<Metavariables>& cache(
 }
 
 /// Returns a vector of all the indices of the Components in the
-/// ComponentList that have queued actions, for a particular
+/// ComponentList that have queued simple actions, for a particular
 /// array_index.
 template <typename ComponentList, typename MockRuntimeSystem,
           typename ArrayIndex>
-std::vector<size_t> indices_of_components_with_queued_actions(
+std::vector<size_t> indices_of_components_with_queued_simple_actions(
     const gsl::not_null<MockRuntimeSystem*> runner,
     const ArrayIndex& array_index) noexcept {
   std::vector<size_t> result{};
@@ -406,9 +424,9 @@ using array_indices_for_each_component =
 
 /// Returns a vector of array_indices for each Component.  The vector
 /// is filled with only those array_indices for which there are queued
-/// actions.
+/// simple actions.
 template <typename ComponentList, typename MockRuntimeSystem>
-auto array_indices_with_queued_actions(
+auto array_indices_with_queued_simple_actions(
     const gsl::not_null<MockRuntimeSystem*> runner) noexcept
     -> detail::array_indices_for_each_component<ComponentList> {
   detail::array_indices_for_each_component<ComponentList> result;
@@ -426,10 +444,10 @@ auto array_indices_with_queued_actions(
   return result;
 }
 
-/// Given the output of `array_indices_with_queued_actions`, returns
-/// the total number of queued actions.
+/// Given the output of `array_indices_with_queued_simple_actions`, returns
+/// the total number of array indices that have queued simple actions.
 template <typename ComponentList>
-size_t number_of_queued_actions(
+size_t number_of_elements_with_queued_simple_actions(
     const detail::array_indices_for_each_component<ComponentList>&
         array_indices) noexcept {
   size_t num_queued_actions = 0;
@@ -443,18 +461,18 @@ size_t number_of_queued_actions(
 
 /// Invokes the next queued action on a random Component on a random
 /// array_index of that component.  `array_indices` is the thing returned
-/// by `array_indices_with_queued_actions`
+/// by `array_indices_with_queued_simple_actions`
 template <typename ComponentList, typename MockRuntimeSystem,
           typename Generator>
-void invoke_random_queued_action(
+void invoke_random_queued_simple_action(
     const gsl::not_null<MockRuntimeSystem*> runner,
     const gsl::not_null<Generator*> generator,
     const detail::array_indices_for_each_component<ComponentList>&
         array_indices) noexcept {
-
   // Choose one queued action at random.
   const size_t num_queued_actions =
-      number_of_queued_actions<ComponentList>(array_indices);
+      number_of_elements_with_queued_simple_actions<ComponentList>(
+          array_indices);
   std::uniform_int_distribution<size_t> ran(0, num_queued_actions - 1);
   const size_t index_of_action_to_invoke = ran(*generator);
 
