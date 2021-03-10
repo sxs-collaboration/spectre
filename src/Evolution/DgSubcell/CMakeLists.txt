@@ -12,6 +12,7 @@ spectre_target_headers(
   ActiveGrid.hpp
   DgSubcell.hpp
   Matrices.hpp
+  Mesh.hpp
   Projection.hpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_sources(
   PRIVATE
   ActiveGrid.cpp
   Matrices.cpp
+  Mesh.cpp
   Projection.cpp
   )
 
