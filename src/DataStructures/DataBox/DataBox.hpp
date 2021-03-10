@@ -991,7 +991,8 @@ constexpr void error_function_not_callable() noexcept {
                 "See the first template parameter of "
                 "error_function_not_callable for the function type and "
                 "the remaining arguments for the parameters that cannot be "
-                "passed.");
+                "passed. If all the argument types match, it could be that you "
+                "have a template parameter that cannot be deduced.");
 }
 
 template <typename DataBoxTags, typename... TagsToRetrieve>
