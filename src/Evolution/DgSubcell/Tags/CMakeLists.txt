@@ -8,5 +8,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ActiveGrid.hpp
+  Inactive.hpp
   TciGridHistory.hpp
   )
