@@ -11,6 +11,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -72,6 +73,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags",
                   "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::ActiveGrid>(
       "ActiveGrid");
+  TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::DidRollback>(
+      "DidRollback");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::Inactive<Var1>>("Inactive(Var1)");
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Inactive<
