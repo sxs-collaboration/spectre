@@ -138,6 +138,7 @@ void call_dg_boundary_terms(
 template <typename System, typename BoundaryCorrection, size_t FaceDim,
           typename... VolumeTags, typename... RangeTags>
 void test_boundary_correction_conservation_impl(
+    const gsl::not_null<std::mt19937*> generator,
     const BoundaryCorrection& correction_in, const Mesh<FaceDim>& face_mesh,
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const tuples::TaggedTuple<Tags::Range<RangeTags>...>& ranges,
@@ -203,7 +204,6 @@ void test_boundary_correction_conservation_impl(
                          curved_background>::template f<System>>>,
       face_tags>;
 
-  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(-1.0, 1.0);
   DataVector used_for_size{face_mesh.number_of_grid_points()};
 
@@ -212,35 +212,37 @@ void test_boundary_correction_conservation_impl(
   Variables<dg_package_field_tags> interior_package_data{used_for_size.size()};
   auto interior_fields_on_face =
       make_with_random_values<Variables<face_tags_with_curved_background>>(
-          make_not_null(&gen), make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&gen, &interior_fields_on_face,
+          generator, make_not_null(&dist), used_for_size);
+  tmpl::for_each<tmpl::list<RangeTags...>>([&generator,
+                                            &interior_fields_on_face,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const std::array<double, 2>& range = tuples::get<Tags::Range<tag>>(ranges);
     std::uniform_real_distribution<> local_dist(range[0], range[1]);
     fill_with_random_values(make_not_null(&get<tag>(interior_fields_on_face)),
-                            make_not_null(&gen), make_not_null(&local_dist));
+                            generator, make_not_null(&local_dist));
   });
 
   // Same as above but now for external data
   Variables<dg_package_field_tags> exterior_package_data{used_for_size.size()};
   auto exterior_fields_on_face =
       make_with_random_values<Variables<face_tags_with_curved_background>>(
-          make_not_null(&gen), make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&gen, &exterior_fields_on_face,
+          generator, make_not_null(&dist), used_for_size);
+  tmpl::for_each<tmpl::list<RangeTags...>>([&generator,
+                                            &exterior_fields_on_face,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const std::array<double, 2>& range = tuples::get<Tags::Range<tag>>(ranges);
     std::uniform_real_distribution<> local_dist(range[0], range[1]);
     fill_with_random_values(make_not_null(&get<tag>(exterior_fields_on_face)),
-                            make_not_null(&gen), make_not_null(&local_dist));
+                            generator, make_not_null(&local_dist));
   });
 
   // Compute the interior and exterior normal vectors so they are pointing in
   // opposite directions.
   auto interior_unit_normal_covector = make_with_random_values<
       tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>>(
-      make_not_null(&gen), make_not_null(&dist), used_for_size);
+      generator, make_not_null(&dist), used_for_size);
   tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>
       interior_unit_normal_vector{};
 
@@ -276,7 +278,7 @@ void test_boundary_correction_conservation_impl(
     for (size_t i = 0; i < FaceDim + 1; ++i) {
       for (size_t j = i; j < FaceDim + 1; ++j) {
         get<inv_spatial_metric>(exterior_fields_on_face).get(i, j) =
-            inv_metric_change_dist(gen) *
+            inv_metric_change_dist(*generator) *
             get<inv_spatial_metric>(interior_fields_on_face).get(i, j);
       }
     }
@@ -295,7 +297,7 @@ void test_boundary_correction_conservation_impl(
   if (use_moving_mesh) {
     mesh_velocity = make_with_random_values<
         tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>(
-        make_not_null(&gen), make_not_null(&dist), used_for_size);
+        generator, make_not_null(&dist), used_for_size);
   }
 
   if constexpr (curved_background) {
@@ -460,6 +462,7 @@ void test_boundary_correction_conservation_impl(
 template <typename System, typename BoundaryCorrection, size_t FaceDim,
           typename... VolumeTags, typename... RangeTags>
 void test_boundary_correction_conservation(
+    const gsl::not_null<std::mt19937*> generator,
     const BoundaryCorrection& correction, const Mesh<FaceDim>& face_mesh,
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const tuples::TaggedTuple<Tags::Range<RangeTags>...>& ranges,
@@ -469,8 +472,8 @@ void test_boundary_correction_conservation(
     for (const auto& dg_formulation :
          {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
       detail::test_boundary_correction_conservation_impl<System>(
-          correction, face_mesh, volume_data, ranges, use_moving_mesh,
-          dg_formulation, zero_on_smooth_solution);
+          generator, correction, face_mesh, volume_data, ranges,
+          use_moving_mesh, dg_formulation, zero_on_smooth_solution);
     }
   }
 }
@@ -481,6 +484,7 @@ template <typename System, typename ConversionClassList, typename VariablesTags,
           typename... VolumeTags, typename... RangeTags,
           typename... DgPackageDataTags>
 void test_with_python(
+    const gsl::not_null<std::mt19937*> generator,
     const std::string& python_module,
     const std::array<
         std::string,
@@ -525,7 +529,6 @@ void test_with_python(
                 "Received Tags::Range for Tags that are neither arguments to "
                 "dg_package_data nor dg_boundary_terms");
 
-  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(-1.0, 1.0);
   DataVector used_for_size{face_mesh.number_of_grid_points()};
 
@@ -533,8 +536,8 @@ void test_with_python(
   // specified range, overwrite with new random values in [min,max)
   auto fields_on_face =
       make_with_random_values<Variables<face_tags_with_curved_background>>(
-          make_not_null(&gen), make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&gen, &fields_on_face,
+          generator, make_not_null(&dist), used_for_size);
+  tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &fields_on_face,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     // If this range tag is for an argument to dg_boundary_terms only, don't try
@@ -545,13 +548,13 @@ void test_with_python(
           tuples::get<Tags::Range<tag>>(ranges);
       std::uniform_real_distribution<> local_dist(range[0], range[1]);
       fill_with_random_values(make_not_null(&get<tag>(fields_on_face)),
-                              make_not_null(&gen), make_not_null(&local_dist));
+                              generator, make_not_null(&local_dist));
     }
   });
 
   auto unit_normal_covector = make_with_random_values<
       tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>>(
-      make_not_null(&gen), make_not_null(&dist), used_for_size);
+      generator, make_not_null(&dist), used_for_size);
   tnsr::I<DataVector, FaceDim + 1, Frame::Inertial> unit_normal_vector{};
 
   if constexpr (not curved_background) {
@@ -575,7 +578,7 @@ void test_with_python(
   if (use_moving_mesh) {
     mesh_velocity = make_with_random_values<
         tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>(
-        make_not_null(&gen), make_not_null(&dist), used_for_size);
+        generator, make_not_null(&dist), used_for_size);
   }
   std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
   if (mesh_velocity.has_value()) {
@@ -657,8 +660,8 @@ void test_with_python(
   // specified range, overwrite with new random values in [min,max)
   auto interior_package_data =
       make_with_random_values<Variables<dg_package_field_tags>>(
-          make_not_null(&gen), make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&gen, &interior_package_data,
+          generator, make_not_null(&dist), used_for_size);
+  tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &interior_package_data,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     // If this range tag is for an argument to dg_package_data only, don't try
@@ -668,15 +671,15 @@ void test_with_python(
           tuples::get<Tags::Range<tag>>(ranges);
       std::uniform_real_distribution<> local_dist(range[0], range[1]);
       fill_with_random_values(make_not_null(&get<tag>(interior_package_data)),
-                              make_not_null(&gen), make_not_null(&local_dist));
+                              generator, make_not_null(&local_dist));
     }
   });
 
   // Same as above but for exterior data
   auto exterior_package_data =
       make_with_random_values<Variables<dg_package_field_tags>>(
-          make_not_null(&gen), make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&gen, &exterior_package_data,
+          generator, make_not_null(&dist), used_for_size);
+  tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &exterior_package_data,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     if constexpr (tmpl::list_contains_v<dg_package_field_tags, tag>) {
@@ -684,7 +687,7 @@ void test_with_python(
           tuples::get<Tags::Range<tag>>(ranges);
       std::uniform_real_distribution<> local_dist(range[0], range[1]);
       fill_with_random_values(make_not_null(&get<tag>(exterior_package_data)),
-                              make_not_null(&gen), make_not_null(&local_dist));
+                              generator, make_not_null(&local_dist));
     }
   });
 
@@ -780,6 +783,7 @@ template <typename System, typename ConversionClassList = tmpl::list<>,
           typename BoundaryCorrection, size_t FaceDim, typename... VolumeTags,
           typename... RangeTags>
 void test_boundary_correction_with_python(
+    const gsl::not_null<std::mt19937*> generator,
     const std::string& python_module,
     const std::array<
         std::string,
@@ -809,7 +813,7 @@ void test_boundary_correction_with_python(
     for (const auto dg_formulation :
          {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
       detail::test_with_python<System, ConversionClassList, variables_tags>(
-          python_module, python_dg_package_data_functions,
+          generator, python_module, python_dg_package_data_functions,
           python_dg_boundary_terms_functions, correction, face_mesh,
           volume_data, ranges, use_moving_mesh, dg_formulation, epsilon,
           tmpl::append<variables_tags, flux_tags, package_temporary_tags,

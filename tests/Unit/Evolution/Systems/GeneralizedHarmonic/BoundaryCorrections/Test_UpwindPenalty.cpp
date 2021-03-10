@@ -18,18 +18,19 @@
 
 namespace {
 template <size_t Dim>
-void test(const size_t num_pts) {
+void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
   PUPable_reg(GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>);
+
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       GeneralizedHarmonic::System<Dim>>(
-      GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>{},
+      gen, GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       GeneralizedHarmonic::System<Dim>>(
-      "UpwindPenalty",
+      gen, "UpwindPenalty",
       {{"dg_package_data_char_speed_v_spacetime_metric",
         "dg_package_data_char_speed_v_zero",
         "dg_package_data_char_speed_v_plus",
@@ -51,7 +52,7 @@ void test(const size_t num_pts) {
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       GeneralizedHarmonic::System<Dim>>(
-      "UpwindPenalty",
+      gen, "UpwindPenalty",
       {{"dg_package_data_char_speed_v_spacetime_metric",
         "dg_package_data_char_speed_v_zero",
         "dg_package_data_char_speed_v_plus",
@@ -75,7 +76,9 @@ SPECTRE_TEST_CASE("Unit.GeneralizedHarmonic.UpwindPenalty",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections"};
-  test<1>(1);
-  test<2>(5);
-  test<3>(5);
+  MAKE_GENERATOR(gen);
+
+  test<1>(make_not_null(&gen), 1);
+  test<2>(make_not_null(&gen), 5);
+  test<3>(make_not_null(&gen), 5);
 }
