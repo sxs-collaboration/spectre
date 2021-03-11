@@ -318,6 +318,15 @@ void test_variables_math() noexcept {
 
   // Test math +, -, *, /
   const TestVariablesType vars{num_points, value_in_variables};
+  const TestVariablesType close{num_points,
+                                value_in_variables * (1.0 + 1.0e-14)};
+  CHECK(close != vars);
+  CHECK_FALSE(close == vars);
+  CHECK_VARIABLES_APPROX(close, vars);
+  const TestVariablesType equivalent{num_points, value_in_variables};
+  CHECK(equivalent == vars);
+  CHECK_FALSE(equivalent != vars);
+
   TestVariablesType expected{num_points, rand_vals.at(0) * value_in_variables};
   CHECK_VARIABLES_APPROX(expected, rand_vals[0] * vars);
   expected = TestVariablesType{num_points, value_in_variables * rand_vals[0]};
