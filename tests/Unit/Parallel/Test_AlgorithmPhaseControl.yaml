@@ -1,0 +1,10 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# note that this is a vector of pairs, so has the peculiar '- -' for the
+# elements
+PhaseChangeAndTriggers:
+  - - TempPhaseATrigger:
+    - - VisitAndReturn(TempPhaseA)
+  - - TempPhaseBTrigger:
+    - - VisitAndReturn(TempPhaseB)
