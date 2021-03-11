@@ -191,6 +191,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       p | node_lock_;
     }
     p | terminate_;
+    p | halt_algorithm_until_next_phase_;
     p | box_;
     p | inboxes_;
     p | array_index_;
@@ -286,7 +287,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   // @{
   /// Start evaluating the algorithm until the is_ready function of an Action
-  /// returns false, or an Action returns with `terminate` set to `true`
+  /// returns false, or an Action returns with `terminate` set to `true` or a
+  /// `Parallel::AlgorithmExecution` flag of `AlgorithmExecution::Pause` or
+  /// `AlgorithmExecution::Halt`.
   ///
   /// In the case where no phase is passed the current phase is assumed.
   constexpr void perform_algorithm() noexcept;
@@ -301,18 +304,21 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   void start_phase(const PhaseType next_phase) noexcept {
     // terminate should be true since we exited a phase previously.
-    if (not get_terminate()) {
+    if (not get_terminate() and not halt_algorithm_until_next_phase_) {
       ERROR(
           "An algorithm must always be set to terminate at the beginning of a "
           "phase. Since this is not the case the previous phase did not end "
           "correctly. The integer corresponding to the previous phase is: "
           << static_cast<int>(phase_)
-          << " and the next phase is: " << static_cast<int>(next_phase));
+          << " and the next phase is: " << static_cast<int>(next_phase)
+          << ", The termination flag is: " << get_terminate()
+          << ", and the halt flag is: " << halt_algorithm_until_next_phase_);
     }
     // set terminate to true if there are no actions in this PDAL
     set_terminate(number_of_actions_in_phase(next_phase) == 0);
     phase_ = next_phase;
     algorithm_step_ = 0;
+    halt_algorithm_until_next_phase_ = false;
     perform_algorithm();
   }
 
@@ -428,8 +434,15 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   // handling the cases where the `apply` method returns a tuple of one, two,
   // or three elements, in order:
   // 1. A DataBox
-  // 2. A bool determining whether or not to terminate (and potentially move
-  //   to the next phase)
+  // 2. Either:
+  //    2a. A bool determining whether or not to terminate (and potentially move
+  //        to the next phase), or
+  //    2b. An `AlgorithmExecution` object describing whether to continue,
+  //        pause, or halt. `AlgorithmExecution::Continue` does not alter the
+  //        termination flag, `AlgorithmExecution::Pause` is equivalent to
+  //        passing `true`, and `AlgorithmExecution::Halt` causes the algorithm
+  //        to stop without the possibility of restart until after the next
+  //        phase change.
   // 3. An unsigned integer corresponding to which action in the current phase's
   //    algorithm to execute next.
   template <typename ThisAction, typename ActionList, typename DbTags>
@@ -450,7 +463,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
         "The return type must be a tuple of length one, two, or three "
         "with:\n"
         " first type is an updated DataBox;\n"
-        " second type is either a bool (indicating termination);\n"
+        " second type is either a bool (indicating termination) or a "
+        "`Parallel::AlgorithmExecution` object;\n"
         " third type is a size_t indicating the next action in the current"
         " phase.");
 
@@ -460,7 +474,21 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       box_ = std::move(get<0>(action_return));
     }
     if constexpr (tuple_size >= 2_st) {
-      terminate_ = get<1>(action_return);
+      if constexpr (std::is_same_v<decltype(get<1>(action_return)), bool&>) {
+        terminate_ = get<1>(action_return);
+      } else {
+        switch(get<1>(action_return)) {
+          case AlgorithmExecution::Halt:
+            halt_algorithm_until_next_phase_ = true;
+            terminate_ = true;
+            break;
+          case AlgorithmExecution::Pause:
+            terminate_ = true;
+            break;
+          default:
+            break;
+        }
+      }
     }
     if constexpr (tuple_size >= 3_st) {
       algorithm_step_ = get<2>(action_return);
@@ -482,6 +510,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       node_lock_;
 
   bool terminate_{true};
+  bool halt_algorithm_until_next_phase_{false};
 
   using all_cache_tags = get_const_global_cache_tags<metavariables>;
   using initial_databox = db::compute_databox_type<tmpl::flatten<tmpl::list<
@@ -665,7 +694,8 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 constexpr void AlgorithmImpl<
     ParallelComponent,
     tmpl::list<PhaseDepActionListsPack...>>::perform_algorithm() noexcept {
-  if (performing_action_ or get_terminate()) {
+  if (performing_action_ or get_terminate() or
+      halt_algorithm_until_next_phase_) {
     return;
   }
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -680,6 +710,7 @@ constexpr void AlgorithmImpl<
     using actions_list = typename PhaseDep::action_list;
     if (phase_ == phase) {
       while (tmpl::size<actions_list>::value > 0 and not get_terminate() and
+             not halt_algorithm_until_next_phase_ and
              iterate_over_actions<PhaseDep>(
                  std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
       }
@@ -708,7 +739,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   bool take_next_action = true;
   const auto helper = [this, &take_next_action](auto iteration) noexcept {
     constexpr size_t iter = decltype(iteration)::value;
-    if (not(take_next_action and not terminate_ and algorithm_step_ == iter)) {
+    if (not(take_next_action and not terminate_ and
+            not halt_algorithm_until_next_phase_ and algorithm_step_ == iter)) {
       return;
     }
     using actions_list = typename PhaseDepActions::action_list;

@@ -18,6 +18,19 @@ template <typename Metavariables>
 class GlobalCache;
 /// \endcond
 
+/// The possible options for altering the current execution of the algorithm,
+/// used in the return type of iterable actions.
+enum AlgorithmExecution {
+  /// Leave the algorithm termination flag in its current state.
+  Continue,
+  /// Stop the execution of iterable actions, but allow entry methods
+  /// (communication) to explicitly request restarting the execution.
+  Pause,
+  /// Stop the execution of iterable actions and do not allow their execution
+  /// until after a phase change. Simple actions will still execute.
+  Halt
+};
+
 namespace Algorithm_detail {
 template <bool, typename AdditionalArgsList>
 struct build_action_return_types_impl;
@@ -169,8 +182,22 @@ struct check_iterable_action_return_type<ParallelComponentType, ActionType,
 
 template <typename ParallelComponentType, typename ActionType,
           typename FirstType>
+struct check_iterable_action_return_type<
+    ParallelComponentType, ActionType,
+    std::tuple<FirstType, AlgorithmExecution>>
+    : is_databox_or_databox_rvalue<FirstType> {};
+
+template <typename ParallelComponentType, typename ActionType,
+          typename FirstType>
 struct check_iterable_action_return_type<ParallelComponentType, ActionType,
                                          std::tuple<FirstType, bool, size_t>>
+    : is_databox_or_databox_rvalue<FirstType> {};
+
+template <typename ParallelComponentType, typename ActionType,
+          typename FirstType>
+struct check_iterable_action_return_type<
+    ParallelComponentType, ActionType,
+    std::tuple<FirstType, AlgorithmExecution, size_t>>
     : is_databox_or_databox_rvalue<FirstType> {};
 }  // namespace Algorithm_detail
 }  // namespace Parallel
