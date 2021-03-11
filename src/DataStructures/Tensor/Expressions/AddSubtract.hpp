@@ -94,15 +94,15 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~AddSub() override = default;
 
-  template <typename LhsStructure, typename... LhsIndices>
+  template <typename... LhsIndices>
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const size_t lhs_storage_index) const {
+      const std::array<size_t, num_tensor_indices>& lhs_multi_index) const {
     if constexpr (Sign == 1) {
-      return t1_.template get<LhsStructure, LhsIndices...>(lhs_storage_index) +
-             t2_.template get<LhsStructure, LhsIndices...>(lhs_storage_index);
+      return t1_.template get<LhsIndices...>(lhs_multi_index) +
+             t2_.template get<LhsIndices...>(lhs_multi_index);
     } else {
-      return t1_.template get<LhsStructure, LhsIndices...>(lhs_storage_index) -
-             t2_.template get<LhsStructure, LhsIndices...>(lhs_storage_index);
+      return t1_.template get<LhsIndices...>(lhs_multi_index) -
+             t2_.template get<LhsIndices...>(lhs_multi_index);
     }
   }
 
