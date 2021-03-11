@@ -3,6 +3,8 @@
 
 add_subdirectory(Actions)
 
+add_subdirectory(PhaseControl)
+
 function(add_algorithm_test EXECUTABLE_NAME)
   add_spectre_executable(
     ${EXECUTABLE_NAME}
