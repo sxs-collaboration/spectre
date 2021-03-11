@@ -274,21 +274,24 @@ template <size_t Dim, typename VolumeDoubleType>
 PUP::able::PUP_ID Correction<Dim, VolumeDoubleType>::my_PUP_ID = 0;
 
 template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
-void test_impl() {
+void test_impl(const gsl::not_null<std::mt19937*> gen) {
   PUPable_reg(SINGLE_ARG(Correction<Dim, VolumeDoubleType>));
   const Correction<Dim, VolumeDoubleType> correction{};
   const Mesh<Dim - 1> face_mesh{Dim * Dim, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::Gauss};
+
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       System<Dim, CurvedBackground>>(
-      correction, face_mesh,
+      gen, correction, face_mesh,
       tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
-          VolumeDoubleType{2.3}});
+          VolumeDoubleType{2.3}},
+      tuples::TaggedTuple<>{});
+
   const std::string curved_suffix =
       CurvedBackground ? std::string{"_curved"} : std::string{""};
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       System<Dim, CurvedBackground>, tmpl::list<VolumeDoubleConversion>>(
-      "BoundaryCorrectionsHelper",
+      gen, "BoundaryCorrectionsHelper",
       {{"dg_package_data_var1" + curved_suffix,
         "dg_package_data_var1_normal_dot_flux" + curved_suffix,
         "dg_package_data_var2" + curved_suffix,
@@ -297,16 +300,17 @@ void test_impl() {
       {{"dg_boundary_terms_var1", "dg_boundary_terms_var2"}}, correction,
       face_mesh,
       tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
-          VolumeDoubleType{2.3}});
+          VolumeDoubleType{2.3}},
+      tuples::TaggedTuple<>{});
 }
 
 template <size_t Dim>
-void test() {
-  test_impl<Dim, false, double>();
-  test_impl<Dim, false, VolumeDouble>();
+void test(const gsl::not_null<std::mt19937*> gen) {
+  test_impl<Dim, false, double>(gen);
+  test_impl<Dim, false, VolumeDouble>(gen);
 
-  test_impl<Dim, true, double>();
-  test_impl<Dim, true, VolumeDouble>();
+  test_impl<Dim, true, double>(gen);
+  test_impl<Dim, true, VolumeDouble>(gen);
 }
 }  // namespace
 
@@ -314,7 +318,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.BoundaryCorrectionsHelper",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/DiscontinuousGalerkin/"};
-  test<1>();
-  test<2>();
-  test<3>();
+  MAKE_GENERATOR(gen);
+
+  test<1>(make_not_null(&gen));
+  test<2>(make_not_null(&gen));
+  test<3>(make_not_null(&gen));
 }

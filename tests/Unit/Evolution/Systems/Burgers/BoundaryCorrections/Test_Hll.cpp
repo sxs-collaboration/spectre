@@ -20,29 +20,33 @@ SPECTRE_TEST_CASE("Unit.Burgers.Hll", "[Unit][Burgers]") {
   PUPable_reg(Burgers::BoundaryCorrections::Hll);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/Burgers/BoundaryCorrections"};
+  MAKE_GENERATOR(gen);
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       Burgers::System>(
-      Burgers::BoundaryCorrections::Hll{},
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      make_not_null(&gen), Burgers::BoundaryCorrections::Hll{},
+      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(
-      "Hll",
+      make_not_null(&gen), "Hll",
       {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
         "dg_package_data_char_speed"}},
       {{"dg_boundary_terms_u"}}, Burgers::BoundaryCorrections::Hll{},
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 
   const auto Hll = TestHelpers::test_factory_creation<
       Burgers::BoundaryCorrections::BoundaryCorrection>("Hll:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(
-      "Hll",
+      make_not_null(&gen), "Hll",
       {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
         "dg_package_data_char_speed"}},
       {{"dg_boundary_terms_u"}},
       dynamic_cast<const Burgers::BoundaryCorrections::Hll&>(*Hll),
-      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 }

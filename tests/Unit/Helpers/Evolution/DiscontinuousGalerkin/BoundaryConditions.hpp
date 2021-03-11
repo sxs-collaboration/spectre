@@ -33,6 +33,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/NormalVectors.hpp"
+#include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -69,14 +70,6 @@ template <typename BoundaryCorrection = NoSuchType>
 struct PythonFunctionForErrorMessage {
   using boundary_correction = BoundaryCorrection;
   using type = std::string;
-};
-
-/// Tag for a `TaggedTuple` that holds the range of validity for the variable
-/// associated with `Tag`.
-template <typename Tag>
-struct Range {
-  using tag = Tag;
-  using type = std::array<double, 2>;
 };
 }  // namespace Tags
 
@@ -247,12 +240,13 @@ void test_boundary_condition_with_python_impl(
 
   std::uniform_real_distribution<> dist(-1., 1.);
 
+  // Fill all fields with random values in [-1,1), then, for each tag with a
+  // specified range, overwrite with new random values in [min,max)
   Variables<tmpl::remove_duplicates<
       tmpl::append<bcondition_interior_tags, inverse_spatial_metric_list>>>
       interior_face_fields{number_of_points_on_face};
   fill_with_random_values(make_not_null(&interior_face_fields), generator,
                           make_not_null(&dist));
-
   tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &interior_face_fields,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;

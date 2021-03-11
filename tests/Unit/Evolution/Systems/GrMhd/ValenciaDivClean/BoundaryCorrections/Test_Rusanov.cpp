@@ -23,17 +23,21 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
   PUPable_reg(grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections"};
+  MAKE_GENERATOR(gen);
+
   // need some equation of state. Rusanov doesn't care about it since the max
   // speed is set by the speed of light.
   using system =
       grmhd::ValenciaDivClean::System<EquationsOfState::IdealFluid<true>>;
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<system>(
+      make_not_null(&gen),
       grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
-      "Rusanov",
+      make_not_null(&gen), "Rusanov",
       {{"dg_package_data_tilde_d", "dg_package_data_tilde_tau",
         "dg_package_data_tilde_s", "dg_package_data_tilde_b",
         "dg_package_data_tilde_phi", "dg_package_data_normal_dot_flux_tilde_d",
@@ -46,14 +50,15 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
         "dg_boundary_terms_tilde_s", "dg_boundary_terms_tilde_b",
         "dg_boundary_terms_tilde_phi"}},
       grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{},
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 
   const auto rusanov = TestHelpers::test_factory_creation<
       grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>(
       "Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
-      "Rusanov",
+      make_not_null(&gen), "Rusanov",
       {{"dg_package_data_tilde_d", "dg_package_data_tilde_tau",
         "dg_package_data_tilde_s", "dg_package_data_tilde_b",
         "dg_package_data_tilde_phi", "dg_package_data_normal_dot_flux_tilde_d",
@@ -68,5 +73,6 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
       dynamic_cast<
           const grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov&>(
           *rusanov),
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
+      {});
 }
