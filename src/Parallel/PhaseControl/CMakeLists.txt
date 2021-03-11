@@ -8,4 +8,5 @@ spectre_target_headers(
   ExecutePhaseChange.hpp
   PhaseChange.hpp
   PhaseControlTags.hpp
+  VisitAndReturn.hpp
   )
