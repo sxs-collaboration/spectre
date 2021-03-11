@@ -639,6 +639,86 @@ template <typename T>
 constexpr bool is_derived_of_vector_impl_v =
     is_derived_of_vector_impl<T>::value;
 
+// impose strict equality for derived classes of VectorImpl; note that this
+// overrides intended behavior in blaze for comparison operators to use
+// approximate equality in favor of equality between containers being
+// appropriately recursive. This form primarily works by using templates to
+// ensure that our comparison operator is resolved with higher priority than the
+// blaze form as of blaze 3.8
+template <
+    typename Lhs, typename Rhs,
+    Requires<(is_derived_of_vector_impl_v<Lhs> or
+              is_derived_of_vector_impl_v<
+                  Rhs>)and not(std::is_base_of_v<blaze::Computation, Lhs> or
+                               std::is_base_of_v<blaze::Computation, Rhs>) and
+             not(std::is_same_v<Rhs, typename Lhs::ElementType> or
+                 std::is_same_v<Lhs, typename Rhs::ElementType>)> = nullptr>
+bool operator==(const Lhs& lhs, const Rhs& rhs) noexcept {
+  return blaze::equal<blaze::strict>(lhs, rhs);
+}
+
+template <
+    typename Lhs, typename Rhs,
+    Requires<(is_derived_of_vector_impl_v<Lhs> or
+              is_derived_of_vector_impl_v<
+                  Rhs>)and not(std::is_base_of_v<blaze::Computation, Lhs> or
+                               std::is_base_of_v<blaze::Computation, Rhs>) and
+             not(std::is_same_v<Rhs, typename Lhs::ElementType> or
+                 std::is_same_v<Lhs, typename Lhs::ElementType>)> = nullptr>
+bool operator!=(const Lhs& lhs, const Rhs& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+// Impose strict equality for any expression templates; note that
+// this overrides intended behavior in blaze for comparison
+// operators to use approximate equality in favor of equality
+// between containers being appropriately recursive. This form
+// primarily works by using templates to ensure that our
+// comparison operator is resolved with higher priority than the
+// blaze form as of blaze 3.8
+template <typename Lhs, typename Rhs,
+          Requires<std::is_base_of_v<blaze::Computation, Lhs> or
+                   std::is_base_of_v<blaze::Computation, Rhs>> = nullptr>
+bool operator==(const Lhs& lhs, const Rhs& rhs) noexcept {
+  return blaze::equal<blaze::strict>(lhs, rhs);
+}
+
+template <typename Lhs, typename Rhs,
+          Requires<std::is_base_of_v<blaze::Computation, Lhs> or
+                   std::is_base_of_v<blaze::Computation, Rhs>> = nullptr>
+bool operator!=(const Lhs& lhs, const Rhs& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template <typename Lhs, Requires<is_derived_of_vector_impl_v<Lhs>> = nullptr>
+bool operator==(const Lhs& lhs,
+                const typename Lhs::ElementType& rhs) noexcept {
+  for (const auto& element : lhs) {
+    if (element != rhs) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <typename Lhs, Requires<is_derived_of_vector_impl_v<Lhs>> = nullptr>
+bool operator!=(const Lhs& lhs,
+                const typename Lhs::ElementType& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template <typename Rhs, Requires<is_derived_of_vector_impl_v<Rhs>> = nullptr>
+bool operator==(const typename Rhs::ElementType& lhs,
+                const Rhs& rhs) noexcept {
+  return rhs == lhs;
+}
+
+template <typename Rhs, Requires<is_derived_of_vector_impl_v<Rhs>> = nullptr>
+bool operator!=(const typename Rhs::ElementType& lhs,
+                const Rhs& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 /// \ingroup DataStructuresGroup
 /// Make the input `view` a `const` view of the const data `vector`, at
 /// offset `offset` and length `extent`.

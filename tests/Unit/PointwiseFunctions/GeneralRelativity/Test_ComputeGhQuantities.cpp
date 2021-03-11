@@ -484,8 +484,8 @@ void test_shift_deriv_functions_analytic(
   CHECK_ITERABLE_APPROX(dt_shift_expected, dt_shift);
   CHECK_ITERABLE_APPROX(d_shift_expected, d_shift);
   CHECK_ITERABLE_APPROX(d4_norm_of_shift_expected, d4_norm_shift);
-  CHECK(get(shift_dot_dt_lower_shift_expected) ==
-        get(shift_dot_dt_lower_shift));
+  CHECK_ITERABLE_APPROX(get(shift_dot_dt_lower_shift_expected),
+                        get(shift_dot_dt_lower_shift));
 }
 
 // Test computation of derivs of spatial metric by comparing to Kerr-Schild
@@ -831,16 +831,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           GeneralizedHarmonic::Tags::DerivLapseCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::DerivShiftCompute<3, Frame::Inertial>>>(
       lapse, spacetime_normal_vector, inverse_spacetime_metric, expected_phi);
-  CHECK(
-      db::get<
-          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>>(box) ==
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(db::get<::Tags::deriv<
+                     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                     tmpl::size_t<3>, Frame::Inertial>>(box)),
       expected_deriv_spatial_metric);
-  CHECK(db::get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                              Frame::Inertial>>(box) == expected_deriv_lapse);
-  CHECK(db::get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                              tmpl::size_t<3>, Frame::Inertial>>(box) ==
-        expected_deriv_shift);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(db::get<::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                       tmpl::size_t<3>, Frame::Inertial>>(box)),
+      expected_deriv_lapse);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(
+          db::get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                                tmpl::size_t<3>, Frame::Inertial>>(box)),
+      expected_deriv_shift);
 
   const auto other_box = db::create<
       db::AddSimpleTags<
@@ -859,14 +863,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
                                                            Frame::Inertial>>>(
       lapse, shift, spacetime_normal_vector, inverse_spacetime_metric,
       inverse_spatial_metric, expected_phi, expected_pi);
-  CHECK(
-      db::get<
-          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-          other_box) == expected_dt_spatial_metric);
-  CHECK(db::get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(other_box) ==
-        expected_dt_lapse);
-  CHECK(db::get<::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
-            other_box) == expected_dt_shift);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(db::get<::Tags::dt<
+                     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
+          other_box)),
+      expected_dt_spatial_metric);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(db::get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(other_box)),
+      expected_dt_lapse);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(
+          db::get<::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
+              other_box)),
+      expected_dt_shift);
 
   const auto ghvars_box = db::create<
       db::AddSimpleTags<
