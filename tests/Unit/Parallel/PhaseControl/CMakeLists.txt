@@ -4,6 +4,7 @@
 set(LIBRARY "Test_PhaseControl")
 
 set(LIBRARY_SOURCES
+  Test_ExecutePhaseChange.cpp
   Test_PhaseChange.cpp
   Test_PhaseControlTags.cpp
   )

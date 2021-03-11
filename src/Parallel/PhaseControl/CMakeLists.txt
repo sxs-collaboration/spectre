@@ -5,6 +5,7 @@ spectre_target_headers(
   Parallel
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ExecutePhaseChange.hpp
   PhaseChange.hpp
   PhaseControlTags.hpp
   )
