@@ -30,6 +30,5 @@ target_link_libraries(
   PUBLIC
   ErrorHandling
   Utilities
-  INTERFACE
   YamlCpp
   )
