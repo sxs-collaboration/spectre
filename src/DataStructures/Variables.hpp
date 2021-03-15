@@ -413,19 +413,19 @@ class Variables<tmpl::list<Tags...>> {
   void add_reference_variable_data() noexcept;
 
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
-    return lhs.variable_data_ == rhs.variable_data_;
+    return blaze::equal<blaze::strict>(lhs.variable_data_, rhs.variable_data_);
   }
 
   template <typename VT, bool TF>
   friend bool operator==(const Variables& lhs,
                          const blaze::DenseVector<VT, TF>& rhs) noexcept {
-    return lhs.variable_data_ == *rhs;
+    return blaze::equal<blaze::strict>(lhs.variable_data_, *rhs);
   }
 
   template <typename VT, bool TF>
   friend bool operator==(const blaze::DenseVector<VT, TF>& lhs,
                          const Variables& rhs) noexcept {
-    return *lhs == rhs.variable_data_;
+    return blaze::equal<blaze::strict>(*lhs, rhs.variable_data_);
   }
 
   template <class FriendTags>

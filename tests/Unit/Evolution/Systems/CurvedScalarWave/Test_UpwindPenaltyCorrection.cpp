@@ -169,7 +169,7 @@ void test_upwind_flux_random() noexcept {
       CurvedScalarWave::CurvedScalarWave_detail::weight_char_fields<Dim>(
           char_fields_int, char_speeds_minus_one, char_fields_ext,
           char_speeds_minus_one);
-  CHECK(weighted_char_fields_minus_one == -1. * char_fields_ext);
+  CHECK_VARIABLES_APPROX(-1. * char_fields_ext, weighted_char_fields_minus_one);
 
   // Check scaling by 5 instead of 1
   const auto weighted_char_fields_minus_five =
@@ -179,8 +179,9 @@ void test_upwind_flux_random() noexcept {
   const auto weighted_char_fields_five =
       CurvedScalarWave::CurvedScalarWave_detail::weight_char_fields<Dim>(
           char_fields_int, char_speeds_five, char_fields_ext, char_speeds_five);
-  CHECK(weighted_char_fields_minus_five == -5. * char_fields_ext);
-  CHECK(weighted_char_fields_five == 5. * char_fields_int);
+  CHECK_VARIABLES_APPROX(weighted_char_fields_minus_five,
+                         -5. * char_fields_ext);
+  CHECK_VARIABLES_APPROX(weighted_char_fields_five, 5. * char_fields_int);
 
   // Check that if the same fields are given for the interior and exterior
   // (except that the normal vector gets multiplied by -1.0) that the

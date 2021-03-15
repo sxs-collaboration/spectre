@@ -83,13 +83,15 @@ void test_package_data(const size_t order) noexcept {
                              mesh, {});
     ModalVector expected0(mesh.number_of_grid_points(), 0.0);
     expected0[mesh.number_of_grid_points() - 1] = 1.0;
-    CHECK(get(get<::Tags::Modal<ScalarTag<0>>>(
-              packaged_data.modal_volume_data)) == expected0);
+    CHECK_ITERABLE_APPROX(
+        get(get<::Tags::Modal<ScalarTag<0>>>(packaged_data.modal_volume_data)),
+        expected0);
     ModalVector expected1(mesh.number_of_grid_points(), 0.0);
     expected1[mesh.number_of_grid_points() - 1] = 1.0;
     expected1[mesh.number_of_grid_points() - 2] = 2.0;
-    CHECK(get<0>(get<::Tags::Modal<VectorTag<1, 0>>>(
-              packaged_data.modal_volume_data)) == expected1);
+    CHECK_ITERABLE_APPROX(SINGLE_ARG(get<0>(get<::Tags::Modal<VectorTag<1, 0>>>(
+                              packaged_data.modal_volume_data))),
+                          expected1);
   }
   // test reorienting
   {
@@ -98,13 +100,15 @@ void test_package_data(const size_t order) noexcept {
         {{{Direction<1>::upper_xi()}}, {{Direction<1>::lower_xi()}}});
     ModalVector expected0(mesh.number_of_grid_points(), 0.0);
     expected0[0] = 1.0;
-    CHECK(get(get<::Tags::Modal<ScalarTag<0>>>(
-              packaged_data.modal_volume_data)) == expected0);
+    CHECK_ITERABLE_APPROX(
+        get(get<::Tags::Modal<ScalarTag<0>>>(packaged_data.modal_volume_data)),
+        expected0);
     ModalVector expected1(mesh.number_of_grid_points(), 0.0);
     expected1[0] = 1.0;
     expected1[1] = 2.0;
-    CHECK(get<0>(get<::Tags::Modal<VectorTag<1, 0>>>(
-              packaged_data.modal_volume_data)) == expected1);
+    CHECK_ITERABLE_APPROX(SINGLE_ARG(get<0>(get<::Tags::Modal<VectorTag<1, 0>>>(
+                              packaged_data.modal_volume_data))),
+                          expected1);
   }
 }
 
@@ -1017,12 +1021,14 @@ void test_package_data() noexcept {
   {
     krivodonova.package_data(make_not_null(&packaged_data), tensor0, tensor1,
                              mesh, {});
-    CHECK(get(get<::Tags::Modal<ScalarTag<0>>>(
-              packaged_data.modal_volume_data)) == neighbor_modes);
+    CHECK_ITERABLE_APPROX(
+        get(get<::Tags::Modal<ScalarTag<0>>>(packaged_data.modal_volume_data)),
+        neighbor_modes);
     for (size_t d = 0; d < dim; ++d) {
-      CHECK(
-          get<::Tags::Modal<VectorTag<dim, 0>>>(packaged_data.modal_volume_data)
-              .get(d) == ModalVector((d + 2.0) * neighbor_modes));
+      CHECK_ITERABLE_APPROX(SINGLE_ARG(get<::Tags::Modal<VectorTag<dim, 0>>>(
+                                           packaged_data.modal_volume_data)
+                                           .get(d)),
+                            ModalVector((d + 2.0) * neighbor_modes));
     }
   }
   // test reorienting
@@ -1035,12 +1041,14 @@ void test_package_data() noexcept {
     const ModalVector expected_modes{
         0.0, 6.0, 12.0, 18.0, 2.0, 8.0, 14.0, 20.0, 4.0, 10.0, 16.0, 22.0,
         1.0, 7.0, 13.0, 19.0, 3.0, 9.0, 15.0, 21.0, 5.0, 11.0, 17.0, 23.0};
-    CHECK(get(get<::Tags::Modal<ScalarTag<0>>>(
-              packaged_data.modal_volume_data)) == expected_modes);
+    CHECK_ITERABLE_APPROX(
+        get(get<::Tags::Modal<ScalarTag<0>>>(packaged_data.modal_volume_data)),
+        expected_modes);
     for (size_t d = 0; d < dim; ++d) {
-      CHECK(
-          get<::Tags::Modal<VectorTag<dim, 0>>>(packaged_data.modal_volume_data)
-              .get(d) == ModalVector((d + 2.0) * expected_modes));
+      CHECK_ITERABLE_APPROX(SINGLE_ARG(get<::Tags::Modal<VectorTag<dim, 0>>>(
+                                           packaged_data.modal_volume_data)
+                                           .get(d)),
+                            ModalVector((d + 2.0) * expected_modes));
     }
   }
 }

@@ -147,9 +147,11 @@ void apply_hllc(
       hllc_flux{}, packaged_data_int, packaged_data_ext,
       n_dot_num_f_mass_density, n_dot_num_f_momentum_density,
       n_dot_num_f_energy_density);
-  CHECK(*n_dot_num_f_mass_density == n_dot_f_mass_density_int);
-  CHECK(*n_dot_num_f_momentum_density == n_dot_f_momentum_density_int);
-  CHECK(*n_dot_num_f_energy_density == n_dot_f_energy_density_int);
+  CHECK_ITERABLE_APPROX(*n_dot_num_f_mass_density, n_dot_f_mass_density_int);
+  CHECK_ITERABLE_APPROX(*n_dot_num_f_momentum_density,
+                        n_dot_f_momentum_density_int);
+  CHECK_ITERABLE_APPROX(*n_dot_num_f_energy_density,
+                        n_dot_f_energy_density_int);
 
   // Now package different exterior data.
   packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
@@ -179,12 +181,13 @@ void apply_hllc(
       make_not_null(&minus_n_dot_num_f_mass_density),
       make_not_null(&minus_n_dot_num_f_momentum_density),
       make_not_null(&minus_n_dot_num_f_energy_density));
-  CHECK(get(*n_dot_num_f_mass_density) == -get(minus_n_dot_num_f_mass_density));
-  CHECK(get(*n_dot_num_f_energy_density) ==
-        -get(minus_n_dot_num_f_energy_density));
+  CHECK_ITERABLE_APPROX(get(*n_dot_num_f_mass_density),
+                        -get(minus_n_dot_num_f_mass_density));
+  CHECK_ITERABLE_APPROX(get(*n_dot_num_f_energy_density),
+                        -get(minus_n_dot_num_f_energy_density));
   for (size_t i = 0; i < Dim; ++i) {
-    CHECK(n_dot_num_f_momentum_density->get(i) ==
-          -minus_n_dot_num_f_momentum_density.get(i));
+    CHECK_ITERABLE_APPROX(n_dot_num_f_momentum_density->get(i),
+                          -minus_n_dot_num_f_momentum_density.get(i));
   }
 }
 

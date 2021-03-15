@@ -1334,11 +1334,13 @@ void test_impl(const Spectral::Quadrature quadrature,
     get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) += 5.0;
   }
 
-  CHECK(ActionTesting::get_databox_tag<
-            component<metavars>,
-            db::add_tag_prefix<::Tags::dt,
-                               typename metavars::system::variables_tag>>(
-            runner, self_id) == expected_dt_evolved_vars);
+  CHECK_VARIABLES_APPROX(
+      SINGLE_ARG(ActionTesting::get_databox_tag<
+                 component<metavars>,
+                 db::add_tag_prefix<::Tags::dt,
+                                    typename metavars::system::variables_tag>>(
+          runner, self_id)),
+      expected_dt_evolved_vars);
 
   const auto mortar_id_east =
       std::make_pair(Direction<Dim>::upper_xi(), east_id);

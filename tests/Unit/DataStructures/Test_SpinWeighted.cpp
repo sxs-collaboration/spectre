@@ -183,7 +183,6 @@ void test_spinweights() {
 
 using SpinWeightedTypePairs =
     tmpl::list<tmpl::list<std::complex<double>, double>,
-               tmpl::list<ComplexDataVector, double>,
                tmpl::list<ComplexDataVector, std::complex<double>>>;
 
 SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",

@@ -322,8 +322,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
       db::AddComputeTags<
           gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial, DataVector>>>(
       expected_spatial_metric, expected_lapse, expected_shift);
-  CHECK(db::get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            second_box) == expected_spacetime_metric);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(
+          db::get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
+              second_box)),
+      expected_spacetime_metric);
 
   // Now let's put the temporal and spatial derivatives of lapse, shift, and
   // spatial metric into the databox and test that we can assemple the

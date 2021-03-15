@@ -255,11 +255,11 @@ void test(const Mesh<Dim>& mesh,
                                   DgFormulation>::apply(make_not_null(&dt_vars),
                                                         mesh, inverse_jacobian,
                                                         fluxes, sources);
-  CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
-        -get(get<Tags::div<Flux1>>(expected_div_fluxes)));
+  CHECK_ITERABLE_APPROX(get(get<Tags::dt<Var1>>(dt_vars)),
+                        -get(get<Tags::div<Flux1>>(expected_div_fluxes)));
   for (size_t i = 0; i < Dim; ++i) {
-    CHECK(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i) ==
-          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i));
+    CHECK_ITERABLE_APPROX(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i),
+                          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i));
   }
 
   // Test with Tags::Source<Var1>
@@ -269,12 +269,12 @@ void test(const Mesh<Dim>& mesh,
                                   DgFormulation>::apply(make_not_null(&dt_vars),
                                                         mesh, inverse_jacobian,
                                                         fluxes, sources);
-  CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
-        -get(get<Tags::div<Flux1>>(expected_div_fluxes)) +
-            get(get<Tags::Source<Var1>>(sources)));
+  CHECK_ITERABLE_APPROX(get(get<Tags::dt<Var1>>(dt_vars)),
+                        -get(get<Tags::div<Flux1>>(expected_div_fluxes)) +
+                            get(get<Tags::Source<Var1>>(sources)));
   for (size_t i = 0; i < Dim; ++i) {
-    CHECK(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i) ==
-          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i));
+    CHECK_ITERABLE_APPROX(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i),
+                          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i));
   }
 
   // Test with Tags::Source<Var2>
@@ -287,12 +287,12 @@ void test(const Mesh<Dim>& mesh,
                                   DgFormulation>::apply(make_not_null(&dt_vars),
                                                         mesh, inverse_jacobian,
                                                         fluxes, sources);
-  CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
+  CHECK_ITERABLE_APPROX(get(get<Tags::dt<Var1>>(dt_vars)),
         -get(get<Tags::div<Flux1>>(expected_div_fluxes)));
   for (size_t i = 0; i < Dim; ++i) {
-    CHECK(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i) ==
-          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i) +
-              get<Tags::Source<Var2<Dim>>>(sources).get(i));
+    CHECK_ITERABLE_APPROX(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i),
+                          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i) +
+                              get<Tags::Source<Var2<Dim>>>(sources).get(i));
   }
 
   // Test with both sources
@@ -300,13 +300,13 @@ void test(const Mesh<Dim>& mesh,
                                   DgFormulation>::apply(make_not_null(&dt_vars),
                                                         mesh, inverse_jacobian,
                                                         fluxes, sources);
-  CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
-        -get(get<Tags::div<Flux1>>(expected_div_fluxes)) +
-            get(get<Tags::Source<Var1>>(sources)));
+  CHECK_ITERABLE_APPROX(get(get<Tags::dt<Var1>>(dt_vars)),
+                        -get(get<Tags::div<Flux1>>(expected_div_fluxes)) +
+                            get(get<Tags::Source<Var1>>(sources)));
   for (size_t i = 0; i < Dim; ++i) {
-    CHECK(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i) ==
-          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i) +
-              get<Tags::Source<Var2<Dim>>>(sources).get(i));
+    CHECK_ITERABLE_APPROX(get<Tags::dt<Var2<Dim>>>(dt_vars).get(i),
+                          -get<Tags::div<Flux2>>(expected_div_fluxes).get(i) +
+                              get<Tags::Source<Var2<Dim>>>(sources).get(i));
   }
 }
 

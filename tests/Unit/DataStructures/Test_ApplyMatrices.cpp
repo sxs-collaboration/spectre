@@ -146,10 +146,11 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
       expected_t0[i + get(get<LocalScalarTag>(expected)).size()] =
           2.0 * expected_t0[i];
     }
-    CHECK(apply_matrices(ref_matrices, t0, source_mesh.extents()) ==
-          expected_t0);
-    CHECK(apply_matrices<DataType>(ref_matrices, t0, source_mesh.extents()) ==
-          expected_t0);
+    CHECK_ITERABLE_APPROX(
+        apply_matrices(ref_matrices, t0, source_mesh.extents()), expected_t0);
+    CHECK_ITERABLE_APPROX(
+        apply_matrices<DataType>(ref_matrices, t0, source_mesh.extents()),
+        expected_t0);
   }
 };
 

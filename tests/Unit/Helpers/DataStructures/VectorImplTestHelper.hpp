@@ -77,6 +77,44 @@ void vector_test_construct_and_assign(
   CHECK(gsl::at(initializer_list_constructed, 0) == generated_value2);
   CHECK(gsl::at(initializer_list_constructed, 1) == generated_value3);
 
+  // check equality operators do not perform approximate comparison
+  CHECK(SINGLE_ARG(
+      initializer_list_constructed ==
+      VectorType{
+          {static_cast<typename VectorType::value_type>(generated_value2),
+           static_cast<typename VectorType::value_type>(generated_value3)}}));
+  CHECK_FALSE(SINGLE_ARG(
+      initializer_list_constructed !=
+      VectorType{
+          {static_cast<typename VectorType::value_type>(generated_value2),
+           static_cast<typename VectorType::value_type>(generated_value3)}}));
+  const VectorType close = (1.0 + 1.0e-14) * initializer_list_constructed;
+  CHECK(initializer_list_constructed != close);
+  CHECK_FALSE(initializer_list_constructed == close);
+  CHECK_ITERABLE_APPROX(initializer_list_constructed, close);
+
+  CHECK(
+      initializer_list_constructed !=
+      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
+  CHECK_FALSE(
+      initializer_list_constructed ==
+      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
+  CHECK(initializer_list_constructed !=
+        static_cast<typename VectorType::value_type>(generated_value2));
+  CHECK(static_cast<typename VectorType::value_type>(generated_value2) !=
+        initializer_list_constructed);
+  CHECK_FALSE(initializer_list_constructed ==
+              static_cast<typename VectorType::value_type>(generated_value2));
+  CHECK_FALSE(static_cast<typename VectorType::value_type>(generated_value2) ==
+              initializer_list_constructed);
+
+  CHECK(
+      (initializer_list_constructed - 1.0e-11 * initializer_list_constructed) !=
+      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
+  CHECK_FALSE(
+      (initializer_list_constructed - 1.0e-11 * initializer_list_constructed) ==
+      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
+
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   typename VectorType::value_type raw_ptr[2] = {generated_value2,
                                                 generated_value3};

@@ -376,7 +376,8 @@ void test_boundary_correction_conservation_impl(
     });
     {
       INFO("Check weak and strong boundary terms match.");
-      CHECK(boundary_corrections == expected_boundary_corrections);
+      CHECK_VARIABLES_APPROX(boundary_corrections,
+                             expected_boundary_corrections);
     }
 
     if (zero_on_smooth_solution == ZeroOnSmoothSolution::Yes) {
