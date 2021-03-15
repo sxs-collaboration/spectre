@@ -3,6 +3,7 @@
 
 #include "Domain/Creators/Cylinder.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <memory>
@@ -11,9 +12,10 @@
 
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -22,60 +24,137 @@ struct Inertial;
 }  // namespace Frame
 
 namespace domain::creators {
-Cylinder::Cylinder(
-    typename InnerRadius::type inner_radius,
-    typename OuterRadius::type outer_radius,
-    typename LowerBound::type lower_bound,
-    typename UpperBound::type upper_bound,
-    typename IsPeriodicInZ::type is_periodic_in_z,
-    typename InitialRefinement::type initial_refinement,
-    typename InitialGridPoints::type initial_number_of_grid_points,
-    typename UseEquiangularMap::type use_equiangular_map,
-    typename RadialPartitioning::type radial_partitioning,
-    typename HeightPartitioning::type height_partitioning,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        boundary_condition,
-    const Options::Context& context)
-    // clang-tidy: trivially copyable
-    : inner_radius_(std::move(inner_radius)),                // NOLINT
-      outer_radius_(std::move(outer_radius)),                // NOLINT
-      lower_bound_(std::move(lower_bound)),                  // NOLINT
-      upper_bound_(std::move(upper_bound)),                  // NOLINT
-      is_periodic_in_z_(std::move(is_periodic_in_z)),        // NOLINT
-      initial_refinement_(                                   // NOLINT
-          std::move(initial_refinement)),                    // NOLINT
-      initial_number_of_grid_points_(                        // NOLINT
-          std::move(initial_number_of_grid_points)),         // NOLINT
-      use_equiangular_map_(use_equiangular_map),             // NOLINT
-      radial_partitioning_(std::move(radial_partitioning)),  // NOLINT
-      height_partitioning_(std::move(height_partitioning)),
-      boundary_condition_(std::move(boundary_condition)) {
-  if (not radial_partitioning_.empty() and boundary_condition_ != nullptr) {
-    PARSE_ERROR(
-        context,
-        "Currently do not support specifying boundary conditions and "
-        "multiple radial partitionings. Support can be added if desired.");
-  }
-  if (not height_partitioning_.empty() and boundary_condition_ != nullptr) {
-    PARSE_ERROR(
-        context,
-        "Currently do not support specifying boundary conditions and multiple "
-        "height partitionings. The domain creator code to support this is "
-        "written but untested. To enable, please add tests.");
-  }
-  using domain::BoundaryConditions::is_periodic;
-  if (is_periodic(boundary_condition_)) {
+Cylinder::Cylinder(double inner_radius, double outer_radius, double lower_bound,
+                   double upper_bound, bool is_periodic_in_z,
+                   size_t initial_refinement,
+                   std::array<size_t, 3> initial_number_of_grid_points,
+                   bool use_equiangular_map,
+                   std::vector<double> radial_partitioning,
+                   std::vector<double> height_partitioning,
+                   const Options::Context& context)
+    : inner_radius_(inner_radius),
+      outer_radius_(outer_radius),
+      lower_bound_(lower_bound),
+      upper_bound_(upper_bound),
+      is_periodic_in_z_(is_periodic_in_z),
+      initial_refinement_(initial_refinement),
+      initial_number_of_grid_points_(initial_number_of_grid_points),
+      use_equiangular_map_(use_equiangular_map),
+      radial_partitioning_(std::move(radial_partitioning)),
+      height_partitioning_(std::move(height_partitioning)) {
+  if (inner_radius_ > outer_radius_) {
     PARSE_ERROR(context,
-                "Periodic boundary conditions are not supported in the radial "
-                "direction. If you need periodic boundary conditions along the "
-                "axis of symmetry, use the is_periodic_in_z option.");
+                "Inner radius must be smaller than outer radius, but inner "
+                "radius is " +
+                    std::to_string(inner_radius_) + " and outer radius is " +
+                    std::to_string(outer_radius_) + ".");
+  }
+  if (lower_bound_ > upper_bound_) {
+    PARSE_ERROR(context,
+                "Lower bound must be smaller than upper bound, but lower "
+                "bound is " +
+                    std::to_string(lower_bound_) + " and upper bound is " +
+                    std::to_string(upper_bound_) + ".");
+  }
+  if (not std::is_sorted(radial_partitioning_.begin(),
+                         radial_partitioning_.end())) {
+    PARSE_ERROR(context,
+                "Specify radial partitioning in ascending order. Specified "
+                "radial partitioning is: " +
+                    get_output(radial_partitioning_));
+  }
+  if (not radial_partitioning_.empty()) {
+    if (radial_partitioning_.front() <= inner_radius_) {
+      PARSE_ERROR(
+          context,
+          "First radial partition must be larger than inner radius, but is: " +
+              std::to_string(inner_radius_));
+    }
+    if (radial_partitioning_.back() >= outer_radius_) {
+      PARSE_ERROR(
+          context,
+          "Last radial partition must be smaller than outer radius, but is: " +
+              std::to_string(outer_radius_));
+    }
+  }
+  if (not std::is_sorted(height_partitioning_.begin(),
+                         height_partitioning_.end())) {
+    PARSE_ERROR(context,
+                "Specify height partitioning in ascending order. Specified "
+                "height partitioning is: " +
+                    get_output(height_partitioning_));
+  }
+  if (not height_partitioning_.empty()) {
+    if (height_partitioning_.front() <= lower_bound_) {
+      PARSE_ERROR(
+          context,
+          "First height partition must be larger than lower bound, but is: " +
+              std::to_string(lower_bound_));
+    }
+    if (height_partitioning_.back() >= upper_bound_) {
+      PARSE_ERROR(
+          context,
+          "Last height partition must be smaller than upper bound, but is: " +
+              std::to_string(upper_bound_));
+    }
+  }
+}
+
+Cylinder::Cylinder(
+    double inner_radius, double outer_radius, double lower_bound,
+    double upper_bound,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        lower_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        upper_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        mantle_boundary_condition,
+    size_t initial_refinement,
+    std::array<size_t, 3> initial_number_of_grid_points,
+    bool use_equiangular_map, std::vector<double> radial_partitioning,
+    std::vector<double> height_partitioning, const Options::Context& context)
+    : Cylinder(inner_radius, outer_radius, lower_bound, upper_bound, false,
+               initial_refinement, initial_number_of_grid_points,
+               use_equiangular_map, std::move(radial_partitioning),
+               std::move(height_partitioning), context) {
+  lower_boundary_condition_ = std::move(lower_boundary_condition);
+  upper_boundary_condition_ = std::move(upper_boundary_condition);
+  mantle_boundary_condition_ = std::move(mantle_boundary_condition);
+
+  using domain::BoundaryConditions::is_periodic;
+  if (is_periodic(lower_boundary_condition_) xor
+      is_periodic(upper_boundary_condition_)) {
+    PARSE_ERROR(context,
+                "Either both lower and upper boundary condition must be "
+                "periodic, or neither.");
+  }
+  if (is_periodic(lower_boundary_condition_) and
+      is_periodic(upper_boundary_condition_)) {
+    is_periodic_in_z_ = true;
+    lower_boundary_condition_ = nullptr;
+    upper_boundary_condition_ = nullptr;
+  }
+  if (is_periodic(mantle_boundary_condition_)) {
+    PARSE_ERROR(context,
+                "A Cylinder can't have periodic boundary conditions in the "
+                "radial direction.");
   }
   using domain::BoundaryConditions::is_none;
-  if (is_none(boundary_condition_)) {
+  if (is_none(lower_boundary_condition_) or
+      is_none(upper_boundary_condition_) or
+      is_none(mantle_boundary_condition_)) {
     PARSE_ERROR(
         context,
         "None boundary condition is not supported. If you would like an "
         "outflow boundary condition, you must use that.");
+  }
+  if (mantle_boundary_condition_ == nullptr or
+      (not is_periodic_in_z_ and (lower_boundary_condition_ == nullptr or
+                                  upper_boundary_condition_ == nullptr))) {
+    PARSE_ERROR(
+        context,
+        "Boundary conditions must not be 'nullptr'. Use the other constructor "
+        "to specify 'is_periodic_in_z' instead of boundary conditions.");
   }
 }
 
@@ -114,7 +193,7 @@ Domain<3> Cylinder::create_domain() const noexcept {
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
+  if (mantle_boundary_condition_ != nullptr) {
     // Note: The first block in each disk is the central cube.
     boundary_conditions_all_blocks.resize((1 + 4 * number_of_shells) *
                                           number_of_discs);
@@ -125,29 +204,26 @@ Domain<3> Cylinder::create_domain() const noexcept {
          ++block_id) {
       if (block_id < (1 + number_of_shells * 4)) {
         boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-            boundary_condition_->get_clone();
+            lower_boundary_condition_->get_clone();
       }
       if (block_id >=
           boundary_conditions_all_blocks.size() - (1 + number_of_shells * 4)) {
         boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-            boundary_condition_->get_clone();
+            upper_boundary_condition_->get_clone();
       }
     }
     // Radial boundary conditions
-    ASSERT(radial_partitioning_.empty(),
-           "We currently do not support multiple radial partitionings with "
-           "boundary conditions. Please add support if you need this feature.");
-    for (size_t block_id = 1; block_id < boundary_conditions_all_blocks.size();
-         ++block_id) {
+    for (size_t block_id = 1 + 4 * (number_of_shells - 1);
+         block_id < boundary_conditions_all_blocks.size(); ++block_id) {
       // clang-tidy thinks we can get division by zero on the modulus operator.
       // NOLINTNEXTLINE
       if (block_id % (1 + 4 * number_of_shells) == 0) {
-        // skip the central cubes. With multiple radial partitionings the inner
-        // radial wedges also need to be skipped.
+        // skip the central cubes and the inner radial wedges
+        block_id += 4 * (number_of_shells - 1);
         continue;
       }
       boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-          boundary_condition_->get_clone();
+          mantle_boundary_condition_->get_clone();
     }
   }
 
