@@ -6,11 +6,15 @@
 #include <cstddef>
 #include <iterator>
 #include <numeric>
+#include <type_traits>
 
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::TensorExpressions {
@@ -27,20 +31,41 @@ namespace TestHelpers::TensorExpressions {
 /// e.g. `ti_a`
 template <typename DataType, typename TensorIndexTypeList, auto& TensorIndex>
 void test_evaluate_rank_1_impl() noexcept {
-  Tensor<DataType, Symmetry<1>, TensorIndexTypeList> R_a(5_st);
+  const size_t used_for_size = 5;
+  using tensor_type = Tensor<DataType, Symmetry<1>, TensorIndexTypeList>;
+  tensor_type R_a(used_for_size);
   std::iota(R_a.begin(), R_a.end(), 0.0);
 
   // L_a = R_a
   // Use explicit type (vs auto) so the compiler checks return type of
   // `evaluate`
-  const Tensor<DataType, Symmetry<1>, TensorIndexTypeList> L_a =
+  const tensor_type L_a_returned =
       ::TensorExpressions::evaluate<TensorIndex>(R_a(TensorIndex));
+  tensor_type L_a_filled{};
+  ::TensorExpressions::evaluate<TensorIndex>(make_not_null(&L_a_filled),
+                                             R_a(TensorIndex));
 
   const size_t dim = tmpl::at_c<TensorIndexTypeList, 0>::dim;
 
   // For L_a = R_a, check that L_i == R_i
   for (size_t i = 0; i < dim; ++i) {
-    CHECK(L_a.get(i) == R_a.get(i));
+    CHECK(L_a_returned.get(i) == R_a.get(i));
+    CHECK(L_a_filled.get(i) == R_a.get(i));
+  }
+
+  // Test with TempTensor for LHS tensor
+  if constexpr (not std::is_same_v<DataType, double>) {
+    // L_a = R_a
+    Variables<tmpl::list<::Tags::TempTensor<1, tensor_type>>> L_a_var{
+        used_for_size};
+    tensor_type& L_a_temp = get<::Tags::TempTensor<1, tensor_type>>(L_a_var);
+    ::TensorExpressions::evaluate<TensorIndex>(make_not_null(&L_a_temp),
+                                               R_a(TensorIndex));
+
+    // For L_a = R_a, check that L_i == R_i
+    for (size_t i = 0; i < dim; ++i) {
+      CHECK(L_a_temp.get(i) == R_a.get(i));
+    }
   }
 }
 
