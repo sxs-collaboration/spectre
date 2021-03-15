@@ -7,6 +7,7 @@ add_subdirectory(ConstraintDamping)
 set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_BjorhusImpl.cpp
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
