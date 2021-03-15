@@ -13,6 +13,7 @@
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -79,7 +80,7 @@ class DormandPrince5 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
-  void dense_update_u(gsl::not_null<Vars*> u,
+  bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
@@ -168,7 +169,13 @@ void DormandPrince5::update_u(
   ASSERT(history->integration_order() == 5,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
-  const size_t substep = history->size() - 1;
+  const size_t substep = (history->end() - 1).time_step_id().substep();
+
+  // Clean up old history
+  if (substep == 0) {
+    history->mark_unneeded(history->end() - 1);
+  }
+
   const auto& u0 = history->begin().value();
   const double dt = time_step.value();
 
@@ -198,22 +205,23 @@ void DormandPrince5::update_u(
   } else {
     ERROR("Substep in DP5 should be one of 0,1,2,3,4,5, not " << substep);
   }
-
-  // Clean up old history
-  if (history->size() == number_of_substeps()) {
-    history->mark_unneeded(history->end());
-  }
 }
 
 template <typename Vars, typename ErrVars, typename DerivVars>
-bool DormandPrince5::update_u(gsl::not_null<Vars*> u,
-                              gsl::not_null<ErrVars*> u_error,
-                              gsl::not_null<History<Vars, DerivVars>*> history,
-                              const TimeDelta& time_step) const noexcept {
+bool DormandPrince5::update_u(
+    const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
+    const gsl::not_null<History<Vars, DerivVars>*> history,
+    const TimeDelta& time_step) const noexcept {
   ASSERT(history->integration_order() == 5,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
-  const size_t substep = history->size() - 1;
+  const size_t substep = (history->end() - 1).time_step_id().substep();
+
+  // Clean up old history
+  if (substep == 0) {
+    history->mark_unneeded(history->end() - 1);
+  }
+
   const auto& u0 = history->begin().value();
   const double dt = time_step.value();
 
@@ -249,27 +257,28 @@ bool DormandPrince5::update_u(gsl::not_null<Vars*> u,
     ERROR("Substep in adaptive DP5 should be one of 0,1,2,3,4,5,6, not "
           << substep);
   }
-
-  // Clean up old history
-  if (history->size() == number_of_substeps_for_error()) {
-    history->mark_unneeded(history->end());
-  }
   return substep == 6;
 }
 
 template <typename Vars, typename DerivVars>
-void DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
+bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
                                     const History<Vars, DerivVars>& history,
                                     const double time) const noexcept {
-  ASSERT(history.size() == number_of_substeps(),
-         "DP5 can only dense output on last substep ("
-             << number_of_substeps() - 1 << "), not substep "
-             << history.size() - 1);
-  const double t0 = history[0].value();
-  const double t_end = history[history.size() - 1].value();
-  // The history does not contain the final step; specifically,
-  // step_end = t0 + c[4] * dt, so dt = (t_end - t0) / c[4]. But since
-  // c[4] = 1.0 for DP5, we don't need to divide by c[4] here.
+  if ((history.end() - 1).time_step_id().substep() != 0) {
+    return false;
+  }
+  const double t0 = history.front().value();
+  const double t_end = history.back().value();
+  if (time == t_end) {
+    // Special case necessary for dense output at the initial time,
+    // before taking a step.
+    *u = (history.end() - 1).value();
+    return true;
+  }
+  const evolution_less<double> before{t_end > t0};
+  if (history.size() == 1 or before(t_end, time)) {
+    return false;
+  }
   const double dt = t_end - t0;
   const double output_fraction = (time - t0) / dt;
   ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
@@ -279,13 +288,8 @@ void DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
                                      << time << ") not within step [" << t0
                                      << ", " << t0 + dt << "]");
 
-  // Get the solution u1 at the final time
   const auto& u0 = history.begin().value();
-  Vars u1 = u0;
-  for (size_t i = 0; i < 6; ++i) {
-    u1 += (gsl::at(b_, i) * dt) *
-          (history.begin() + static_cast<int>(i)).derivative();
-  }
+  const auto& u1 = (history.end() - 1).value();
 
   // We need the following: k1, k3, k4, k5, k6.
   // Here k1 = dt * l1, k3 = dt * l3, etc.
@@ -294,6 +298,7 @@ void DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
   const auto& l4 = (history.begin() + 3).derivative();
   const auto& l5 = (history.begin() + 4).derivative();
   const auto& l6 = (history.begin() + 5).derivative();
+  const auto& l7 = (history.begin() + 6).derivative();
 
   // Compute the updating coefficents, called rcontN in Numerical recipes,
   // that will be reused, so I don't have to compute them more than once.
@@ -301,15 +306,14 @@ void DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
   const Vars rcont3 = dt * l1 - rcont2;
 
   // The formula for dense output is given in Numerical Recipes Sec. 17.2.3.
-  // Note: L(t+dt, u1) after the step is unavailable in the history; so here,
-  // approximate L(t+dt, u1) by l6.
   *u = u0 + output_fraction *
-                (rcont2 +
-                 (1.0 - output_fraction) *
-                     (rcont3 + output_fraction *
-                                   ((rcont2 - dt * l6 - rcont3) +
-                                    ((1.0 - output_fraction) * dt) *
-                                        (d_[0] * l1 + d_[1] * l3 + d_[2] * l4 +
-                                         d_[3] * l5 + (d_[4] + d_[5]) * l6))));
+                (rcont2 + (1.0 - output_fraction) *
+                              (rcont3 + output_fraction *
+                                            ((rcont2 - dt * l7 - rcont3) +
+                                             ((1.0 - output_fraction) * dt) *
+                                                 (d_[0] * l1 + d_[1] * l3 +
+                                                  d_[2] * l4 + d_[3] * l5 +
+                                                  d_[4] * l6 + d_[5] * l7))));
+  return true;
 }
 }  // namespace TimeSteppers
