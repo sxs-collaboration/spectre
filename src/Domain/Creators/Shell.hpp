@@ -10,6 +10,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Options/Options.hpp"
@@ -71,6 +72,13 @@ class Shell : public DomainCreator<3> {
         "Initial number of grid points in [r,angular]."};
   };
 
+  struct TimeDependence {
+    using type =
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
+    static constexpr Options::String help = {
+        "The time dependence of the moving mesh domain."};
+  };
+
   struct UseEquiangularMap {
     using type = bool;
     static constexpr Options::String help = {
@@ -130,7 +138,7 @@ class Shell : public DomainCreator<3> {
   using basic_options =
       tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, AspectRatio, UseLogarithmicMap, WhichWedges,
-                 RadialBlockLayers>;
+                 RadialBlockLayers,TimeDependence>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -169,6 +177,8 @@ class Shell : public DomainCreator<3> {
         typename UseLogarithmicMap::type use_logarithmic_map = false,
         typename WhichWedges::type which_wedges = ShellWedges::All,
         typename RadialBlockLayers::type number_of_layers = 1,
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+            time_dependence = nullptr,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
             inner_boundary_condition = nullptr,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -189,6 +199,10 @@ class Shell : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const
       noexcept override;
 
+  auto functions_of_time() const noexcept -> std::unordered_map<
+      std::string,
+      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+
  private:
   typename InnerRadius::type inner_radius_{};
   typename OuterRadius::type outer_radius_{};
@@ -199,6 +213,8 @@ class Shell : public DomainCreator<3> {
   typename UseLogarithmicMap::type use_logarithmic_map_ = false;
   typename WhichWedges::type which_wedges_ = ShellWedges::All;
   typename RadialBlockLayers::type number_of_layers_ = 1;
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       inner_boundary_condition_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
