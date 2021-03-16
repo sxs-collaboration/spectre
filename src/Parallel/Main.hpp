@@ -389,7 +389,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
   if constexpr (detail::has_initialize_phase_change_decision_data_v<
                 Metavariables>) {
     Metavariables::initialize_phase_change_decision_data::apply(
-        make_not_null(&phase_change_decision_data_), global_cache_proxy_);
+        make_not_null(&phase_change_decision_data_),
+        *global_cache_proxy_.ckLocalBranch());
   }
 }
 
