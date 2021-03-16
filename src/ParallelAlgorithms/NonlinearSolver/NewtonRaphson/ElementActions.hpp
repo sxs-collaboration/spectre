@@ -323,7 +323,7 @@ struct PerformStep {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf(
-          "%s %s(%zu): Perform step with length %f\n", array_index,
+          "%s %s(%zu): Perform step with length: %g\n", array_index,
           Options::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box),
           db::get<NonlinearSolver::Tags::StepLength<OptionsGroup>>(box));

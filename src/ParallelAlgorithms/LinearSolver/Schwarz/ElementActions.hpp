@@ -300,16 +300,19 @@ struct SolveSubdomain {
           subdomain_solve_has_converged.reason() ==
               Convergence::Reason::MaxIterations) {
         Parallel::printf(
-            "%s WARNING: Subdomain solver did not converge in %zu iterations: "
-            "%e -> %e\n",
-            element_id, subdomain_solve_has_converged.num_iterations(),
+            "%s %s(%zu): WARNING: Subdomain solver did not converge in %zu "
+            "iterations: %e -> %e\n",
+            element_id, Options::name<OptionsGroup>(), iteration_id,
+            subdomain_solve_has_converged.num_iterations(),
             subdomain_solve_has_converged.initial_residual_magnitude(),
             subdomain_solve_has_converged.residual_magnitude());
       } else if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                           ::Verbosity::Debug)) {
         Parallel::printf(
-            "%s Subdomain solver converged in %zu iterations (%s): %e -> %e\n",
-            element_id, subdomain_solve_has_converged.num_iterations(),
+            "%s %s(%zu): Subdomain solver converged in %zu iterations (%s): %e "
+            "-> %e\n",
+            element_id, Options::name<OptionsGroup>(), iteration_id,
+            subdomain_solve_has_converged.num_iterations(),
             subdomain_solve_has_converged.reason(),
             subdomain_solve_has_converged.initial_residual_magnitude(),
             subdomain_solve_has_converged.residual_magnitude());

@@ -10,6 +10,7 @@
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GetOutput.hpp"
 
 namespace Convergence {
 
@@ -84,15 +85,16 @@ std::ostream& operator<<(std::ostream& os,
       case Reason::AbsoluteResidual:
         return os
                << "AbsoluteResidual - The residual magnitude has decreased to "
-               << has_converged.criteria_.absolute_residual << " or below ("
-               << has_converged.residual_magnitude_ << ").";
+               << get_output(has_converged.criteria_.absolute_residual)
+               << " or below (" << get_output(has_converged.residual_magnitude_)
+               << ").";
       case Reason::RelativeResidual:
         return os << "RelativeResidual - The residual magnitude has decreased "
                      "to a fraction of "
-                  << has_converged.criteria_.relative_residual
+                  << get_output(has_converged.criteria_.relative_residual)
                   << " of its initial value or below ("
-                  << has_converged.residual_magnitude_ /
-                         has_converged.initial_residual_magnitude_
+                  << get_output(has_converged.residual_magnitude_ /
+                                has_converged.initial_residual_magnitude_)
                   << ").";
       default:
         ERROR("Unknown convergence reason");

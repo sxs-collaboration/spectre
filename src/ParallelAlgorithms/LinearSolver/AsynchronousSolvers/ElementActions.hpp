@@ -81,18 +81,15 @@ void contribute_to_residual_observation(
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square});
   if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
-               ::Verbosity::Verbose)) {
+               ::Verbosity::Debug)) {
     if (iteration_id == 0) {
-      Parallel::printf(
-          "Linear solver '%s' initialized on element %s. Remaining local "
-          "residual: %e\n",
-          Options::name<OptionsGroup>(), get_output(array_index),
-          sqrt(residual_magnitude_square));
+      Parallel::printf("%s %s initialized with local residual: %e\n",
+                       array_index, Options::name<OptionsGroup>(),
+                       sqrt(residual_magnitude_square));
     } else {
       Parallel::printf(
-          "Linear solver '%s' iteration %zu done on element %s. Remaining "
-          "local residual: %e\n",
-          Options::name<OptionsGroup>(), iteration_id, get_output(array_index),
+          "%s %s(%zu) iteration complete. Remaining local residual: %e\n",
+          array_index, Options::name<OptionsGroup>(), iteration_id,
           sqrt(residual_magnitude_square));
     }
   }

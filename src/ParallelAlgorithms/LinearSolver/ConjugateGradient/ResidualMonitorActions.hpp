@@ -77,14 +77,14 @@ struct InitializeResidual {
 
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
-                 ::Verbosity::Verbose)) {
-      Parallel::printf("Linear solver '%s' initialized with residual: %e\n",
+                 ::Verbosity::Quiet)) {
+      Parallel::printf("%s initialized with residual: %e\n",
                        Options::name<OptionsGroup>(), residual_magnitude);
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
       Parallel::printf(
-          "The linear solver '%s' has converged without any iterations: %s\n",
+          "%s has converged without any iterations: %s\n",
           Options::name<OptionsGroup>(), has_converged);
     }
 
@@ -168,16 +168,16 @@ struct UpdateResidual {
 
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
-                 ::Verbosity::Verbose)) {
+                 ::Verbosity::Quiet)) {
       Parallel::printf(
-          "Linear solver '%s' iteration %zu done. Remaining residual: %e\n",
+          "%s(%zu) iteration complete. Remaining residual: %e\n",
           Options::name<OptionsGroup>(), completed_iterations,
           residual_magnitude);
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
       Parallel::printf(
-          "The linear solver '%s' has converged in %zu iterations: %s\n",
+          "%s has converged in %zu iterations: %s\n",
           Options::name<OptionsGroup>(), completed_iterations, has_converged);
     }
 
