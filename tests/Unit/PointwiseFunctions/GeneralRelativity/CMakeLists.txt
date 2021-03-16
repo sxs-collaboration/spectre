@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ComputeSpacetimeQuantities.cpp
   Test_IndexManipulation.cpp
   Test_KerrSchildCoords.cpp
+  Test_ProjectionOperators.cpp
   Test_Ricci.cpp
   Test_Tags.cpp
   Test_WeylElectric.cpp
