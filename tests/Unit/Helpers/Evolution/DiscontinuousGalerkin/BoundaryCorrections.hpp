@@ -26,6 +26,7 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -267,7 +268,7 @@ void test_boundary_correction_conservation_impl(
     for (auto& t : exterior_unit_normal_covector) {
       t *= -1.0;
     }
-    detail::adjust_inverse_spatial_metric(
+    detail::adjust_spatial_metric_or_inverse(
         make_not_null(&get<inv_spatial_metric>(interior_fields_on_face)));
 
     // make the exterior inverse spatial metric be close to the interior one
@@ -290,6 +291,27 @@ void test_boundary_correction_conservation_impl(
         make_not_null(&exterior_unit_normal_covector),
         make_not_null(&exterior_unit_normal_vector),
         get<inv_spatial_metric>(exterior_fields_on_face));
+
+    // if dg_package_data depends on the (not inverted) spatial metric, we also
+    // adjust the spatial metric. Note that for testing purposes, the metric and
+    // inverse metric don't need to be inverses of each other. However, we do
+    // want both to be physically reasonable, i.e., close to flat space.
+    using spatial_metric =
+        gr::Tags::SpatialMetric<FaceDim + 1, Frame::Inertial, DataVector>;
+    if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
+                                        spatial_metric>) {
+      detail::adjust_spatial_metric_or_inverse(
+          make_not_null(&get<spatial_metric>(interior_fields_on_face)));
+      // as for external inverse metric: we get the external metric by slightly
+      // tweaking the internal metric
+      for (size_t i = 0; i < FaceDim + 1; ++i) {
+        for (size_t j = i; j < FaceDim + 1; ++j) {
+          get<spatial_metric>(exterior_fields_on_face).get(i, j) =
+              inv_metric_change_dist(*generator) *
+              get<spatial_metric>(interior_fields_on_face).get(i, j);
+        }
+      }
+    }
   }
 
   std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
@@ -566,7 +588,7 @@ void test_with_python(
   } else {
     using inv_spatial_metric = typename detail::inverse_spatial_metric_tag<
         curved_background>::template f<System>;
-    detail::adjust_inverse_spatial_metric(
+    detail::adjust_spatial_metric_or_inverse(
         make_not_null(&get<inv_spatial_metric>(fields_on_face)));
     detail::normalize_vector_and_covector(
         make_not_null(&unit_normal_covector),

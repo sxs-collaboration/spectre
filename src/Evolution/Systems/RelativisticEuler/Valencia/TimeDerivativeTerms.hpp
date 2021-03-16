@@ -46,7 +46,11 @@ struct TimeDerivativeTerms {
       PressureLapseSqrtDetSpatialMetric, TransportVelocity,
 
       // Source terms
-      TildeSUp, DensitizedStress>;
+      TildeSUp, DensitizedStress,
+
+      // Need lapse, shift, and spatial metric to be projected to the boundary
+      // for Riemann solvers.
+      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>>;
 
   using argument_tags = tmpl::list<
       RelativisticEuler::Valencia::Tags::TildeD,
@@ -63,7 +67,10 @@ struct TimeDerivativeTerms {
       ::Tags::deriv<gr::Tags::Shift<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::deriv<gr::Tags::SpatialMetric<Dim>, tmpl::size_t<Dim>,
                     Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::ExtrinsicCurvature<Dim>>;
+      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::ExtrinsicCurvature<Dim>,
+
+      // For Riemann solvers
+      gr::Tags::SpatialMetric<Dim>>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_d*/,
@@ -84,6 +91,12 @@ struct TimeDerivativeTerms {
       gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
           densitized_stress,
 
+      // For Riemann solvers
+      gsl::not_null<Scalar<DataVector>*> temp_lapse,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> temp_shift,
+      gsl::not_null<tnsr::ii<DataVector, Dim, Frame::Inertial>*>
+          temp_spatial_metric,
+
       // For fluxes and sources
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
@@ -98,7 +111,10 @@ struct TimeDerivativeTerms {
       const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
       const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature,
+
+      // For Riemann solvers
       const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-          extrinsic_curvature) noexcept;
+          spatial_metric) noexcept;
 };
 }  // namespace RelativisticEuler::Valencia

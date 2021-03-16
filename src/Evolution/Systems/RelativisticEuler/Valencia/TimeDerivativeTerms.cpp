@@ -71,6 +71,12 @@ void TimeDerivativeTerms<Dim>::apply(
     const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
         densitized_stress,
 
+    // For Riemann solvers
+    const gsl::not_null<Scalar<DataVector>*> temp_lapse,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> temp_shift,
+    const gsl::not_null<tnsr::ii<DataVector, Dim, Frame::Inertial>*>
+        temp_spatial_metric,
+
     // For fluxes and sources
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
@@ -85,8 +91,14 @@ void TimeDerivativeTerms<Dim>::apply(
     const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
     const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-        extrinsic_curvature) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature,
+
+    // For Riemann solvers
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
+  *temp_lapse = lapse;
+  *temp_shift = shift;
+  *temp_spatial_metric = spatial_metric;
+
   get(*pressure_lapse_sqrt_det_spatial_metric) =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
 

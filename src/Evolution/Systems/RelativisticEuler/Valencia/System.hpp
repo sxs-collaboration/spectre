@@ -65,6 +65,9 @@ struct System {
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+
+  using inverse_spatial_metric_tag =
+      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;
 };
 
 }  // namespace Valencia
