@@ -14,6 +14,7 @@ spectre_target_headers(
   Matrices.hpp
   Mesh.hpp
   Projection.hpp
+  Reconstruction.hpp
   )
 
 spectre_target_sources(
@@ -23,6 +24,7 @@ spectre_target_sources(
   Matrices.cpp
   Mesh.cpp
   Projection.cpp
+  Reconstruction.cpp
   )
 
 target_link_libraries(
