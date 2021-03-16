@@ -244,9 +244,8 @@ struct SolveSubdomain {
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf(
-          "%s " + Options::name<OptionsGroup>() + "(%zu): Solve subdomain\n",
-          element_id, iteration_id);
+      Parallel::printf("%s %s(%zu): Solve subdomain\n", element_id,
+                       Options::name<OptionsGroup>(), iteration_id);
     }
 
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -408,9 +407,8 @@ struct ReceiveOverlapSolution {
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s " + Options::name<OptionsGroup>() +
-                           "(%zu): Receive overlap solution\n",
-                       element_id, iteration_id);
+      Parallel::printf("%s %s(%zu): Receive overlap solution\n", element_id,
+                       Options::name<OptionsGroup>(), iteration_id);
     }
 
     // Add solutions on overlaps to this element's solution in a weighted sum

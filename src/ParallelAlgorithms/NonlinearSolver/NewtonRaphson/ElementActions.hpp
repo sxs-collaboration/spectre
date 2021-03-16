@@ -127,9 +127,8 @@ struct PrepareSolve {
       const ParallelComponent* const /*meta*/) noexcept {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf(
-          "%s " + Options::name<OptionsGroup>() + ": Prepare solve\n",
-          array_index);
+      Parallel::printf("%s %s: Prepare solve\n", array_index,
+                       Options::name<OptionsGroup>());
     }
 
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
@@ -253,8 +252,8 @@ struct PrepareStep {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf(
-          "%s " + Options::name<OptionsGroup>() + "(%zu): Prepare step\n",
-          array_index,
+          "%s %s(%zu): Prepare step\n", array_index,
+          Options::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box) + 1);
     }
 
@@ -324,9 +323,8 @@ struct PerformStep {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf(
-          "%s " + Options::name<OptionsGroup>() +
-              "(%zu): Perform step with length %f\n",
-          array_index,
+          "%s %s(%zu): Perform step with length %f\n", array_index,
+          Options::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box),
           db::get<NonlinearSolver::Tags::StepLength<OptionsGroup>>(box));
     }
@@ -428,8 +426,8 @@ struct Globalize {
       if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                    ::Verbosity::Debug)) {
         Parallel::printf(
-            "%s " + Options::name<OptionsGroup>() + "(%zu): Globalize(%zu)\n",
-            array_index,
+            "%s %s(%zu): Globalize(%zu)\n", array_index,
+            Options::name<OptionsGroup>(),
             db::get<Convergence::Tags::IterationId<OptionsGroup>>(box),
             db::get<NonlinearSolver::Tags::Globalization<
                 Convergence::Tags::IterationId<OptionsGroup>>>(box));
@@ -491,8 +489,8 @@ struct CompleteStep {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf(
-          "%s " + Options::name<OptionsGroup>() + "(%zu): Complete step\n",
-          array_index,
+          "%s %s(%zu): Complete step\n", array_index,
+          Options::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box));
     }
 

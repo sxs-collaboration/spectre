@@ -84,16 +84,16 @@ void contribute_to_residual_observation(
                ::Verbosity::Verbose)) {
     if (iteration_id == 0) {
       Parallel::printf(
-          "Linear solver '" + Options::name<OptionsGroup>() +
-              "' initialized on element %s. Remaining local residual: %e\n",
-          get_output(array_index), sqrt(residual_magnitude_square));
+          "Linear solver '%s' initialized on element %s. Remaining local "
+          "residual: %e\n",
+          Options::name<OptionsGroup>(), get_output(array_index),
+          sqrt(residual_magnitude_square));
     } else {
-      Parallel::printf("Linear solver '" +
-                           Options::name<OptionsGroup>() +
-                           "' iteration %zu done on element %s. Remaining "
-                           "local residual: %e\n",
-                       iteration_id, get_output(array_index),
-                       sqrt(residual_magnitude_square));
+      Parallel::printf(
+          "Linear solver '%s' iteration %zu done on element %s. Remaining "
+          "local residual: %e\n",
+          Options::name<OptionsGroup>(), iteration_id, get_output(array_index),
+          sqrt(residual_magnitude_square));
     }
   }
 }

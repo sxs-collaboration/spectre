@@ -78,17 +78,14 @@ struct InitializeResidual {
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                  ::Verbosity::Verbose)) {
-      Parallel::printf("Linear solver '" +
-                           Options::name<OptionsGroup>() +
-                           "' initialized with residual: %e\n",
-                       residual_magnitude);
+      Parallel::printf("Linear solver '%s' initialized with residual: %e\n",
+                       Options::name<OptionsGroup>(), residual_magnitude);
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
-      Parallel::printf("The linear solver '" +
-                           Options::name<OptionsGroup>() +
-                           "' has converged without any iterations: %s\n",
-                       has_converged);
+      Parallel::printf(
+          "The linear solver '%s' has converged without any iterations: %s\n",
+          Options::name<OptionsGroup>(), has_converged);
     }
 
     Parallel::receive_data<Tags::InitialHasConverged<OptionsGroup>>(
@@ -172,17 +169,16 @@ struct UpdateResidual {
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                  ::Verbosity::Verbose)) {
-      Parallel::printf("Linear solver '" +
-                           Options::name<OptionsGroup>() +
-                           "' iteration %zu done. Remaining residual: %e\n",
-                       completed_iterations, residual_magnitude);
+      Parallel::printf(
+          "Linear solver '%s' iteration %zu done. Remaining residual: %e\n",
+          Options::name<OptionsGroup>(), completed_iterations,
+          residual_magnitude);
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
-      Parallel::printf("The linear solver '" +
-                           Options::name<OptionsGroup>() +
-                           "' has converged in %zu iterations: %s\n",
-                       completed_iterations, has_converged);
+      Parallel::printf(
+          "The linear solver '%s' has converged in %zu iterations: %s\n",
+          Options::name<OptionsGroup>(), completed_iterations, has_converged);
     }
 
     Parallel::receive_data<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(
