@@ -329,6 +329,10 @@ class FocallyLiftedMap {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
+  /// The inverse function is only callable with doubles because the inverse
+  /// might fail if called for a point out of range, and it is unclear
+  /// what should happen if the inverse were to succeed for some points in a
+  /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 

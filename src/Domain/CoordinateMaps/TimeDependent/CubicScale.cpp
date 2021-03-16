@@ -93,10 +93,8 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
 }
 
 template <size_t Dim>
-template <typename T>
-std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>>
-CubicScale<Dim>::inverse(
-    const std::array<T, Dim>& target_coords, const double time,
+std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
+    const std::array<double, Dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const noexcept {
@@ -117,8 +115,7 @@ CubicScale<Dim>::inverse(
     // Construct std::optional to have a default value of an empty array.
     // Doing just result{} would construct a std::optional that doesn't hold a
     // value and so *result would throw an exception.
-    std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> result{
-        std::array<tt::remove_cvref_wrap_t<T>, Dim>{}};
+    std::optional<std::array<double, Dim>> result{std::array<double, Dim>{}};
     for (size_t i = 0; i < Dim; ++i) {
       gsl::at(*result, i) = one_over_a_of_t * gsl::at(target_coords, i);
     }
@@ -146,7 +143,7 @@ CubicScale<Dim>::inverse(
 
   // To invert the map we work in the dimensionless radius,
   // r / R_{outer_boundary}.
-  tt::remove_cvref_wrap_t<T> target_dimensionless_radius =
+  const double target_dimensionless_radius =
       magnitude(target_coords) * one_over_outer_boundary_;
 
   if (UNLIKELY(target_dimensionless_radius == 0.0)) {
@@ -164,8 +161,7 @@ CubicScale<Dim>::inverse(
 
   // For an initial guess, we provide a linearly approximated solution for
   // q, which is just r / (R b).
-  const tt::remove_cvref_wrap_t<T> initial_guess =
-      target_dimensionless_radius / b_of_t;
+  const double initial_guess = target_dimensionless_radius / b_of_t;
   const double cubic_coef_a = (b_of_t - a_of_t);
 
   // Solve the modified equation:
@@ -199,7 +195,7 @@ CubicScale<Dim>::inverse(
       RootFinder::newton_raphson(cubic_and_deriv, initial_guess, 0.0, 1.0, 14) /
       target_dimensionless_radius;
 
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<double, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = scale_factor * gsl::at(target_coords, i);
   }
@@ -415,25 +411,6 @@ bool operator==(const CubicScale<Dim>& lhs,
 
 #define INSTANTIATE(_, data)                                                 \
   template class CubicScale<DIM(data)>;                                      \
-  template std::optional<                                                    \
-      std::array<tt::remove_cvref_wrap_t<double>, DIM(data)>>                \
-  CubicScale<DIM(data)>::inverse(                                            \
-      const std::array<double, DIM(data)>& target_coords, const double time, \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
-  template std::optional<std::array<                                         \
-      tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>,         \
-      DIM(data)>>                                                            \
-  CubicScale<DIM(data)>::inverse(                                            \
-      const std::array<std::reference_wrapper<const double>, DIM(data)>&     \
-          target_coords,                                                     \
-      const double time,                                                     \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
   template bool operator==(const CubicScale<DIM(data)>&,                     \
                            const CubicScale<DIM(data)>&) noexcept;
 

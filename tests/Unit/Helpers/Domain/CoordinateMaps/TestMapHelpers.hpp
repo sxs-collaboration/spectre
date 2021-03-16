@@ -385,6 +385,7 @@ void test_coordinate_map_argument_types(
                  args...);
 }
 
+// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse map gives expected results
@@ -394,6 +395,20 @@ void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) noexcept {
   CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).value());
 }
+
+template <typename Map, typename T>
+void test_inverse_map(
+    const Map& map, const std::array<T, Map::dim>& test_point,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
+  CHECK_ITERABLE_APPROX(
+      test_point, map.inverse(map(test_point, time, functions_of_time), time,
+                              functions_of_time)
+                      .value());
+}
+// @}
 
 /*!
  * \ingroup TestingFrameworkGroup
