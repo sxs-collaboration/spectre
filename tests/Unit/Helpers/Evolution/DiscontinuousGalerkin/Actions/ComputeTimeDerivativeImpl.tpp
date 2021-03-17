@@ -958,8 +958,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                                  LocalTimeStepping, UseMovingMesh, HasPrims>;
   Parallel::register_derived_classes_with_charm<
       StepChooser<typename metavars::step_choosers>>();
-  Parallel::register_derived_classes_with_charm<StepController>();
   Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
 
   using system = typename metavars::system;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

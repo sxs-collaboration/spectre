@@ -16,7 +16,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepController>();
+  Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
   const auto check = [](const auto& bf) noexcept {
     const Slab slab(1., 4.);
     CHECK(bf.choose_step(slab.start(), 4.) == slab.duration());
@@ -34,8 +34,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
   };
   check(StepControllers::BinaryFraction{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_creation<std::unique_ptr<StepController>>(
-          "BinaryFraction")));
+      TestHelpers::test_factory_creation<
+          StepController, StepControllers::BinaryFraction>("BinaryFraction")));
 }
 
 // [[OutputRegex, Not at a binary-fraction time within slab]]

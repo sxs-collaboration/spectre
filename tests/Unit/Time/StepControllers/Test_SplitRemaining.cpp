@@ -15,7 +15,7 @@
 #include "Time/Time.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepController>();
+  Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
   const auto check = [](const auto& sr) noexcept {
     const Slab slab(1., 4.);
     CHECK(sr.choose_step(slab.start(), 4.) == slab.duration());
@@ -35,6 +35,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   };
   check(StepControllers::SplitRemaining{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_creation<std::unique_ptr<StepController>>(
-          "SplitRemaining")));
+      TestHelpers::test_factory_creation<
+          StepController, StepControllers::SplitRemaining>("SplitRemaining")));
 }

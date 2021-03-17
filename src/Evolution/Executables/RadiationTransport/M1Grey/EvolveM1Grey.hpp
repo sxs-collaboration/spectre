@@ -42,6 +42,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -81,6 +82,7 @@
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
+#include "Time/StepControllers/Factory.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSequence.hpp"
@@ -89,6 +91,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -183,6 +186,12 @@ struct EvolutionMetavars {
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepController, StepControllers::standard_step_controllers>>;
+  };
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
@@ -365,14 +374,14 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         StepChooser<metavariables::slab_choosers>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
-    &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         Trigger<metavariables::triggers>>,
     &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>};
+        PhaseChange<metavariables::phase_changes>>,
+    &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

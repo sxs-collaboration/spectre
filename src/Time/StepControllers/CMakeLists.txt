@@ -15,6 +15,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BinaryFraction.hpp
+  Factory.hpp
   FullSlab.hpp
   SimpleTimes.hpp
   SplitRemaining.hpp

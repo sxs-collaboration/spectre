@@ -121,7 +121,7 @@ void check(const bool time_runs_forward,
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   Parallel::register_derived_classes_with_charm<StepChooser<step_choosers>>();
-  Parallel::register_derived_classes_with_charm<StepController>();
+  Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
   check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
