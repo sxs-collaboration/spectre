@@ -35,4 +35,12 @@ template <typename Base>
 void register_derived_classes_with_charm() noexcept {
   register_classes_with_charm(typename Base::creatable_classes{});
 }
+
+/// Register all classes in Metavariables::factory_classes
+template <typename Metavariables>
+void register_factory_classes_with_charm() noexcept {
+  register_classes_with_charm(
+      tmpl::flatten<tmpl::values_as_sequence<
+          typename Metavariables::factory_creation::factory_classes>>{});
+}
 }  // namespace Parallel
