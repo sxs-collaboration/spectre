@@ -52,6 +52,7 @@ target_link_libraries(
   INTERFACE
   Boost::boost
   DataStructures
+  EventsAndTriggers
   Informer
   Options
   PUBLIC

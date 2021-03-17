@@ -20,13 +20,16 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -81,7 +84,7 @@ using SomeEvent = ::Registration::Registrar<SomeEvent>;
 }  // namespace Registrars
 
 using events_and_triggers_tag =
-    Tags::EventsAndTriggers<tmpl::list<Registrars::SomeEvent>, tmpl::list<>>;
+    Tags::EventsAndTriggers<tmpl::list<Registrars::SomeEvent>>;
 
 template <typename Metavariables>
 struct Component {
@@ -169,20 +172,25 @@ struct MockObserverComponent {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, Triggers::logical_triggers>>;
+  };
   enum class Phase { Initialization, Testing, Exit };
 };
 
 using EventsAndTriggersType =
-    EventsAndTriggers<tmpl::list<Registrars::SomeEvent>, tmpl::list<>>;
+    EventsAndTriggers<tmpl::list<Registrars::SomeEvent>>;
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
   // Test pup
   Parallel::register_derived_classes_with_charm<
       Event<tmpl::list<Registrars::SomeEvent>>>();
-  Parallel::register_derived_classes_with_charm<Trigger<tmpl::list<>>>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   const auto events_and_triggers =
-      TestHelpers::test_creation<EventsAndTriggersType>(
+      TestHelpers::test_creation<EventsAndTriggersType, Metavariables>(
           "? Not: Always\n"
           ": - SomeEvent:\n"
           "      SubfileName: element_data\n");

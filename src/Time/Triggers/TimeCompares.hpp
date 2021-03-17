@@ -10,7 +10,6 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -20,18 +19,10 @@ struct Time;
 /// \endcond
 
 namespace Triggers {
-template <typename TriggerRegistrars>
-class TimeCompares;
-
-namespace Registrars {
-using TimeCompares = Registration::Registrar<Triggers::TimeCompares>;
-}  // namespace Registrars
-
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger based on a comparison with the time.
-template <typename TriggerRegistrars = tmpl::list<Registrars::TimeCompares>>
-class TimeCompares : public Trigger<TriggerRegistrars> {
+class TimeCompares : public Trigger {
  public:
   /// \cond
   TimeCompares() = default;
@@ -74,9 +65,4 @@ class TimeCompares : public Trigger<TriggerRegistrars> {
   Options::Comparator comparator_{};
   double time_{};
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID TimeCompares<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Triggers

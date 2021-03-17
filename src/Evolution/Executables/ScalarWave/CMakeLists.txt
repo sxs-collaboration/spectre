@@ -6,6 +6,7 @@ set(LIBS_TO_LINK
   DiscontinuousGalerkin
   DomainCreators
   Events
+  EventsAndTriggers
   Evolution
   IO
   Informer

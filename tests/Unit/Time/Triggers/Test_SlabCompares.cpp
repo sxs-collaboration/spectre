@@ -10,41 +10,58 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Triggers/SlabCompares.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE("Unit.Time.Triggers.SlabCompares", "[Unit][Time]") {
-  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::SlabCompares>>;
-  Parallel::register_derived_classes_with_charm<TriggerType>();
+namespace {
+struct Metavariables {
+  using component_list = tmpl::list<>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::SlabCompares>>>;
+  };
+};
+}  // namespace
 
-  const auto trigger = TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
-      "SlabCompares:\n"
-      "  Comparison: GreaterThan\n"
-      "  Value: 3");
+SPECTRE_TEST_CASE("Unit.Time.Triggers.SlabCompares", "[Unit][Time]") {
+  Parallel::register_factory_classes_with_charm<Metavariables>();
+
+  const auto trigger =
+      TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
+          "SlabCompares:\n"
+          "  Comparison: GreaterThan\n"
+          "  Value: 3");
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 
   const Slab slab(0., 1.);
   {
-    const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(
-        TimeStepId(true, 2, slab.start()));
+    const auto box = db::create<db::AddSimpleTags<
+        Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
+        Metavariables{}, TimeStepId(true, 2, slab.start()));
     CHECK(not trigger->is_triggered(box));
     CHECK(not sent_trigger->is_triggered(box));
   }
   {
-    const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(
-        TimeStepId(true, 3, slab.start()));
+    const auto box = db::create<db::AddSimpleTags<
+        Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
+        Metavariables{}, TimeStepId(true, 3, slab.start()));
     CHECK(not trigger->is_triggered(box));
     CHECK(not sent_trigger->is_triggered(box));
   }
   {
-    const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(
-        TimeStepId(true, 4, slab.start()));
+    const auto box = db::create<db::AddSimpleTags<
+        Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
+        Metavariables{}, TimeStepId(true, 4, slab.start()));
     CHECK(trigger->is_triggered(box));
     CHECK(sent_trigger->is_triggered(box));
   }

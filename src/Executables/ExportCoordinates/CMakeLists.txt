@@ -4,6 +4,7 @@
 set(LIBS_TO_LINK
   CoordinateMaps
   DomainCreators
+  EventsAndTriggers
   Evolution
   Informer
   IO

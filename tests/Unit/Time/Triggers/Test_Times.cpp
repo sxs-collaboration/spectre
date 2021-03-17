@@ -14,7 +14,9 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -22,11 +24,22 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Triggers/Times.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace {
+struct Metavariables {
+  using component_list = tmpl::list<>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Times>>>;
+  };
+};
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
-  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::Times>>;
-  Parallel::register_derived_classes_with_charm<TriggerType>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
   const auto check = [](const double time, const double slab_size,
@@ -40,14 +53,14 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
     // based on the correct slab.
     const TimeStepId time_id(false, 12, slab.start() + slab.duration() / 13);
 
-    const std::unique_ptr<TriggerType> trigger =
-        std::make_unique<Triggers::Times<>>(
-            std::make_unique<TimeSequences::Specified<double>>(trigger_times));
+    const std::unique_ptr<Trigger> trigger = std::make_unique<Triggers::Times>(
+        std::make_unique<TimeSequences::Specified<double>>(trigger_times));
     const auto sent_trigger = serialize_and_deserialize(trigger);
 
-    const auto box =
-        db::create<db::AddSimpleTags<Tags::TimeStepId, Tags::Time>>(time_id,
-                                                                    time);
+    const auto box = db::create<
+        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                          Tags::TimeStepId, Tags::Time>>(
+        Metavariables{}, time_id, time);
     CHECK(trigger->is_triggered(box) == expected);
     CHECK(sent_trigger->is_triggered(box) == expected);
   };
@@ -70,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
   check(inaccurate_1, 1.0, {1.0}, false);
   check(inaccurate_1, 1.0e5, {1.0}, true);
 
-  TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
+  TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
       "Times:\n"
       "  Specified:\n"
       "    Values: [2.0, 1.0, 3.0, 2.0]");

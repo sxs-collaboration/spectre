@@ -7,6 +7,7 @@ set(LIBS_TO_LINK
   BurgersSolutions
   DiscontinuousGalerkin
   DomainCreators
+  EventsAndTriggers
   Evolution
   IO
   Informer

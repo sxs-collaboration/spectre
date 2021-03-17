@@ -19,14 +19,12 @@
 
 namespace DenseTriggers {
 /// \cond
-template <typename TriggerRegistrars, typename DenseTriggerRegistrars>
+template <typename DenseTriggerRegistrars>
 class Filter;
 /// \endcond
 
 namespace Registrars {
-template <typename TriggerRegistrars>
-using Filter =
-    Registration::Registrar<DenseTriggers::Filter, TriggerRegistrars>;
+using Filter = Registration::Registrar<DenseTriggers::Filter>;
 }  // namespace Registrars
 
 /// \ingroup EventsAndTriggersGroup
@@ -35,7 +33,7 @@ using Filter =
 /// For example, to trigger every 10 starting at 100, one could use
 ///
 /// \snippet Test_Filter.cpp example
-template <typename TriggerRegistrars, typename DenseTriggerRegistrars>
+template <typename DenseTriggerRegistrars>
 class Filter : public DenseTrigger<DenseTriggerRegistrars> {
  public:
   /// \cond
@@ -56,7 +54,7 @@ class Filter : public DenseTrigger<DenseTriggerRegistrars> {
 
   struct FilterOption {
     static std::string name() noexcept { return "Filter"; }
-    using type = std::unique_ptr<Trigger<TriggerRegistrars>>;
+    using type = std::unique_ptr<Trigger>;
     static constexpr Options::String help = "Non-dense trigger to filter with";
   };
 
@@ -65,7 +63,7 @@ class Filter : public DenseTrigger<DenseTriggerRegistrars> {
       "Filter activations of a dense trigger using a non-dense trigger.";
 
   explicit Filter(std::unique_ptr<DenseTrigger<DenseTriggerRegistrars>> trigger,
-                  std::unique_ptr<Trigger<TriggerRegistrars>> filter) noexcept
+                  std::unique_ptr<Trigger> filter) noexcept
       : trigger_(std::move(trigger)), filter_(std::move(filter)) {}
 
   using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
@@ -95,12 +93,11 @@ class Filter : public DenseTrigger<DenseTriggerRegistrars> {
 
  private:
   std::unique_ptr<DenseTrigger<DenseTriggerRegistrars>> trigger_{};
-  std::unique_ptr<Trigger<TriggerRegistrars>> filter_{};
+  std::unique_ptr<Trigger> filter_{};
 };
 
 /// \cond
-template <typename TriggerRegistrars, typename DenseTriggerRegistrars>
-PUP::able::PUP_ID Filter<TriggerRegistrars, DenseTriggerRegistrars>::my_PUP_ID =
-    0;  // NOLINT
+template <typename DenseTriggerRegistrars>
+PUP::able::PUP_ID Filter<DenseTriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace DenseTriggers

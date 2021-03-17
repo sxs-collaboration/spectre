@@ -26,6 +26,7 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
@@ -38,7 +39,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -181,12 +184,11 @@ struct Metavariables {
   // A placeholder system for the domain creators
   struct system {};
 
-  using triggers = Triggers::time_triggers;
   using events = tmpl::list<>;
 
   using const_global_cache_tags =
       tmpl::list<Tags::TimeStepper<TimeStepper>,
-                 Tags::EventsAndTriggers<events, triggers>>;
+                 Tags::EventsAndTriggers<events>>;
 
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "
@@ -194,6 +196,13 @@ struct Metavariables {
       "instance. Also outputs the determinant of the inverse jacobian as a "
       "diagnostic of Domain quality: values far from unity indicate "
       "compression or expansion of the grid."};
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
+                                         Triggers::time_triggers>>>;
+  };
 
   enum class Phase { Initialization, RegisterWithObserver, Export, Exit };
 
@@ -268,8 +277,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        Trigger<metavariables::triggers>>};
+    &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 /// \endcond

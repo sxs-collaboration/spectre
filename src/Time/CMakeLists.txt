@@ -38,6 +38,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   ErrorHandling
+  EventsAndTriggers
   Options
   Utilities
   )

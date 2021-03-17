@@ -14,31 +14,46 @@
 #include "Elliptic/Triggers/EveryNIterations.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
 struct IterationIdTag : db::SimpleTag {
   using type = size_t;
 };
+
+struct Metavariables {
+  using component_list = tmpl::list<>;
+  struct factory_creation :
+      tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        Trigger,
+        tmpl::list<elliptic::Triggers::EveryNIterations<IterationIdTag>>>>;
+  };
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Triggers.EveryNIterations",
                   "[Unit][Elliptic]") {
-  using TriggerType = Trigger<tmpl::list<
-      elliptic::Triggers::Registrars::EveryNIterations<IterationIdTag>>>;
-  Parallel::register_derived_classes_with_charm<TriggerType>();
+  Parallel::register_classes_with_charm<
+      elliptic::Triggers::EveryNIterations<IterationIdTag>>();
 
-  const auto trigger = TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
-      "EveryNIterations:\n"
-      "  N: 3\n"
-      "  Offset: 5");
+  const auto trigger =
+      TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
+          "EveryNIterations:\n"
+          "  N: 3\n"
+          "  Offset: 5");
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 
-  auto box = db::create<db::AddSimpleTags<IterationIdTag>>(size_t{0});
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables>, IterationIdTag>>(
+      Metavariables{}, size_t{0});
   for (const bool expected :
        {false, false, false, false, false, true, false, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);

@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <pup.h>
+#include <pup_stl.h>
 #include <string>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSequence.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -27,13 +27,6 @@ struct TimeStep;
 /// \endcond
 
 namespace Triggers {
-template <typename TriggerRegistrars>
-class NearTimes;
-
-namespace Registrars {
-using NearTimes = Registration::Registrar<Triggers::NearTimes>;
-}  // namespace Registrars
-
 namespace NearTimes_enums {
 enum class Unit { Time, Slab, Step };
 enum class Direction { Before, After, Both };
@@ -47,8 +40,7 @@ enum class Direction { Before, After, Both };
 /// slabs or steps are approximate.
 ///
 /// \see Times
-template <typename TriggerRegistrars = tmpl::list<Registrars::NearTimes>>
-class NearTimes : public Trigger<TriggerRegistrars> {
+class NearTimes : public Trigger {
  public:
   /// \cond
   NearTimes() = default;
@@ -148,11 +140,6 @@ class NearTimes : public Trigger<TriggerRegistrars> {
   Unit unit_{};
   Direction direction_{};
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID NearTimes<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Triggers
 
 template <>

@@ -16,7 +16,6 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Utilities.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -27,13 +26,6 @@ struct TimeStepId;
 /// \endcond
 
 namespace Triggers {
-template <typename TriggerRegistrars>
-class Times;
-
-namespace Registrars {
-using Times = Registration::Registrar<Triggers::Times>;
-}  // namespace Registrars
-
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger at particular times.
@@ -41,8 +33,7 @@ using Times = Registration::Registrar<Triggers::Times>;
 /// \warning This trigger will only fire if it is actually checked at
 /// the times specified.  The StepToTimes StepChooser can be useful
 /// for this.
-template <typename TriggerRegistrars = tmpl::list<Registrars::Times>>
-class Times : public Trigger<TriggerRegistrars> {
+class Times : public Trigger {
  public:
   /// \cond
   Times() = default;
@@ -74,18 +65,13 @@ class Times : public Trigger<TriggerRegistrars> {
  private:
   std::unique_ptr<TimeSequence<double>> times_;
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID Times<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Triggers
 
-template <typename TriggerRegistrars>
-struct Options::create_from_yaml<Triggers::Times<TriggerRegistrars>> {
+template <>
+struct Options::create_from_yaml<Triggers::Times> {
   template <typename Metavariables>
-  static Triggers::Times<TriggerRegistrars> create(const Option& options) {
-    return Triggers::Times<TriggerRegistrars>(
+  static Triggers::Times create(const Option& options) {
+    return Triggers::Times(
         options.parse_as<std::unique_ptr<TimeSequence<double>>>());
   }
 };

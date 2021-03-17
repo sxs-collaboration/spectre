@@ -115,10 +115,9 @@ namespace OptionTags {
 ///     - - PhaseChange3
 ///       - PhaseChange4
 /// ```
-template <typename PhaseChangeRegistrars, typename TriggerRegistrars>
+template <typename PhaseChangeRegistrars>
 struct PhaseChangeAndTriggers {
   using phase_change_type = PhaseChange<PhaseChangeRegistrars>;
-  using trigger_type = Trigger<TriggerRegistrars>;
   static constexpr Options::String help{
       "A collection of pairs of triggers and collections of phase change "
       "objects to determine runtime phase control-flow decisions. The order of "
@@ -126,7 +125,7 @@ struct PhaseChangeAndTriggers {
       "by the Main chare during phase change arbitration."};
 
   using type =
-      std::vector<std::pair<std::unique_ptr<trigger_type>,
+      std::vector<std::pair<std::unique_ptr<Trigger>,
                             std::vector<std::unique_ptr<phase_change_type>>>>;
 };
 }  // namespace OptionTags
@@ -135,17 +134,15 @@ namespace Tags {
 /// Tag for the collection of triggers that indicate synchronization points at
 /// which phase changes should be considered, and the associated `PhaseChange`
 /// objects for making the phase change decisions.
-template <typename PhaseChangeRegistrars, typename TriggerRegistrars>
+template <typename PhaseChangeRegistrars>
 struct PhaseChangeAndTriggers : db::SimpleTag {
   using phase_change_type = PhaseChange<PhaseChangeRegistrars>;
-  using trigger_type = Trigger<TriggerRegistrars>;
   using type =
-      std::vector<std::pair<std::unique_ptr<trigger_type>,
+      std::vector<std::pair<std::unique_ptr<Trigger>,
                             std::vector<std::unique_ptr<phase_change_type>>>>;
 
   using option_tags =
-      tmpl::list<OptionTags::PhaseChangeAndTriggers<PhaseChangeRegistrars,
-                                                    TriggerRegistrars>>;
+      tmpl::list<OptionTags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(
       const type& phase_control_and_triggers) noexcept {

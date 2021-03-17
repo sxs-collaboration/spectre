@@ -11,6 +11,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -18,6 +19,7 @@
 #include "Time/Triggers/Slabs.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -90,22 +92,29 @@ struct TestCreatable : public PhaseChange<PhaseChangeRegistrars> {
 template <size_t Val, typename PhaseChangeRegistrars>
 PUP::able::PUP_ID TestCreatable<Val, PhaseChangeRegistrars>::my_PUP_ID = 0;
 
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Slabs>>>;
+  };
+};
+
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
                   "[Unit][Parallel]") {
   using phase_changes = tmpl::list<Registrars::TestCreatable<1_st>,
                                    Registrars::TestCreatable<2_st>>;
-  using triggers = tmpl::list<Triggers::Registrars::Slabs>;
   Parallel::register_derived_classes_with_charm<PhaseChange<phase_changes>>();
-  Parallel::register_derived_classes_with_charm<Trigger<triggers>>();
   Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
+  Parallel::register_classes_with_charm<Triggers::Slabs>();
 
   TestHelpers::db::test_simple_tag<
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>(
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>(
       "PhaseChangeAndTriggers");
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
-      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes,
-                                                       triggers>>(
+      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes>,
+      Metavariables>(
       " - - Slabs:\n"
       "       EvenlySpaced:\n"
       "         Interval: 2\n"

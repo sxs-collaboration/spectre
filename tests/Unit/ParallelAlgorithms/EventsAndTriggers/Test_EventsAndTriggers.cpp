@@ -14,6 +14,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -25,13 +26,13 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <pup.h>
 
 namespace {
-using events_and_triggers_tag =
-    Tags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
+using events_and_triggers_tag = Tags::EventsAndTriggers<tmpl::list<>>;
 
 template <typename Metavariables>
 struct Component {
@@ -46,16 +47,21 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, Triggers::logical_triggers>>;
+  };
   enum class Phase { Initialization, Testing, Exit };
 };
 
-using EventsAndTriggersType = EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
+using EventsAndTriggersType = EventsAndTriggers<tmpl::list<>>;
 
 void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
                              const bool expected) {
   // Test pup
   Parallel::register_derived_classes_with_charm<Event<tmpl::list<>>>();
-  Parallel::register_derived_classes_with_charm<Trigger<tmpl::list<>>>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   using my_component = Component<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
@@ -71,8 +77,8 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
 
 void check_trigger(const bool expected, const std::string& trigger_string) {
   // Test factory
-  std::unique_ptr<Trigger<tmpl::list<>>> trigger =
-      TestHelpers::test_creation<std::unique_ptr<Trigger<tmpl::list<>>>>(
+  auto trigger =
+      TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
           trigger_string);
 
   EventsAndTriggersType::Storage events_and_triggers_map;
@@ -149,7 +155,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers.creation",
                   "[Unit][Evolution]") {
   const auto events_and_triggers =
-      TestHelpers::test_creation<EventsAndTriggersType>(
+      TestHelpers::test_creation<EventsAndTriggersType, Metavariables>(
           "? Not: Always\n"
           ": - Completion\n"
           "? Or:\n"
