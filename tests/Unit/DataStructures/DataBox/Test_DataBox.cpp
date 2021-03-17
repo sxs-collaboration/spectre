@@ -351,13 +351,14 @@ void test_databox() noexcept {
         std::make_unique<int>(3));
     using DbTags = decltype(box)::tags_list;
     static_assert(
-        std::is_same_v<db::detail::const_item_type<test_databox_tags::Pointer>,
-                       const int&>,
+        std::is_same_v<
+            db::detail::const_item_type<test_databox_tags::Pointer, DbTags>,
+            const int&>,
         "Wrong type for const_item_type on unique_ptr simple item");
     static_assert(
         std::is_same_v<
             decltype(db::get<test_databox_tags::Pointer>(box)),
-            db::detail::const_item_type<test_databox_tags::Pointer>>,
+            db::detail::const_item_type<test_databox_tags::Pointer, DbTags>>,
         "Wrong type for get on unique_ptr simple item");
     CHECK(db::get<test_databox_tags::Pointer>(box) == 3);
 
@@ -374,14 +375,15 @@ void test_databox() noexcept {
     CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
 
     static_assert(
-        std::is_same_v<
-            db::detail::const_item_type<test_databox_tags::PointerToCounter>,
-            const int&>,
+        std::is_same_v<db::detail::const_item_type<
+                           test_databox_tags::PointerToCounter, DbTags>,
+                       const int&>,
         "Wrong type for const_item_type on unique_ptr compute item");
     static_assert(
         std::is_same_v<
             decltype(db::get<test_databox_tags::PointerToCounter>(box)),
-            db::detail::const_item_type<test_databox_tags::PointerToCounter>>,
+            db::detail::const_item_type<test_databox_tags::PointerToCounter,
+                                        DbTags>>,
         "Wrong type for get on unique_ptr compute item");
     CHECK(db::get<test_databox_tags::PointerToCounter>(box) == 4);
 
@@ -398,15 +400,14 @@ void test_databox() noexcept {
         "Wrong type for get on unique_ptr compute item by base");
     CHECK(db::get<test_databox_tags::PointerToCounterBase>(box) == 4);
 
+    static_assert(std::is_same_v<db::detail::const_item_type<
+                                     test_databox_tags::PointerToSum, DbTags>,
+                                 const int&>,
+                  "Wrong type for const_item_type on unique_ptr");
     static_assert(
-        std::is_same_v<
-            db::detail::const_item_type<test_databox_tags::PointerToSum>,
-            const int&>,
-        "Wrong type for const_item_type on unique_ptr");
-    static_assert(
-        std::is_same_v<
-            decltype(db::get<test_databox_tags::PointerToSum>(box)),
-            db::detail::const_item_type<test_databox_tags::PointerToSum>>,
+        std::is_same_v<decltype(db::get<test_databox_tags::PointerToSum>(box)),
+                       db::detail::const_item_type<
+                           test_databox_tags::PointerToSum, DbTags>>,
         "Wrong type for get on unique_ptr");
     CHECK(db::get<test_databox_tags::PointerToSum>(box) == 8);
   }
@@ -531,34 +532,18 @@ void test_mutate() noexcept {
 
   db::mutate<test_databox_tags::Pointer>(
       make_not_null(&original_box), [](auto p) noexcept {
+        static_assert(std::is_same_v<typename test_databox_tags::Pointer::type,
+                                     std::unique_ptr<int>>,
+                      "Wrong type for item_type on unique_ptr");
         static_assert(
-            std::is_same_v<db::detail::item_type<test_databox_tags::Pointer>,
-                           std::unique_ptr<int>>,
-            "Wrong type for item_type on unique_ptr");
-        static_assert(
-            std::is_same_v<decltype(p), gsl::not_null<db::detail::item_type<
-                                            test_databox_tags::Pointer>*>>,
+            std::is_same_v<
+                decltype(p),
+                gsl::not_null<typename test_databox_tags::Pointer::type*>>,
             "Wrong type for mutate on unique_ptr");
         CHECK(**p == 3);
         *p = std::make_unique<int>(5);
       });
-  db::mutate<test_databox_tags::PointerBase>(
-      make_not_null(&original_box), [](auto p) noexcept {
-        using DbTags = decltype(original_box)::tags_list;
-        static_assert(
-            std::is_same_v<
-                db::detail::item_type<test_databox_tags::PointerBase, DbTags>,
-                std::unique_ptr<int>>,
-            "Wrong type for item_type on unique_ptr by base");
-        static_assert(
-            std::is_same_v<decltype(p),
-                           gsl::not_null<db::detail::item_type<
-                               test_databox_tags::PointerBase, DbTags>*>>,
-            "Wrong type for mutate on unique_ptr by base");
-        CHECK(**p == 5);
-        *p = std::make_unique<int>(7);
-      });
-  CHECK(db::get<test_databox_tags::Pointer>(original_box) == 7);
+  CHECK(db::get<test_databox_tags::Pointer>(original_box) == 5);
 }
 }  // namespace
 
@@ -1279,7 +1264,7 @@ struct TestDataboxMutateApply {
 /// [mutate_apply_struct_definition_example]
 
 struct TestDataboxMutateApplyBase {
-  using return_tags = tmpl::list<test_databox_tags::ScalarTagBase>;
+  using return_tags = tmpl::list<test_databox_tags::ScalarTag>;
   using argument_tags = tmpl::list<test_databox_tags::Tag2Base>;
 
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
@@ -1302,7 +1287,7 @@ struct PointerMutateApply {
 };
 
 struct PointerMutateApplyBase {
-  using return_tags = tmpl::list<test_databox_tags::PointerBase>;
+  using return_tags = tmpl::list<test_databox_tags::Pointer>;
   using argument_tags = tmpl::list<test_databox_tags::PointerToCounterBase>;
   static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
                     const int& compute_base) noexcept {
@@ -1371,7 +1356,7 @@ void test_mutate_apply() noexcept {
         },
         make_not_null(&box));
     /// [mutate_apply_lambda_example]
-    db::mutate_apply<tmpl::list<test_databox_tags::ScalarTagBase>,
+    db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
                      tmpl::list<test_databox_tags::Tag2Base>>(
         [](const gsl::not_null<Scalar<DataVector>*> scalar,
            const std::string& tag2) {
@@ -1391,7 +1376,7 @@ void test_mutate_apply() noexcept {
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
     // check with a forwarded return value
     size_t size_of_internal_string =
-        db::mutate_apply<tmpl::list<test_databox_tags::ScalarTagBase>,
+        db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
                          tmpl::list<test_databox_tags::Tag2Base>>(
             [](const gsl::not_null<Scalar<DataVector>*> scalar,
                const std::string& tag2) {
@@ -1463,7 +1448,7 @@ void test_mutate_apply() noexcept {
           CHECK(compute_mutating == 12);
         },
         make_not_null(&box));
-    db::mutate_apply<tmpl::list<test_databox_tags::PointerBase>, tmpl::list<>>(
+    db::mutate_apply<tmpl::list<test_databox_tags::Pointer>, tmpl::list<>>(
         [](const gsl::not_null<std::unique_ptr<int>*> p) noexcept { **p = 6; },
         make_not_null(&box));
     db::mutate_apply<tmpl::list<>,
@@ -1609,8 +1594,7 @@ void test_mutating_compute_item() noexcept {
   CHECK_ITERABLE_APPROX(
       get<test_databox_tags::VectorTag>(
           db::get<test_databox_tags::MutateVariables>(original_box)),
-      db::detail::item_type<test_databox_tags::VectorTag>(
-          DataVector(10, 3.0 * 3.14)));
+      typename test_databox_tags::VectorTag::type(DataVector(10, 3.0 * 3.14)));
 
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       make_not_null(&original_box),
@@ -1637,8 +1621,7 @@ void test_mutating_compute_item() noexcept {
   CHECK_ITERABLE_APPROX(
       get<test_databox_tags::VectorTag>(
           db::get<test_databox_tags::MutateVariables>(original_box)),
-      db::detail::item_type<test_databox_tags::VectorTag>(
-          DataVector(10, 3.0 * 10.32)));
+      typename test_databox_tags::VectorTag::type(DataVector(10, 3.0 * 10.32)));
 
   // Check that the memory allocated by std::vector has not changed, which is
   // the key feature of mutating compute items.

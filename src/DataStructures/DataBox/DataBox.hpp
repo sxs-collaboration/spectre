@@ -1115,26 +1115,25 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   if constexpr (is_apply_callable_v<
-                    F, const gsl::not_null<item_type<ReturnTags, BoxTags>*>...,
+                    F, const gsl::not_null<typename ReturnTags::type*>...,
                     const_item_type<ArgumentTags, BoxTags>..., Args...>) {
     return ::db::mutate<ReturnTags...>(
         box,
-        [](const gsl::not_null<
-               item_type<ReturnTags, BoxTags>*>... mutated_items,
+        [](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
            const_item_type<ArgumentTags, BoxTags>... args_items,
            decltype(std::forward<Args>(args))... l_args) noexcept {
           return std::decay_t<F>::apply(mutated_items..., args_items...,
                                         std::forward<Args>(l_args)...);
         },
         db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
-  } else if constexpr (
-      ::tt::is_callable_v<
-          F, const gsl::not_null<item_type<ReturnTags, BoxTags>*>...,
-          const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+  } else if constexpr (::tt::is_callable_v<
+                           F,
+                           const gsl::not_null<typename ReturnTags::type*>...,
+                           const_item_type<ArgumentTags, BoxTags>...,
+                           Args...>) {
     return ::db::mutate<ReturnTags...>(
         box,
-        [&f](const gsl::not_null<
-                 item_type<ReturnTags, BoxTags>*>... mutated_items,
+        [&f](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
              const_item_type<ArgumentTags, BoxTags>... args_items,
              decltype(std::forward<Args>(args))... l_args) noexcept {
           return f(mutated_items..., args_items...,
@@ -1142,9 +1141,9 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
         },
         db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
   } else {
-    error_function_not_callable<
-        F, gsl::not_null<item_type<ReturnTags, BoxTags>*>...,
-        const_item_type<ArgumentTags, BoxTags>..., Args...>();
+    error_function_not_callable<F, gsl::not_null<typename ReturnTags::type*>...,
+                                const_item_type<ArgumentTags, BoxTags>...,
+                                Args...>();
   }
 }
 }  // namespace detail
