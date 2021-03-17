@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <pup.h>
 #include <random>
 #include <vector>
@@ -22,8 +23,10 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
@@ -167,6 +170,10 @@ struct mock_interpolation_target {
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename InterpolationTargetTag::compute_target_points,
           typename InterpolationTargetTag::post_interpolation_callback>>;
+  using mutable_global_cache_tags =
+      tmpl::conditional_t<metavariables::use_time_dependent_maps,
+                          tmpl::list<domain::Tags::FunctionsOfTime>,
+                          tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
@@ -192,8 +199,9 @@ struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
-template <typename PostHorizonFindCallback>
+template <typename PostHorizonFindCallback, typename IsTimeDependent>
 struct MockMetavariables {
+  static constexpr bool use_time_dependent_maps = IsTimeDependent::value;
   struct AhA {
     using compute_items_on_source = tmpl::list<
         ah::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>,
@@ -225,13 +233,13 @@ struct MockMetavariables {
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
-template <typename PostHorizonFindCallback>
+template <typename PostHorizonFindCallback, typename IsTimeDependent>
 void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            const size_t l_max,
                            const size_t grid_points_each_dimension,
                            const double mass,
                            const std::array<double, 3>& dimensionless_spin) {
-  using metavars = MockMetavariables<PostHorizonFindCallback>;
+  using metavars = MockMetavariables<PostHorizonFindCallback, IsTimeDependent>;
   using interp_component = mock_interpolator<metavars>;
   using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
@@ -242,24 +250,51 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       Strahlkorper<Frame::Inertial>{l_max, 2.8, {{0.0, 0.0, 0.0}}}, FastFlow{},
       Verbosity::Verbose);
 
+  std::unique_ptr<DomainCreator<3>> domain_creator;
+  std::unique_ptr<ActionTesting::MockRuntimeSystem<metavars>> runner_ptr{};
+
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending
   // from radius 1.9M to 2.9M; this ensures the horizon is
   // inside the domain, and it gives a narrow domain so that we don't
   // need a large number of grid points to resolve the horizon (which
   // would make the test slower).
-  const auto domain_creator = domain::creators::Shell(
-      1.9, 2.9, 1, {{grid_points_each_dimension, grid_points_each_dimension}},
-      false);
+  if constexpr (IsTimeDependent::value) {
+    const double expiration_time = 1.0;
+    domain_creator = std::make_unique<domain::creators::Shell>(
+        1.9, 2.9, 1,
+        std::array<size_t, 2>{grid_points_each_dimension,
+                              grid_points_each_dimension},
+        false, 1.0, false, ShellWedges::All, 1,
+        std::make_unique<
+            domain::creators::time_dependence::UniformTranslation<3>>(
+            0.0, expiration_time, std::array<double, 3>({{0.01, 0.02, 0.03}})));
+    tuples::TaggedTuple<domain::Tags::Domain<3>,
+                        typename ::intrp::Tags::ApparentHorizon<
+                            typename metavars::AhA, Frame::Inertial>>
+        tuple_of_opts{std::move(domain_creator->create_domain()),
+                      std::move(apparent_horizon_opts)};
+    runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
+        std::move(tuple_of_opts), domain_creator->functions_of_time(),
+        std::vector<size_t>{3, 2});
+  } else {
+    domain_creator = std::make_unique<domain::creators::Shell>(
+        1.9, 2.9, 1,
+        std::array<size_t, 2>{grid_points_each_dimension,
+                              grid_points_each_dimension},
+        false);
 
-  tuples::TaggedTuple<domain::Tags::Domain<3>,
-                      typename ::intrp::Tags::ApparentHorizon<
-                          typename metavars::AhA, Frame::Inertial>>
-      tuple_of_opts{std::move(domain_creator.create_domain()),
-                    std::move(apparent_horizon_opts)};
+    tuples::TaggedTuple<domain::Tags::Domain<3>,
+                        typename ::intrp::Tags::ApparentHorizon<
+                            typename metavars::AhA, Frame::Inertial>>
+        tuple_of_opts{std::move(domain_creator->create_domain()),
+                      std::move(apparent_horizon_opts)};
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{
-      std::move(tuple_of_opts), {}, {3, 2}};
+    runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
+        std::move(tuple_of_opts), tuples::TaggedTuple<>{},
+        std::vector<size_t>{3, 2});
+  }
+  auto& runner = *runner_ptr;
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
@@ -279,19 +314,22 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            metavars::Phase::Registration);
 
   // Find horizon at two temporal_ids.  The horizon find at the second
-  // temporal_id will use the same volume data and will use the initial guess
-  // from the first horizon find, so it will take zero iterations.  Having two
-  // temporal_ids tests some logic in the interpolator.
+  // temporal_id will use the result from the first temporal_id as
+  // an initial guess.  For the time-independent case, the volume data will
+  // not change between horizon finds, so the second horizon find will take
+  // zero iterations.
+  // Having two temporal_ids tests some logic in the interpolator.
   Slab slab(0.0, 1.0);
-  const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
-  const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
+  const std::vector<TimeStepId> temporal_ids{
+      {true, 0, Time(slab, Rational(13, 15))},
+      {true, 0, Time(slab, Rational(14, 15))}};
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
-  Domain<3> domain = domain_creator.create_domain();
+  Domain<3> domain = domain_creator->create_domain();
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs =
-        domain_creator.initial_refinement_levels()[block.id()];
+        domain_creator->initial_refinement_levels()[block.id()];
     auto elem_ids = initial_element_ids(block.id(), initial_ref_levs);
     element_ids.insert(element_ids.end(), elem_ids.begin(), elem_ids.end());
   }
@@ -321,69 +359,82 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // two temporal_ids.
   ActionTesting::simple_action<
       target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                            typename metavars::AhA>>(
-      make_not_null(&runner), 0,
-      std::vector<TimeStepId>{first_temporal_id, second_temporal_id});
+                            typename metavars::AhA>>(make_not_null(&runner), 0,
+                                                     temporal_ids);
 
-  // Create volume data and send it to the interpolator.
-  for (const auto& element_id : element_ids) {
-    const auto& block = domain.blocks()[element_id.block_id()];
-    ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.stationary_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
+  // Create volume data and send it to the interpolator, for each temporal_id.
+  for (const auto& temporal_id: temporal_ids) {
+    for (const auto& element_id : element_ids) {
+      const auto& block = domain.blocks()[element_id.block_id()];
+      ::Mesh<3> mesh{domain_creator->initial_extents()[element_id.block_id()],
+                     Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
-    // Compute psi, pi, phi for KerrSchild.
-    gr::Solutions::KerrSchild solution(mass, dimensionless_spin,
-                                       {{0.0, 0.0, 0.0}});
-    const auto solution_vars = solution.variables(
-        inertial_coords, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
-    const auto& lapse = get<gr::Tags::Lapse<DataVector>>(solution_vars);
-    const auto& dt_lapse =
-        get<Tags::dt<gr::Tags::Lapse<DataVector>>>(solution_vars);
-    const auto& d_lapse =
-        get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(solution_vars);
-    const auto& shift =
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(solution_vars);
-    const auto& d_shift =
-        get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(solution_vars);
-    const auto& dt_shift =
-        get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
-            solution_vars);
-    const auto& g =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            solution_vars);
-    const auto& dt_g =
-        get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-            solution_vars);
-    const auto& d_g =
-        get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
-            solution_vars);
+      tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords{};
+      if constexpr (IsTimeDependent::value) {
+        ElementMap<3, Frame::Grid> map_logical_to_grid{
+            element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+        // We don't have an Element ParallelComponent in this test, so
+        // get the cache from the target component.
+        const auto& cache =
+            ActionTesting::cache<target_component>(runner, 0_st);
+        const auto& functions_of_time =
+            get<domain::Tags::FunctionsOfTime>(cache);
+        inertial_coords = block.moving_mesh_grid_to_inertial_map()(
+            map_logical_to_grid(logical_coordinates(mesh)),
+            temporal_id.step_time().value(), functions_of_time);
+      } else {
+        ElementMap<3, Frame::Inertial> map{element_id,
+                                           block.stationary_map().get_clone()};
+        inertial_coords = map(logical_coordinates(mesh));
+      }
 
-    // Fill output variables with solution.
-    typename ::Tags::Variables<typename metavars::interpolator_source_vars>::
-        type output_vars(mesh.number_of_grid_points());
-    get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(output_vars) =
-        gr::spacetime_metric(lapse, shift, g);
-    get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(output_vars) =
-        GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, g, d_g);
-    get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(output_vars) =
-        GeneralizedHarmonic::pi(
-            lapse, dt_lapse, shift, dt_shift, g, dt_g,
-            get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
-                output_vars));
+      // Compute psi, pi, phi for KerrSchild.
+      gr::Solutions::KerrSchild solution(mass, dimensionless_spin,
+                                         {{0.0, 0.0, 0.0}});
+      const auto solution_vars = solution.variables(
+          inertial_coords, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
+      const auto& lapse = get<gr::Tags::Lapse<DataVector>>(solution_vars);
+      const auto& dt_lapse =
+          get<Tags::dt<gr::Tags::Lapse<DataVector>>>(solution_vars);
+      const auto& d_lapse =
+          get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(solution_vars);
+      const auto& shift =
+          get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(solution_vars);
+      const auto& d_shift =
+          get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(solution_vars);
+      const auto& dt_shift =
+          get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
+              solution_vars);
+      const auto& g =
+          get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
+              solution_vars);
+      const auto& dt_g = get<
+          Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
+          solution_vars);
+      const auto& d_g =
+          get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
+              solution_vars);
 
-    // Call the InterpolatorReceiveVolumeData action on each element_id.
-    ActionTesting::simple_action<interp_component,
-                                 intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), mock_core_for_each_element.at(element_id),
-        first_temporal_id, element_id, mesh, output_vars);
-    ActionTesting::simple_action<interp_component,
-                                 intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), mock_core_for_each_element.at(element_id),
-        second_temporal_id, element_id, mesh, std::move(output_vars));
+      // Fill output variables with solution.
+      typename ::Tags::Variables<typename metavars::interpolator_source_vars>::
+          type output_vars(mesh.number_of_grid_points());
+      get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(output_vars) =
+          gr::spacetime_metric(lapse, shift, g);
+      get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(output_vars) =
+          GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, g, d_g);
+      get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(output_vars) =
+          GeneralizedHarmonic::pi(
+              lapse, dt_lapse, shift, dt_shift, g, dt_g,
+              get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
+                  output_vars));
+
+      // Call the InterpolatorReceiveVolumeData action on each element_id.
+      ActionTesting::simple_action<
+          interp_component, intrp::Actions::InterpolatorReceiveVolumeData>(
+          make_not_null(&runner), mock_core_for_each_element.at(element_id),
+          temporal_id, element_id, mesh, output_vars);
+    }
   }
 
   // Invoke remaining actions in random order.
@@ -410,9 +461,21 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
-  test_apparent_horizon<TestSchwarzschildHorizon>(
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+
+  // Time-independent tests.
+  test_apparent_horizon<TestSchwarzschildHorizon, std::false_type>(
       &test_schwarzschild_horizon_called, 3, 3, 1.0, {{0.0, 0.0, 0.0}});
-  test_apparent_horizon<TestKerrHorizon>(&test_kerr_horizon_called, 3, 5, 1.1,
-                                         {{0.12, 0.23, 0.45}});
+  test_apparent_horizon<TestKerrHorizon, std::false_type>(
+      &test_kerr_horizon_called, 3, 5, 1.1, {{0.12, 0.23, 0.45}});
+
+  // Time-dependent tests.
+  test_schwarzschild_horizon_called = 0;
+  test_kerr_horizon_called = 0;
+  test_apparent_horizon<TestSchwarzschildHorizon, std::true_type>(
+      &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}});
+  test_apparent_horizon<TestKerrHorizon, std::true_type>(
+      &test_kerr_horizon_called, 3, 5, 1.1, {{0.12, 0.23, 0.45}});
 }
 }  // namespace
