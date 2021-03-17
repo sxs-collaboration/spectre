@@ -53,7 +53,7 @@ namespace domain::CoordinateMaps {
  * \f$z\f$ but the mapped portion of Sphere 2 is not (except for
  * special choices of \f$C_1\f$, \f$C_2\f$, and \f$P\f$).
  *
- * CylindricalEndcap is intended to be composed with Wedge2D maps to
+ * CylindricalEndcap is intended to be composed with `Wedge<2>` maps to
  * construct a portion of a cylindrical domain for a binary system.
  *
  * CylindricalEndcap is described briefly in the Appendix of

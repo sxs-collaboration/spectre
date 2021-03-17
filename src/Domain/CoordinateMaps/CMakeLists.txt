@@ -24,7 +24,6 @@ spectre_target_sources(
   Rotation.cpp
   SpecialMobius.cpp
   Wedge.cpp
-  Wedge2D.cpp
   )
 
 spectre_target_headers(
@@ -55,7 +54,6 @@ spectre_target_headers(
   Tags.hpp
   TimeDependentHelpers.hpp
   Wedge.hpp
-  Wedge2D.hpp
   )
 
 target_link_libraries(

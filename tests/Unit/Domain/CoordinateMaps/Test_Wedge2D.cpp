@@ -9,7 +9,7 @@
 #include <random>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -201,7 +201,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
 #endif
 }
 
-// [[OutputRegex, Circularity of the inner surface must be between 0 and 1]]
+// [[OutputRegex, Sphericity of the inner surface must be between 0 and 1]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.Domain.CoordinateMaps.Wedge2D.CircularityInner", "[Domain][Unit]") {
   ASSERTION_TEST();
@@ -212,7 +212,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
 #endif
 }
 
-// [[OutputRegex, Circularity of the outer surface must be between 0 and 1]]
+// [[OutputRegex, Sphericity of the outer surface must be between 0 and 1]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.Domain.CoordinateMaps.Wedge2D.CircularityOuter", "[Domain][Unit]") {
   ASSERTION_TEST();
@@ -235,7 +235,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
 #endif
 }
 
-// [[OutputRegex, The arguments passed into the constructor for Wedge2D result
+// [[OutputRegex, The arguments passed into the constructor for Wedge result
 // in an object where the outer surface is pierced by the inner surface.]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.Domain.CoordinateMaps.Wedge2D.PiercedSurface", "[Domain][Unit]") {

@@ -14,7 +14,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
@@ -61,7 +61,7 @@ Disk::Disk(typename InnerRadius::type inner_radius,
 }
 
 Domain<2> Disk::create_domain() const noexcept {
-  using Wedge2DMap = CoordinateMaps::Wedge2D;
+  using Wedge2DMap = CoordinateMaps::Wedge<2>;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;

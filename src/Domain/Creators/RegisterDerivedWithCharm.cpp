@@ -17,7 +17,6 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"

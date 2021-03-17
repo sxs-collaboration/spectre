@@ -22,7 +22,8 @@ class Affine;
 class Equiangular;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
-class Wedge2D;
+template <size_t Dim>
+class Wedge;
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -46,7 +47,7 @@ class Disk : public DomainCreator<2> {
                                            CoordinateMaps::Equiangular,
                                            CoordinateMaps::Equiangular>>,
                  domain::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                       CoordinateMaps::Wedge2D>>;
+                                       CoordinateMaps::Wedge<2>>>;
 
   struct InnerRadius {
     using type = double;

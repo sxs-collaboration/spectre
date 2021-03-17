@@ -23,7 +23,8 @@ template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
-class Wedge2D;
+template <size_t Dim>
+class Wedge;
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -33,7 +34,7 @@ class CoordinateMap;
 
 namespace domain::creators {
 /// Create a 3D Domain in the shape of a cylinder where the cross-section
-/// is a square surrounded by four two-dimensional wedges (see Wedge2D).
+/// is a square surrounded by four two-dimensional wedges (see `Wedge`).
 ///
 /// The outer shell can be split into sub-shells and the cylinder can be split
 /// into disks along its height.
@@ -56,7 +57,7 @@ class Cylinder : public DomainCreator<3> {
                                          CoordinateMaps::Affine>>,
       domain::CoordinateMap<
           Frame::Logical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge2D,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                          CoordinateMaps::Affine>>>;
 
   struct InnerRadius {

@@ -23,7 +23,6 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
@@ -65,7 +64,7 @@ auto make_map() {
     using domain::make_coordinate_map_base;
     using domain::CoordinateMaps::Affine;
     using domain::CoordinateMaps::ProductOf2Maps;
-    using domain::CoordinateMaps::Wedge2D;
+    using Wedge2D = domain::CoordinateMaps::Wedge<2>;
     return make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
         ProductOf2Maps<Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                        Affine(-1.0, 1.0, -1.0, -0.8)),

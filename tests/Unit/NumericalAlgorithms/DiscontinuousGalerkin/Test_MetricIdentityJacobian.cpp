@@ -18,7 +18,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -41,13 +41,13 @@ auto make_map() noexcept {
   } else if constexpr (Dim == 2) {
     return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
         Affine2D{{-1.0, 1.0, -1.0, -0.99}, {-1.0, 1.0, -1.0, -0.99}},
-        domain::CoordinateMaps::Wedge2D{1.0, 2.0, 0.0, 1.0, {}, false});
+        domain::CoordinateMaps::Wedge<2>{1.0, 2.0, 0.0, 1.0, {}, false});
   } else {
     return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
         Affine3D{{-1.0, 1.0, -1.0, -0.99},
                  {-1.0, 1.0, -1.0, -0.99},
                  {-1.0, 1.0, -1.0, 1.0}},
-        domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge2D,
+        domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge<2>,
                                                Affine>{
             {1.0, 2.0, 0.0, 1.0, {}, false}, {0.0, 1.0, 0.0, 1.0}});
   }

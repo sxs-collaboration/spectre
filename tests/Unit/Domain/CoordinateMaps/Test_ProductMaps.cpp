@@ -14,7 +14,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -27,11 +27,11 @@ namespace {
 void test_product_two_maps_fail() {
   INFO("Product two maps fail");
   const CoordinateMaps::Affine affine(-1.0, 1.0, 3.0, 4.0);
-  const CoordinateMaps::Wedge2D wedge(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{},
-                                      true);
+  const CoordinateMaps::Wedge<2> wedge(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{},
+                                       true);
   {
     const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Wedge2D>
+                                         CoordinateMaps::Wedge<2>>
         map(affine, wedge);
     // Should fail wedge map
     const std::array<double, 3> mapped_point1{{3.5, -1.0, -1.0}};
@@ -46,7 +46,7 @@ void test_product_two_maps_fail() {
   }
 
   {
-    const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge2D,
+    const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                          CoordinateMaps::Affine>
         map(wedge, affine);
     // Should fail wedge map

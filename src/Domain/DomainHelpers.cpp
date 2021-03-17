@@ -25,7 +25,6 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -945,7 +944,7 @@ cyl_wedge_coordinate_maps(
   using Equiangular = domain::CoordinateMaps::Equiangular;
   using Equiangular3DPrism =
       domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = domain::CoordinateMaps::Wedge2D;
+  using Wedge2D = domain::CoordinateMaps::Wedge<2>;
   using Wedge3DPrism = domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>

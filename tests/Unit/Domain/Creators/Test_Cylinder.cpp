@@ -19,7 +19,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
@@ -207,7 +207,7 @@ void test_cylinder_construction(
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3DPrism =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = CoordinateMaps::Wedge2D;
+  using Wedge2D = CoordinateMaps::Wedge<2>;
   using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
 
   if (use_equiangular_map) {
@@ -653,7 +653,7 @@ void test_refined_cylinder_boundaries(const bool use_equiangular_map) {
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3DPrism =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = CoordinateMaps::Wedge2D;
+  using Wedge2D = CoordinateMaps::Wedge<2>;
   using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
   // in this section, the coord_map is filled same as with the cylinder;
   // first the first shell with radial boundaries
@@ -1055,7 +1055,7 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3DPrism =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = CoordinateMaps::Wedge2D;
+  using Wedge2D = CoordinateMaps::Wedge<2>;
   using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
   // in this section, the coord_map is filled same as with the cylinder;
   // first the first shell with radial boundaries
