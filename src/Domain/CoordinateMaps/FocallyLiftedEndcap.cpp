@@ -77,7 +77,7 @@ double one_over_x_d_sin_ax_over_x(const double x, const double a) noexcept {
   // Then the series above can be rewritten
   // 1/x d/dx [ sin(ax)/x ] = a/x^2 [- 2(ax)^2/3! + 4(ax)^4/5! - 6(ax)^6/7!]
   //                        = -a^3/3 [ 1 - 4*3*(ax)^2/5! + 6*3*(ax)^4/7!]
-  const double ax = a*x;
+  const double ax = a * x;
   return pow<8>(ax) < 45360.0 * std::numeric_limits<double>::epsilon()
              ? (-cube(a) / 3.0) *
                    (1.0 + square(ax) * (-0.1 + square(ax) / 280.0))
@@ -104,7 +104,7 @@ Endcap::Endcap(const std::array<double, 3>& center, const double radius,
                "Cannot have zero radius");
         return radius;
       }()),
-      theta_max_([&center,&radius,&z_plane]() noexcept {
+      theta_max_([&center, &radius, &z_plane]() noexcept {
         const double cos_theta_max = (z_plane - center[2]) / radius;
         ASSERT(abs(cos_theta_max) < 1.0,
                "Plane must intersect sphere, and at more than one point");
@@ -113,7 +113,7 @@ Endcap::Endcap(const std::array<double, 3>& center, const double radius,
 
 template <typename T>
 void Endcap::forward_map(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         target_coords,
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
@@ -132,10 +132,10 @@ void Endcap::forward_map(
 }
 
 template <typename T>
-void Endcap::jacobian(
-    const gsl::not_null<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>& jacobian_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+void Endcap::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
+                                                   3, Frame::NoFrame>*>
+                          jacobian_out,
+                      const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -145,7 +145,7 @@ void Endcap::jacobian(
         jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
   }
   // Most of the jacobian components are zero.
-  for(auto& jac_component: *jacobian_out) {
+  for (auto& jac_component : *jacobian_out) {
     jac_component = 0.0;
   }
 
@@ -182,8 +182,9 @@ void Endcap::jacobian(
 
 template <typename T>
 void Endcap::inv_jacobian(
-    const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
-                                 Frame::NoFrame>*>& inv_jacobian_out,
+    const gsl::not_null<
+        tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
+        inv_jacobian_out,
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
@@ -194,7 +195,7 @@ void Endcap::inv_jacobian(
         inv_jacobian_out, static_cast<ReturnType>(source_coords[0]).size());
   }
   // Most of the inverse jacobian components are zero.
-  for(auto& jac_component: *inv_jacobian_out) {
+  for (auto& jac_component : *inv_jacobian_out) {
     jac_component = 0.0;
   }
 
@@ -220,20 +221,17 @@ void Endcap::inv_jacobian(
        square(get<1, 0>(*inv_jacobian_out)) * get<1, 1>(*inv_jacobian_out));
 
   // 1/(r q), i.e. first term in Eq. 22.
-  get<0, 0>(*inv_jacobian_out) =
-      1.0 / (get<0, 1>(*inv_jacobian_out) * radius_);
+  get<0, 0>(*inv_jacobian_out) = 1.0 / (get<0, 1>(*inv_jacobian_out) * radius_);
 
   // Right-hand side of Eq. 23, without the factor of
   // xbar ybar or the minus sign.
   get<1, 0>(*inv_jacobian_out) *= get<0, 0>(*inv_jacobian_out);
 
   // dybar/dy
-  get<1, 1>(*inv_jacobian_out) =
-      get<0, 0>(*inv_jacobian_out) -
-      square(ybar) * get<1, 0>(*inv_jacobian_out);
+  get<1, 1>(*inv_jacobian_out) = get<0, 0>(*inv_jacobian_out) -
+                                 square(ybar) * get<1, 0>(*inv_jacobian_out);
   // dxbar/dx
-  get<0, 0>(*inv_jacobian_out) -=
-      square(xbar) * get<1, 0>(*inv_jacobian_out);
+  get<0, 0>(*inv_jacobian_out) -= square(xbar) * get<1, 0>(*inv_jacobian_out);
   // dybar/dx
   get<1, 0>(*inv_jacobian_out) *= -xbar * ybar;
   // dxbar/dy
@@ -283,14 +281,14 @@ std::optional<std::array<double, 3>> Endcap::inverse(
 }
 
 template <typename T>
-void Endcap::sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& sigma_out,
+void Endcap::sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
                    const std::array<T, 3>& source_coords) const noexcept {
   *sigma_out = 0.5 * (source_coords[2] + 1.0);
 }
 
 template <typename T>
 void Endcap::deriv_sigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_sigma_out,
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
@@ -305,7 +303,7 @@ void Endcap::deriv_sigma(
 
 template <typename T>
 void Endcap::dxbar_dsigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         dxbar_dsigma_out,
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
@@ -338,7 +336,7 @@ std::optional<double> Endcap::lambda_tilde(
 
 template <typename T>
 void Endcap::deriv_lambda_tilde(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
     const std::array<double, 3>& projection_point) const noexcept {
@@ -365,35 +363,41 @@ bool operator!=(const Endcap& lhs, const Endcap& rhs) noexcept {
 /// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template void Endcap::forward_map(                                         \
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<DTYPE(data)>,   \
-                                     3>*>& target_coords,                    \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template void Endcap::jacobian(                                            \
-      const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3,  \
-                                   Frame::NoFrame>*>& jacobian_out,          \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template void Endcap::inv_jacobian(                                        \
-      const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3,  \
-                                   Frame::NoFrame>*>& inv_jacobian_out,      \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template void Endcap::sigma(                                               \
-      const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*>& sigma_out, \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template void Endcap::deriv_sigma(                                         \
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<DTYPE(data)>,   \
-                                     3>*>& deriv_sigma_out,                  \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template void Endcap::dxbar_dsigma(                                        \
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<DTYPE(data)>,   \
-                                     3>*>& dxbar_dsigma_out,                 \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template void Endcap::deriv_lambda_tilde(                                  \
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<DTYPE(data)>,   \
-                                     3>*>& deriv_lambda_tilde_out,           \
-      const std::array<DTYPE(data), 3>& target_coords,                       \
-      const DTYPE(data) & lambda_tilde,                                      \
+#define INSTANTIATE(_, data)                                                  \
+  template void Endcap::forward_map(                                          \
+      const gsl::not_null<                                                    \
+          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
+          target_coords,                                                      \
+      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+  template void Endcap::jacobian(                                             \
+      const gsl::not_null<                                                    \
+          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
+          jacobian_out,                                                       \
+      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+  template void Endcap::inv_jacobian(                                         \
+      const gsl::not_null<                                                    \
+          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
+          inv_jacobian_out,                                                   \
+      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+  template void Endcap::sigma(                                                \
+      const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
+      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+  template void Endcap::deriv_sigma(                                          \
+      const gsl::not_null<                                                    \
+          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
+          deriv_sigma_out,                                                    \
+      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+  template void Endcap::dxbar_dsigma(                                         \
+      const gsl::not_null<                                                    \
+          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
+          dxbar_dsigma_out,                                                   \
+      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+  template void Endcap::deriv_lambda_tilde(                                   \
+      const gsl::not_null<                                                    \
+          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
+          deriv_lambda_tilde_out,                                             \
+      const std::array<DTYPE(data), 3>& target_coords,                        \
+      const DTYPE(data) & lambda_tilde,                                       \
       const std::array<double, 3>& projection_point) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
