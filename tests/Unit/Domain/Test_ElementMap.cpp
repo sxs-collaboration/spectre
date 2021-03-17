@@ -18,8 +18,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -181,7 +181,7 @@ void test_element_map<3>() {
   // test with rotation and wedge
   test_element_impl(
       true, element_id, affine_map, first_map,
-      CoordinateMaps::Wedge3D{3.0, 7.0, OrientationMap<3>{}, 0.8, 0.9, true},
+      CoordinateMaps::Wedge<3>{3.0, 7.0, OrientationMap<3>{}, 0.8, 0.9, true},
       logical_point_double, logical_point_dv);
 }
 }  // namespace

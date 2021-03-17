@@ -23,7 +23,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
@@ -169,7 +169,7 @@ void test_sphere_construction(
 
   CHECK(sphere.initial_extents() == expected_extents);
   CHECK(sphere.initial_refinement_levels() == expected_refinement_level);
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;

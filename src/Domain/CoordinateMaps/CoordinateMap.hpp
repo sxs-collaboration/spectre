@@ -107,7 +107,7 @@ class CoordinateMapBase : public PUP::able {
   /// The returned std::optional is invalid if the map is not invertible
   /// at `target_point`, or if `target_point` can be easily determined to not
   /// make sense for the map.  An example of the latter is passing a
-  /// point with a negative value of z into a positive-z Wedge3D inverse map.
+  /// point with a negative value of z into a positive-z Wedge<3> inverse map.
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a

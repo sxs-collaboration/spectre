@@ -23,7 +23,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -136,7 +136,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                           double x_coord_of_shell_center = 0.0,
                           bool use_half_wedges = false,
                           double aspect_ratio = 1.0) {
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Identity2D = CoordinateMaps::Identity<2>;
   using Affine = CoordinateMaps::Affine;
   const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(

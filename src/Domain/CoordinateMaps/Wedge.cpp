@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 
 #include <cmath>
 #include <pup.h>
@@ -18,12 +18,13 @@
 
 namespace domain::CoordinateMaps {
 
-Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
-                 const OrientationMap<3> orientation_of_wedge,
-                 const double sphericity_inner, const double sphericity_outer,
-                 const bool with_equiangular_map,
-                 const WedgeHalves halves_to_use,
-                 const bool with_logarithmic_map) noexcept
+template <size_t Dim>
+Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
+                  const OrientationMap<3> orientation_of_wedge,
+                  const double sphericity_inner, const double sphericity_outer,
+                  const bool with_equiangular_map,
+                  const WedgeHalves halves_to_use,
+                  const bool with_logarithmic_map) noexcept
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       orientation_of_wedge_(orientation_of_wedge),
@@ -45,7 +46,7 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
                  ((1.0 - sphericity_outer_) / sqrt(3.0) + sphericity_outer_) >
              radius_inner *
                  ((1.0 - sphericity_inner) / sqrt(3.0) + sphericity_inner),
-         "The arguments passed into the constructor for Wedge3D result in an "
+         "The arguments passed into the constructor for Wedge result in an "
          "object where the "
          "outer surface is pierced by the inner surface.");
   ASSERT(not with_logarithmic_map_ or
@@ -54,7 +55,7 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
          "The logarithmic map is only supported for spherical wedges.");
   ASSERT(
       get(determinant(discrete_rotation_jacobian(orientation_of_wedge_))) > 0.0,
-      "Wedge3D rotations must be done in such a manner that the sign of "
+      "Wedge rotations must be done in such a manner that the sign of "
       "the determinant of the discrete rotation is positive. This is to "
       "preserve handedness of the coordinates.");
   if (with_logarithmic_map_) {
@@ -76,8 +77,9 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
   }
 }
 
+template <size_t Dim>
 template <typename T>
-tt::remove_cvref_wrap_t<T> Wedge3D::default_physical_z(
+tt::remove_cvref_wrap_t<T> Wedge<Dim>::default_physical_z(
     const T& zeta, const T& one_over_rho) const noexcept {
   if (with_logarithmic_map_) {
     return exp(sphere_zero_ + sphere_rate_ * zeta) * one_over_rho;
@@ -90,8 +92,9 @@ tt::remove_cvref_wrap_t<T> Wedge3D::default_physical_z(
   return z_zero + zeta_coefficient * zeta;
 }
 
+template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::operator()(
+std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge<Dim>::operator()(
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
@@ -120,7 +123,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::operator()(
   return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
-std::optional<std::array<double, 3>> Wedge3D::inverse(
+template <size_t Dim>
+std::optional<std::array<double, 3>> Wedge<Dim>::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   const std::array<double, 3> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
@@ -172,8 +176,9 @@ std::optional<std::array<double, 3>> Wedge3D::inverse(
   return std::array<double, 3>{{xi, eta, zeta}};
 }
 
+template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge<Dim>::jacobian(
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   ReturnType xi = source_coords[0];
@@ -255,9 +260,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
   return jacobian_matrix;
 }
 
+template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::inv_jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
+Wedge<Dim>::inv_jacobian(const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   ReturnType xi = source_coords[0];
@@ -347,7 +353,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::inv_jacobian(
   return inv_jacobian_matrix;
 }
 
-void Wedge3D::pup(PUP::er& p) noexcept {
+template <size_t Dim>
+void Wedge<Dim>::pup(PUP::er& p) noexcept {
   p | radius_inner_;
   p | radius_outer_;
   p | orientation_of_wedge_;
@@ -362,7 +369,8 @@ void Wedge3D::pup(PUP::er& p) noexcept {
   p | sphere_rate_;
 }
 
-bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
+template <size_t Dim>
+bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
   return lhs.radius_inner_ == rhs.radius_inner_ and
          lhs.radius_outer_ == rhs.radius_outer_ and
          lhs.orientation_of_wedge_ == rhs.orientation_of_wedge_ and
@@ -377,29 +385,45 @@ bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
          lhs.sphere_rate_ == rhs.sphere_rate_;
 }
 
-bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
+template <size_t Dim>
+bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
 // Explicit instantiations
 /// \cond
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> Wedge3D::      \
-  operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Wedge3D::jacobian(const std::array<DTYPE(data), 3>& source_coords)          \
-      const noexcept;                                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Wedge3D::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)      \
-      const noexcept;
+#define INSTANTIATE_DIM(_, data)                                  \
+  template class Wedge<DIM(data)>;                                \
+  template bool operator==(const Wedge<DIM(data)>& lhs,           \
+                           const Wedge<DIM(data)>& rhs) noexcept; \
+  template bool operator!=(const Wedge<DIM(data)>& lhs,           \
+                           const Wedge<DIM(data)>& rhs) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+#define INSTANTIATE_DTYPE(_, data)                                             \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
+  Wedge<DIM(data)>::operator()(                                                \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
+                    Frame::NoFrame>                                            \
+  Wedge<DIM(data)>::jacobian(                                                  \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
+                    Frame::NoFrame>                                            \
+  Wedge<DIM(data)>::inv_jacobian(                                              \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
 
+GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (3),
+                        (double, DataVector,
+                         std::reference_wrapper<const double>,
+                         std::reference_wrapper<const DataVector>))
+
+#undef DIM
 #undef DTYPE
-#undef INSTANTIATE
+#undef INSTANTIATE_DIM
+#undef INSTANTIATE_DTYPE
 /// \endcond
 }  // namespace domain::CoordinateMaps

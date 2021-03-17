@@ -24,7 +24,7 @@ curvilinear hexahedral element the %Block describes. The %CoordinateMap
 also provides the jacobian of the mapping.
 
 ### Shortcuts for CoordinateMaps
-For spherical domains, Wedge3D implements the cubed-sphere map, and there
+For spherical domains, `Wedge<3>` implements the cubed-sphere map, and there
 exists the method `sph_wedge_coordinate_maps` in Domain/DomainHelpers.hpp to
 quickly construct six of these maps at once. For rectilinear multicube domains,
 Affine and Equiangular map the logical cubes to cartesian cubes. The method

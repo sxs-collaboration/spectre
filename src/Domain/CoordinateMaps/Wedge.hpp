@@ -35,7 +35,7 @@ namespace CoordinateMaps {
  *  The first two logical coordinates correspond to the two angular coordinates,
  *  and the third to the radial coordinate.
  *
- *  The Wedge3D map is constructed by linearly interpolating between a bulged
+ *  The Wedge map is constructed by linearly interpolating between a bulged
  *  face of radius `radius_of_inner_surface` to a bulged face of
  *  radius `radius_of_outer_surface`, where the radius of each bulged face
  *  is defined to be the radius of the sphere circumscribing the bulge.
@@ -189,11 +189,11 @@ namespace CoordinateMaps {
  *  \f]
  *
  *  ### Changing the radial distribution of the gridpoints
- *  By default, Wedge3D linearly distributes its gridpoints in the radial
+ *  By default, Wedge linearly distributes its gridpoints in the radial
  *  direction. An exponential distribution of gridpoints can be obtained by
  *  linearly interpolating in the logarithm of the radius, in order to obtain
  *  a relatively higher resolution at smaller radii. Since this is a radial
- *  rescaling of Wedge3D, this option is only supported for fully spherical
+ *  rescaling of Wedge, this option is only supported for fully spherical
  *  wedges with `sphericity_inner` = `sphericity_outer` = 1.
  *
  *  The linear interpolation done is:
@@ -213,7 +213,8 @@ namespace CoordinateMaps {
  *  The jacobian simplifies similarly.
  *
  */
-class Wedge3D {
+template <size_t Dim>
+class Wedge {
  public:
   static constexpr size_t dim = 3;
   enum class WedgeHalves {
@@ -258,24 +259,24 @@ class Wedge3D {
    * function mapping to the "sphere factor", the effect of which is to
    * distribute the radial gridpoints logarithmically in physical space.
    */
-  Wedge3D(double radius_inner, double radius_outer,
-          OrientationMap<3> orientation_of_wedge, double sphericity_inner,
-          double sphericity_outer, bool with_equiangular_map,
-          WedgeHalves halves_to_use = WedgeHalves::Both,
-          bool with_logarithmic_map = false) noexcept;
+  Wedge(double radius_inner, double radius_outer,
+        OrientationMap<3> orientation_of_wedge, double sphericity_inner,
+        double sphericity_outer, bool with_equiangular_map,
+        WedgeHalves halves_to_use = WedgeHalves::Both,
+        bool with_logarithmic_map = false) noexcept;
 
-  Wedge3D() = default;
-  ~Wedge3D() = default;
-  Wedge3D(Wedge3D&&) = default;
-  Wedge3D(const Wedge3D&) = default;
-  Wedge3D& operator=(const Wedge3D&) = default;
-  Wedge3D& operator=(Wedge3D&&) = default;
+  Wedge() = default;
+  ~Wedge() = default;
+  Wedge(Wedge&&) = default;
+  Wedge(const Wedge&) = default;
+  Wedge& operator=(const Wedge&) = default;
+  Wedge& operator=(Wedge&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  /// For a \f$+z\f$-oriented `Wedge3D`, returns invalid if \f$z<=0\f$
+  /// For a \f$+z\f$-oriented `Wedge`, returns invalid if \f$z<=0\f$
   /// or if \f$(x,y,z)\f$ is on or outside the cone defined
   /// by \f$(x^2/z^2 + y^2/z^2+1)^{1/2} = -S/F\f$, where
   /// \f$S = \frac{1}{2}(s_1 r_1 - s_0 r_0)\f$ and
@@ -306,10 +307,13 @@ class Wedge3D {
  private:
   // factors out calculation of z needed for mapping and jacobian
   template <typename T>
-  tt::remove_cvref_wrap_t<T> default_physical_z(const T& zeta,
-                                                const T& one_over_rho) const
-      noexcept;
-  friend bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept;
+  tt::remove_cvref_wrap_t<T> default_physical_z(
+      const T& zeta, const T& one_over_rho) const noexcept;
+
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(const Wedge<LocalDim>& lhs,
+                         const Wedge<LocalDim>& rhs) noexcept;
 
   double radius_inner_{std::numeric_limits<double>::signaling_NaN()};
   double radius_outer_{std::numeric_limits<double>::signaling_NaN()};
@@ -324,6 +328,8 @@ class Wedge3D {
   double scaled_frustum_rate_{std::numeric_limits<double>::signaling_NaN()};
   double sphere_rate_{std::numeric_limits<double>::signaling_NaN()};
 };
-bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept;
+
+template <size_t Dim>
+bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept;
 }  // namespace CoordinateMaps
 }  // namespace domain

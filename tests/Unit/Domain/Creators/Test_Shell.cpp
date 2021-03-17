@@ -26,7 +26,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Shell.hpp"
@@ -198,7 +198,7 @@ void test_shell_construction(
 
   CHECK(shell.initial_extents() == expected_extents);
   CHECK(shell.initial_refinement_levels() == expected_refinement_level);
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Halves = Wedge3DMap::WedgeHalves;
   if (aspect_ratio == 1.0) {
     auto vector_of_maps = make_vector_coordinate_map_base<Frame::Logical,
