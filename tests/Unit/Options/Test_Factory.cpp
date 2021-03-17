@@ -11,28 +11,14 @@
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
 
-class OptionTest;
-class Test1;
-class Test2;
-class TestWithArg;
-class TestWithArg2;
-struct TestWithMetavars;
-
-// [factory_example]
-struct OptionType {
-  using type = std::unique_ptr<OptionTest>;
-  static constexpr Options::String help = {"The type of OptionTest"};
-};
-
 class OptionTest {
  public:
-  using creatable_classes =
-      tmpl::list<Test1, Test2, TestWithArg, TestWithArg2, TestWithMetavars>;
-
   OptionTest() = default;
   OptionTest(const OptionTest&) = default;
   OptionTest(OptionTest&&) = default;
@@ -43,6 +29,11 @@ class OptionTest {
   virtual std::string derived_name() const = 0;
 };
 
+struct OptionType {
+  using type = std::unique_ptr<OptionTest>;
+  static constexpr Options::String help = {"The type of OptionTest"};
+};
+
 class Test1 : public OptionTest {
  public:
   using options = tmpl::list<>;
@@ -51,7 +42,6 @@ class Test1 : public OptionTest {
 
   std::string derived_name() const override { return "Test1"; }
 };
-// [factory_example]
 
 class Test2 : public OptionTest {
  public:
@@ -105,21 +95,6 @@ class TestWithArg2 : public OptionTest {
   std::string arg_;
 };
 
-struct Vector {
-  using type = std::vector<std::unique_ptr<OptionTest>>;
-  static constexpr Options::String help = {"halp"};
-};
-
-struct Map {
-  using type = std::map<std::string, std::unique_ptr<OptionTest>>;
-  static constexpr Options::String help = {"halp"};
-};
-
-template <bool Valid>
-struct Metavars {
-  static constexpr bool valid = Valid;
-};
-
 struct TestWithMetavars : OptionTest {
   struct Arg {
     using type = std::string;
@@ -144,12 +119,74 @@ struct TestWithMetavars : OptionTest {
   bool valid_{false};
 };
 
+class OtherBase {
+ protected:
+  OtherBase() = default;
+  OtherBase(const OtherBase&) = default;
+  OtherBase(OtherBase&&) = default;
+  OtherBase& operator=(const OtherBase&) = default;
+  OtherBase& operator=(OtherBase&&) = default;
+
+ public:
+  virtual ~OtherBase() = default;
+};
+
+struct OtherTag {
+  using type = std::unique_ptr<OtherBase>;
+  static constexpr Options::String help = {"An OtherBase"};
+};
+
+class OtherDerived : public OtherBase {
+ public:
+  using options = tmpl::list<>;
+  static constexpr Options::String help = {""};
+};
+
+struct Vector {
+  using type = std::vector<std::unique_ptr<OptionTest>>;
+  static constexpr Options::String help = {"halp"};
+};
+
+struct Map {
+  using type = std::map<std::string, std::unique_ptr<OptionTest>>;
+  static constexpr Options::String help = {"halp"};
+};
+
+template <bool Valid>
+struct Metavars {
+  static constexpr bool valid = Valid;
+  // [factory_creation]
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<OptionTest, tmpl::list<Test1, Test2, TestWithArg,
+                                          TestWithArg2, TestWithMetavars>>,
+        tmpl::pair<OtherBase, tmpl::list<OtherDerived>>>;
+  };
+  // [factory_creation]
+  static_assert(tt::assert_conforms_to<factory_creation,
+                                       Options::protocols::FactoryCreation>);
+};
+
 void test_factory() {
-  Options::Parser<tmpl::list<OptionType>> opts("");
-  opts.parse("OptionType: Test2");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() == "Test2");
+  {
+    Options::Parser<tmpl::list<OptionType>> opts("");
+    const std::string input = R"(
+# [factory_without_arguments]
+OptionType: Test2
+# [factory_without_arguments]
+)";
+    opts.parse(input);
+    CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() == "Test2");
+  }
+
+  {
+    Options::Parser<tmpl::list<OtherTag>> opts("");
+    opts.parse("OtherTag: OtherDerived");
+    // Just verify we got a result.  There's only one valid value that
+    // can be returned anyway.
+    CHECK(opts.get<OtherTag, Metavars<true>>());
+  }
 }
 
 void test_factory_with_colon() {
@@ -157,19 +194,19 @@ void test_factory_with_colon() {
   opts.parse(
       "OptionType:\n"
       "  Test2:");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
   CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() == "Test2");
 }
 
 void test_factory_with_arg() {
   Options::Parser<tmpl::list<OptionType>> opts("");
-  opts.parse(
-      "OptionType:\n"
-      "  TestWithArg:\n"
-      "    Arg: stuff");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
+    const std::string input = R"(
+# [factory_with_arguments]
+OptionType:
+  TestWithArg:
+    Arg: stuff
+# [factory_with_arguments]
+)";
+  opts.parse(input);
   CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
         "TestWithArg(stuff)");
 }
@@ -180,8 +217,6 @@ void test_factory_with_name_function() {
       "OptionType:\n"
       "  ThisIsArg:\n"
       "    Arg: stuff");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
   CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
         "TestWithArg2(stuff)");
 }
@@ -192,12 +227,8 @@ void test_factory_with_metavars() {
       "OptionType:\n"
       "  TestWithMetavars:\n"
       "    Arg: stuff");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
   CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
         "TestWithArg(stuff)yes");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
   CHECK(opts.get<OptionType, Metavars<false>>()->derived_name() ==
         "TestWithArg(stuff)no");
   auto result_true = opts.apply<tmpl::list<OptionType>, Metavars<true>>(
@@ -211,8 +242,6 @@ void test_factory_with_metavars() {
 void test_factory_object_vector() {
   Options::Parser<tmpl::list<Vector>> opts("");
   opts.parse("Vector: [Test1, Test2, Test1]");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
   const auto& arg = opts.get<Vector, Metavars<true>>();
   CHECK(arg.size() == 3);
   CHECK(arg[0]->derived_name() == "Test1");
@@ -227,8 +256,6 @@ void test_factory_object_map() {
       "  A: Test1\n"
       "  B: Test2\n"
       "  C: Test1\n");
-  // must pass metavars because TestWithMetavars is a derived class in
-  // `creatable_classes`
   const auto& arg = opts.get<Map, Metavars<true>>();
   CHECK(arg.size() == 3);
   CHECK(arg.at("A")->derived_name() == "Test1");
