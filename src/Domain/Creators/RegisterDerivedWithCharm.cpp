@@ -33,8 +33,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 namespace {
 template <typename Creator>
 struct get_maps {
@@ -67,5 +66,4 @@ void register_derived_with_charm() {
 
   Parallel::register_classes_in_list<maps_to_register>();
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators
