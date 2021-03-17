@@ -21,19 +21,49 @@ class er;
 namespace domain {
 namespace CoordinateMaps {
 
+namespace detail {
+// This mapping can be deleted once the 2D and 3D wedges are oriented the same
+// (see issue https://github.com/sxs-collaboration/spectre/issues/2988)
+template <size_t Dim>
+struct WedgeCoordOrientation;
+template <>
+struct WedgeCoordOrientation<2> {
+  static constexpr size_t radial_coord = 0;
+  static constexpr size_t polar_coord = 1;
+  static constexpr size_t azimuth_coord = 2;  // unused
+};
+template <>
+struct WedgeCoordOrientation<3> {
+  static constexpr size_t radial_coord = 2;
+  static constexpr size_t polar_coord = 0;
+  static constexpr size_t azimuth_coord = 1;
+};
+}  // namespace detail
+
 /*!
  * \ingroup CoordinateMapsGroup
  *
- * \brief Three dimensional map from the cube to a wedge.
+ * \brief Map from a square or cube to a wedge.
  * \image html Shell.png "A shell can be constructed out of six wedges."
  *
- * \details The mapping that goes from a reference cube to a three-dimensional
- *  wedge centered on a coordinate axis covering a volume between an inner
- *  surface and outer surface. Each surface can be given a curvature
+ * \details The mapping that goes from a reference cube (in 3D) or square (in
+ *  2D) to a wedge centered on a coordinate axis covering a volume between an
+ *  inner surface and outer surface. Each surface can be given a curvature
  *  between flat (a sphericity of 0) or spherical (a sphericity of 1).
  *
- *  The first two logical coordinates correspond to the two angular coordinates,
- *  and the third to the radial coordinate.
+ *  In 2D, the first logical coordinate corresponds to the radial coordinate,
+ *  and the second logical coordinates correspond to the angular coordinate. In
+ *  3D, the first two logical coordinates correspond to the two angular
+ *  coordinates, and the third to the radial coordinate. This difference
+ *  originates from separate implementations for the 2D and 3D map that were
+ *  merged. The 3D implementation can be changed to use the first logical
+ *  coordinate as radial direction, but this requires propagating the change
+ *  through the rest of the domain code (see issue
+ *  https://github.com/sxs-collaboration/spectre/issues/2988).
+ *
+ *  The following documentation is for the 3D map. The 2D map is obtained by
+ *  setting either of the two angular coordinates to zero (and using \f$\xi\f$
+ *  as radial coordinate).
  *
  *  The Wedge map is constructed by linearly interpolating between a bulged
  *  face of radius `radius_of_inner_surface` to a bulged face of
@@ -216,7 +246,7 @@ namespace CoordinateMaps {
 template <size_t Dim>
 class Wedge {
  public:
-  static constexpr size_t dim = 3;
+  static constexpr size_t dim = Dim;
   enum class WedgeHalves {
     /// Use the entire wedge
     Both,
@@ -259,9 +289,9 @@ class Wedge {
    * function mapping to the "sphere factor", the effect of which is to
    * distribute the radial gridpoints logarithmically in physical space.
    */
-  Wedge(double radius_inner, double radius_outer,
-        OrientationMap<3> orientation_of_wedge, double sphericity_inner,
-        double sphericity_outer, bool with_equiangular_map,
+  Wedge(double radius_inner, double radius_outer, double sphericity_inner,
+        double sphericity_outer, OrientationMap<Dim> orientation_of_wedge,
+        bool with_equiangular_map,
         WedgeHalves halves_to_use = WedgeHalves::Both,
         bool with_logarithmic_map = false) noexcept;
 
@@ -273,8 +303,8 @@ class Wedge {
   Wedge& operator=(Wedge&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+  std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
+      const std::array<T, Dim>& source_coords) const noexcept;
 
   /// For a \f$+z\f$-oriented `Wedge`, returns invalid if \f$z<=0\f$
   /// or if \f$(x,y,z)\f$ is on or outside the cone defined
@@ -288,16 +318,16 @@ class Wedge {
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
-  std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+  std::optional<std::array<double, Dim>> inverse(
+      const std::array<double, Dim>& target_coords) const noexcept;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
+      const std::array<T, Dim>& source_coords) const noexcept;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
+      const std::array<T, Dim>& source_coords) const noexcept;
 
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
@@ -305,6 +335,14 @@ class Wedge {
   static constexpr bool is_identity() noexcept { return false; }
 
  private:
+  // maps between 2D and 3D choices for coordinate axis orientations
+  static constexpr size_t radial_coord =
+      detail::WedgeCoordOrientation<Dim>::radial_coord;
+  static constexpr size_t polar_coord =
+      detail::WedgeCoordOrientation<Dim>::polar_coord;
+  static constexpr size_t azimuth_coord =
+      detail::WedgeCoordOrientation<Dim>::azimuth_coord;
+
   // factors out calculation of z needed for mapping and jacobian
   template <typename T>
   tt::remove_cvref_wrap_t<T> default_physical_z(
@@ -317,9 +355,9 @@ class Wedge {
 
   double radius_inner_{std::numeric_limits<double>::signaling_NaN()};
   double radius_outer_{std::numeric_limits<double>::signaling_NaN()};
-  OrientationMap<3> orientation_of_wedge_{};
   double sphericity_inner_{std::numeric_limits<double>::signaling_NaN()};
   double sphericity_outer_{std::numeric_limits<double>::signaling_NaN()};
+  OrientationMap<Dim> orientation_of_wedge_{};
   bool with_equiangular_map_ = false;
   WedgeHalves halves_to_use_ = WedgeHalves::Both;
   bool with_logarithmic_map_ = false;

@@ -79,7 +79,7 @@ auto make_map() {
         ProductOf3Maps<Affine, Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, 0.8, 1.0)),
-        Wedge3D(0.5, 0.75, {}, 1.0, 1.0, false));
+        Wedge3D(0.5, 0.75, 1.0, 1.0, {}, false));
   }
 }
 

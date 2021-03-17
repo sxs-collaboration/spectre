@@ -940,10 +940,10 @@ void test_coordinate_maps_are_identity() {
   CHECK_FALSE(giant_identity_map_base->jacobian_is_time_dependent());
 
   const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      CoordinateMaps::Wedge<3>(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
+      CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true));
   const auto wedge_composed_with_giant_identity =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Wedge<3>(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
+          CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{},
                                    true),
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},

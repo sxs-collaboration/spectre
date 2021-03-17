@@ -9,7 +9,7 @@
 #include <random>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -21,6 +21,8 @@
 
 namespace domain {
 namespace {
+using Wedge2D = CoordinateMaps::Wedge<2>;
+
 void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   INFO("Wedge2d all orientations");
   // Set up random number generator
@@ -56,22 +58,22 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   const double random_outer_radius_lower_eta = outer_dis(gen);
   CAPTURE(random_outer_radius_lower_eta);
 
-  const CoordinateMaps::Wedge2D map_upper_xi(
+  const Wedge2D map_upper_xi(
       random_inner_radius_upper_xi, random_outer_radius_upper_xi, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
           {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
       with_equiangular_map);
-  const CoordinateMaps::Wedge2D map_upper_eta(
+  const Wedge2D map_upper_eta(
       random_inner_radius_upper_eta, random_outer_radius_upper_eta, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
           {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
       with_equiangular_map);
-  const CoordinateMaps::Wedge2D map_lower_xi(
+  const Wedge2D map_lower_xi(
       random_inner_radius_lower_xi, random_outer_radius_lower_xi, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
           {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
       with_equiangular_map);
-  const CoordinateMaps::Wedge2D map_lower_eta(
+  const Wedge2D map_lower_eta(
       random_inner_radius_lower_eta, random_outer_radius_lower_eta, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
           {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
@@ -124,16 +126,15 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
     if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
       continue;
     }
-    test_suite_for_map_on_unit_cube(CoordinateMaps::Wedge2D{
-        inner_radius, outer_radius, inner_circularity, outer_circularity,
-        map_i(), with_equiangular_map});
+    test_suite_for_map_on_unit_cube(
+        Wedge2D{inner_radius, outer_radius, inner_circularity,
+                outer_circularity, map_i(), with_equiangular_map});
   }
 }
 
 void test_wedge2d_fail() noexcept {
   INFO("Wedge2d fail");
-  const auto map =
-      CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
+  const auto map = Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
 
   // Any point with x<=0 should fail the inverse map.
   const std::array<double, 2> test_mapped_point1{{0.0, 3.0}};
@@ -156,23 +157,22 @@ void test_wedge2d_fail() noexcept {
 
 void test_equality() {
   INFO("Equality");
-  const auto wedge2d =
-      CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
+  const auto wedge2d = Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
   const auto wedge2d_inner_radius_changed =
-      CoordinateMaps::Wedge2D(0.3, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
+      Wedge2D(0.3, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
   const auto wedge2d_outer_radius_changed =
-      CoordinateMaps::Wedge2D(0.2, 4.2, 0.0, 1.0, OrientationMap<2>{}, true);
+      Wedge2D(0.2, 4.2, 0.0, 1.0, OrientationMap<2>{}, true);
   const auto wedge2d_inner_circularity_changed =
-      CoordinateMaps::Wedge2D(0.2, 4.0, 0.3, 1.0, OrientationMap<2>{}, true);
+      Wedge2D(0.2, 4.0, 0.3, 1.0, OrientationMap<2>{}, true);
   const auto wedge2d_outer_circularity_changed =
-      CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 0.9, OrientationMap<2>{}, true);
-  const auto wedge2d_orientation_map_changed = CoordinateMaps::Wedge2D(
-      0.2, 4.0, 0.0, 1.0,
-      OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
-      true);
+      Wedge2D(0.2, 4.0, 0.0, 0.9, OrientationMap<2>{}, true);
+  const auto wedge2d_orientation_map_changed =
+      Wedge2D(0.2, 4.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+              true);
   const auto wedge2d_use_equiangular_map_changed =
-      CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, false);
+      Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, false);
   CHECK_FALSE(wedge2d == wedge2d_inner_radius_changed);
   CHECK_FALSE(wedge2d == wedge2d_outer_radius_changed);
   CHECK_FALSE(wedge2d == wedge2d_inner_circularity_changed);
@@ -187,7 +187,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
   test_wedge2d_all_orientations(false);  // Equidistant
   test_wedge2d_all_orientations(true);   // Equiangular
   test_equality();
-  CHECK(not CoordinateMaps::Wedge2D{}.is_identity());
+  CHECK(not Wedge2D{}.is_identity());
 }
 
 // [[OutputRegex, The radius of the inner surface must be greater than zero.]]
@@ -195,8 +195,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge2d =
-      CoordinateMaps::Wedge2D(-0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
+  auto failed_wedge2d = Wedge2D(-0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
   static_cast<void>(failed_wedge2d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -207,8 +206,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
     "Unit.Domain.CoordinateMaps.Wedge2D.CircularityInner", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge2d =
-      CoordinateMaps::Wedge2D(0.2, 4.0, -0.2, 1.0, OrientationMap<2>{}, true);
+  auto failed_wedge2d = Wedge2D(0.2, 4.0, -0.2, 1.0, OrientationMap<2>{}, true);
   static_cast<void>(failed_wedge2d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -219,8 +217,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
     "Unit.Domain.CoordinateMaps.Wedge2D.CircularityOuter", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge2d =
-      CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, -0.2, OrientationMap<2>{}, true);
+  auto failed_wedge2d = Wedge2D(0.2, 4.0, 0.0, -0.2, OrientationMap<2>{}, true);
   static_cast<void>(failed_wedge2d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -232,8 +229,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge2d =
-      CoordinateMaps::Wedge2D(4.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
+  auto failed_wedge2d = Wedge2D(4.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
   static_cast<void>(failed_wedge2d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -245,8 +241,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
     "Unit.Domain.CoordinateMaps.Wedge2D.PiercedSurface", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge2d =
-      CoordinateMaps::Wedge2D(3.0, 4.0, 1.0, 0.0, OrientationMap<2>{}, true);
+  auto failed_wedge2d = Wedge2D(3.0, 4.0, 1.0, 0.0, OrientationMap<2>{}, true);
   static_cast<void>(failed_wedge2d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

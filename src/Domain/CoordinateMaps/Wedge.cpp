@@ -4,6 +4,7 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 
 #include <cmath>
+#include <cstddef>
 #include <pup.h>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
@@ -20,19 +21,20 @@ namespace domain::CoordinateMaps {
 
 template <size_t Dim>
 Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
-                  const OrientationMap<3> orientation_of_wedge,
                   const double sphericity_inner, const double sphericity_outer,
+                  OrientationMap<Dim> orientation_of_wedge,
                   const bool with_equiangular_map,
                   const WedgeHalves halves_to_use,
                   const bool with_logarithmic_map) noexcept
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
-      orientation_of_wedge_(orientation_of_wedge),
       sphericity_inner_(sphericity_inner),
       sphericity_outer_(sphericity_outer),
+      orientation_of_wedge_(std::move(orientation_of_wedge)),
       with_equiangular_map_(with_equiangular_map),
       halves_to_use_(halves_to_use),
       with_logarithmic_map_(with_logarithmic_map) {
+  const double sqrt_dim = sqrt(double{Dim});
   ASSERT(radius_inner > 0.0,
          "The radius of the inner surface must be greater than zero.");
   ASSERT(sphericity_inner >= 0.0 and sphericity_inner <= 1.0,
@@ -43,9 +45,9 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
          "The radius of the outer surface must be greater than the radius of "
          "the inner surface.");
   ASSERT(radius_outer *
-                 ((1.0 - sphericity_outer_) / sqrt(3.0) + sphericity_outer_) >
+                 ((1.0 - sphericity_outer_) / sqrt_dim + sphericity_outer_) >
              radius_inner *
-                 ((1.0 - sphericity_inner) / sqrt(3.0) + sphericity_inner),
+                 ((1.0 - sphericity_inner) / sqrt_dim + sphericity_inner),
          "The arguments passed into the constructor for Wedge result in an "
          "object where the "
          "outer surface is pierced by the inner surface.");
@@ -64,12 +66,12 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
     scaled_frustum_rate_ = 0.0;
     sphere_rate_ = 0.5 * (log(radius_outer / radius_inner));
   } else {
-    scaled_frustum_zero_ = 0.5 / sqrt(3.0) *
+    scaled_frustum_zero_ = 0.5 / sqrt_dim *
                            ((1.0 - sphericity_outer_) * radius_outer +
                             (1.0 - sphericity_inner) * radius_inner);
     sphere_zero_ = 0.5 * (sphericity_outer_ * radius_outer +
                           sphericity_inner * radius_inner);
-    scaled_frustum_rate_ = 0.5 / sqrt(3.0) *
+    scaled_frustum_rate_ = 0.5 / sqrt_dim *
                            ((1.0 - sphericity_outer_) * radius_outer -
                             (1.0 - sphericity_inner) * radius_inner);
     sphere_rate_ = 0.5 * (sphericity_outer_ * radius_outer -
@@ -94,11 +96,15 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::default_physical_z(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge<Dim>::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
+    const std::array<T, Dim>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
-  ReturnType xi = source_coords[0];
+  // Radial coordinate
+  const ReturnType& zeta = source_coords[radial_coord];
+
+  // Polar angle
+  ReturnType xi = source_coords[polar_coord];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi += 1.0;
     xi *= 0.5;
@@ -106,40 +112,47 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge<Dim>::operator()(
     xi -= 1.0;
     xi *= 0.5;
   }
-  const ReturnType& eta = source_coords[1];
 
-  const ReturnType cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
-  const ReturnType cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType& zeta = source_coords[2];
-  const ReturnType one_over_rho =
-      1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
+  std::array<ReturnType, Dim - 1> cap{};
+  cap[0] = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  ReturnType one_over_rho = 1.0 + square(cap[0]);
+  if constexpr (Dim == 3) {
+    // Azimuthal angle
+    const ReturnType& eta = source_coords[azimuth_coord];
+    cap[1] = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+    one_over_rho += square(cap[1]);
+  }
+  one_over_rho = 1. / sqrt(one_over_rho);
 
-  ReturnType physical_z = default_physical_z(zeta, one_over_rho);
-  ReturnType physical_x = physical_z * cap_xi;
-  ReturnType physical_y = physical_z * cap_eta;
+  std::array<ReturnType, Dim> physical_coords{};
+  physical_coords[radial_coord] = default_physical_z(zeta, one_over_rho);
+  physical_coords[polar_coord] = physical_coords[radial_coord] * cap[0];
+  if constexpr (Dim == 3) {
+    physical_coords[azimuth_coord] = physical_coords[radial_coord] * cap[1];
+  }
 
-  std::array<ReturnType, 3> physical_coords{
-      {std::move(physical_x), std::move(physical_y), std::move(physical_z)}};
   return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
 template <size_t Dim>
-std::optional<std::array<double, 3>> Wedge<Dim>::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
-  const std::array<double, 3> physical_coords =
+std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
+    const std::array<double, Dim>& target_coords) const noexcept {
+  const std::array<double, Dim> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
-  const double& physical_x = physical_coords[0];
-  const double& physical_y = physical_coords[1];
-  const double& physical_z = physical_coords[2];
 
-  if (physical_z < 0.0 or equal_within_roundoff(physical_z, 0.0)) {
+  if (physical_coords[radial_coord] < 0.0 or
+      equal_within_roundoff(physical_coords[radial_coord], 0.0)) {
     return std::nullopt;
   }
 
-  const double cap_xi = physical_x / physical_z;
-  const double cap_eta = physical_y / physical_z;
-  const double one_over_rho =
-      1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
+  std::array<double, Dim - 1> cap{};
+  cap[0] = physical_coords[polar_coord] / physical_coords[radial_coord];
+  double one_over_rho = 1.0 + square(cap[0]);
+  if constexpr (Dim == 3) {
+    cap[1] = physical_coords[azimuth_coord] / physical_coords[radial_coord];
+    one_over_rho += square(cap[1]);
+  }
+  one_over_rho = 1. / sqrt(one_over_rho);
   const double zeta_coefficient =
       (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
   // If -sphere_rate_/scaled_frustum_rate_ > 1, then
@@ -158,14 +171,14 @@ std::optional<std::array<double, 3>> Wedge<Dim>::inverse(
     return std::nullopt;
   }
   const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
+  // Radial coordinate
   const double zeta =
       with_logarithmic_map_
-          ? (log(physical_z * sqrt(1.0 + square(cap_xi) + square(cap_eta))) -
-             sphere_zero_) /
+          ? (log(physical_coords[radial_coord] / one_over_rho) - sphere_zero_) /
                 sphere_rate_
-          : (physical_z - z_zero) / zeta_coefficient;
-  double xi = with_equiangular_map_ ? atan(cap_xi) / M_PI_4 : cap_xi;
-  const double eta = with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : cap_eta;
+          : (physical_coords[radial_coord] - z_zero) / zeta_coefficient;
+  // Polar angle
+  double xi = with_equiangular_map_ ? atan(cap[0]) / M_PI_4 : cap[0];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi *= 2.0;
     xi -= 1.0;
@@ -173,15 +186,27 @@ std::optional<std::array<double, 3>> Wedge<Dim>::inverse(
     xi *= 2.0;
     xi += 1.0;
   }
-  return std::array<double, 3>{{xi, eta, zeta}};
+  std::array<double, Dim> logical_coords{};
+  logical_coords[radial_coord] = zeta;
+  logical_coords[polar_coord] = xi;
+  if constexpr (Dim == 3) {
+    logical_coords[azimuth_coord] =
+        with_equiangular_map_ ? atan(cap[1]) / M_PI_4 : cap[1];
+  }
+  return logical_coords;
 }
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge<Dim>::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
+    const std::array<T, Dim>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
-  ReturnType xi = source_coords[0];
+
+  // Radial coordinate
+  const ReturnType& zeta = source_coords[radial_coord];
+
+  // Polar angle
+  ReturnType xi = source_coords[polar_coord];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi += 1.0;
     xi *= 0.5;
@@ -189,19 +214,22 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge<Dim>::jacobian(
     xi -= 1.0;
     xi *= 0.5;
   }
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
-  const ReturnType& cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
-  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType cap_xi_deriv = with_equiangular_map_
-                                      ? M_PI_4 * (1.0 + square(cap_xi))
-                                      : make_with_value<ReturnType>(xi, 1.0);
-  const ReturnType cap_eta_deriv = with_equiangular_map_
-                                       ? M_PI_4 * (1.0 + square(cap_eta))
-                                       : make_with_value<ReturnType>(eta, 1.0);
+  std::array<ReturnType, Dim - 1> cap{};
+  std::array<ReturnType, Dim - 1> cap_deriv{};
+  cap[0] = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  cap_deriv[0] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[0]))
+                                       : make_with_value<ReturnType>(xi, 1.0);
+  ReturnType one_over_rho = 1.0 + square(cap[0]);
+  if constexpr (Dim == 3) {
+    // Azimuthal angle
+    const ReturnType& eta = source_coords[azimuth_coord];
+    cap[1] = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+    cap_deriv[1] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[1]))
+                                         : make_with_value<ReturnType>(xi, 1.0);
+    one_over_rho += square(cap[1]);
+  }
+  one_over_rho = 1. / sqrt(one_over_rho);
 
-  const ReturnType one_over_rho =
-      1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
   const ReturnType one_over_rho_cubed = pow<3>(one_over_rho);
   const ReturnType physical_z = default_physical_z(zeta, one_over_rho);
   const ReturnType s_factor =
@@ -210,84 +238,102 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge<Dim>::jacobian(
           : ReturnType{sphere_zero_ + sphere_rate_ * zeta};
 
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<ReturnType, Dim, Frame::NoFrame>>(xi, 0.0);
 
-  ReturnType dz_dxi = -s_factor * cap_xi * cap_xi_deriv * one_over_rho_cubed;
-  ReturnType dx_dxi = cap_xi * dz_dxi + cap_xi_deriv * physical_z;
-  ReturnType dy_dxi = cap_eta * dz_dxi;
+  // Derivative by polar angle
+  std::array<ReturnType, Dim> dxyz_dxi{};
+  dxyz_dxi[radial_coord] =
+      -s_factor * cap[0] * cap_deriv[0] * one_over_rho_cubed;
+  dxyz_dxi[polar_coord] =
+      cap[0] * dxyz_dxi[radial_coord] + cap_deriv[0] * physical_z;
+  if constexpr (Dim == 3) {
+    dxyz_dxi[azimuth_coord] = cap[1] * dxyz_dxi[radial_coord];
+  }
   // Implement Scalings:
   if (halves_to_use_ != WedgeHalves::Both) {
-    dz_dxi *= 0.5;
-    dy_dxi *= 0.5;
-    dx_dxi *= 0.5;
+    for (size_t d = 0; d < Dim; ++d) {
+      gsl::at(dxyz_dxi, d) *= 0.5;
+    }
   }
-  std::array<ReturnType, 3> dX_dlogical = discrete_rotation(
-      orientation_of_wedge_,
-      std::array<ReturnType, 3>{
-          {std::move(dx_dxi), std::move(dy_dxi), std::move(dz_dxi)}});
-  get<0, 0>(jacobian_matrix) = dX_dlogical[0];
-  get<1, 0>(jacobian_matrix) = dX_dlogical[1];
-  get<2, 0>(jacobian_matrix) = dX_dlogical[2];
+  std::array<ReturnType, Dim> dX_dlogical =
+      discrete_rotation(orientation_of_wedge_, std::move(dxyz_dxi));
+  get<0, polar_coord>(jacobian_matrix) = dX_dlogical[0];
+  get<1, polar_coord>(jacobian_matrix) = dX_dlogical[1];
+  if constexpr (Dim == 3) {
+    get<2, polar_coord>(jacobian_matrix) = dX_dlogical[2];
+  }
 
-  // dz_deta
-  dX_dlogical[2] = -s_factor * cap_eta * cap_eta_deriv * one_over_rho_cubed;
-  // dy_deta
-  dX_dlogical[1] = cap_eta * dX_dlogical[2] + cap_eta_deriv * physical_z;
-  // dx_deta
-  dX_dlogical[0] = cap_xi * dX_dlogical[2];
-  dX_dlogical =
-      discrete_rotation(orientation_of_wedge_, std::move(dX_dlogical));
-  get<0, 1>(jacobian_matrix) = dX_dlogical[0];
-  get<1, 1>(jacobian_matrix) = dX_dlogical[1];
-  get<2, 1>(jacobian_matrix) = dX_dlogical[2];
+  // Derivative by azimuthal angle
+  if constexpr (Dim == 3) {
+    std::array<ReturnType, Dim> dxyz_deta{};
+    dxyz_deta[radial_coord] =
+        -s_factor * cap[1] * cap_deriv[1] * one_over_rho_cubed;
+    dxyz_deta[azimuth_coord] =
+        cap[1] * dxyz_deta[radial_coord] + cap_deriv[1] * physical_z;
+    dxyz_deta[polar_coord] = cap[0] * dxyz_deta[radial_coord];
+    dX_dlogical =
+        discrete_rotation(orientation_of_wedge_, std::move(dxyz_deta));
+    get<0, azimuth_coord>(jacobian_matrix) = dX_dlogical[0];
+    get<1, azimuth_coord>(jacobian_matrix) = dX_dlogical[1];
+    get<2, azimuth_coord>(jacobian_matrix) = dX_dlogical[2];
+  }
 
-  // dz_dzeta
+  // Derivative by radial coordinate
+  std::array<ReturnType, Dim> dxyz_dzeta{};
   if (with_logarithmic_map_) {
-    dX_dlogical[2] = s_factor * sphere_rate_ * one_over_rho;
+    dxyz_dzeta[radial_coord] = s_factor * sphere_rate_ * one_over_rho;
   } else {
-    dX_dlogical[2] = scaled_frustum_rate_ + sphere_rate_ * one_over_rho;
+    dxyz_dzeta[radial_coord] =
+        scaled_frustum_rate_ + sphere_rate_ * one_over_rho;
   }
-  // dx_dzeta
-  dX_dlogical[0] = cap_xi * dX_dlogical[2];
-  // dy_dzeta
-  dX_dlogical[1] = cap_eta * dX_dlogical[2];
-  dX_dlogical =
-      discrete_rotation(orientation_of_wedge_, std::move(dX_dlogical));
-  get<0, 2>(jacobian_matrix) = dX_dlogical[0];
-  get<1, 2>(jacobian_matrix) = dX_dlogical[1];
-  get<2, 2>(jacobian_matrix) = dX_dlogical[2];
+  dxyz_dzeta[polar_coord] = cap[0] * dxyz_dzeta[radial_coord];
+  if constexpr (Dim == 3) {
+    dxyz_dzeta[azimuth_coord] = cap[1] * dxyz_dzeta[radial_coord];
+  }
+  dX_dlogical = discrete_rotation(orientation_of_wedge_, std::move(dxyz_dzeta));
+  get<0, radial_coord>(jacobian_matrix) = dX_dlogical[0];
+  get<1, radial_coord>(jacobian_matrix) = dX_dlogical[1];
+  if constexpr (Dim == 3) {
+    get<2, radial_coord>(jacobian_matrix) = dX_dlogical[2];
+  }
   return jacobian_matrix;
 }
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-Wedge<Dim>::inv_jacobian(const std::array<T, 3>& source_coords) const noexcept {
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
+Wedge<Dim>::inv_jacobian(
+    const std::array<T, Dim>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
-  ReturnType xi = source_coords[0];
+  // Radial coordinate
+  const ReturnType& zeta = source_coords[radial_coord];
+
+  // Polar angle
+  ReturnType xi = source_coords[polar_coord];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
-    xi += make_with_value<ReturnType>(xi, 1.0);
+    xi += 1.0;
     xi *= 0.5;
   } else if (halves_to_use_ == WedgeHalves::LowerOnly) {
-    xi += make_with_value<ReturnType>(xi, -1.0);
+    xi -= 1.0;
     xi *= 0.5;
   }
+  std::array<ReturnType, Dim> cap{};
+  std::array<ReturnType, Dim> cap_deriv{};
+  cap[0] = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  cap_deriv[0] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[0]))
+                                       : make_with_value<ReturnType>(xi, 1.0);
+  ReturnType one_over_rho = 1.0 + square(cap[0]);
+  if constexpr (Dim == 3) {
+    // Azimuthal angle
+    const ReturnType& eta = source_coords[azimuth_coord];
+    cap[1] = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+    cap_deriv[1] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[1]))
+                                         : make_with_value<ReturnType>(xi, 1.0);
+    one_over_rho += square(cap[1]);
+  }
+  one_over_rho = 1. / sqrt(one_over_rho);
 
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
-  const ReturnType cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
-  const ReturnType cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType cap_xi_deriv = with_equiangular_map_
-                                      ? M_PI_4 * (1.0 + square(cap_xi))
-                                      : make_with_value<ReturnType>(xi, 1.0);
-  const ReturnType cap_eta_deriv = with_equiangular_map_
-                                       ? M_PI_4 * (1.0 + square(cap_eta))
-                                       : make_with_value<ReturnType>(eta, 1.0);
-
-  const ReturnType one_over_rho =
-      1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
   const ReturnType one_over_rho_cubed = pow<3>(one_over_rho);
   const ReturnType one_over_physical_z =
       1.0 / default_physical_z(zeta, one_over_rho);
@@ -308,48 +354,54 @@ Wedge<Dim>::inv_jacobian(const std::array<T, 3>& source_coords) const noexcept {
   const ReturnType dzeta_factor = one_over_physical_z * one_over_dz_dzeta;
 
   auto inv_jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<ReturnType, Dim, Frame::NoFrame>>(xi, 0.0);
 
-  ReturnType dxi_dx = one_over_physical_z / cap_xi_deriv;
+  // Derivatives of polar angle
+  std::array<ReturnType, Dim> dxi_dxyz{};
+  dxi_dxyz[polar_coord] = one_over_physical_z / cap_deriv[0];
   // Implement Scalings:
   if (halves_to_use_ != WedgeHalves::Both) {
-    dxi_dx *= 2.0;
+    dxi_dxyz[polar_coord] *= 2.0;
   }
-  auto dxi_dy = make_with_value<ReturnType>(xi, 0.0);
-  ReturnType dxi_dz = -cap_xi * dxi_dx;
+  dxi_dxyz[radial_coord] = -cap[0] * dxi_dxyz[polar_coord];
+  if constexpr (Dim == 3) {
+    dxi_dxyz[azimuth_coord] = make_with_value<ReturnType>(xi, 0.0);
+  }
+  std::array<ReturnType, Dim> dlogical_dX =
+      discrete_rotation(orientation_of_wedge_, std::move(dxi_dxyz));
+  get<polar_coord, 0>(inv_jacobian_matrix) = dlogical_dX[0];
+  get<polar_coord, 1>(inv_jacobian_matrix) = dlogical_dX[1];
+  if constexpr (Dim == 3) {
+    get<polar_coord, 2>(inv_jacobian_matrix) = dlogical_dX[2];
+  }
 
-  std::array<ReturnType, 3> dlogical_dX = discrete_rotation(
-      orientation_of_wedge_,
-      std::array<ReturnType, 3>{
-          {std::move(dxi_dx), std::move(dxi_dy), std::move(dxi_dz)}});
-  get<0, 0>(inv_jacobian_matrix) = dlogical_dX[0];
-  get<0, 1>(inv_jacobian_matrix) = dlogical_dX[1];
-  get<0, 2>(inv_jacobian_matrix) = dlogical_dX[2];
+  // Derivatives of azimuthal angle
+  if constexpr (Dim == 3) {
+    std::array<ReturnType, Dim> deta_dxyz{};
+    deta_dxyz[polar_coord] = make_with_value<ReturnType>(xi, 0.0);
+    deta_dxyz[azimuth_coord] = one_over_physical_z / cap_deriv[1];
+    deta_dxyz[radial_coord] = -cap[1] * deta_dxyz[azimuth_coord];
+    dlogical_dX =
+        discrete_rotation(orientation_of_wedge_, std::move(deta_dxyz));
+    get<azimuth_coord, 0>(inv_jacobian_matrix) = dlogical_dX[0];
+    get<azimuth_coord, 1>(inv_jacobian_matrix) = dlogical_dX[1];
+    get<azimuth_coord, 2>(inv_jacobian_matrix) = dlogical_dX[2];
+  }
 
-  // deta_dx
-  dlogical_dX[0] = 0.0;
-  // deta_dy
-  dlogical_dX[1] = one_over_physical_z / cap_eta_deriv;
-  // deta_dz
-  dlogical_dX[2] = -cap_eta * dlogical_dX[1];
-  dlogical_dX =
-      discrete_rotation(orientation_of_wedge_, std::move(dlogical_dX));
-  get<1, 0>(inv_jacobian_matrix) = dlogical_dX[0];
-  get<1, 1>(inv_jacobian_matrix) = dlogical_dX[1];
-  get<1, 2>(inv_jacobian_matrix) = dlogical_dX[2];
-
-  // dzeta_dx
-  dlogical_dX[0] = dzeta_factor * cap_xi * s_factor_over_rho_cubed;
-  // dzeta_dy
-  dlogical_dX[1] = dzeta_factor * cap_eta * s_factor_over_rho_cubed;
-  // dzeta_dz
-  dlogical_dX[2] = dzeta_factor * (scaled_z_frustum + s_factor_over_rho_cubed);
-  dlogical_dX =
-      discrete_rotation(orientation_of_wedge_, std::move(dlogical_dX));
-  get<2, 0>(inv_jacobian_matrix) = dlogical_dX[0];
-  get<2, 1>(inv_jacobian_matrix) = dlogical_dX[1];
-  get<2, 2>(inv_jacobian_matrix) = dlogical_dX[2];
+  // Derivatives of radial coordinate
+  std::array<ReturnType, Dim> dzeta_dxyz{};
+  dzeta_dxyz[radial_coord] =
+      dzeta_factor * (scaled_z_frustum + s_factor_over_rho_cubed);
+  dzeta_dxyz[polar_coord] = dzeta_factor * cap[0] * s_factor_over_rho_cubed;
+  if constexpr (Dim == 3) {
+    dzeta_dxyz[azimuth_coord] = dzeta_factor * cap[1] * s_factor_over_rho_cubed;
+  }
+  dlogical_dX = discrete_rotation(orientation_of_wedge_, std::move(dzeta_dxyz));
+  get<radial_coord, 0>(inv_jacobian_matrix) = dlogical_dX[0];
+  get<radial_coord, 1>(inv_jacobian_matrix) = dlogical_dX[1];
+  if constexpr (Dim == 3) {
+    get<radial_coord, 2>(inv_jacobian_matrix) = dlogical_dX[2];
+  }
   return inv_jacobian_matrix;
 }
 
@@ -357,9 +409,9 @@ template <size_t Dim>
 void Wedge<Dim>::pup(PUP::er& p) noexcept {
   p | radius_inner_;
   p | radius_outer_;
-  p | orientation_of_wedge_;
   p | sphericity_inner_;
   p | sphericity_outer_;
+  p | orientation_of_wedge_;
   p | with_equiangular_map_;
   p | halves_to_use_;
   p | with_logarithmic_map_;
@@ -415,8 +467,8 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
   Wedge<DIM(data)>::inv_jacobian(                                              \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (3))
-GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (3),
+GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3),
                         (double, DataVector,
                          std::reference_wrapper<const double>,
                          std::reference_wrapper<const DataVector>))

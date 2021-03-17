@@ -651,30 +651,29 @@ sph_wedge_coordinate_maps(const double inner_radius, const double outer_radius,
       for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
            face_j++) {
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i,
-            gsl::at(wedge_orientations, face_j), inner_sphericity,
-            outer_sphericity, use_equiangular_map, Halves::Both,
-            use_logarithmic_map);
+            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, face_j),
+            use_equiangular_map, Halves::Both, use_logarithmic_map);
       }
     } else {
       for (size_t i = 0; i < 4; i++) {
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i,
-            gsl::at(wedge_orientations, i), inner_sphericity, outer_sphericity,
+            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::LowerOnly, use_logarithmic_map);
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i,
-            gsl::at(wedge_orientations, i), inner_sphericity, outer_sphericity,
+            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::UpperOnly, use_logarithmic_map);
       }
       wedges_for_this_layer.emplace_back(
-          inner_radius_layer_i, outer_radius_layer_i,
-          gsl::at(wedge_orientations, 4), inner_sphericity, outer_sphericity,
-          use_equiangular_map, Halves::Both, use_logarithmic_map);
+          inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+          outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
+          Halves::Both, use_logarithmic_map);
       wedges_for_this_layer.emplace_back(
-          inner_radius_layer_i, outer_radius_layer_i,
-          gsl::at(wedge_orientations, 5), inner_sphericity, outer_sphericity,
-          use_equiangular_map, Halves::Both, use_logarithmic_map);
+          inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+          outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
+          Halves::Both, use_logarithmic_map);
     }
     for (const auto& wedge : wedges_for_this_layer) {
       wedges_for_all_layers.push_back(wedge);

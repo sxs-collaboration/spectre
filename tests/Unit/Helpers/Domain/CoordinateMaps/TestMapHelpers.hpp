@@ -102,6 +102,8 @@ void check_if_map_is_identity(const Map& map) noexcept {
 template <typename Map>
 void test_jacobian(const Map& map,
                    const std::array<double, Map::dim>& test_point) noexcept {
+  INFO("Test Jacobian");
+  CAPTURE(test_point);
   // Our default approx value is too stringent for this test
   Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dx = 1e-4;
@@ -122,6 +124,9 @@ void test_jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) noexcept {
+  INFO("Test time-dependent Jacobian");
+  CAPTURE(test_point);
+  CAPTURE(time);
   const auto compute_map_point =
       [&map, time,
        &functions_of_time](const std::array<double, Map::dim>& point) noexcept {
@@ -151,6 +156,8 @@ void test_jacobian(
 template <typename Map>
 void test_inv_jacobian(
     const Map& map, const std::array<double, Map::dim>& test_point) noexcept {
+  INFO("Test inverse Jacobian");
+  CAPTURE(test_point);
   const auto jacobian = map.jacobian(test_point);
   const auto inv_jacobian = map.inv_jacobian(test_point);
 
@@ -183,6 +190,9 @@ void test_inv_jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
+  INFO("Test inverse time-dependent Jacobian");
+  CAPTURE(test_point);
+  CAPTURE(time);
   const auto jacobian = map.jacobian(test_point, time, functions_of_time);
   const auto inv_jacobian =
       map.inv_jacobian(test_point, time, functions_of_time);
@@ -288,6 +298,8 @@ template <typename Map, typename... Args>
 void test_coordinate_map_argument_types(
     const Map& map, const std::array<double, Map::dim>& test_point,
     const Args&... args) {
+  INFO("Test coordinate map argument types")
+  CAPTURE(test_point);
   const auto make_array_data_vector = [](const auto& double_array) noexcept {
     std::array<DataVector, Map::dim> result;
     std::transform(double_array.begin(), double_array.end(), result.begin(),
@@ -303,6 +315,7 @@ void test_coordinate_map_argument_types(
   };
 
   {
+    INFO("Test call-operator");
     const auto mapped_point = map(test_point, args...);
     CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point), args...),
                           mapped_point);
@@ -332,6 +345,7 @@ void test_coordinate_map_argument_types(
     };
 
     {
+      INFO("Test Jacobian");
       const auto expected = the_map.jacobian(point, time_args...);
       CHECK_ITERABLE_APPROX(the_map.jacobian(add_ref_wrap(point), time_args...),
                             expected);
@@ -344,6 +358,7 @@ void test_coordinate_map_argument_types(
           make_tensor_data_vector(expected));
     }
     {
+      INFO("Test inverse Jacobian");
       const auto expected = the_map.inv_jacobian(point, time_args...);
       CHECK_ITERABLE_APPROX(
           the_map.inv_jacobian(add_ref_wrap(point), time_args...), expected);
@@ -393,6 +408,8 @@ void test_coordinate_map_argument_types(
 template <typename Map, typename T>
 void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) noexcept {
+  INFO("Test inverse map");
+  CAPTURE(test_point);
   CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).value());
 }
 
