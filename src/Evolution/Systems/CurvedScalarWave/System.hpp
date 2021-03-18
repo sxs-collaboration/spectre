@@ -8,6 +8,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
 #include "Utilities/TMPL.hpp"
 
 /*!
@@ -23,6 +24,13 @@ struct System {
   static constexpr size_t volume_dim = Dim;
 
   using variables_tag = ::Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
-  using gradients_tags = tmpl::list<Pi, Phi<Dim>, Psi>;
+  using flux_variables = tmpl::list<>;
+  using gradient_variables = tmpl::list<Pi, Phi<Dim>, Psi>;
+
+  // Relic alias: needs to be removed once all evolution systems
+  // convert to using dg::ComputeTimeDerivative
+  using gradients_tags = gradient_variables;
+
+  using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
 };
 }  // namespace CurvedScalarWave
