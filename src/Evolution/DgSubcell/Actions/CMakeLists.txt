@@ -12,4 +12,5 @@ spectre_target_headers(
   Labels.hpp
   SelectNumericalMethod.hpp
   TciAndRollback.hpp
+  TciAndSwitchToDg.hpp
   )
