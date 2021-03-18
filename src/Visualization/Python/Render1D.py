@@ -227,8 +227,10 @@ def render_animation(var_name, output_prefix, interval, time, coords, data):
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
     fig = plt.figure()
-    ax = plt.axes(xlim=(find_extrema_over_data_set(coords)),
-                  ylim=(find_extrema_over_data_set(data)))
+    ax = plt.axes(xlim=(find_extrema_over_data_set(
+        np.concatenate(np.asarray(coords)).ravel())),
+                  ylim=(find_extrema_over_data_set(
+                      np.concatenate(np.asarray(data)).ravel())))
     line, = ax.plot([], [], 'o', lw=2)
     ax.set_xlabel('x')
     ax.set_ylabel(var_name)
