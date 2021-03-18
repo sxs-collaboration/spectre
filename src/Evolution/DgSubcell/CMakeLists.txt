@@ -48,6 +48,10 @@ target_link_libraries(
   Domain
   Spectral
 
+  INTERFACE
+  Events
+  Parallel
+
   PRIVATE
   Blas
   ErrorHandling
@@ -55,4 +59,5 @@ target_link_libraries(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(Events)
 add_subdirectory(Tags)

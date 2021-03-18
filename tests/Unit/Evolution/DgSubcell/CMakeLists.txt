@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Actions/Test_Initialize.cpp
   Actions/Test_SelectNumericalMethod.cpp
   Actions/Test_TciAndRollback.cpp
+  Events/Test_ObserveFields.cpp
   Test_ActiveGrid.cpp
   Test_CartesianFluxDivergence.cpp
   Test_ComputeBoundaryTerms.cpp
@@ -38,6 +39,13 @@ target_link_libraries(
   Domain
   DgSubcell
   DgSubcellHelpers
+  ErrorHandling
+  IO
   Parallel
   Spectral
+  )
+
+add_dependencies(
+  ${LIBRARY}
+  module_GlobalCache
   )
