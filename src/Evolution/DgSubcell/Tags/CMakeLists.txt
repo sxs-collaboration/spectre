@@ -11,6 +11,7 @@ spectre_target_headers(
   Coordinates.hpp
   DidRollback.hpp
   Inactive.hpp
+  Jacobians.hpp
   Mesh.hpp
   NeighborData.hpp
   SubcellOptions.hpp
