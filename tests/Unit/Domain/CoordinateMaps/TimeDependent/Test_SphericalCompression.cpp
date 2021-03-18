@@ -227,7 +227,7 @@ void test_out_of_bounds_inverse(
       target_radius = max_radius + rad_dis(*generator) * min_radius +
                       std::numeric_limits<double>::epsilon();
     } else {
-      target_radius = min_radius - lambda_y - rad_dis(*generator) * min_radius -
+      target_radius = (min_radius - lambda_y) * (1.0 - rad_dis(*generator)) -
                       std::numeric_limits<double>::epsilon();
     }
   }
