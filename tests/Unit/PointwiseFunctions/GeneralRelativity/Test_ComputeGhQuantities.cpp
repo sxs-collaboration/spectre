@@ -38,6 +38,7 @@
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/CovariantDerivOfExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
@@ -626,6 +627,24 @@ void test_spacetime_derivative_of_spacetime_metric(
   }
 }
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+void test_cov_deriv_extrinsic_curvature(
+    const DataType& used_for_size) noexcept {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::ijj<DataType, SpatialDim, Frame> (*)(
+          const tnsr::ii<DataType, SpatialDim, Frame>&,
+          const tnsr::A<DataType, SpatialDim, Frame>&,
+          const tnsr::Ijj<DataType, SpatialDim, Frame>&,
+          const tnsr::AA<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
+          &::GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature<
+              SpatialDim, Frame, DataType>),
+      "GeneralRelativity.ComputeGhQuantities",
+      "covariant_deriv_extrinsic_curvture", {{{-10., 10.}}}, used_for_size);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
@@ -638,6 +657,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_gauge_source, (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_compute_extrinsic_curvature_and_deriv_metric, (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_cov_deriv_extrinsic_curvature,
+                                    (1, 2, 3), (Frame::Grid, Frame::Inertial));
 
   const size_t num_pts = 5;
   const DataVector used_for_size(num_pts);

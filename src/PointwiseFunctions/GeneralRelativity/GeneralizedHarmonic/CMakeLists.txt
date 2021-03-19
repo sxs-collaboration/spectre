@@ -4,6 +4,7 @@
 spectre_target_sources(
   GeneralRelativity
   PRIVATE
+  CovariantDerivOfExtrinsicCurvature.cpp
   DerivSpatialMetric.cpp
   ExtrinsicCurvature.cpp
   GaugeSource.cpp
@@ -26,6 +27,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ConstraintGammas.hpp
+  CovariantDerivOfExtrinsicCurvature.hpp
   DerivSpatialMetric.hpp
   ExtrinsicCurvature.hpp
   GaugeSource.hpp
