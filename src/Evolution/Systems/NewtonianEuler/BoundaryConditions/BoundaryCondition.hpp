@@ -16,7 +16,7 @@ class DirichletAnalytic;
 }  // namespace NewtonianEuler::BoundaryConditions
 /// \endcond
 
-/// \brief Boundary conditions for the scalar wave system
+/// \brief Boundary conditions for the Newtonian Euler hydrodynamics system
 namespace NewtonianEuler::BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <size_t Dim>
