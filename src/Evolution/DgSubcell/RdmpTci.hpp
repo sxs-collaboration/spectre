@@ -115,4 +115,57 @@ bool rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
       });
   return cell_is_troubled;
 }
+
+/*!
+ * \brief get the max and min of each component of the active and inactive
+ * variables. If `include_inactive_grid` is `false` then only the max over the
+ * `active_grid_evolved_vars` for each component is returned.
+ */
+template <typename... EvolvedVarsTags>
+std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
+    const Variables<tmpl::list<EvolvedVarsTags...>>& active_grid_evolved_vars,
+    const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
+        inactive_grid_evolved_vars,
+    const bool include_inactive_grid) noexcept {
+  std::vector<double> max_of_vars(
+      active_grid_evolved_vars.number_of_independent_components,
+      std::numeric_limits<double>::min());
+  std::vector<double> min_of_vars(
+      active_grid_evolved_vars.number_of_independent_components,
+      std::numeric_limits<double>::max());
+  size_t component_index = 0;
+  tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
+      [&active_grid_evolved_vars, &component_index, &inactive_grid_evolved_vars,
+       &include_inactive_grid, &max_of_vars,
+       &min_of_vars](auto tag_v) noexcept {
+        using std::max;
+        using std::min;
+
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        const auto& active_var = get<tag>(active_grid_evolved_vars);
+        const size_t number_of_components_in_tensor = active_var.size();
+        for (size_t tensor_storage_index = 0;
+             tensor_storage_index < number_of_components_in_tensor;
+             ++tensor_storage_index) {
+          ASSERT(component_index < max_of_vars.size() and
+                     component_index < min_of_vars.size(),
+                 "The component index into the variables is out of bounds.");
+          max_of_vars[component_index] = max(active_var[tensor_storage_index]);
+          min_of_vars[component_index] = min(active_var[tensor_storage_index]);
+          if (include_inactive_grid) {
+            using inactive_tag = Tags::Inactive<tag>;
+            const auto& inactive_var =
+                get<inactive_tag>(inactive_grid_evolved_vars);
+            max_of_vars[component_index] =
+                max(max_of_vars[component_index],
+                    max(inactive_var[tensor_storage_index]));
+            min_of_vars[component_index] =
+                min(min_of_vars[component_index],
+                    min(inactive_var[tensor_storage_index]));
+          }
+          ++component_index;
+        }
+      });
+  return {std::move(max_of_vars), std::move(min_of_vars)};
+}
 }  // namespace evolution::dg::subcell

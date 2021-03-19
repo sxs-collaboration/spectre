@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <random>
 #include <utility>
 #include <vector>
 
@@ -16,8 +17,11 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -141,9 +145,60 @@ void test_rdmp() noexcept {
   }
 }
 
+template <size_t Dim>
+void test_rdmp_max_min() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist{-1.0, 1.0};
+  const size_t num_pts = 10;
+  auto active_vars = make_with_random_values<
+      Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>>(
+      make_not_null(&gen), make_not_null(&dist), num_pts);
+  auto inactive_vars = make_with_random_values<Variables<
+      tmpl::list<evolution::dg::subcell::Tags::Inactive<Tags::Scalar>,
+                 evolution::dg::subcell::Tags::Inactive<Tags::Vector<Dim>>>>>(
+      make_not_null(&gen), make_not_null(&dist), num_pts);
+  get<Dim - 1>(get<evolution::dg::subcell::Tags::Inactive<Tags::Vector<Dim>>>(
+      inactive_vars))[num_pts / 2] = 10.0;
+  get<Dim - 1>(get<evolution::dg::subcell::Tags::Inactive<Tags::Vector<Dim>>>(
+      inactive_vars))[num_pts / 2 + 1] = -10.0;
+  {
+    // Check that the inactive vars are actually ignored
+    const auto [max, min] =
+        evolution::dg::subcell::rdmp_max_min(active_vars, inactive_vars, false);
+    REQUIRE(max.size() == Dim + 1);
+    REQUIRE(min.size() == Dim + 1);
+    CHECK(max[Dim] < 10.0);
+    CHECK(min[Dim] > -10.0);
+  }
+  {
+    // Check that the inactive vars are included if requested
+    const auto [max, min] =
+        evolution::dg::subcell::rdmp_max_min(active_vars, inactive_vars, true);
+    REQUIRE(max.size() == Dim + 1);
+    REQUIRE(min.size() == Dim + 1);
+    CHECK(max[Dim] == 10.0);
+    CHECK(min[Dim] == -10.0);
+  }
+  get<Dim - 1>(get<Tags::Vector<Dim>>(active_vars))[num_pts / 2] = 100.0;
+  get<Dim - 1>(get<Tags::Vector<Dim>>(active_vars))[num_pts / 2 + 1] = -200.0;
+  {
+    // Check that the active vars are used for max and min
+    const auto [max, min] =
+        evolution::dg::subcell::rdmp_max_min(active_vars, inactive_vars, true);
+    REQUIRE(max.size() == Dim + 1);
+    REQUIRE(min.size() == Dim + 1);
+    CHECK(max[Dim] == 100.0);
+    CHECK(min[Dim] == -200.0);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tci.Rdmp", "[Evolution][Unit]") {
   test_rdmp<1>();
   test_rdmp<2>();
   test_rdmp<3>();
+
+  test_rdmp_max_min<1>();
+  test_rdmp_max_min<2>();
+  test_rdmp_max_min<3>();
 }
 }  // namespace
