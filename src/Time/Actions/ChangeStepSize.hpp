@@ -64,7 +64,7 @@ bool change_step_size(
   bool step_accepted = true;
   for (const auto& step_chooser : step_choosers) {
     const auto [step_choice, step_choice_accepted] =
-        step_chooser->desired_step(last_step_size, *box, cache);
+        step_chooser->desired_step(box, last_step_size, cache);
     desired_step = std::min(desired_step, step_choice);
     step_accepted = step_accepted and step_choice_accepted;
   }

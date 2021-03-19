@@ -58,7 +58,10 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
       "instabilities."};
   using options = tmpl::list<>;
 
-  using argument_tags = tmpl::list<Tags::HistoryEvolvedVariables<>>;
+  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
+
+  using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables, typename History>
   std::pair<double, bool> operator()(

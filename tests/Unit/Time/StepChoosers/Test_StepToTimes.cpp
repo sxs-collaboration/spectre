@@ -56,7 +56,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
               std::make_unique<Specified>(impl_times));
 
       const Parallel::GlobalCache<Metavariables> cache{};
-      const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(now_id);
+      auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(now_id);
 
       const auto answer = step_to_times(now_id, step, cache);
       if (result == -1.0) {
@@ -64,13 +64,11 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
       } else {
         CHECK(result == answer.first);
       }
-      CHECK(step_to_times_base->desired_step(step, box, cache) ==
-            std::make_pair(result, true));
+      CHECK(step_to_times_base->desired_slab(step, box, cache) == result);
       CHECK(serialize_and_deserialize(step_to_times)(now_id, step, cache) ==
             std::make_pair(result, true));
       CHECK(serialize_and_deserialize(step_to_times_base)
-                ->desired_step(step, box, cache) ==
-            std::make_pair(result, true));
+                ->desired_slab(step, box, cache) == result);
     };
     impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times);
     alg::for_each(times, [](double& x) noexcept { return x = -x; });

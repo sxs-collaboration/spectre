@@ -52,7 +52,10 @@ class Increase : public StepChooser<StepChooserRegistrars> {
 
   explicit Increase(const double factor) noexcept : factor_(factor) {}
 
+  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
+
   using argument_tags = tmpl::list<>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(

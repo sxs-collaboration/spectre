@@ -34,7 +34,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepChooserType>();
 
   const Parallel::GlobalCache<Metavariables> cache{};
-  const auto box = db::create<db::AddSimpleTags<>>();
+  auto box = db::create<db::AddSimpleTags<>>();
   const auto check =
       [&box, &cache](const double step, const double expected) noexcept {
     const Increase increase{5.};
@@ -42,12 +42,13 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
         std::make_unique<Increase>(increase);
 
     CHECK(increase(step, cache) == std::make_pair(expected, true));
-    CHECK(increase_base->desired_step(step, box, cache) ==
+    CHECK(increase_base->desired_step(make_not_null(&box), step, cache) ==
           std::make_pair(expected, true));
+    CHECK(increase_base->desired_slab(step, box, cache) == expected);
     CHECK(serialize_and_deserialize(increase)(step, cache) ==
           std::make_pair(expected, true));
     CHECK(serialize_and_deserialize(increase_base)
-              ->desired_step(step, box, cache) ==
+              ->desired_step(make_not_null(&box), step, cache) ==
           std::make_pair(expected, true));
   };
   check(0.25, 1.25);

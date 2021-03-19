@@ -68,6 +68,8 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
   explicit Cfl(const double safety_factor) noexcept
       : safety_factor_(safety_factor) {}
 
+  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
+
   using argument_tags =
       tmpl::list<domain::Tags::MinimumGridSpacing<Dim, Frame>,
                  ::Tags::TimeStepper<>,

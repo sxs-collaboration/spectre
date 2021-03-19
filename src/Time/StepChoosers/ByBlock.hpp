@@ -67,7 +67,10 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
   explicit ByBlock(std::vector<double> sizes) noexcept
       : sizes_(std::move(sizes)) {}
 
+  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
+
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(

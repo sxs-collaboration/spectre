@@ -68,7 +68,7 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
                                        const double characteristic_speed,
                                        const DataVector& coordinates) noexcept {
   const Parallel::GlobalCache<Metavariables> cache{};
-  const auto box = db::create<
+  auto box = db::create<
       db::AddSimpleTags<
           CharacteristicSpeed, domain::Tags::Coordinates<dim, frame>,
           domain::Tags::Mesh<dim>, Tags::TimeStepper<TimeStepper>>,
@@ -98,11 +98,13 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
   const auto accepted_step_result =
       cfl(grid_spacing, time_stepper, speed, result.first * 0.7, cache);
   CHECK(accepted_step_result.second);
-  CHECK(cfl_base->desired_step(current_step, box, cache) == result);
+  CHECK(cfl_base->desired_step(make_not_null(&box), current_step, cache) ==
+        result);
+  CHECK(cfl_base->desired_slab(current_step, box, cache) == result.first);
   CHECK(serialize_and_deserialize(cfl)(grid_spacing, time_stepper, speed,
                                        current_step, cache) == result);
-  CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step, box,
-                                                          cache) == result);
+  CHECK(serialize_and_deserialize(cfl_base)->desired_step(
+            make_not_null(&box), current_step, cache) == result);
   return result;
 }
 }  // namespace

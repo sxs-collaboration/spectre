@@ -78,7 +78,10 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
   explicit StepToTimes(std::unique_ptr<TimeSequence<double>> times) noexcept
       : times_(std::move(times)) {}
 
-  using argument_tags = tmpl::list<Tags::TimeStepId>;
+  static constexpr UsableFor usable_for = UsableFor::OnlySlabChoice;
+
+  using argument_tags = tmpl::list<::Tags::TimeStepId>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(
