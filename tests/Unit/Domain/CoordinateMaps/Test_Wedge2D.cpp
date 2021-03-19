@@ -122,13 +122,26 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   const double outer_circularity = unit_dis(gen);
   CAPTURE(outer_circularity);
 
+  using WedgeHalves = Wedge2D::WedgeHalves;
+  const std::array<WedgeHalves, 3> possible_halves = {
+      {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
     if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
       continue;
     }
-    test_suite_for_map_on_unit_cube(
-        Wedge2D{inner_radius, outer_radius, inner_circularity,
-                outer_circularity, map_i(), with_equiangular_map});
+    const auto& orientation = map_i();
+    CAPTURE(orientation);
+    for (const auto& halves : possible_halves) {
+      CAPTURE(halves);
+      for (const auto with_logarithmic_map : {false, true}) {
+        CAPTURE(with_logarithmic_map);
+        test_suite_for_map_on_unit_cube(
+            Wedge2D{inner_radius, outer_radius,
+                    with_logarithmic_map ? 1.0 : inner_circularity,
+                    with_logarithmic_map ? 1.0 : outer_circularity, orientation,
+                    with_equiangular_map, halves, with_logarithmic_map});
+      }
+    }
   }
 }
 
