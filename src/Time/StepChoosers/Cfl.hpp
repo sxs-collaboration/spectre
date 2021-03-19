@@ -83,7 +83,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
     const double time_stepper_stability_factor = time_stepper.stable_step();
 
     const double step_size = safety_factor_ * time_stepper_stability_factor *
-                             minimum_grid_spacing / speed;
+                             minimum_grid_spacing / (speed * Dim);
     // Reject the step if the CFL condition is violated.
     return std::make_pair(step_size, last_step_magnitude <= step_size);
   }
