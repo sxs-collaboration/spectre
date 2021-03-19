@@ -4,6 +4,7 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 #include <pup.h>
 #include <utility>
 
@@ -21,6 +22,16 @@ struct evolution_comparator {
     return time_runs_forward ? Comparator<T>{}(x, y) : Comparator<T>{}(y, x);
   }
 
+  /// Provides an infinite (in the sense of
+  /// std::numeric_limits::infinity()) value that compares greater
+  /// than any other value in the evolution ordering.
+  template <typename U = T>
+  constexpr U infinity() const noexcept {
+    static_assert(std::numeric_limits<U>::has_infinity);
+    return time_runs_forward ? std::numeric_limits<U>::infinity()
+                             : -std::numeric_limits<U>::infinity();
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept { p | time_runs_forward; }
 };
@@ -34,6 +45,14 @@ struct evolution_comparator<void, Comparator> {
     return time_runs_forward
                ? Comparator<void>{}(std::forward<T>(t), std::forward<U>(u))
                : Comparator<void>{}(std::forward<U>(u), std::forward<T>(t));
+  }
+
+  /// \copydoc evolution_comparator::infinity
+  template <typename U>
+  constexpr U infinity() const noexcept {
+    static_assert(std::numeric_limits<U>::has_infinity);
+    return time_runs_forward ? std::numeric_limits<U>::infinity()
+                             : -std::numeric_limits<U>::infinity();
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

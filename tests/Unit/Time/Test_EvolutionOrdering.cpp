@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <functional>
+#include <limits>
 #include <tuple>
 
 #include "Framework/TestHelpers.hpp"
@@ -43,6 +44,16 @@ void check_op() noexcept {
   {
     INFO("Concrete");
     check_helper<EvOp<int>, StdOp<int>, int, int>({true}, {false});
+
+    CHECK(EvOp<double>{true}.infinity() ==
+          std::numeric_limits<double>::infinity());
+    CHECK(EvOp<int>{true}.template infinity<double>() ==
+          std::numeric_limits<double>::infinity());
+    CHECK(EvOp<double>{false}.infinity() ==
+          -std::numeric_limits<double>::infinity());
+    CHECK(EvOp<int>{false}.template infinity<double>() ==
+          -std::numeric_limits<double>::infinity());
+
     INFO("Serialization");
     check_helper<EvOp<int>, StdOp<int>, int, int>(
         serialize_and_deserialize(EvOp<int>{true}),
@@ -52,6 +63,12 @@ void check_op() noexcept {
     INFO("Generic");
     check_helper<EvOp<>, StdOp<>, StrangeComparison<1>, StrangeComparison<2>>(
         {true}, {false});
+
+    CHECK(EvOp<>{true}.template infinity<double>() ==
+          std::numeric_limits<double>::infinity());
+    CHECK(EvOp<>{false}.template infinity<double>() ==
+          -std::numeric_limits<double>::infinity());
+
     INFO("Serialization");
     check_helper<EvOp<>, StdOp<>, StrangeComparison<1>, StrangeComparison<2>>(
         serialize_and_deserialize(EvOp<>{true}),
