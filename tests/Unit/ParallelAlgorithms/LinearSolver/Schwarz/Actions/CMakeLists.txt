@@ -5,11 +5,23 @@ set(LIBRARY "Test_ParallelSchwarzActions")
 
 set(LIBRARY_SOURCES
   Test_CommunicateOverlapFields.cpp
+  Test_ResetSubdomainSolver.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/Schwarz/Actions"
   "${LIBRARY_SOURCES}"
-  "Convergence;DataStructures;DomainStructure;Informer;ParallelSchwarz;Spectral"
+  ""
+  )
+
+target_link_libraries(
+  Test_ParallelSchwarzActions
+  PRIVATE
+  Convergence
+  DataStructures
+  DomainStructure
+  Informer
+  ParallelSchwarz
+  Spectral
   )

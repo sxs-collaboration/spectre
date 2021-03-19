@@ -97,9 +97,8 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s " + Options::name<OptionsGroup>() +
-                           "(%zu): Send overlap fields\n",
-                       element_id, iteration_id);
+      Parallel::printf("%s %s(%zu): Send overlap fields\n", element_id,
+                       Options::name<OptionsGroup>(), iteration_id);
     }
 
     // Send data on intruding overlaps to the corresponding neighbors
@@ -204,9 +203,8 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s " + Options::name<OptionsGroup>() +
-                           "(%zu): Receive overlap fields\n",
-                       element_id, iteration_id);
+      Parallel::printf("%s %s(%zu): Receive overlap fields\n", element_id,
+                       Options::name<OptionsGroup>(), iteration_id);
     }
 
     // Move received overlap data into DataBox

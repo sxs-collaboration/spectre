@@ -59,8 +59,7 @@ SchwarzSmoother:
       Preconditioner:
         # Preconditioning with the explicitly-built inverse matrix, so all
         # subdomain solves should converge immediately
-        ExplicitInverse:
-          EnableResets: True
+        ExplicitInverse
 
 ConvergenceReason: NumIterations
 

@@ -20,7 +20,6 @@
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/GetOutput.hpp"
 
 /// \cond
 namespace tuples {
@@ -136,16 +135,15 @@ struct CheckResidualMagnitude {
           if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                        ::Verbosity::Verbose)) {
             Parallel::printf(
-                "Step with length %s didn't sufficiently decrease the '" +
-                    Options::name<OptionsGroup>() +
-                    "' iteration %zu residual (possible overshoot). Residual: "
-                    "%s. Next step length: %s.\n",
-                get_output(step_length), iteration_id,
-                get_output(residual_magnitude), get_output(next_step_length));
+                "%s(%zu): Step with length %g didn't sufficiently decrease the "
+                "residual (possible overshoot). Residual: %e. Next step "
+                "length: %g.\n",
+                Options::name<OptionsGroup>(), iteration_id, step_length,
+                residual_magnitude, next_step_length);
             if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                          ::Verbosity::Debug)) {
-              Parallel::printf("Residual magnitude slope: %s\n",
-                               get_output(residual_magnitude_square_slope));
+              Parallel::printf("Residual magnitude slope: %e\n",
+                               residual_magnitude_square_slope);
             }
           }
           // Broadcast back to the elements signaling that they should perform a
@@ -159,13 +157,12 @@ struct CheckResidualMagnitude {
         } else if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                             ::Verbosity::Quiet)) {
           Parallel::printf(
-              "WARNING: Failed to sufficiently decrease the '" +
-                  Options::name<OptionsGroup>() +
-                  "' iteration %zu residual in %zu globalization steps. This "
-                  "is usually indicative of an ill-posed problem, for "
-                  "example when the linearization of the nonlinear operator "
-                  "is not computed correctly.",
-              iteration_id, globalization_iteration_id);
+              "%s(%zu): WARNING: Failed to sufficiently decrease the residual "
+              "in %zu globalization steps. This is usually indicative of an "
+              "ill-posed problem, for example when the linearization of the "
+              "nonlinear operator is not computed correctly.",
+              Options::name<OptionsGroup>(), iteration_id,
+              globalization_iteration_id);
         }  // min_step_length
       }    // sufficient decrease condition
     }      // initial iteration
@@ -189,27 +186,25 @@ struct CheckResidualMagnitude {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Quiet)) {
       if (UNLIKELY(iteration_id == 0)) {
-        Parallel::printf("Nonlinear solver '" + Options::name<OptionsGroup>() +
-                             "' initialized with residual %e.\n",
-                         residual_magnitude);
+        Parallel::printf("%s initialized with residual: %e\n",
+                         Options::name<OptionsGroup>(), residual_magnitude);
       } else {
-        Parallel::printf("Nonlinear solver '" + Options::name<OptionsGroup>() +
-                             "' iteration %zu done. Remaining residual: %e\n",
-                         iteration_id, residual_magnitude);
+        Parallel::printf(
+            "%s(%zu) iteration complete (%zu globalization steps, step length "
+            "%g). Remaining residual: %e\n",
+            Options::name<OptionsGroup>(), iteration_id,
+            globalization_iteration_id, step_length, residual_magnitude);
       }
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        box) >= ::Verbosity::Quiet)) {
       if (UNLIKELY(iteration_id == 0)) {
-        Parallel::printf("The nonlinear solver '" +
-                             Options::name<OptionsGroup>() +
-                             "' has converged without any iterations: %s\n",
-                         has_converged);
+        Parallel::printf("%s has converged without any iterations: %s\n",
+                         Options::name<OptionsGroup>(), has_converged);
       } else {
-        Parallel::printf("The nonlinear solver '" +
-                             Options::name<OptionsGroup>() +
-                             "' has converged in %zu iterations: %s\n",
-                         iteration_id, has_converged);
+        Parallel::printf("%s has converged in %zu iterations: %s\n",
+                         Options::name<OptionsGroup>(), iteration_id,
+                         has_converged);
       }
     }
 
