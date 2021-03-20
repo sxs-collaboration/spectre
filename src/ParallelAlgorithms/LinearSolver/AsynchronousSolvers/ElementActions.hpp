@@ -111,12 +111,12 @@ void contribute_to_residual_observation(
                ::Verbosity::Debug)) {
     if (iteration_id == 0) {
       Parallel::printf("%s %s initialized with local residual: %e\n",
-                       array_index, Options::name<OptionsGroup>(),
+                       get_output(array_index), Options::name<OptionsGroup>(),
                        sqrt(residual_magnitude_square));
     } else {
       Parallel::printf(
           "%s %s(%zu) iteration complete. Remaining local residual: %e\n",
-          array_index, Options::name<OptionsGroup>(), iteration_id,
+          get_output(array_index), Options::name<OptionsGroup>(), iteration_id,
           sqrt(residual_magnitude_square));
     }
   }
