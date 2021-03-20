@@ -69,6 +69,7 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
+    export GCC_HOME=/opt/ohpc/pub/compiler/gcc/7.3.0/bin
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_C_COMPILER=gcc \
