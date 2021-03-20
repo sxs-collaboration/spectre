@@ -53,8 +53,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
 
-  const auto rusanov = TestHelpers::test_factory_creation<
-      grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>(
+  const auto rusanov = TestHelpers::test_creation<std::unique_ptr<
+      grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
       "Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(

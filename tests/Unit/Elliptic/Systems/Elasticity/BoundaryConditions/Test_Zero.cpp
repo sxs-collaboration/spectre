@@ -27,12 +27,12 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
       Registrars::Zero<2, elliptic::BoundaryConditionType::Dirichlet>;
   using registrar_free =
       Registrars::Zero<2, elliptic::BoundaryConditionType::Neumann>;
-  const auto created_fixed = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<
-          2, tmpl::list<registrar_fixed>>>("Fixed");
-  const auto created_free = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<
-          2, tmpl::list<registrar_free>>>("Free");
+  const auto created_fixed = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
+          2, tmpl::list<registrar_fixed>>>>("Fixed");
+  const auto created_free = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
+          2, tmpl::list<registrar_free>>>>("Free");
 
   // Test semantics
   using Fixed =

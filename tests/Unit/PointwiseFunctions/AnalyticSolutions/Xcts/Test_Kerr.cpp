@@ -37,9 +37,9 @@ void test_solution(const double mass, const std::array<double, 3> spin,
   CAPTURE(mass);
   CAPTURE(spin);
   CAPTURE(center);
-  const auto created =
-      TestHelpers::test_factory_creation<Xcts::Solutions::AnalyticSolution<
-          tmpl::list<Xcts::Solutions::Registrars::Kerr>>>(options_string);
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<Xcts::Solutions::AnalyticSolution<
+          tmpl::list<Xcts::Solutions::Registrars::Kerr>>>>(options_string);
   REQUIRE(dynamic_cast<const Kerr<>*>(created.get()) != nullptr);
   const auto& solution = dynamic_cast<const Kerr<>&>(*created);
   {

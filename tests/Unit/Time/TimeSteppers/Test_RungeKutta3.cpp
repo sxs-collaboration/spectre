@@ -29,7 +29,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3", "[Unit][Time]") {
   CHECK(stepper.order() == 3_st);
   CHECK(stepper.error_estimate_order() == 2_st);
 
-  TestHelpers::test_factory_creation<TimeStepper>("RungeKutta3");
+  TestHelpers::test_creation<std::unique_ptr<TimeStepper>>("RungeKutta3");
   test_serialization(stepper);
   test_serialization_via_base<TimeStepper, TimeSteppers::RungeKutta3>();
   // test operator !=

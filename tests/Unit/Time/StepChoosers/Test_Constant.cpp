@@ -49,12 +49,13 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
             ->desired_step(make_not_null(&box), current_step, cache) ==
         std::make_pair(5.4, true));
 
-  TestHelpers::test_factory_creation<StepChooserType>("Constant: 5.4");
+  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>("Constant: 5.4");
 }
 
 // [[OutputRegex, Requested step magnitude should be positive]]
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant.bad_create",
                   "[Unit][Time]") {
   ERROR_TEST();
-  TestHelpers::test_factory_creation<StepChooserType>("Constant: -5.4");
+  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>(
+      "Constant: -5.4");
 }

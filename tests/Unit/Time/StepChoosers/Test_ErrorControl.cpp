@@ -248,16 +248,16 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
     }
   }
   // test option creation
-  TestHelpers::test_factory_creation<
-      StepChoosers::ErrorControl<EvolvedVariablesTag>>(
+  TestHelpers::test_creation<
+      std::unique_ptr<StepChoosers::ErrorControl<EvolvedVariablesTag>>>(
       "ErrorControl:\n"
       "  SafetyFactor: 0.95\n"
       "  AbsoluteTolerance: 1.0e-5\n"
       "  RelativeTolerance: 1.0e-4\n"
       "  MaxFactor: 2.1\n"
       "  MinFactor: 0.5");
-  TestHelpers::test_factory_creation<
-      StepChoosers::ErrorControl<EvolvedVariablesTag, ErrorControlSelecter>>(
+  TestHelpers::test_creation<std::unique_ptr<
+      StepChoosers::ErrorControl<EvolvedVariablesTag, ErrorControlSelecter>>>(
       "ErrorControl(SelectorLabel):\n"
       "  SafetyFactor: 0.95\n"
       "  AbsoluteTolerance: 1.0e-5\n"

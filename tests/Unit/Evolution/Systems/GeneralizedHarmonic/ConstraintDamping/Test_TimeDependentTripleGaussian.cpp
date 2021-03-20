@@ -142,9 +142,9 @@ SPECTRE_TEST_CASE(
       "FunctionOfTimeForScaling: ExpansionFactor");
   CHECK(created_triple_gauss == triple_gauss_3d);
   const auto created_triple_gauss_gh_damping_function =
-      TestHelpers::test_factory_creation<
-          GeneralizedHarmonic::ConstraintDamping::DampingFunction<3,
-                                                                  Frame::Grid>>(
+      TestHelpers::test_creation<
+          std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::
+                              DampingFunction<3, Frame::Grid>>>(
           "TimeDependentTripleGaussian:\n"
           "  Constant: 5.0\n"
           "  Gaussian1:\n"

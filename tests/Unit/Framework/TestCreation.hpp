@@ -35,8 +35,7 @@ struct AddGroups<Tag, std::void_t<typename Tag::group>> {
 }  // namespace TestCreation_detail
 
 /// \ingroup TestingFrameworkGroup
-/// The default option tag for `TestHelpers::test_creation()`, and
-/// `TestHelpers::test_factory_creation()`.
+/// The default option tag for `TestHelpers::test_creation()`.
 template <typename T>
 struct TestCreationOpt {
   using type = T;
@@ -71,30 +70,5 @@ T test_creation(const std::string& construction_string) noexcept {
   options.parse(
       TestCreation_detail::AddGroups<OptionTag>::apply(construction_string));
   return options.template get<OptionTag, Metavariables>();
-}
-
-/// \ingroup TestingFrameworkGroup
-/// Construct a factory object from a given string.
-///
-/// The string must contain the name of the option (specifically, the struct
-/// being created from options, which is the name of the struct). Note that it
-/// is not the name of the base class, but the name of the derived class that
-/// must be given. For example, to create a `BaseClass*` pointing to a derived
-/// class of type `size_t_argument_base` with an option tag name `SizeT` the
-/// following would be used:
-///
-/// \snippet Test_TestCreation.cpp size_t_argument_base
-///
-/// Option tags can be tested by passing them as the second template parameter.
-/// If the metavariables are required to create the class then the metavariables
-/// must be passed as the third template parameter. The default option tag is
-/// `TestCreationOpt<std::unique_ptr<BaseClass>>`.
-template <typename BaseClass,
-          typename OptionTag = TestCreationOpt<std::unique_ptr<BaseClass>>,
-          typename Metavariables = NoSuchType>
-std::unique_ptr<BaseClass> test_factory_creation(
-    const std::string& construction_string) noexcept {
-  return TestHelpers::test_creation<std::unique_ptr<BaseClass>, OptionTag,
-                                    Metavariables>(construction_string);
 }
 }  // namespace TestHelpers

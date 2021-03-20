@@ -108,10 +108,10 @@ void test_solution(const double mass,
                    const std::string& options_string) {
   CAPTURE(mass);
   CAPTURE(coords);
-  const auto created =
-      TestHelpers::test_factory_creation<Xcts::Solutions::AnalyticSolution<
-          tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>>(
-          options_string);
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<Xcts::Solutions::AnalyticSolution<
+          tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>>>(
+      options_string);
   REQUIRE(dynamic_cast<const Schwarzschild<>*>(created.get()) != nullptr);
   const auto& solution = dynamic_cast<const Schwarzschild<>&>(*created);
   {

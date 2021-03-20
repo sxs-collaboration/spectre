@@ -452,7 +452,7 @@ void test_system(
   const std::string creation_string =
       System::creation_string_for_test + mesh_creation_string;
   const auto factory_event =
-      TestHelpers::test_factory_creation<EventType>(creation_string);
+      TestHelpers::test_creation<std::unique_ptr<EventType>>(creation_string);
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System, AlwaysHasAnalyticSolutions>(
       std::move(serialized_event), interpolating_mesh, has_analytic_solutions);

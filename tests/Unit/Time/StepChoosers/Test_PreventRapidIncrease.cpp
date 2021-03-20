@@ -154,5 +154,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
   // Cause roundoff errors
   check_case(-1, {{1, 3}, {2, 3}, {3, 3}});
 
-  TestHelpers::test_factory_creation<StepChooserType>("PreventRapidIncrease");
+  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>(
+      "PreventRapidIncrease");
 }

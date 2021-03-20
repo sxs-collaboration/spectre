@@ -57,8 +57,8 @@ void test_analytic_solution() noexcept {
   CAPTURE(Dim);
   // Test factory-creation
   using Registrar = Registrars::AnalyticSolution<System<Dim>>;
-  const auto boundary_condition_base = TestHelpers::test_factory_creation<
-      BoundaryCondition<Dim, tmpl::list<Registrar>>>(
+  const auto boundary_condition_base = TestHelpers::test_creation<
+      std::unique_ptr<BoundaryCondition<Dim, tmpl::list<Registrar>>>>(
       "AnalyticSolution:\n"
       "  Field1: Dirichlet\n"
       "  Field2: Neumann");

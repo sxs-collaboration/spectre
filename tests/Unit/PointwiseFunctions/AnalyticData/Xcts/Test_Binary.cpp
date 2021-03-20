@@ -53,9 +53,9 @@ void test_data(const std::array<double, 2>& x_coords,
                const std::array<double, 2>& masses,
                const std::string& py_functions_suffix,
                const std::string& options_string) {
-  const auto created = TestHelpers::test_factory_creation<
+  const auto created = TestHelpers::test_creation<std::unique_ptr<
       ::AnalyticData<3, tmpl::list<Registrars::Binary<tmpl::list<
-                            Xcts::Solutions::Registrars::Schwarzschild>>>>>(
+                            Xcts::Solutions::Registrars::Schwarzschild>>>>>>(
       options_string);
   REQUIRE(dynamic_cast<const Binary<
               tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>*>(

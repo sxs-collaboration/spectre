@@ -99,7 +99,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",
 
     // verify the the construction from options is successful
     const auto option_created_linear_interpolator =
-        TestHelpers::test_factory_creation<intrp::SpanInterpolator>(
+        TestHelpers::test_creation<std::unique_ptr<intrp::SpanInterpolator>>(
             "LinearSpanInterpolator");
     test_interpolator_approximate_fidelity<DataVector>(
         make_not_null(&gen), *option_created_linear_interpolator,
@@ -133,7 +133,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",
 
     // verify the the construction from options is successful
     const auto option_created_cubic_interpolator =
-        TestHelpers::test_factory_creation<intrp::SpanInterpolator>(
+        TestHelpers::test_creation<std::unique_ptr<intrp::SpanInterpolator>>(
             "CubicSpanInterpolator");
     test_interpolator_approximate_fidelity<DataVector>(
         make_not_null(&gen), *option_created_cubic_interpolator,
@@ -167,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",
 
     // verify the the construction from options is successful
     const auto option_created_barycentric_interpolator =
-        TestHelpers::test_factory_creation<intrp::SpanInterpolator>(
+        TestHelpers::test_creation<std::unique_ptr<intrp::SpanInterpolator>>(
             "BarycentricRationalSpanInterpolator:\n"
             "  MinOrder: 5\n"
             "  MaxOrder: 6");

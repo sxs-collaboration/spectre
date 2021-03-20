@@ -347,9 +347,10 @@ void test_system(const bool has_analytic_solutions) noexcept {
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveErrorNorms<
       ObservationTimeTag, typename System::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
-  const auto factory_event = TestHelpers::test_factory_creation<EventType>(
-      "ObserveErrorNorms:\n"
-      "  SubfileName: reduction0");
+  const auto factory_event =
+      TestHelpers::test_creation<std::unique_ptr<EventType>>(
+          "ObserveErrorNorms:\n"
+          "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System, HasAnalyticSolutions>(std::move(serialized_event),
                                              has_analytic_solutions);

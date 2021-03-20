@@ -34,7 +34,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
   };
   check(StepControllers::BinaryFraction{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_factory_creation<StepController>("BinaryFraction")));
+      TestHelpers::test_creation<std::unique_ptr<StepController>>(
+          "BinaryFraction")));
 }
 
 // [[OutputRegex, Not at a binary-fraction time within slab]]

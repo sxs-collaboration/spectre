@@ -52,9 +52,9 @@ void apply_neumann_boundary_condition(
 SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Robin",
                   "[Unit][Elliptic]") {
   // Test factory-creation
-  const auto created = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<
-          1, tmpl::list<Registrars::Robin<1>>>>(
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
+          1, tmpl::list<Registrars::Robin<1>>>>>(
       "Robin:\n"
       "  DirichletWeight: 2.\n"
       "  NeumannWeight: 3.\n"

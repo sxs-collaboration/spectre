@@ -112,9 +112,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
                     Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
-  const auto rusanov = TestHelpers::test_factory_creation<
-      RelativisticEuler::Valencia::BoundaryCorrections::BoundaryCorrection<
-          Dim>>("Rusanov:");
+  const auto rusanov = TestHelpers::test_creation<
+      std::unique_ptr<RelativisticEuler::Valencia::BoundaryCorrections::
+                          BoundaryCorrection<Dim>>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<
       RelativisticEuler::Valencia::System<Dim, EosType>,

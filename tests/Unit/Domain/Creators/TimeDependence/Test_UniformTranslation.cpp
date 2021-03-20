@@ -296,7 +296,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     test(time_dep, initial_time, f_of_t_names);
     test(time_dep->get_clone(), initial_time, f_of_t_names);
 
-    test(TestHelpers::test_factory_creation<TimeDependence<1>>(
+    test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<1>>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
              "  InitialExpirationDeltaT: 2.5\n"
@@ -316,7 +316,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     test(time_dep, initial_time, f_of_t_names);
     test(time_dep->get_clone(), initial_time, f_of_t_names);
 
-    test(TestHelpers::test_factory_creation<TimeDependence<2>>(
+    test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<2>>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
              "  InitialExpirationDeltaT: 2.5\n"
@@ -336,7 +336,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     test(time_dep, initial_time, f_of_t_names);
     test(time_dep->get_clone(), initial_time, f_of_t_names);
 
-    test(TestHelpers::test_factory_creation<TimeDependence<3>>(
+    test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
              "  InitialExpirationDeltaT: Auto\n"

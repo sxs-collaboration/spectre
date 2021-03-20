@@ -35,5 +35,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   };
   check(StepControllers::SplitRemaining{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_factory_creation<StepController>("SplitRemaining")));
+      TestHelpers::test_creation<std::unique_ptr<StepController>>(
+          "SplitRemaining")));
 }

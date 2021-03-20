@@ -121,86 +121,6 @@ struct Metavars {
   static constexpr size_t value_multiplier = ValueMultiplier;
 };
 
-struct DerivedClassWithoutMetavariables;
-struct DerivedClassWithMetavariables;
-
-struct BaseClass {
-  using creatable_classes = tmpl::list<DerivedClassWithoutMetavariables,
-                                       DerivedClassWithMetavariables>;
-  BaseClass() = default;
-  BaseClass(const BaseClass&) = delete;
-  BaseClass& operator=(const BaseClass&) = delete;
-  BaseClass(BaseClass&&) = default;
-  BaseClass& operator=(BaseClass&&) = default;
-  virtual ~BaseClass() = default;
-
-  virtual size_t get_value() const = 0;
-};
-
-struct DerivedClassWithoutMetavariables : BaseClass {
-  struct SizeT {
-    using type = size_t;
-    static constexpr Options::String help = {"SizeT help"};
-  };
-
-  using options = tmpl::list<SizeT>;
-  static constexpr Options::String help = {"Help"};
-
-  explicit DerivedClassWithoutMetavariables(const size_t in_value)
-      : value(in_value) {}
-
-  DerivedClassWithoutMetavariables() = default;
-  DerivedClassWithoutMetavariables(const DerivedClassWithoutMetavariables&) =
-      delete;
-  DerivedClassWithoutMetavariables& operator=(
-      const DerivedClassWithoutMetavariables&) = delete;
-  DerivedClassWithoutMetavariables(DerivedClassWithoutMetavariables&&) =
-      default;
-  DerivedClassWithoutMetavariables& operator=(
-      DerivedClassWithoutMetavariables&&) = default;
-  ~DerivedClassWithoutMetavariables() override = default;
-
-  size_t get_value() const override { return value; }
-
-  size_t value{0};
-};
-
-struct DerivedClassWithMetavariables : BaseClass {
-  struct SizeT {
-    using type = size_t;
-    static constexpr Options::String help = {"SizeT help"};
-  };
-
-  using options = tmpl::list<SizeT>;
-  static constexpr Options::String help = {"Help"};
-
-  template <typename Metavariables>
-  // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-  DerivedClassWithMetavariables(const size_t in_value,
-                                const Options::Context& /*context*/,
-                                Metavariables /*meta*/) {
-    value = in_value * Metavariables::value_multiplier;
-  }
-
-  DerivedClassWithMetavariables(const size_t /*in_value*/,
-                                const Options::Context& /*context*/,
-                                NoSuchType /*meta*/)
-      : value{std::numeric_limits<size_t>::max()} {}
-
-  DerivedClassWithMetavariables() = default;
-  DerivedClassWithMetavariables(const DerivedClassWithMetavariables&) = delete;
-  DerivedClassWithMetavariables& operator=(
-      const DerivedClassWithMetavariables&) = delete;
-  DerivedClassWithMetavariables(DerivedClassWithMetavariables&&) = default;
-  DerivedClassWithMetavariables& operator=(DerivedClassWithMetavariables&&) =
-      default;
-  ~DerivedClassWithMetavariables() override = default;
-
-  size_t get_value() const override { return value; }
-
-  size_t value{0};
-};
-
 void test_test_creation() {
   // Test creation of fundamentals
   CHECK(TestHelpers::test_creation<double>("1.846") == 1.846);
@@ -289,105 +209,6 @@ void test_test_creation() {
           .value == 24);
 }
 
-void test_test_factory_creation() {
-  // Test derived class that doesn't need metavariables when not passing
-  // metavariables
-  // [size_t_argument_base]
-  CHECK(TestHelpers::test_factory_creation<BaseClass>(
-            "DerivedClassWithoutMetavariables:\n"
-            "  SizeT: 5")
-            ->get_value() == 5);
-  // [size_t_argument_base]
-  CHECK(TestHelpers::test_factory_creation<BaseClass,
-                                           NoGroup<std::unique_ptr<BaseClass>>>(
-            "DerivedClassWithoutMetavariables:\n"
-            "  SizeT: 6")
-            ->get_value() == 6);
-  CHECK(
-      TestHelpers::test_factory_creation<BaseClass,
-                                         OneGroup<std::unique_ptr<BaseClass>>>(
-          "DerivedClassWithoutMetavariables:\n"
-          "  SizeT: 7")
-          ->get_value() == 7);
-  CHECK(
-      TestHelpers::test_factory_creation<BaseClass,
-                                         TwoGroup<std::unique_ptr<BaseClass>>>(
-          "DerivedClassWithoutMetavariables:\n"
-          "  SizeT: 8")
-          ->get_value() == 8);
-
-  // Test derived class that doesn't need metavariables when passing
-  // metavariables
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, TestHelpers::TestCreationOpt<std::unique_ptr<BaseClass>>,
-            Metavars<4>>("DerivedClassWithoutMetavariables:\n"
-                         "  SizeT: 15")
-            ->get_value() == 15);
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, NoGroup<std::unique_ptr<BaseClass>>, Metavars<4>>(
-            "DerivedClassWithoutMetavariables:\n"
-            "  SizeT: 16")
-            ->get_value() == 16);
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, OneGroup<std::unique_ptr<BaseClass>>, Metavars<4>>(
-            "DerivedClassWithoutMetavariables:\n"
-            "  SizeT: 17")
-            ->get_value() == 17);
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, TwoGroup<std::unique_ptr<BaseClass>>, Metavars<4>>(
-            "DerivedClassWithoutMetavariables:\n"
-            "  SizeT: 18")
-            ->get_value() == 18);
-
-  // Test creating derived class that requires Metavariables but with no
-  // Metavariables passed.
-  CHECK(
-      TestHelpers::test_factory_creation<
-          BaseClass, TestHelpers::TestCreationOpt<std::unique_ptr<BaseClass>>>(
-          "DerivedClassWithMetavariables:\n"
-          "  SizeT: 4")
-          ->get_value() == std::numeric_limits<size_t>::max());
-  CHECK(TestHelpers::test_factory_creation<BaseClass,
-                                           NoGroup<std::unique_ptr<BaseClass>>>(
-            "DerivedClassWithMetavariables:\n"
-            "  SizeT: 4")
-            ->get_value() == std::numeric_limits<size_t>::max());
-  CHECK(
-      TestHelpers::test_factory_creation<BaseClass,
-                                         OneGroup<std::unique_ptr<BaseClass>>>(
-          "DerivedClassWithMetavariables:\n"
-          "  SizeT: 4")
-          ->get_value() == std::numeric_limits<size_t>::max());
-  CHECK(
-      TestHelpers::test_factory_creation<BaseClass,
-                                         TwoGroup<std::unique_ptr<BaseClass>>>(
-          "DerivedClassWithMetavariables:\n"
-          "  SizeT: 4")
-          ->get_value() == std::numeric_limits<size_t>::max());
-
-  // Test creating derived class passing Metavariables
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, TestHelpers::TestCreationOpt<std::unique_ptr<BaseClass>>,
-            Metavars<3>>("DerivedClassWithMetavariables:\n"
-                         "  SizeT: 4")
-            ->get_value() == 12);
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, NoGroup<std::unique_ptr<BaseClass>>, Metavars<4>>(
-            "DerivedClassWithMetavariables:\n"
-            "  SizeT: 4")
-            ->get_value() == 16);
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, OneGroup<std::unique_ptr<BaseClass>>, Metavars<5>>(
-            "DerivedClassWithMetavariables:\n"
-            "  SizeT: 4")
-            ->get_value() == 20);
-  CHECK(TestHelpers::test_factory_creation<
-            BaseClass, TwoGroup<std::unique_ptr<BaseClass>>, Metavars<6>>(
-            "DerivedClassWithMetavariables:\n"
-            "  SizeT: 4")
-            ->get_value() == 24);
-}
-
 void test_test_enum_creation() {
   // [enum_purple]
   CHECK(TestHelpers::test_creation<Color>("Purple") == Color::Purple);
@@ -412,7 +233,6 @@ void test_test_enum_creation() {
 
 SPECTRE_TEST_CASE("Unit.TestCreation", "[Unit]") {
   test_test_creation();
-  test_test_factory_creation();
   test_test_enum_creation();
 }
 }  // namespace

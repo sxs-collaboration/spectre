@@ -49,10 +49,10 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       {}, {});
 
-  const auto rusanov_from_factory = TestHelpers::test_factory_creation<
+  const auto rusanov_from_factory = TestHelpers::test_creation<std::unique_ptr<
       RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection<
           neutrinos::ElectronNeutrinos<1>,
-          neutrinos::ElectronAntiNeutrinos<1>>>("Rusanov:");
+          neutrinos::ElectronAntiNeutrinos<1>>>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<system>(
       gen, "Rusanov",

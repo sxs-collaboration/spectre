@@ -221,8 +221,8 @@ void test_rotated_intervals_factory() {
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
   {
     INFO("Rotated intervals factory, no boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+    const auto domain_creator = TestHelpers::test_creation<
+        std::unique_ptr<DomainCreator<1>>, domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<1>>(
         "RotatedIntervals:\n"
@@ -246,8 +246,8 @@ void test_rotated_intervals_factory() {
   }
   {
     INFO("Rotated intervals factory, with boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+    const auto domain_creator = TestHelpers::test_creation<
+        std::unique_ptr<DomainCreator<1>>, domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<1>>(
         "RotatedIntervals:\n"

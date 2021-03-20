@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
   check(inaccurate_1, 1.0, {1.0}, false);
   check(inaccurate_1, 1.0e5, {1.0}, true);
 
-  TestHelpers::test_factory_creation<TriggerType>(
+  TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
       "Times:\n"
       "  Specified:\n"
       "    Values: [2.0, 1.0, 3.0, 2.0]");

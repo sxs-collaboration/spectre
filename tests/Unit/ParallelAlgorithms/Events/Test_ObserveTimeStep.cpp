@@ -244,7 +244,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
     test_observe(serialize_and_deserialize(observer), false);
     test_observe(serialize_and_deserialize(observer), true);
 
-    const auto event = TestHelpers::test_factory_creation<EventType>(
+    const auto event = TestHelpers::test_creation<std::unique_ptr<EventType>>(
         "ObserveTimeStep:\n"
         "  SubfileName: time_step_subfile\n"
         "  PrintTimeToTerminal: " +

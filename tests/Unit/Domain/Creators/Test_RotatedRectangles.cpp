@@ -287,8 +287,8 @@ void test_rotated_rectangles_factory() {
 
   {
     INFO("No boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto domain_creator = TestHelpers::test_creation<
+        std::unique_ptr<DomainCreator<2>>, domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<2>>(
         "RotatedRectangles:\n"
@@ -324,8 +324,8 @@ void test_rotated_rectangles_factory() {
     const std::vector<DirectionMap<
         2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
         expected_boundary_conditions = create_boundary_conditions();
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto domain_creator = TestHelpers::test_creation<
+        std::unique_ptr<DomainCreator<2>>, domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<2>>(
         "RotatedRectangles:\n"

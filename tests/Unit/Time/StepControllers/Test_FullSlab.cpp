@@ -31,5 +31,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
   };
   check(StepControllers::FullSlab{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_factory_creation<StepController>("FullSlab")));
+      TestHelpers::test_creation<std::unique_ptr<StepController>>("FullSlab")));
 }
