@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Valencia")
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
