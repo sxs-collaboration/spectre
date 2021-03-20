@@ -144,6 +144,8 @@ struct Metavariables {
       db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
       Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<1>>,
       Tags::TimeStepId>;
+  static constexpr bool local_time_stepping = false;
+  using step_choosers = tmpl::list<>;
 
   using component_list = tmpl::list<Component<Metavariables>>;
   using temporal_id = Tags::TimeStepId;

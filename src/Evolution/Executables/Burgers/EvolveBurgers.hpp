@@ -180,12 +180,11 @@ struct EvolutionMetavars {
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>, Limiters::Actions::SendData<EvolutionMetavars>,
+      Actions::MutateApply<boundary_scheme>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
+      Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
   enum class Phase {
@@ -242,12 +241,9 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
-                  tmpl::list<
-                      Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                      tmpl::conditional_t<
-                          local_time_stepping,
-                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>;
+                  tmpl::list<Actions::RunEventsAndTriggers,
+                             Actions::ChangeSlabSize, step_actions,
+                             Actions::AdvanceTime>>>>>;
 
   static constexpr Options::String help{
       "Evolve the Burgers equation.\n\n"

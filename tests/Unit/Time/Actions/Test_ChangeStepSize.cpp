@@ -54,14 +54,18 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                                 Tags::TimeStep, history_tag>;
+                                 Tags::TimeStep, Tags::Next<Tags::TimeStep>,
+                                 history_tag, typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<change_step_size>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<change_step_size,
+                     /*UpdateU action is required to satisfy internal checks of
+                        `ChangeStepSize`. It is not used in the test.*/
+                     Actions::UpdateU<>>>>;
 };
 
 struct Metavariables {
@@ -96,12 +100,12 @@ void check(const bool time_runs_forward,
   // Initialize the component
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {TimeStepId(time_runs_forward, 0, time),
-       TimeStepId(
-           time_runs_forward, 0,
-           (time_runs_forward ? time.slab().start() : time.slab().end()) +
+      {TimeStepId(
+           time_runs_forward, -1,
+           (time_runs_forward ? time.slab().end() : time.slab().start()) -
                initial_step_size),
-       initial_step_size, typename history_tag::type{}});
+       TimeStepId(time_runs_forward, 0, time), initial_step_size,
+       initial_step_size, typename history_tag::type{}, 1.});
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
@@ -110,9 +114,7 @@ void check(const bool time_runs_forward,
       ActionTesting::get_databox<component, typename component::simple_tags>(
           runner, 0);
 
-  CHECK(db::get<Tags::TimeStep>(box) == expected_step);
-  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
-        TimeStepId(time_runs_forward, 0, time + expected_step));
+  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_step);
 }
 }  // namespace
 

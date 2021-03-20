@@ -53,6 +53,8 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "Time/Slab.hpp"
+#include "Time/StepChoosers/Constant.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -711,8 +713,8 @@ struct component {
       domain::Tags::BoundaryDirectionsInterior<Metavariables::volume_dim>;
 
   using common_simple_tags = tmpl::list<
-      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-      ::evolution::dg::Tags::Quadrature,
+      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+      ::Tags::Next<::Tags::TimeStep>, ::evolution::dg::Tags::Quadrature,
       typename Metavariables::system::variables_tag,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
@@ -826,6 +828,7 @@ struct Metavariables {
       Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::InitialExtents<Dim>, normal_dot_numerical_flux>;
+  using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
 
   using component_list = tmpl::list<component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
@@ -864,6 +867,11 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, use_boundary_correction,
                                  LocalTimeStepping, UseMovingMesh, HasPrims>;
+  Parallel::register_derived_classes_with_charm<
+      StepChooser<typename metavars::step_choosers>>();
+  Parallel::register_derived_classes_with_charm<StepController>();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
+
   using system = typename metavars::system;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using variables_tag = typename system::variables_tag;
@@ -920,17 +928,54 @@ void test_impl(const Spectral::Quadrature quadrature,
   const Element<Dim> element{self_id, neighbors};
   MockRuntimeSystem runner = [&dg_formulation]() noexcept {
     if constexpr (use_boundary_correction == UseBoundaryCorrection::No) {
-      return MockRuntimeSystem{
-          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                make_array<Dim>(3_st)},
-           typename metavars::normal_dot_numerical_flux::type{},
-           dg_formulation}};
+      if constexpr(metavars::local_time_stepping) {
+        std::vector<
+            std::unique_ptr<StepChooser<typename metavars::step_choosers>>>
+            step_choosers;
+        step_choosers.emplace_back(
+            std::make_unique<StepChoosers::Constant<>>(0.128));
+
+        return MockRuntimeSystem{
+            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                  make_array<Dim>(3_st)},
+             typename metavars::normal_dot_numerical_flux::type{},
+             dg_formulation, std::move(step_choosers),
+             static_cast<std::unique_ptr<StepController>>(
+                 std::make_unique<StepControllers::SplitRemaining>()),
+             static_cast<std::unique_ptr<LtsTimeStepper>>(
+                 std::make_unique<TimeSteppers::AdamsBashforthN>(5))}};
+      } else {
+        return MockRuntimeSystem{
+            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                  make_array<Dim>(3_st)},
+             typename metavars::normal_dot_numerical_flux::type{},
+             dg_formulation}};
+      }
     } else {
-      return MockRuntimeSystem{
-          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                make_array<Dim>(3_st)},
-           typename metavars::normal_dot_numerical_flux::type{}, dg_formulation,
-           std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
+      if constexpr(metavars::local_time_stepping) {
+        std::vector<
+            std::unique_ptr<StepChooser<typename metavars::step_choosers>>>
+            step_choosers;
+        step_choosers.emplace_back(
+            std::make_unique<StepChoosers::Constant<>>(0.128));
+
+        return MockRuntimeSystem{
+            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                  make_array<Dim>(3_st)},
+             typename metavars::normal_dot_numerical_flux::type{},
+             dg_formulation, std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+             std::move(step_choosers),
+             static_cast<std::unique_ptr<StepController>>(
+                 std::make_unique<StepControllers::SplitRemaining>()),
+             static_cast<std::unique_ptr<LtsTimeStepper>>(
+                 std::make_unique<TimeSteppers::AdamsBashforthN>(5))}};
+      } else {
+        return MockRuntimeSystem{
+            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                  make_array<Dim>(3_st)},
+             typename metavars::normal_dot_numerical_flux::type{},
+             dg_formulation, std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
+      }
     }
   }();
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
@@ -991,7 +1036,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   const ::TimeSteppers::History<
       Variables<tmpl::list<Var1, Var2<Dim>>>,
       Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>>
-      history{4};
+      history{1};
 
   // Compute expected volume fluxes
   [[maybe_unused]] const auto expected_fluxes = [&evolved_vars, &inv_jac, &mesh,
@@ -1093,8 +1138,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                 use_boundary_correction == UseBoundaryCorrection::No) {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, next_time_step_id, quadrature, evolved_vars,
-         dt_evolved_vars, history, var3, mesh,
+        {time_step_id, next_time_step_id, time_step, time_step, quadrature,
+         evolved_vars, dt_evolved_vars, history, var3, mesh,
          grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
          element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
@@ -1105,8 +1150,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, next_time_step_id, quadrature, evolved_vars,
-             dt_evolved_vars, history, var3, mesh,
+            {time_step_id, next_time_step_id, time_step, time_step, quadrature,
+             evolved_vars, dt_evolved_vars, history, var3, mesh,
              grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
              element, inertial_coords, inv_jac, mesh_velocity,
              div_mesh_velocity,
@@ -1118,8 +1163,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   } else {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, next_time_step_id, quadrature, evolved_vars,
-         dt_evolved_vars, history, var3, mesh,
+        {time_step_id, next_time_step_id, time_step, time_step, quadrature,
+         evolved_vars, dt_evolved_vars, history, var3, mesh,
          grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
          element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -1127,8 +1172,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, next_time_step_id, quadrature, evolved_vars,
-             dt_evolved_vars, history, var3, mesh,
+            {time_step_id, next_time_step_id, time_step, time_step, quadrature,
+             evolved_vars, dt_evolved_vars, history, var3, mesh,
              grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
              element, inertial_coords, inv_jac, mesh_velocity,
              div_mesh_velocity});
@@ -1146,6 +1191,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
+  const auto variables_before_compute_time_derivatives =
+      get_tag(variables_tag{});
   // Start testing the actual dg::ComputeTimeDerivative action
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
@@ -1174,8 +1221,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     if (UseMovingMesh) {
       const tnsr::i<DataVector, Dim> d_var1 =
           get<::Tags::deriv<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
-              partial_derivatives<tmpl::list<Var1>>(get_tag(variables_tag{}),
-                                                    mesh, inv_jac));
+              partial_derivatives<tmpl::list<Var1>>(
+                  variables_before_compute_time_derivatives, mesh, inv_jac));
       get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
           get<0>(d_var1) * get<0>(*mesh_velocity);
     }
@@ -1291,7 +1338,8 @@ void test_impl(const Spectral::Quadrature quadrature,
             ? tnsr::iJ<DataVector, Dim>{}
             : get<::Tags::deriv<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>(
                   partial_derivatives<tmpl::list<Var1, Var2<Dim>>>(
-                      get_tag(variables_tag{}), mesh, inv_jac));
+                      variables_before_compute_time_derivatives, mesh,
+                      inv_jac));
     if (quadrature == Spectral::Quadrature::GaussLobatto) {
       for (size_t i = 0; i < mesh.number_of_grid_points(); i += 2) {
         for (size_t j = 0; j < Dim; ++j) {
@@ -1437,10 +1485,11 @@ void test_impl(const Spectral::Quadrature quadrature,
     get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
     const auto compute_expected_mortar_data =
         [&element, &expected_fluxes, &face_normals, &get_tag, &mesh,
-         &mesh_velocity, &mortar_meshes, &mortar_sizes,
-         &volume_temporaries](const Direction<Dim>& local_direction,
-                              const ElementId<Dim>& local_neighbor_id,
-                              const bool local_data) noexcept {
+         &mesh_velocity, &mortar_meshes, &mortar_sizes, &volume_temporaries,
+         &variables_before_compute_time_derivatives](
+            const Direction<Dim>& local_direction,
+            const ElementId<Dim>& local_neighbor_id,
+            const bool local_data) noexcept {
           const auto& face_mesh = mesh.slice_away(local_direction.dimension());
           // First project data to the face in the direction of the mortar
           Variables<
@@ -1448,8 +1497,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                            primitive_tags_for_face>>
               fields_on_face{face_mesh.number_of_grid_points()};
           ::evolution::dg::project_contiguous_data_to_boundary(
-              make_not_null(&fields_on_face), get_tag(variables_tag{}), mesh,
-              local_direction);
+              make_not_null(&fields_on_face),
+              variables_before_compute_time_derivatives, mesh, local_direction);
           if constexpr (tmpl::size<fluxes_tags>::value != 0) {
             ::evolution::dg::project_contiguous_data_to_boundary(
                 make_not_null(&fields_on_face), expected_fluxes, mesh,

@@ -57,16 +57,20 @@ struct AdvanceTime {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Time>(
+               Tags::Time, Tags::Next<Tags::TimeStep>>(
         make_not_null(&box),
         [](const gsl::not_null<TimeStepId*> time_id,
            const gsl::not_null<TimeStepId*> next_time_id,
            const gsl::not_null<TimeDelta*> time_step,
            const gsl::not_null<double*> time,
+           const gsl::not_null<TimeDelta*> next_time_step,
            const TimeStepper& time_stepper) noexcept {
           *time_id = *next_time_id;
-          *time_step = time_step->with_slab(time_id->step_time().slab());
+          *time_step = next_time_step->with_slab(time_id->step_time().slab());
+
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);
+          *next_time_step =
+              time_step->with_slab(next_time_id->step_time().slab());
           *time = time_id->substep_time().value();
         },
         db::get<Tags::TimeStepper<>>(box));

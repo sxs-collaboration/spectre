@@ -166,14 +166,17 @@ struct ChangeSlabSize {
     const auto new_next_time_step_id =
         time_stepper.next_time_id(new_time_step_id, new_step);
 
-    db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Tags::TimeStepId>(
+    db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+               Tags::Next<Tags::TimeStep>, Tags::TimeStepId>(
         make_not_null(&box),
         [&new_next_time_step_id, &new_step, &new_time_step_id](
             const gsl::not_null<TimeStepId*> next_time_step_id,
             const gsl::not_null<TimeDelta*> time_step,
+            const gsl::not_null<TimeDelta*> next_time_step,
             const gsl::not_null<TimeStepId*> local_time_step_id) noexcept {
           *next_time_step_id = new_next_time_step_id;
           *time_step = new_step;
+          *next_time_step = new_step;
           *local_time_step_id = new_time_step_id;
         });
 

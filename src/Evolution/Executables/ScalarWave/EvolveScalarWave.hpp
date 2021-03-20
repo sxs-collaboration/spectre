@@ -182,12 +182,10 @@ struct EvolutionMetavars {
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>,
+      Actions::MutateApply<boundary_scheme>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
       tmpl::conditional_t<
           use_filtering,
           dg::Actions::Filter<Filters::Exponential<0>,
@@ -251,12 +249,9 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
-                  tmpl::list<
-                      Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                      tmpl::conditional_t<
-                          local_time_stepping,
-                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>;
+                  tmpl::list<Actions::RunEventsAndTriggers,
+                             Actions::ChangeSlabSize, step_actions,
+                             Actions::AdvanceTime>>>>>;
 
   static constexpr Options::String help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"

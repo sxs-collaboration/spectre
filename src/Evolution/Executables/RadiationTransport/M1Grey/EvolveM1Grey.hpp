@@ -189,12 +189,11 @@ struct EvolutionMetavars {
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>, Limiters::Actions::SendData<EvolutionMetavars>,
+      Actions::MutateApply<boundary_scheme>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
+      Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1Closure<neutrino_species>>,
@@ -265,12 +264,9 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
-                  tmpl::list<
-                      Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                      tmpl::conditional_t<
-                          local_time_stepping,
-                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>;
+                  tmpl::list<Actions::RunEventsAndTriggers,
+                             Actions::ChangeSlabSize, step_actions,
+                             Actions::AdvanceTime>>>>>;
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,

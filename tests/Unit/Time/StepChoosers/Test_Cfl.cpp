@@ -79,7 +79,10 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
   const double current_step = std::numeric_limits<double>::infinity();
   const auto result =
       cfl(grid_spacing, box, time_stepper, current_step, cache);
-  CHECK(result.second);
+  CHECK_FALSE(result.second);
+  const auto accepted_step_result =
+      cfl(grid_spacing, box, time_stepper, result.first * 0.7, cache);
+  CHECK(accepted_step_result.second);
   CHECK(cfl_base->desired_step(current_step, box, cache) == result);
   CHECK(serialize_and_deserialize(cfl)(grid_spacing, box, time_stepper,
                                        current_step, cache) == result);

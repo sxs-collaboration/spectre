@@ -66,7 +66,7 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::Variables<tmpl::list<EvolvedSwshTag>>;
   using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Time,
+      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
   using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
@@ -105,8 +105,8 @@ struct InitializeCharacteristicEvolutionTime {
         make_not_null(&box),
         std::move(initial_time_id),  // NOLINT
         std::move(second_time_id),   // NOLINT
-        fixed_time_step, initial_time_value, std::move(coordinate_history),
-        std::move(swsh_history));
+        fixed_time_step, fixed_time_step, initial_time_value,
+        std::move(coordinate_history), std::move(swsh_history));
     return std::make_tuple(std::move(box));
   }
 };

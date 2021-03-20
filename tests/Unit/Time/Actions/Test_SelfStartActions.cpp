@@ -131,7 +131,7 @@ struct Component {
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
       history_tag, Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-      Tags::TimeStep, Tags::Time>>;
+      Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time>>;
   using compute_tags = db::AddComputeTags<Tags::SubstepTimeCompute>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
@@ -174,7 +174,8 @@ void emplace_component_and_initialize(
       {initial_value, 0., typename history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
+       initial_time_step, initial_time_step,
+       std::numeric_limits<double>::signaling_NaN()});
 }
 
 template <>
@@ -190,26 +191,13 @@ void emplace_component_and_initialize<true>(
        TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
+       initial_time_step, initial_time_step,
+       std::numeric_limits<double>::signaling_NaN()});
 }
 
-namespace detail {
-template <template <typename> class U>
-struct is_a_wrapper;
-
-template <typename U, typename T>
-struct wrapped_is_a;
-
-template <template <typename> class U, typename T>
-struct wrapped_is_a<is_a_wrapper<U>, T> : tt::is_a<U, T> {};
-}  // namespace detail
-
-template <template <typename> class U, typename T>
-using is_a_lambda = detail::wrapped_is_a<detail::is_a_wrapper<U>, T>;
-
 using not_self_start_action = std::negation<std::disjunction<
-    is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
-    is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+    tt::is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
+    tt::is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
     std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
     std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>>>;
 
@@ -269,7 +257,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
   {
     INFO("Initialize");
     const bool jumped =
-        run_past<is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
+        run_past<tt::is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
                  not_self_start_action>(make_not_null(&runner));
     CHECK(not jumped);
     CHECK(
@@ -296,7 +284,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
       {
         INFO("CheckForCompletion");
         const bool jumped = run_past<
-            is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+            tt::is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
         CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
@@ -321,9 +309,9 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
 
   {
     INFO("CheckForCompletion");
-    const bool jumped =
-        run_past<is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
-                 not_self_start_action>(make_not_null(&runner));
+    const bool jumped = run_past<
+        tt::is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+        not_self_start_action>(make_not_null(&runner));
     CHECK(jumped);
   }
   {

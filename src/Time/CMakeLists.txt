@@ -24,6 +24,7 @@ spectre_target_headers(
   History.hpp
   Slab.hpp
   Tags.hpp
+  TakeStep.hpp
   Time.hpp
   TimeSequence.hpp
   TimeStepId.hpp

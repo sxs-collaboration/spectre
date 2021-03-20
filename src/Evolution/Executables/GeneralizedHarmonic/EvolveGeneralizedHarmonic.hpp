@@ -270,12 +270,10 @@ struct EvolutionMetavars {
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>>;
+      Actions::MutateApply<boundary_scheme>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>>;
 
   enum class Phase {
     Initialization,

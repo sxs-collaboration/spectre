@@ -23,6 +23,33 @@ class GlobalCache;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
+/// Records the variables and their time derivatives in the time stepper
+/// history.
+///
+/// \note this is a free function version of `Actions::RecordTimeStepperData`.
+/// This free function alternative permits the inclusion of the time step
+/// procedure in the middle of another action.
+template <typename System, typename VariablesTag = NoSuchType, typename DbTags>
+void record_time_stepper_data(
+    const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+  using variables_tag =
+      tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
+                          typename System::variables_tag, VariablesTag>;
+  using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
+  using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
+
+  db::mutate<history_tag>(
+      box,
+      [](const gsl::not_null<typename history_tag::type*> history,
+         const TimeStepId& time_step_id,
+         const typename variables_tag::type& vars,
+         const typename dt_variables_tag::type& dt_vars) noexcept {
+        history->insert(time_step_id, vars, dt_vars);
+      },
+      db::get<Tags::TimeStepId>(*box), db::get<variables_tag>(*box),
+      db::get<dt_variables_tag>(*box));
+}
+
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
@@ -55,24 +82,8 @@ struct RecordTimeStepperData {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
-    using variables_tag =
-        tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
-                            typename Metavariables::system::variables_tag,
-                            VariablesTag>;
-    using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
-    using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
-
-    db::mutate<history_tag>(
-        make_not_null(&box),
-        [](const gsl::not_null<typename history_tag::type*> history,
-           const TimeStepId& time_step_id,
-           const typename variables_tag::type& vars,
-           const typename dt_variables_tag::type& dt_vars) noexcept {
-          history->insert(time_step_id, vars, dt_vars);
-        },
-        db::get<Tags::TimeStepId>(box), db::get<variables_tag>(box),
-        db::get<dt_variables_tag>(box));
-
+    record_time_stepper_data<typename Metavariables::system, VariablesTag>(
+        make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
