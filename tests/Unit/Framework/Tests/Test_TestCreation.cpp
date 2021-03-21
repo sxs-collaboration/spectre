@@ -131,6 +131,40 @@ struct ExampleTag {
 };
 // [class_without_metavariables_tag]
 
+struct BaseClass {
+  BaseClass() = default;
+  BaseClass(const BaseClass&) = delete;
+  BaseClass& operator=(const BaseClass&) = delete;
+  BaseClass(BaseClass&&) = default;
+  BaseClass& operator=(BaseClass&&) = default;
+  virtual ~BaseClass() = default;
+
+  virtual size_t get_value() const = 0;
+};
+
+struct DerivedClass : BaseClass {
+  struct SizeT {
+    using type = size_t;
+    static constexpr Options::String help = {"SizeT help"};
+  };
+
+  using options = tmpl::list<SizeT>;
+  static constexpr Options::String help = {"Help"};
+
+  explicit DerivedClass(const size_t in_value) : value(in_value) {}
+
+  DerivedClass() = default;
+  DerivedClass(const DerivedClass&) = delete;
+  DerivedClass& operator=(const DerivedClass&) = delete;
+  DerivedClass(DerivedClass&&) = default;
+  DerivedClass& operator=(DerivedClass&&) = default;
+  ~DerivedClass() override = default;
+
+  size_t get_value() const override { return value; }
+
+  size_t value{0};
+};
+
 void test_test_creation() {
   // Test creation of fundamentals
   CHECK(TestHelpers::test_creation<double>("1.846") == 1.846);
@@ -198,6 +232,15 @@ void test_test_creation() {
             .value == 24);
 }
 
+void test_test_factory_creation() {
+  // [test_factory_creation]
+  CHECK(TestHelpers::test_factory_creation<BaseClass, DerivedClass>(
+            "DerivedClass:\n"
+            "  SizeT: 5")
+            ->get_value() == 5);
+  // [test_factory_creation]
+}
+
 void test_test_enum_creation() {
   CHECK(TestHelpers::test_creation<Color>("Purple") == Color::Purple);
   CHECK(TestHelpers::test_option_tag<NoGroup<Color>>("Purple") ==
@@ -218,6 +261,7 @@ void test_test_enum_creation() {
 
 SPECTRE_TEST_CASE("Unit.TestCreation", "[Unit]") {
   test_test_creation();
+  test_test_factory_creation();
   test_test_enum_creation();
 }
 }  // namespace

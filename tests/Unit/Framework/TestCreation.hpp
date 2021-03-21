@@ -10,7 +10,10 @@
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace TestHelpers {
 namespace TestCreation_detail {
@@ -45,6 +48,15 @@ struct AddGroups<Tag, std::void_t<typename Tag::group>> {
         AddGroups<void>::template apply<Tag>(construction_string));
   }
 };
+
+template <typename BaseClass, typename DerivedClass>
+struct SingleFactoryMetavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<BaseClass, tmpl::list<DerivedClass>>>;
+  };
+};
 }  // namespace TestCreation_detail
 
 /// \ingroup TestingFrameworkGroup
@@ -56,7 +68,9 @@ struct AddGroups<Tag, std::void_t<typename Tag::group>> {
 ///
 /// A class can be explicitly created through a factory by passing
 /// `std::unique_ptr<BaseClass>` as the type.  This will require
-/// metavariables to be passed.
+/// metavariables to be passed.  For testing basic factory creation,
+/// the simpler TestHelpers::test_factory_creation() can be used
+/// instead.
 ///
 /// \snippet Test_TestCreation.cpp class_without_metavariables
 /// \snippet Test_TestCreation.cpp class_without_metavariables_create
@@ -95,5 +109,28 @@ typename OptionTag::type test_option_tag(
   options.parse(
       TestCreation_detail::AddGroups<OptionTag>::apply(construction_string));
   return options.template get<OptionTag, Metavariables>();
+}
+
+/// \ingroup TestingFrameworkGroup
+/// Creates a class of a known derived type using a factory.
+///
+/// This is a shorthand for creating a \p DerivedClass through a \p
+/// BaseClass factory, saving the caller from having to explicitly
+/// write metavariables with the appropriate `factory_classes` alias.
+/// The name of the type should be supplied as the first line of the
+/// passed string, just as for normal use of a factory.
+///
+/// If multiple factory creatable types must be handled or if
+/// metavariables must be passed for some other reason, then the more
+/// general TestHelpers::test_creation() must be used instead.
+///
+/// \snippet Test_TestCreation.cpp test_factory_creation
+template <typename BaseClass, typename DerivedClass>
+std::unique_ptr<BaseClass> test_factory_creation(
+    const std::string& construction_string) noexcept {
+  return TestHelpers::test_creation<
+      std::unique_ptr<BaseClass>,
+      TestCreation_detail::SingleFactoryMetavariables<BaseClass, DerivedClass>>(
+      construction_string);
 }
 }  // namespace TestHelpers
