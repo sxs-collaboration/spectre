@@ -397,8 +397,7 @@ void test_create_from_options() noexcept {
         "      RollOnTimeWindow : 100.\n";
   }
 
-  auto created = TestHelpers::test_creation<
-      GeneralizedHarmonic::gauges::DhGaugeParameters<UseRollon>,
+  auto created = TestHelpers::test_option_tag<
       GeneralizedHarmonic::gauges::OptionTags::DhGaugeParameters<UseRollon>>(
       options);
 

@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
   CHECK(options == deserialized_options);
 
   CHECK(options ==
-        TestHelpers::test_creation<SubcellOptions, OptionTags::SubcellOptions>(
+        TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
             "InitialData:\n"
             "  RdmpDelta0: 1.0e-3\n"
             "  RdmpEpsilon: 1.0e-4\n"

@@ -395,8 +395,8 @@ void test_shell_factory_equiangular() {
   INFO("Shell factory equiangular");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto shell = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,
@@ -432,8 +432,8 @@ void test_shell_factory_equidistant() {
   INFO("Shell factory equidistant");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto shell = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,
@@ -504,8 +504,8 @@ void test_shell_factory_aspect_ratio() {
   INFO("Shell factory aspect ratio");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto shell = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,
@@ -620,8 +620,8 @@ void test_shell_factory_logarithmic_map() {
   INFO("Shell factory logarithmic map");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto shell = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,
@@ -655,8 +655,8 @@ void test_shell_factory_logarithmic_map() {
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
 
   INFO("Test with multiple radial layers");
-  const auto shell = TestHelpers::test_creation<
-      std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+  const auto shell = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithBoundaryConditions<3>>(
       "Shell:\n"
@@ -702,8 +702,8 @@ void test_shell_factory_logarithmic_map() {
 
 void test_shell_factory_wedges_four_on_equator() {
   INFO("Shell factory wedges four on equator");
-  const auto shell = TestHelpers::test_creation<
-      std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+  const auto shell = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"
@@ -731,8 +731,8 @@ void test_shell_factory_wedges_four_on_equator() {
 
 void test_shell_factory_wedges_one_along_minus_x() {
   INFO("Shell factory wedges one along minus x");
-  const auto shell = TestHelpers::test_creation<
-      std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+  const auto shell = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithoutBoundaryConditions<3>>(
       "Shell:\n"

@@ -44,6 +44,7 @@ Color Options::create_from_yaml<Color>::create<void>(
 }
 
 namespace {
+// [class_without_metavariables]
 struct ClassWithoutMetavariables {
   struct SizeT {
     using type = size_t;
@@ -59,6 +60,7 @@ struct ClassWithoutMetavariables {
 
   size_t value{0};
 };
+// [class_without_metavariables]
 
 struct ClassWithMetavariables {
   struct SizeT {
@@ -121,114 +123,97 @@ struct Metavars {
   static constexpr size_t value_multiplier = ValueMultiplier;
 };
 
+// [class_without_metavariables_tag]
+struct ExampleTag {
+  using type = ClassWithoutMetavariables;
+  static constexpr Options::String help = {"help"};
+  using group = OptionGroup1;
+};
+// [class_without_metavariables_tag]
+
 void test_test_creation() {
   // Test creation of fundamentals
   CHECK(TestHelpers::test_creation<double>("1.846") == 1.846);
-  CHECK(
-      TestHelpers::test_creation<double, TestHelpers::TestCreationOpt<double>>(
-          "1.846") == 1.846);
-  CHECK(TestHelpers::test_creation<double, NoGroup<double>>("1.846") == 1.846);
-  CHECK(TestHelpers::test_creation<double, OneGroup<double>>("1.846") == 1.846);
-  CHECK(TestHelpers::test_creation<double, TwoGroup<double>>("1.846") == 1.846);
+  CHECK(TestHelpers::test_option_tag<NoGroup<double>>("1.846") == 1.846);
+  CHECK(TestHelpers::test_option_tag<OneGroup<double>>("1.846") == 1.846);
+  CHECK(TestHelpers::test_option_tag<TwoGroup<double>>("1.846") == 1.846);
 
   // Test class that doesn't need metavariables when not passing metavariables
-  // [size_t_argument]
+  // [class_without_metavariables_create]
   CHECK(
       TestHelpers::test_creation<ClassWithoutMetavariables>("SizeT: 7").value ==
       7);
-  // [size_t_argument]
+  // [class_without_metavariables_create]
+  // [class_without_metavariables_create_tag]
+  CHECK(TestHelpers::test_option_tag<ExampleTag>("SizeT: 7").value == 7);
+  // [class_without_metavariables_create_tag]
 
-  CHECK(
-      TestHelpers::test_creation<ClassWithoutMetavariables,
-                                 NoGroup<ClassWithoutMetavariables>>("SizeT: 4")
-          .value == 4);
-  CHECK(TestHelpers::test_creation<ClassWithoutMetavariables,
-                                   OneGroup<ClassWithoutMetavariables>>(
+  CHECK(TestHelpers::test_option_tag<NoGroup<ClassWithoutMetavariables>>(
+            "SizeT: 4")
+            .value == 4);
+  CHECK(TestHelpers::test_option_tag<OneGroup<ClassWithoutMetavariables>>(
             "SizeT: 5")
             .value == 5);
-  CHECK(TestHelpers::test_creation<ClassWithoutMetavariables,
-                                   TwoGroup<ClassWithoutMetavariables>>(
+  CHECK(TestHelpers::test_option_tag<TwoGroup<ClassWithoutMetavariables>>(
             "SizeT: 6")
             .value == 6);
 
   // Test class that doesn't need metavariables but passing metavariables
-  CHECK(
-      TestHelpers::test_creation<
-          ClassWithoutMetavariables,
-          TestHelpers::TestCreationOpt<ClassWithoutMetavariables>, Metavars<3>>(
-          "SizeT: 8")
-          .value == 8);
-  CHECK(TestHelpers::test_creation<ClassWithoutMetavariables,
-                                   NoGroup<ClassWithoutMetavariables>,
-                                   Metavars<4>>("SizeT: 9")
+  CHECK(TestHelpers::test_creation<ClassWithoutMetavariables, Metavars<3>>(
+            "SizeT: 8")
+            .value == 8);
+  CHECK(TestHelpers::test_option_tag<NoGroup<ClassWithoutMetavariables>,
+                                     Metavars<4>>("SizeT: 9")
             .value == 9);
-  CHECK(TestHelpers::test_creation<ClassWithoutMetavariables,
-                                   OneGroup<ClassWithoutMetavariables>,
-                                   Metavars<5>>("SizeT: 10")
+  CHECK(TestHelpers::test_option_tag<OneGroup<ClassWithoutMetavariables>,
+                                     Metavars<5>>("SizeT: 10")
             .value == 10);
-  CHECK(TestHelpers::test_creation<ClassWithoutMetavariables,
-                                   TwoGroup<ClassWithoutMetavariables>,
-                                   Metavars<6>>("SizeT: 11")
+  CHECK(TestHelpers::test_option_tag<TwoGroup<ClassWithoutMetavariables>,
+                                     Metavars<6>>("SizeT: 11")
             .value == 11);
 
   // Test class that uses metavariables but not passing metavariables
-  CHECK(TestHelpers::test_creation<
-            ClassWithMetavariables,
-            TestHelpers::TestCreationOpt<ClassWithMetavariables>>("SizeT: 4")
-            .value == std::numeric_limits<size_t>::max());
-  CHECK(TestHelpers::test_creation<ClassWithMetavariables,
-                                   NoGroup<ClassWithMetavariables>>("SizeT: 4")
-            .value == std::numeric_limits<size_t>::max());
-  CHECK(TestHelpers::test_creation<ClassWithMetavariables,
-                                   OneGroup<ClassWithMetavariables>>("SizeT: 4")
-            .value == std::numeric_limits<size_t>::max());
-  CHECK(TestHelpers::test_creation<ClassWithMetavariables,
-                                   TwoGroup<ClassWithMetavariables>>("SizeT: 4")
-            .value == std::numeric_limits<size_t>::max());
+  CHECK(
+      TestHelpers::test_option_tag<NoGroup<ClassWithMetavariables>>("SizeT: 4")
+          .value == std::numeric_limits<size_t>::max());
+  CHECK(
+      TestHelpers::test_option_tag<OneGroup<ClassWithMetavariables>>("SizeT: 4")
+          .value == std::numeric_limits<size_t>::max());
+  CHECK(
+      TestHelpers::test_option_tag<TwoGroup<ClassWithMetavariables>>("SizeT: 4")
+          .value == std::numeric_limits<size_t>::max());
 
   // Test class that uses metavariables but passing metavariables
-  CHECK(TestHelpers::test_creation<
-            ClassWithMetavariables,
-            TestHelpers::TestCreationOpt<ClassWithMetavariables>, Metavars<3>>(
+  CHECK(TestHelpers::test_creation<ClassWithMetavariables, Metavars<3>>(
             "SizeT: 4")
             .value == 12);
-  CHECK(
-      TestHelpers::test_creation<ClassWithMetavariables,
-                                 NoGroup<ClassWithMetavariables>, Metavars<4>>(
-          "SizeT: 4")
-          .value == 16);
-  CHECK(
-      TestHelpers::test_creation<ClassWithMetavariables,
-                                 OneGroup<ClassWithMetavariables>, Metavars<5>>(
-          "SizeT: 4")
-          .value == 20);
-  CHECK(
-      TestHelpers::test_creation<ClassWithMetavariables,
-                                 TwoGroup<ClassWithMetavariables>, Metavars<6>>(
-          "SizeT: 4")
-          .value == 24);
+  CHECK(TestHelpers::test_option_tag<NoGroup<ClassWithMetavariables>,
+                                     Metavars<4>>("SizeT: 4")
+            .value == 16);
+  CHECK(TestHelpers::test_option_tag<OneGroup<ClassWithMetavariables>,
+                                     Metavars<5>>("SizeT: 4")
+            .value == 20);
+  CHECK(TestHelpers::test_option_tag<TwoGroup<ClassWithMetavariables>,
+                                     Metavars<6>>("SizeT: 4")
+            .value == 24);
 }
 
 void test_test_enum_creation() {
-  // [enum_purple]
   CHECK(TestHelpers::test_creation<Color>("Purple") == Color::Purple);
-  // [enum_purple]
-  CHECK(TestHelpers::test_creation<Color, TestHelpers::TestCreationOpt<Color>>(
-            "Purple") == Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, NoGroup<Color>>("Purple") ==
+  CHECK(TestHelpers::test_option_tag<NoGroup<Color>>("Purple") ==
         Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, OneGroup<Color>>("Purple") ==
+  CHECK(TestHelpers::test_option_tag<OneGroup<Color>>("Purple") ==
         Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, TwoGroup<Color>>("Purple") ==
+  CHECK(TestHelpers::test_option_tag<TwoGroup<Color>>("Purple") ==
         Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, TestHelpers::TestCreationOpt<Color>,
-                                   Metavars<3>>("Purple") == Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, NoGroup<Color>, Metavars<3>>(
-            "Purple") == Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, OneGroup<Color>, Metavars<3>>(
-            "Purple") == Color::Purple);
-  CHECK(TestHelpers::test_creation<Color, TwoGroup<Color>, Metavars<3>>(
-            "Purple") == Color::Purple);
+  CHECK(TestHelpers::test_creation<Color, Metavars<3>>("Purple") ==
+        Color::Purple);
+  CHECK(TestHelpers::test_option_tag<NoGroup<Color>, Metavars<3>>("Purple") ==
+        Color::Purple);
+  CHECK(TestHelpers::test_option_tag<OneGroup<Color>, Metavars<3>>("Purple") ==
+        Color::Purple);
+  CHECK(TestHelpers::test_option_tag<TwoGroup<Color>, Metavars<3>>("Purple") ==
+        Color::Purple);
 }
 
 SPECTRE_TEST_CASE("Unit.TestCreation", "[Unit]") {

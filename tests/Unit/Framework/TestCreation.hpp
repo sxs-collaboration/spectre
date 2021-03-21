@@ -6,6 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -13,6 +14,18 @@
 
 namespace TestHelpers {
 namespace TestCreation_detail {
+template <typename T, typename = std::void_t<>>
+struct looks_like_tag : std::false_type {};
+
+template <typename T>
+struct looks_like_tag<T, std::void_t<typename T::type>> : std::true_type {};
+
+template <typename T>
+struct TestCreationOpt {
+  using type = T;
+  static constexpr Options::String help = {"halp"};
+};
+
 template <typename Tag, typename = void>
 struct AddGroups {
   template <typename OptionTag = Tag>
@@ -35,37 +48,49 @@ struct AddGroups<Tag, std::void_t<typename Tag::group>> {
 }  // namespace TestCreation_detail
 
 /// \ingroup TestingFrameworkGroup
-/// The default option tag for `TestHelpers::test_creation()`.
-template <typename T>
-struct TestCreationOpt {
-  using type = T;
-  static constexpr Options::String help = {"halp"};
-};
+/// Creates an instance of a given option-creatable type.
+///
+/// This is a wrapper around Options::Parser constructing a single,
+/// specified type \p T from the supplied string.  If necessary,
+/// metavariables can be supplied as the second template argument.
+///
+/// A class can be explicitly created through a factory by passing
+/// `std::unique_ptr<BaseClass>` as the type.  This will require
+/// metavariables to be passed.
+///
+/// \snippet Test_TestCreation.cpp class_without_metavariables
+/// \snippet Test_TestCreation.cpp class_without_metavariables_create
+///
+/// \see TestHelpers::test_option_tag()
+template <typename T, typename Metavariables = NoSuchType>
+T test_creation(const std::string& construction_string) noexcept {
+  static_assert(not TestCreation_detail::looks_like_tag<Metavariables>::value,
+                "test_creation no longer allows overriding the default "
+                "option tag.  To test a particular option tag use "
+                "test_option_tag.");
+  using tag = TestCreation_detail::TestCreationOpt<T>;
+  Options::Parser<tmpl::list<tag>> options("");
+  options.parse(
+      TestCreation_detail::AddGroups<tag>::apply(construction_string));
+  return options.template get<tag, Metavariables>();
+}
 
 /// \ingroup TestingFrameworkGroup
-/// Construct an object or enum from a given string.
+/// Runs the option parser on a given tag
 ///
-/// When creating a non-enum option the string must not contain the name of the
-/// option (specifically, the struct being created from options, which is the
-/// name of the struct by default if no `name()` function is present). For
-/// example, to create a struct named `ClassWithoutMetavariables` with an option
-/// tag named `SizeT` the following would be used:
+/// Runs the option parser with the supplied input on a given tag.
+/// The tag name and any groups are handled by this function and
+/// should not be supplied in the argument string.  If necessary,
+/// metavariables can be supplied as the second template argument.
 ///
-/// \snippet Test_TestCreation.cpp size_t_argument
+/// \snippet Test_TestCreation.cpp class_without_metavariables
+/// \snippet Test_TestCreation.cpp class_without_metavariables_tag
+/// \snippet Test_TestCreation.cpp class_without_metavariables_create_tag
 ///
-/// When creating an enum option the string must not contain the name of the
-/// enum being constructed. The following is an example of an enum named `Color`
-/// with a member `Purple` being created from options.
-///
-/// \snippet Test_TestCreation.cpp enum_purple
-///
-/// Option tags can be tested by passing them as the second template parameter.
-/// If the metavariables are required to create the class then the metavariables
-/// must be passed as the third template parameter. The default option tag is
-/// `TestCreationOpt<T>`.
-template <typename T, typename OptionTag = TestCreationOpt<T>,
-          typename Metavariables = NoSuchType>
-T test_creation(const std::string& construction_string) noexcept {
+/// \see TestHelpers::test_creation()
+template <typename OptionTag, typename Metavariables = NoSuchType>
+typename OptionTag::type test_option_tag(
+    const std::string& construction_string) noexcept {
   Options::Parser<tmpl::list<OptionTag>> options("");
   options.parse(
       TestCreation_detail::AddGroups<OptionTag>::apply(construction_string));

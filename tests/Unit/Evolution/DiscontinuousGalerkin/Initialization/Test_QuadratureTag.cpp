@@ -14,10 +14,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.QuadratureTag",
                   "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<evolution::dg::Tags::Quadrature>(
       "Quadrature");
-  CHECK(TestHelpers::test_creation<Spectral::Quadrature,
-                                   evolution::dg::OptionTags::Quadrature>(
+  CHECK(TestHelpers::test_option_tag<evolution::dg::OptionTags::Quadrature>(
             "Gauss") == Spectral::Quadrature::Gauss);
-  CHECK(TestHelpers::test_creation<Spectral::Quadrature,
-                                   evolution::dg::OptionTags::Quadrature>(
+  CHECK(TestHelpers::test_option_tag<evolution::dg::OptionTags::Quadrature>(
             "GaussLobatto") == Spectral::Quadrature::GaussLobatto);
 }

@@ -399,14 +399,12 @@ void test_rotated_bricks_factory() {
                         : "  IsPeriodicIn: [false, false, false]\n"}};
     const auto domain_creator = [&opt_string, with_boundary_conditions]() {
       if (with_boundary_conditions) {
-        return TestHelpers::test_creation<
-            std::unique_ptr<DomainCreator<3>>,
+        return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
                 MetavariablesWithBoundaryConditions<3>>(opt_string);
       } else {
-        return TestHelpers::test_creation<
-            std::unique_ptr<DomainCreator<3>>,
+        return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
                 MetavariablesWithoutBoundaryConditions<3>>(opt_string);

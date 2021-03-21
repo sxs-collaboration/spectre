@@ -296,8 +296,8 @@ void test_sphere_factory_equiangular() {
   INFO("Sphere factory equiangular");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto sphere = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto sphere = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,
@@ -354,8 +354,8 @@ void test_sphere_factory_equidistant() {
   INFO("Sphere factory equidistant");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto sphere = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto sphere = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,

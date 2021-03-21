@@ -303,8 +303,8 @@ void test_brick_factory() {
       "      BlockId: 2\n"};
   {
     INFO("Brick factory time independent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<3>>(
         "Brick:\n"
@@ -329,8 +329,8 @@ void test_brick_factory() {
   }
   {
     INFO("Brick factory time independent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<3>>(
         "Brick:\n"
@@ -355,8 +355,8 @@ void test_brick_factory() {
   }
   {
     INFO("Brick factory time dependent");
-    const auto domain_creator = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<3>>(
         "Brick:\n"
@@ -404,8 +404,8 @@ void test_brick_factory() {
   }
   {
     INFO("Brick factory time dependent");
-    const auto domain_creator = TestHelpers::test_creation<
-        std::unique_ptr<DomainCreator<3>>, domain::OptionTags::DomainCreator<3>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<3>>(
         "Brick:\n"
