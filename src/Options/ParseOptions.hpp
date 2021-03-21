@@ -848,7 +848,7 @@ T create_from_yaml<T>::create(const Option& options) {
                                                const Context&>{}) {
       return T(std::move(args)..., options.context());
     } else {
-      return T(std::move(args)...);
+      return T{std::move(args)...};
     }
   });
 }

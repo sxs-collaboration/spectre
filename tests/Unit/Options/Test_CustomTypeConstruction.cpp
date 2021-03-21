@@ -88,6 +88,27 @@ CfoWithMetavariables:
   MetaName: MetaString
 )";
 /// [class_creation_example_with_metavariables]
+
+struct CreateFromOptionsAggregate {
+  struct CfoOption {
+    using type = std::string;
+    static constexpr Options::String help = {"Option help text"};
+  };
+  static constexpr Options::String help = {"Class help text"};
+  using options = tmpl::list<CfoOption>;
+  // Define no constructors. The class can be aggregate-initialized.
+  std::string str{};
+};
+
+struct CfoAggregate {
+  using type = CreateFromOptionsAggregate;
+  static constexpr Options::String help = {"help"};
+};
+
+const char* const input_file_text_aggregate = R"(
+CfoAggregate:
+  CfoOption: MetaString
+)";
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
@@ -103,6 +124,12 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
     opts.parse(input_file_text_with_metavariables);
     CHECK(opts.get<CfoWithMetavariables, Metavariables>().str_ == "MetaString");
     CHECK(opts.get<CfoWithMetavariables, Metavariables>().expected_);
+  }
+  {
+    INFO("Aggregate-initialization");
+    Options::Parser<tmpl::list<CfoAggregate>> opts("");
+    opts.parse(input_file_text_aggregate);
+    CHECK(opts.get<CfoAggregate>().str == "MetaString");
   }
 }
 
