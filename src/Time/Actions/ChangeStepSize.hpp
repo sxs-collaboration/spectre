@@ -72,6 +72,14 @@ bool change_step_size(
     desired_step = -desired_step;
   }
 
+  if (abs(desired_step / current_step.slab().duration().value()) < 1.0e-9) {
+    ERROR(
+        "Chosen step is extremely small; this can indicate a flaw in the a "
+        "step chooser, the grid, or a simualtion instability that an "
+        "error-based stepper is naively attempting to resolve. It is unlikely "
+        "that the simulation can proceed");
+  }
+
   const auto new_step =
       step_controller.choose_step(next_time_id.step_time(), desired_step);
   db::mutate<Tags::Next<Tags::TimeStep>>(
