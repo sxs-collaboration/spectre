@@ -138,11 +138,12 @@ struct Coordinates : db::SimpleTag {
 /// \ingroup ComputationalDomainGroup
 /// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
 /// frame must be the source frame of `MapTag`
-template <class MapTag, class SourceCoordsTag>
+template <class MapTag, class SourceCoordsTag,
+          template <size_t, class> class CoordinatesTag = Coordinates>
 struct MappedCoordinates
-    : Coordinates<MapTag::dim, typename MapTag::target_frame>,
+    : CoordinatesTag<MapTag::dim, typename MapTag::target_frame>,
       db::ComputeTag {
-  using base = Coordinates<MapTag::dim, typename MapTag::target_frame>;
+  using base = CoordinatesTag<MapTag::dim, typename MapTag::target_frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
