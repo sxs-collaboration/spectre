@@ -172,7 +172,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void test_two_index_constraint_random(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ia<DataType, SpatialDim, Frame> (*)(
-          const tnsr::ia<DataType, SpatialDim, Frame>&,
+          const tnsr::ab<DataType, SpatialDim, Frame>&,
           const tnsr::a<DataType, SpatialDim, Frame>&,
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::II<DataType, SpatialDim, Frame>&,
@@ -287,6 +287,21 @@ void test_two_index_constraint_analytic(
   const auto& d_gauge_function =
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
+  // Populate spacetime derivative of gauge function
+  const auto d4_gauge_function = [&x, &d_gauge_function]() {
+    auto tmp =
+        make_with_value<tnsr::ab<DataVector, 3, Frame::Inertial>>(x, 0.0);
+    for (size_t a = 0; a < 4; ++a) {
+      for (size_t i = 0; i < 3; ++i) {
+        tmp.get(i + 1, a) = d_gauge_function.get(i, a);
+      }
+      // Populate the time derivative with NaN as a check that those are not
+      // being used in calculating constraints
+      tmp.get(0, a) = std::numeric_limits<double>::signaling_NaN();
+    }
+    return tmp;
+  }();
+
   // Compute the three-index constraint
   const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(d_spacetime_metric, phi);
@@ -296,7 +311,7 @@ void test_two_index_constraint_analytic(
       make_with_value<tnsr::ia<DataVector, 3, Frame::Inertial>>(
           x, std::numeric_limits<double>::signaling_NaN());
   GeneralizedHarmonic::two_index_constraint(
-      make_not_null(&two_index_constraint), d_gauge_function, normal_one_form,
+      make_not_null(&two_index_constraint), d4_gauge_function, normal_one_form,
       normal_vector, inverse_spatial_metric, inverse_spacetime_metric, pi, phi,
       d_pi, d_phi, gamma2, three_index_constraint);
 
@@ -399,7 +414,7 @@ void test_f_constraint_random(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
           const tnsr::a<DataType, SpatialDim, Frame>&,
-          const tnsr::ia<DataType, SpatialDim, Frame>&,
+          const tnsr::ab<DataType, SpatialDim, Frame>&,
           const tnsr::a<DataType, SpatialDim, Frame>&,
           const tnsr::A<DataType, SpatialDim, Frame>&,
           const tnsr::II<DataType, SpatialDim, Frame>&,
@@ -513,6 +528,21 @@ void test_f_constraint_analytic(const Solution& solution,
   const auto& d_gauge_function =
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
+  // Populate spacetime derivative of gauge function
+  const auto d4_gauge_function = [&x, &d_gauge_function]() {
+    auto tmp =
+        make_with_value<tnsr::ab<DataVector, 3, Frame::Inertial>>(x, 0.0);
+    for (size_t a = 0; a < 4; ++a) {
+      for (size_t i = 0; i < 3; ++i) {
+        tmp.get(i + 1, a) = d_gauge_function.get(i, a);
+      }
+      // Populate the time derivative with NaN as a check that those are not
+      // being used in calculating constraints
+      tmp.get(0, a) = std::numeric_limits<double>::signaling_NaN();
+    }
+    return tmp;
+  }();
+
   // Compute the three-index constraint
   const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(d_spacetime_metric, phi);
@@ -521,7 +551,7 @@ void test_f_constraint_analytic(const Solution& solution,
   auto f_constraint = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
       x, std::numeric_limits<double>::signaling_NaN());
   GeneralizedHarmonic::f_constraint(
-      make_not_null(&f_constraint), gauge_function, d_gauge_function,
+      make_not_null(&f_constraint), gauge_function, d4_gauge_function,
       normal_one_form, normal_vector, inverse_spatial_metric,
       inverse_spacetime_metric, pi, phi, d_pi, d_phi, gamma2,
       three_index_constraint);
@@ -648,6 +678,21 @@ void test_constraint_energy_analytic(const Solution& solution,
   const auto& d_gauge_function =
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
+  // Populate spacetime derivative of gauge function
+  const auto d4_gauge_function = [&x, &d_gauge_function]() {
+    auto tmp =
+        make_with_value<tnsr::ab<DataVector, 3, Frame::Inertial>>(x, 0.0);
+    for (size_t a = 0; a < 4; ++a) {
+      for (size_t i = 0; i < 3; ++i) {
+        tmp.get(i + 1, a) = d_gauge_function.get(i, a);
+      }
+      // Populate the time derivative with NaN as a check that those are not
+      // being used in calculating constraints
+      tmp.get(0, a) = std::numeric_limits<double>::signaling_NaN();
+    }
+    return tmp;
+  }();
+
   // Arbitrary choice for gamma2
   const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
 
@@ -660,11 +705,11 @@ void test_constraint_energy_analytic(const Solution& solution,
   const auto four_index_constraint =
       GeneralizedHarmonic::four_index_constraint(d_phi);
   const auto two_index_constraint = GeneralizedHarmonic::two_index_constraint(
-      d_gauge_function, normal_one_form, normal_vector, inverse_spatial_metric,
+      d4_gauge_function, normal_one_form, normal_vector, inverse_spatial_metric,
       inverse_spacetime_metric, pi, phi, d_pi, d_phi, gamma2,
       three_index_constraint);
   const auto f_constraint = GeneralizedHarmonic::f_constraint(
-      gauge_function, d_gauge_function, normal_one_form, normal_vector,
+      gauge_function, d4_gauge_function, normal_one_form, normal_vector,
       inverse_spatial_metric, inverse_spacetime_metric, pi, phi, d_pi, d_phi,
       gamma2, three_index_constraint);
 
@@ -837,11 +882,10 @@ void test_constraint_compute_items(
   get<2>(time_deriv_gauge_source) = 0.07;
   get<3>(time_deriv_gauge_source) = -0.05;
 
-  tnsr::ab<DataVector, 3, Frame::Inertial> derivatives_of_gauge_source{};
-  GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-      3, Frame::Inertial>::function(make_not_null(&derivatives_of_gauge_source),
-                                    time_deriv_gauge_source,
-                                    deriv_gauge_source);
+  tnsr::ab<DataVector, 3, Frame::Inertial> spacetime_deriv_gauge_source{};
+  GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<3, Frame::Inertial>::
+      function(make_not_null(&spacetime_deriv_gauge_source),
+               time_deriv_gauge_source, deriv_gauge_source);
 
   // Make DampingFunctions for the constraint damping parameters
   // Note: these parameters are taken from SpEC single-black-hole simulations
@@ -989,14 +1033,14 @@ void test_constraint_compute_items(
   const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(deriv_spacetime_metric, phi);
   const auto two_index_constraint = GeneralizedHarmonic::two_index_constraint(
-      deriv_gauge_source, spacetime_normal_one_form, spacetime_normal_vector,
-      inverse_spatial_metric, inverse_spacetime_metric, pi, phi, deriv_pi,
-      deriv_phi, gamma2, three_index_constraint);
+      spacetime_deriv_gauge_source, spacetime_normal_one_form,
+      spacetime_normal_vector, inverse_spatial_metric, inverse_spacetime_metric,
+      pi, phi, deriv_pi, deriv_phi, gamma2, three_index_constraint);
   const auto gauge_constraint = GeneralizedHarmonic::gauge_constraint(
       gauge_source, spacetime_normal_one_form, spacetime_normal_vector,
       inverse_spatial_metric, inverse_spacetime_metric, pi, phi);
   const auto f_constraint = GeneralizedHarmonic::f_constraint(
-      gauge_source, deriv_gauge_source, spacetime_normal_one_form,
+      gauge_source, spacetime_deriv_gauge_source, spacetime_normal_one_form,
       spacetime_normal_vector, inverse_spatial_metric, inverse_spacetime_metric,
       pi, phi, deriv_pi, deriv_phi, gamma2, three_index_constraint);
   const auto constraint_energy = GeneralizedHarmonic::constraint_energy(
@@ -1016,7 +1060,7 @@ void test_constraint_compute_items(
   CHECK(
       db::get<
           GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>(
-          box) == derivatives_of_gauge_source);
+          box) == spacetime_deriv_gauge_source);
   CHECK(db::get<
             GeneralizedHarmonic::Tags::FourIndexConstraint<3, Frame::Inertial>>(
             box) == four_index_constraint);
@@ -1249,6 +1293,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
       std::numeric_limits<double>::signaling_NaN());
 }
 
+// This is the most expensive test as it requires the computation of
+// all constraints. It randomly times out with clang-8.
+// [[TimeOut, 11]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
