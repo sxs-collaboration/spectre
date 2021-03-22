@@ -9,8 +9,8 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   HwenoImpl.cpp
-  Minmod.cpp
   MinmodHelpers.cpp
+  MinmodImpl.cpp
   MinmodTci.cpp
   MinmodType.cpp
   WenoGridHelpers.cpp
@@ -28,8 +28,8 @@ spectre_target_headers(
   LimiterActions.hpp
   Limiters.hpp
   Minmod.hpp
-  Minmod.tpp
   MinmodHelpers.hpp
+  MinmodImpl.hpp
   MinmodTci.hpp
   MinmodType.hpp
   SimpleWenoImpl.hpp
