@@ -642,7 +642,7 @@ void test_cov_deriv_extrinsic_curvature(
           &::GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature<
               SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities",
-      "covariant_deriv_extrinsic_curvture", {{{-10., 10.}}}, used_for_size);
+      "covariant_deriv_extrinsic_curvture", {{{-1., 1.}}}, used_for_size);
 }
 
 }  // namespace
