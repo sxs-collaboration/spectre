@@ -104,7 +104,7 @@ void test_cylinder_construction(
     const creators::Cylinder& cylinder, const double inner_radius,
     const double outer_radius, const double lower_bound,
     const double upper_bound, const bool is_periodic_in_z,
-    const std::array<size_t, 3>& expected_wedge_extents,
+    const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
     const bool use_equiangular_map,
     const BoundaryCondVector& expected_boundary_conditions = {}) {
@@ -191,13 +191,6 @@ void test_cylinder_construction(
             {{Direction<3>::upper_xi()}},
             {{Direction<3>::upper_xi()}}};
   }
-  const std::vector<std::array<size_t, 3>>& expected_extents{
-      {{expected_wedge_extents[1], expected_wedge_extents[1],
-        expected_wedge_extents[2]}},
-      expected_wedge_extents,
-      expected_wedge_extents,
-      expected_wedge_extents,
-      expected_wedge_extents};
 
   CHECK(cylinder.initial_extents() == expected_extents);
   CHECK(cylinder.initial_refinement_levels() == expected_refinement_level);
@@ -318,8 +311,9 @@ void test_cylinder_no_refinement() {
         test_physical_separation(cylinder.create_domain().blocks());
         test_cylinder_construction(
             cylinder, inner_radius, outer_radius, lower_bound, upper_bound,
-            periodic_in_z, grid_points, {5, make_array<3>(refinement_level)},
-            equiangular_map, expected_boundary_conditions);
+            periodic_in_z, {5, grid_points},
+            {5, make_array<3>(refinement_level)}, equiangular_map,
+            expected_boundary_conditions);
 
         const std::string opt_string{
             "Cylinder:\n"
@@ -358,8 +352,8 @@ void test_cylinder_no_refinement() {
         test_cylinder_construction(
             dynamic_cast<const creators::Cylinder&>(*cylinder_factory),
             inner_radius, outer_radius, lower_bound, upper_bound, periodic_in_z,
-            grid_points, {5, make_array<3>(refinement_level)}, equiangular_map,
-            expected_boundary_conditions);
+            {5, grid_points}, {5, make_array<3>(refinement_level)},
+            equiangular_map, expected_boundary_conditions);
 
         if (with_boundary_conditions) {
           CHECK_THROWS_WITH(
@@ -440,12 +434,15 @@ void test_refined_cylinder_boundaries(const bool use_equiangular_map) {
   const double upper_bound = 5.0;
   const std::vector<double> radial_partitioning = {0.7};
   const std::vector<double> height_partitioning = {1.5};
-  const size_t refinement_level = 2;
+  const std::array<size_t, 3> refinement_level{1, 2, 3};
   const std::array<size_t, 3> expected_wedge_extents{{5, 4, 3}};
-  const std::vector<std::array<size_t, 3>> expected_refinement_level{
+  std::vector<std::array<size_t, 3>> expected_refinement_level{
       (1 + 4 * (1 + radial_partitioning.size())) *
           (1 + height_partitioning.size()),
-      make_array<3>(refinement_level)};
+      refinement_level};
+  // The central cubes share refinement level in x and y direction
+  expected_refinement_level[0][0] = expected_refinement_level[0][1];
+  expected_refinement_level[9][0] = expected_refinement_level[9][1];
   const creators::Cylinder refined_cylinder{inner_radius,
                                             outer_radius,
                                             lower_bound,
