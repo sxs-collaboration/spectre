@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Brick.cpp
   Test_Cylinder.cpp
   Test_Disk.cpp
+  Test_ExpandOverBlocks.cpp
   Test_FrustalCloak.cpp
   Test_Interval.cpp
   Test_Rectangle.cpp
