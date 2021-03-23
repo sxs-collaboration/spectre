@@ -90,6 +90,9 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+
+  using inverse_spatial_metric_tag =
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>;
 };
 }  // namespace M1Grey
 }  // namespace RadiationTransport
