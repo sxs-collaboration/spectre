@@ -520,6 +520,17 @@ void test_gauss_points_boundary_interpolation_and_lifting() noexcept {
       CHECK_ITERABLE_APPROX(DataVector{lift_lagrange_upper / quad_weights},
                             lifting_terms.second);
     }
+
+    const std::pair<DataVector, DataVector>& interp_terms =
+        Spectral::boundary_interpolation_term(local_mesh);
+    const Matrix interp_to_gauss_matrix = Spectral::interpolation_matrix(
+        Mesh<1>{n == 1 ? 2 : n, BasisType, Spectral::Quadrature::GaussLobatto},
+        Spectral::collocation_points<BasisType, QuadratureType>(n));
+
+    for (size_t i = 0; i < n; ++i) {
+      CHECK(approx(interp_terms.first[i]) == interp_to_gauss_matrix(i, 0));
+      CHECK(approx(interp_terms.second[i]) == interp_to_gauss_matrix(i, n - 1));
+    }
   }
 }
 }  // namespace
