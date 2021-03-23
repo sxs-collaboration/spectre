@@ -24,6 +24,7 @@
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
+#include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Informer/Tags.hpp"
@@ -51,6 +52,7 @@
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -68,6 +70,25 @@ using reduction_data = Parallel::ReductionData<
     Parallel::ReductionDatum<size_t, funcl::Min<>>,
     // Maximum number of subdomain solver iterations
     Parallel::ReductionDatum<size_t, funcl::Max<>>>;
+
+template <typename OptionsGroup>
+struct SubdomainStatsFormatter
+    : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
+  using reduction_data = Schwarz::detail::reduction_data;
+  std::string operator()(const size_t iteration_id, const size_t num_subdomains,
+                         const size_t avg_subdomain_its,
+                         const size_t min_subdomain_its,
+                         const size_t max_subdomain_its) const noexcept {
+    return Options::name<OptionsGroup>() + "(" + get_output(iteration_id) +
+           ") completed all " + get_output(num_subdomains) +
+           " subdomain solves. Average of number of iterations: " +
+           get_output(avg_subdomain_its) + " (min " +
+           get_output(min_subdomain_its) + ", max " +
+           get_output(max_subdomain_its) + ").";
+  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
+};
 
 template <typename OptionsGroup>
 struct RegisterObservers {
@@ -96,6 +117,11 @@ void contribute_to_subdomain_stats_observation(
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
            .ckLocalBranch();
+  auto formatter =
+      UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+               ::Verbosity::Verbose)
+          ? std::make_optional(SubdomainStatsFormatter<OptionsGroup>{})
+          : std::nullopt;
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer,
       observers::ObservationId(
@@ -109,7 +135,8 @@ void contribute_to_subdomain_stats_observation(
                                "MinNumIterations", "MaxNumIterations"},
       reduction_data{iteration_id, 1, subdomain_solve_num_iterations,
                      subdomain_solve_num_iterations,
-                     subdomain_solve_num_iterations});
+                     subdomain_solve_num_iterations},
+      std::move(formatter));
 }
 
 template <typename SubdomainDataType, typename OptionsGroup>
