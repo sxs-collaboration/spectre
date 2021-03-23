@@ -11,6 +11,7 @@ spectre_target_headers(
   Coordinates.hpp
   Inactive.hpp
   Mesh.hpp
+  Tags.hpp
   TciGridHistory.hpp
   TciStatus.hpp
   )
