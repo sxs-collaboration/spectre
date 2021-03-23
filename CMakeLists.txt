@@ -25,10 +25,9 @@ unset(${SPECTRE_NAME}_VERSION_PATCH)
 # The `cmake_minimum_required` above sets policies to `NEW` that are compatible
 # with the given minimum cmake version. Here we overwrite policies that we
 # have back-ported in our cmake code.
-# - We use `<PACKAGE_NAME>_ROOT` variables to provide search paths for
-#   dependencies
-if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
-  cmake_policy(SET CMP0074 NEW)
+# - We use test names with '.' characters in them
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+  cmake_policy(SET CMP0110 NEW)
 endif ()
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
