@@ -21,6 +21,7 @@ file(APPEND
   )
 
 # Also check that SciPy is installed
+include(FindPythonModule)
 find_python_module(scipy TRUE)
 
 add_library(Python::NumPy INTERFACE IMPORTED)
