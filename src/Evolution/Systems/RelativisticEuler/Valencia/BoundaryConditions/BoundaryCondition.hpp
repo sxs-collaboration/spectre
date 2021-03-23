@@ -10,14 +10,14 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace NewtonianEuler::BoundaryConditions {
+namespace RelativisticEuler::Valencia::BoundaryConditions {
 template <size_t Dim>
 class DirichletAnalytic;
-}  // namespace NewtonianEuler::BoundaryConditions
+}  // namespace RelativisticEuler::Valencia::BoundaryConditions
 /// \endcond
 
-/// \brief Boundary conditions for the Newtonian Euler hydrodynamics system
-namespace NewtonianEuler::BoundaryConditions {
+/// \brief Boundary conditions for the relativistic Euler system
+namespace RelativisticEuler::Valencia::BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
@@ -36,4 +36,4 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
 
   void pup(PUP::er& p) override;
 };
-}  // namespace NewtonianEuler::BoundaryConditions
+}  // namespace RelativisticEuler::Valencia::BoundaryConditions
