@@ -6,6 +6,7 @@
 #include <functional>
 #include <limits>
 #include <pup.h>
+#include <type_traits>
 #include <utility>
 
 /// \ingroup TimeGroup
@@ -41,7 +42,13 @@ struct evolution_comparator<void, Comparator> {
   bool time_runs_forward = true;
 
   template <typename T, typename U>
-  constexpr auto operator()(T&& t, U&& u) const noexcept {
+  constexpr decltype(auto) operator()(T&& t, U&& u) const noexcept {
+    static_assert(std::is_same_v<decltype(Comparator<void>{}(
+                                     std::forward<T>(t), std::forward<U>(u))),
+                                 decltype(Comparator<void>{}(
+                                     std::forward<U>(u), std::forward<T>(t)))>,
+                  "The return types of operators used in evolution comparators "
+                  "must be symmetric in their arguments.");
     return time_runs_forward
                ? Comparator<void>{}(std::forward<T>(t), std::forward<U>(u))
                : Comparator<void>{}(std::forward<U>(u), std::forward<T>(t));

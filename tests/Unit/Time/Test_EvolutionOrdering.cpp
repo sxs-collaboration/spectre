@@ -5,7 +5,6 @@
 
 #include <functional>
 #include <limits>
-#include <tuple>
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/EvolutionOrdering.hpp"
@@ -13,20 +12,50 @@
 namespace {
 template <int>
 struct StrangeComparison {
+  explicit StrangeComparison(const int v) noexcept : value(v) {}
+  StrangeComparison(const StrangeComparison&) = delete;
+  StrangeComparison(StrangeComparison&&) = default;
+  StrangeComparison& operator=(const StrangeComparison&) = delete;
+  StrangeComparison& operator=(StrangeComparison&&) = default;
+  ~StrangeComparison() = default;
   int value;
 };
 
-#define STRANGE_OP(op)                                                      \
-  template <int I1, int I2>                                                 \
-  inline std::tuple<bool> operator op(StrangeComparison<I1>&& x,            \
-                                      StrangeComparison<I2>&& y) noexcept { \
-    return std::make_tuple(x.value op y.value);                             \
+bool operator==(const StrangeComparison<1>& x,
+                const StrangeComparison<1>& y) noexcept {
+  return x.value == y.value;
+}
+
+// These are for testing types and forwarding, so it isn't important
+// to do something meaningful with the values.  (And we never call
+// this with I1 == I2, so we don't have to handle that.)
+template <int I1, int I2>
+const StrangeComparison<std::min(I1, I2)>& operator<(
+    const StrangeComparison<I1>& x, const StrangeComparison<I2>& y) noexcept {
+  if constexpr (I1 < I2) {
+    return x;
+  } else {
+    return y;
   }
-STRANGE_OP(<)
-STRANGE_OP(>)
-STRANGE_OP(<=)
-STRANGE_OP(>=)
-#undef STRANGE_OP
+}
+
+template <int I1, int I2>
+decltype(auto) operator>(const StrangeComparison<I1>& x,
+                         const StrangeComparison<I2>& y) noexcept {
+  return x < y;
+}
+
+template <int I1, int I2>
+decltype(auto) operator<=(const StrangeComparison<I1>& x,
+                          const StrangeComparison<I2>& y) noexcept {
+  return x < y;
+}
+
+template <int I1, int I2>
+decltype(auto) operator>=(const StrangeComparison<I1>& x,
+                          const StrangeComparison<I2>& y) noexcept {
+  return x < y;
+}
 
 template <typename EvOp, typename StdOp, typename Arg1, typename Arg2>
 void check_helper(const EvOp& ev_forward, const EvOp& ev_backward) noexcept {
