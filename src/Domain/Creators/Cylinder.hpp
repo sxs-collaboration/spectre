@@ -35,8 +35,8 @@ namespace domain::creators {
 /// Create a 3D Domain in the shape of a cylinder where the cross-section
 /// is a square surrounded by four two-dimensional wedges (see Wedge2D).
 ///
-/// The outer shell can be split into sub-shells and the cylinder itself split
-/// into disks, although this is not the case by default.
+/// The outer shell can be split into sub-shells and the cylinder can be split
+/// into disks along its height.
 /// The block numbering starts at the inner square and goes clockwise, starting
 /// with the eastern wedge, through consecutive shells, then repeats this
 /// pattern for all layers bottom to top.
@@ -63,11 +63,13 @@ class Cylinder : public DomainCreator<3> {
     using type = double;
     static constexpr Options::String help = {
         "Radius of the circle circumscribing the inner square."};
+    static double lower_bound() noexcept { return 0.; }
   };
 
   struct OuterRadius {
     using type = double;
     static constexpr Options::String help = {"Radius of the cylinder."};
+    static double lower_bound() noexcept { return 0.; }
   };
 
   struct LowerBound {
@@ -120,31 +122,60 @@ class Cylinder : public DomainCreator<3> {
         "between LowerBound and UpperBound."};
   };
 
-  template <typename BoundaryConditionsBase>
-  struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+  struct BoundaryConditions {
     static constexpr Options::String help =
-        "The boundary condition to be imposed on all sides. If periodic "
-        "boundary conditions are requested in the z-direction, then this "
-        "boundary condition isn't applied in the z-direction.";
+        "Options for the boundary conditions";
+  };
+
+  template <typename BoundaryConditionsBase>
+  struct LowerBoundaryCondition {
+    using group = BoundaryConditions;
+    static std::string name() noexcept { return "Lower"; }
+    static constexpr Options::String help =
+        "The boundary condition to be imposed on the lower base of the "
+        "cylinder, i.e. at the `LowerBound` in the z-direction.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
-  using basic_options =
-      tmpl::list<InnerRadius, OuterRadius, LowerBound, UpperBound,
-                 IsPeriodicInZ, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, RadialPartitioning, HeightPartitioning>;
+  template <typename BoundaryConditionsBase>
+  struct UpperBoundaryCondition {
+    using group = BoundaryConditions;
+    static std::string name() noexcept { return "Upper"; }
+    static constexpr Options::String help =
+        "The boundary condition to be imposed on the upper base of the "
+        "cylinder, i.e. at the `UpperBound` in the z-direction.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+  };
+
+  template <typename BoundaryConditionsBase>
+  struct MantleBoundaryCondition {
+    using group = BoundaryConditions;
+    static std::string name() noexcept { return "Mantle"; }
+    static constexpr Options::String help =
+        "The boundary condition to be imposed on the mantle of the "
+        "cylinder, i.e. at the `OuterRadius` in the radial direction.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+  };
 
   template <typename Metavariables>
-  using options = tmpl::conditional_t<
-      domain::BoundaryConditions::has_boundary_conditions_base_v<
-          typename Metavariables::system>,
-      tmpl::push_back<
-          basic_options,
-          BoundaryCondition<
-              domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>>,
-      basic_options>;
+  using options = tmpl::append<
+      tmpl::list<InnerRadius, OuterRadius, LowerBound, UpperBound>,
+      tmpl::conditional_t<
+          domain::BoundaryConditions::has_boundary_conditions_base_v<
+              typename Metavariables::system>,
+          tmpl::list<
+              LowerBoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>>,
+              UpperBoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>>,
+              MantleBoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>>>,
+          tmpl::list<IsPeriodicInZ>>,
+      tmpl::list<InitialRefinement, InitialGridPoints, UseEquiangularMap,
+                 RadialPartitioning, HeightPartitioning>>;
 
   static constexpr Options::String help{
       "Creates a right circular Cylinder with a square prism surrounded by \n"
@@ -156,31 +187,36 @@ class Cylinder : public DomainCreator<3> {
       "length of RadialPartitioning and n_z the length of \n"
       "HeightPartitioning.\n"
       "The circularity of the wedge changes from 0 to 1 within the first \n"
-      "shell. The partitionings are empty by default.\n"
+      "shell.\n"
       "Only one refinement level for all dimensions is currently supported.\n"
       "The number of gridpoints in each dimension can be set independently, \n"
       "except for x and y in the square where they are equal to the number \n"
       "of gridpoints along the angular dimension of the wedges.\n"
       "Equiangular coordinates give better gridpoint spacings in the angular\n"
       "direction, while equidistant coordinates give better gridpoint\n"
-      "spacings in the center block. This Domain uses equidistant coordinates\n"
-      "by default. The boundary conditions are set to be periodic along the\n"
-      "cylindrical z-axis by default."};
+      "spacings in the center block."};
 
-  Cylinder(typename InnerRadius::type inner_radius,
-           typename OuterRadius::type outer_radius,
-           typename LowerBound::type lower_bound,
-           typename UpperBound::type upper_bound,
-           typename IsPeriodicInZ::type is_periodic_in_z,
-           typename InitialRefinement::type initial_refinement,
-           typename InitialGridPoints::type initial_number_of_grid_points,
-           typename UseEquiangularMap::type use_equiangular_map,
-           typename RadialPartitioning::type radial_partitioning =
-               std::vector<double>{},
-           typename HeightPartitioning::type height_partitioning =
-               std::vector<double>{},
+  Cylinder(double inner_radius, double outer_radius, double lower_bound,
+           double upper_bound, bool is_periodic_in_z, size_t initial_refinement,
+           std::array<size_t, 3> initial_number_of_grid_points,
+           bool use_equiangular_map,
+           std::vector<double> radial_partitioning = {},
+           std::vector<double> height_partitioning = {},
+           const Options::Context& context = {});
+
+  Cylinder(double inner_radius, double outer_radius, double lower_bound,
+           double upper_bound,
            std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-               boundary_condition = nullptr,
+               lower_boundary_condition,
+           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+               upper_boundary_condition,
+           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+               mantle_boundary_condition,
+           size_t initial_refinement,
+           std::array<size_t, 3> initial_number_of_grid_points,
+           bool use_equiangular_map,
+           std::vector<double> radial_partitioning = {},
+           std::vector<double> height_partitioning = {},
            const Options::Context& context = {});
 
   Cylinder() = default;
@@ -198,17 +234,21 @@ class Cylinder : public DomainCreator<3> {
       noexcept override;
 
  private:
-  typename InnerRadius::type inner_radius_{};
-  typename OuterRadius::type outer_radius_{};
-  typename LowerBound::type lower_bound_{};
-  typename UpperBound::type upper_bound_{};
-  typename IsPeriodicInZ::type is_periodic_in_z_{true};
-  typename InitialRefinement::type initial_refinement_{};
-  typename InitialGridPoints::type initial_number_of_grid_points_{};
-  typename UseEquiangularMap::type use_equiangular_map_{false};
-  typename RadialPartitioning::type radial_partitioning_{std::vector<double>{}};
-  typename HeightPartitioning::type height_partitioning_{std::vector<double>{}};
+  double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
+  double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
+  double lower_bound_{std::numeric_limits<double>::signaling_NaN()};
+  double upper_bound_{std::numeric_limits<double>::signaling_NaN()};
+  bool is_periodic_in_z_{true};
+  size_t initial_refinement_{};
+  std::array<size_t, 3> initial_number_of_grid_points_{};
+  bool use_equiangular_map_{false};
+  std::vector<double> radial_partitioning_{};
+  std::vector<double> height_partitioning_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition_;
+      lower_boundary_condition_{};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      upper_boundary_condition_{};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      mantle_boundary_condition_{};
 };
 }  // namespace domain::creators

@@ -27,15 +27,21 @@ DomainCreator:
     OuterRadius: 0.6
     LowerBound: 0
     UpperBound: 0.3
-    IsPeriodicInZ: False
     InitialRefinement: 0
     InitialGridPoints: [3, 3, 4]
     UseEquiangularMap: True
     RadialPartitioning: []
     HeightPartitioning: []
-    BoundaryCondition:
-      AnalyticSolution:
-        Displacement: Dirichlet
+    BoundaryConditions:
+      Lower:
+        AnalyticSolution:
+          Displacement: Dirichlet
+      Upper:
+        AnalyticSolution:
+          Displacement: Dirichlet
+      Mantle:
+        AnalyticSolution:
+          Displacement: Dirichlet
 
 NumericalFlux:
   InternalPenalty:
