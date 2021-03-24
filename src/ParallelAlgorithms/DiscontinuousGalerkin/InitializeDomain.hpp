@@ -83,14 +83,12 @@ struct InitializeDomain {
       domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>,
       domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>>;
 
-  template <
-      typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent>
+  template <typename DataBox, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ElementId<Dim>& array_index,
-                    const ActionList /*meta*/,
+                    const ElementId<Dim>& element_id, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& initial_extents =
         db::get<domain::Tags::InitialExtents<Dim>>(box);
@@ -98,7 +96,6 @@ struct InitializeDomain {
         db::get<domain::Tags::InitialRefinementLevels<Dim>>(box);
     const auto& domain = db::get<domain::Tags::Domain<Dim>>(box);
 
-    const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh = domain::Initialization::create_initial_mesh(
         initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
