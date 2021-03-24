@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_PerssonTci.cpp
   Test_Projection.cpp
   Test_Reconstruction.cpp
+  Test_SubcellOptions.cpp
   Test_Tags.cpp
   Test_TwoMeshRdmpTci.cpp
   )

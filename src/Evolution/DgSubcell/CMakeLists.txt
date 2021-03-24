@@ -16,6 +16,7 @@ spectre_target_headers(
   PerssonTci.hpp
   Projection.hpp
   Reconstruction.hpp
+  SubcellOptions.hpp
   TwoMeshRdmpTci.hpp
   )
 
@@ -28,6 +29,7 @@ spectre_target_sources(
   PerssonTci.cpp
   Projection.cpp
   Reconstruction.cpp
+  SubcellOptions.cpp
   )
 
 target_link_libraries(
