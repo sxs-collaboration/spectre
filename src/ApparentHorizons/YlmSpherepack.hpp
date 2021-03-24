@@ -16,8 +16,61 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \ingroup SpectralGroup
-/// \brief C++ interface to SPHEREPACK.
+/*!
+ * \ingroup SpectralGroup
+ *
+ * \brief Defines the C++ interface to SPHEREPACK.
+ *
+ * \details The class `YlmSpherepack` defines the C++ interface to the fortran
+ * library SPHEREPACK used for computations on the surface of a sphere.
+ *
+ * Given a real-valued, scalar function \f$g(\theta, \phi)\f$, SPHEREPACK
+ * expands it as:
+ *
+ * \f{align*}
+ * g(\theta, \phi)
+ * &=\frac{1}{2}\sum_{l=0}^{l_{\max}}\bar P_l^0(\cos\theta) a_{l0}
+ * +\sum_{l=1}^{l_{\max}}\sum_{m=1}^{\min(l, m_{\max})}\bar P_l^m(\cos\theta)\{
+ *   a_{lm}\cos m\phi -b_{lm}\sin m\phi\}\nonumber
+ * \f}
+ *
+ * where \f$a_{lm}\f$ and \f$b_{lm}\f$ are spectral coefficient arrays used by
+ * SPHEREPACK, \f$P_l^m(x)\f$ are defined as
+ *
+ * \f{align*}
+ * \bar P_l^m(x)&=\sqrt{\frac{(2l+1)(l-m)!}{2(l+m)!}}\;P_{lm}(x)
+ * \f}
+ *
+ * and \f$P_{nm}(x)\f$ are the associated Legendre polynomials.
+ *
+ * Internally, SPHEREPACK can represent such an expansion in two ways which we
+ * will refer to as modal and nodal representations:
+ *
+ * -# modal: The spectral coefficient arrays \f$a_{lm}\f$ and \f$b_{lm}\f$,
+ * referred to as `spectral_coefs` in the methods below. For this C++ interface,
+ * they are saved in a single `DataVector`. To help you index the coefficients
+ * as expected by this interface, use the class `SpherepackIterator`.
+ *
+ * -# nodal: The values at certain collocation points, referred to as
+ * `collocation_values` in the methods below. This is an array of the expanded
+ * function \f$g(\theta,\phi)\f$ evaluated at collocation values
+ * \f$(\theta_i,\phi_j)\f$, where \f$\theta_i\f$ are Gauss-Legendre quadrature
+ * nodes in the interval \f$(0, \pi)\f$ with \f$i = 0, ..., l_{\max}\f$, and
+ * \f$\phi_j\f$ is distributed uniformly in \f$(0, 2\pi)\f$ with \f$i = 0, ...,
+ * 2m_{\max}\f$. The angles of the collocation points can be computed with the
+ * method `theta_phi_points`.
+ *
+ * To convert between the two representations the methods `spec_to_phys` and
+ * `phys_to_spec` can be used. For internal calculations SPHEREPACK will usually
+ * convert to spectral coefficients first, so it is in general more efficient to
+ * use these directly.
+ *
+ * Most methods of SPHEREPACK will compute the requested values of e.g.
+ * `gradient` or `scalar_laplacian` at the collocation points, effectively
+ * returning an expansion in nodal form as defined above. To evaluate the
+ * function at arbitrary angles \f$\theta\f$, \f$\phi\f$, these values have to
+ * be "interpolated" (i.e. the new expansion evaluated) using `interpolate`.
+ */
 class YlmSpherepack {
  public:
   /// Type returned by gradient function.
