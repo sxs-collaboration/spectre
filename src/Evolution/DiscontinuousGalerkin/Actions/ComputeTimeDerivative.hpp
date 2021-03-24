@@ -24,6 +24,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/BoundaryConditionsImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/InternalMortarDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -453,8 +454,8 @@ ComputeTimeDerivative<Metavariables>::apply(
         "All createable classes for boundary corrections must be marked "
         "final.");
     tmpl::for_each<derived_boundary_corrections>(
-        [&boundary_correction, &box, &primitive_vars, &temporaries,
-         &volume_fluxes](auto derived_correction_v) noexcept {
+        [&boundary_correction, &box, &partial_derivs, &primitive_vars,
+         &temporaries, &volume_fluxes](auto derived_correction_v) noexcept {
           using DerivedCorrection =
               tmpl::type_from<decltype(derived_correction_v)>;
           if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
@@ -470,6 +471,16 @@ ComputeTimeDerivative<Metavariables>::apply(
                 db::get<variables_tag>(box), volume_fluxes, temporaries,
                 primitive_vars,
                 typename DerivedCorrection::dg_package_data_volume_tags{});
+
+            if constexpr (detail::has_boundary_conditions_base_v<system>) {
+              detail::apply_boundary_conditions_on_all_external_faces<
+                  system, volume_dim>(
+                  make_not_null(&box),
+                  dynamic_cast<const DerivedCorrection&>(boundary_correction),
+                  temporaries, volume_fluxes, partial_derivs, primitive_vars);
+            } else {
+              (void)partial_derivs;
+            }
           }
         });
   } else {

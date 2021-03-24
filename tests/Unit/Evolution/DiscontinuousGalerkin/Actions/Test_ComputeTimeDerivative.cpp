@@ -172,6 +172,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                                        domain::CoordinateMaps::Identity<3>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<1>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<2>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<3>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                                       domain::CoordinateMaps::Identity<1>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                                       domain::CoordinateMaps::Identity<2>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                                       domain::CoordinateMaps::Identity<3>>));
 
   // The test is designed to test the `ComputeTimeDerivative` action for DG.
   // This action does a lot:

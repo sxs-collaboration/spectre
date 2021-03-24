@@ -53,6 +53,15 @@ struct get_primitive_vars<true> {
       typename BoundaryCondition::dg_interior_primitive_variables_tags;
 };
 
+template <bool HasPrimitiveAndConservativeVars, typename BoundaryCorrection>
+using boundary_correction_primitive_tags = typename get_primitive_vars<
+    HasPrimitiveAndConservativeVars>::template f<BoundaryCorrection>;
+
+template <bool HasPrimitiveAndConservativeVars, typename BoundaryCondition>
+using boundary_condition_primitive_tags =
+    typename get_primitive_vars<HasPrimitiveAndConservativeVars>::
+        template boundary_condition_interior_tags<BoundaryCondition>;
+
 template <typename BoundaryCorrection, typename = std::void_t<>>
 struct interior_tags_for_boundary_correction {
   using type = tmpl::list<>;
