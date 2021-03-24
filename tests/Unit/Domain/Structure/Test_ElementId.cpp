@@ -147,23 +147,27 @@ void test_serialization() noexcept {
   const auto initial_ref_levels = make_array<volume_dim>(1_st);
   for (size_t block_id = 0; block_id < two_to_the(SegmentId::block_id_bits);
        ++block_id) {
-    const std::vector<ElementId<volume_dim>> element_ids =
-        initial_element_ids(block_id, initial_ref_levels);
-    for (const auto element_id : element_ids) {
-      const auto serialized_id = serialize_and_deserialize(element_id);
-      CHECK(serialized_id == element_id);
-      // The following checks that ElementId can be used as a Charm array index
-      Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
-      CHECK(element_id == array_index.get_index());
-      // now check pupping the ArrayIndex works...
-      const auto serialized_array_index =
-          serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
-      PUP::fromMem reader(serialized_array_index.data());
-      Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
-          unused_id);
-      reader | deserialized_array_index;
-      CHECK(array_index == deserialized_array_index);
-      CHECK(element_id == deserialized_array_index.get_index());
+    for (size_t grid_index = 0;
+         grid_index < two_to_the(SegmentId::grid_index_bits); ++grid_index) {
+      const std::vector<ElementId<volume_dim>> element_ids =
+          initial_element_ids(block_id, initial_ref_levels, grid_index);
+      for (const auto element_id : element_ids) {
+        const auto serialized_id = serialize_and_deserialize(element_id);
+        CHECK(serialized_id == element_id);
+        // The following checks that ElementId can be used as a Charm array
+        // index
+        Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
+        CHECK(element_id == array_index.get_index());
+        // now check pupping the ArrayIndex works...
+        const auto serialized_array_index =
+            serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
+        PUP::fromMem reader(serialized_array_index.data());
+        Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
+            unused_id);
+        reader | deserialized_array_index;
+        CHECK(array_index == deserialized_array_index);
+        CHECK(element_id == deserialized_array_index.get_index());
+      }
     }
   }
 }
