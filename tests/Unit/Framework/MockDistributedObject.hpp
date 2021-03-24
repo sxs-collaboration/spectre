@@ -405,6 +405,7 @@ class MockDistributedObject {
     phase_ = phase;
     algorithm_step_ = 0;
     terminate_ = number_of_actions_in_phase(phase) == 0;
+    halt_algorithm_until_next_phase_ = false;
   }
   PhaseType get_phase() const noexcept { return phase_; }
 
@@ -707,26 +708,43 @@ class MockDistributedObject {
 
     static_assert(
         Parallel::Algorithm_detail::check_iterable_action_return_type<
-            Component, ThisAction,
+            parallel_component, ThisAction,
             std::decay_t<decltype(action_return)>>::value,
         "An iterable action has an invalid return type.\n"
         "See the template parameters of "
-        "Parallel::Algorithm_detail::check_iterable_action_return_type for "
-        "details: the first is the parallel component in question, the second "
-        "is the iterable action, and the third is the return type at fault.\n"
+        "Algorithm_detail::check_iterable_action_return_type for details: the "
+        "first is the parallel component in question, the second is the "
+        "iterable action, and the third is the return type at fault.\n"
         "The return type must be a tuple of length one, two, or three "
         "with:\n"
         " first type is an updated DataBox;\n"
-        " second type is either a bool (indicating termination);\n"
+        " second type is either a bool (indicating termination) or a "
+        "`Parallel::AlgorithmExecution` object;\n"
         " third type is a size_t indicating the next action in the current"
         " phase.");
+
     constexpr size_t tuple_size =
         std::tuple_size<decltype(action_return)>::value;
     if constexpr (tuple_size >= 1_st) {
       box_ = std::move(std::get<0>(action_return));
     }
     if constexpr (tuple_size >= 2_st) {
-      terminate_ = std::get<1>(action_return);
+      if constexpr (std::is_same_v<decltype(std::get<1>(action_return)),
+                                   bool&>) {
+        terminate_ = std::get<1>(action_return);
+      } else {
+        switch (std::get<1>(action_return)) {
+          case Parallel::AlgorithmExecution::Halt:
+            halt_algorithm_until_next_phase_ = true;
+            terminate_ = true;
+            break;
+          case Parallel::AlgorithmExecution::Pause:
+            terminate_ = true;
+            break;
+          default:
+            break;
+        }
+      }
     }
     if constexpr (tuple_size >= 3_st) {
       algorithm_step_ = std::get<2>(action_return);
@@ -851,6 +869,7 @@ class MockDistributedObject {
   }
 
   bool terminate_{false};
+  bool halt_algorithm_until_next_phase_{false};
   make_boost_variant_over<variant_boxes> box_ = db::DataBox<tmpl::list<>>{};
   // The next action we should execute.
   size_t algorithm_step_ = 0;
@@ -905,6 +924,11 @@ void MockDistributedObject<Component>::next_action_impl(
         "Cannot call an Action while already calling an Action on the same "
         "MockDistributedObject (an element of a parallel component array, or a "
         "parallel component singleton).");
+  }
+  if (UNLIKELY(halt_algorithm_until_next_phase_)) {
+    ERROR(
+        "The algorithm has been halted pending a phase change. No iterable "
+        "action can be executed until after the next change of phase.");
   }
   // Keep track of if we already evaluated an action since we want `next_action`
   // to only evaluate one per call.

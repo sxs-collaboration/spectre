@@ -214,11 +214,11 @@ struct TestMetavariables {
       tmpl::list<PhaseChangeTest::IsDone,
                  PhaseChangeTest::PhaseChangeStepNumber>;
   struct initialize_phase_change_decision_data {
-    static void apply(const gsl::not_null<tuples::tagged_tuple_from_typelist<
-                          phase_change_tags_and_combines_list>*>
-                          phase_change_decision_data,
-                      const Parallel::CProxy_GlobalCache<
-                          TestMetavariables>& /*cache_proxy*/) noexcept {
+    static void apply(
+        const gsl::not_null<tuples::tagged_tuple_from_typelist<
+            phase_change_tags_and_combines_list>*>
+            phase_change_decision_data,
+        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) noexcept {
       tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) = false;
       tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
           *phase_change_decision_data) = 0;
