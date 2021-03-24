@@ -714,11 +714,13 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
       // returned quantity is more a `dt` quantity than a
       // `NormalDotNormalDotFlux` since it's been lifted to the volume.
       using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
+      const auto integration_order =
+          db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
       db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
                  evolution::dg::Tags::MortarDataHistory<
                      volume_dim, typename dt_variables_tag::type>>(
           box,
-          [&element, &time_step_id, using_gauss_points,
+          [&element, integration_order, &time_step_id, using_gauss_points,
            &volume_det_inv_jacobian](
               const gsl::not_null<
                   std::unordered_map<Key, evolution::dg::MortarData<volume_dim>,
@@ -793,6 +795,8 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
                               "to have the mortar id.");
                 boundary_data_history->at(mortar_id).local_insert(
                     time_step_id, std::move(mortar_data->at(mortar_id)));
+                boundary_data_history->at(mortar_id).integration_order(
+                    integration_order);
                 mortar_data->at(mortar_id) =
                     MortarData<Metavariables::volume_dim>{};
               }
