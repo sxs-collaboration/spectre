@@ -30,13 +30,13 @@ Evolution:
         SafetyFactor: 0.2
 
 DomainCreator:
-  Interval:
+  RotatedIntervals:
     LowerBound: [0.0]
+    Midpoint: [3.14159]
     UpperBound: [6.283185307179586]
     IsPeriodicIn: [true]
-    InitialRefinement: [2]
-    InitialGridPoints: [7]
-    TimeDependence: None
+    InitialRefinement: [1]
+    InitialGridPoints: [[7, 3]]
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
