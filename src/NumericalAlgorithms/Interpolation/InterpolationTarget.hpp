@@ -237,26 +237,6 @@ namespace intrp {
 /// `intrp::Events::Interpolate` to trigger interpolation for new
 /// `temporal_id`s. Its logic is as follows, in pseudocode:
 ///
-/// ###### Current logic:
-///
-/// ```
-/// Add passed-in temporal_ids to TemporalIds
-/// if (sequential) {
-///   if (TemporalIds was empty before it was appended above) {
-///     call block_logical_coordinates and begin interpolating for the
-///     first temporal_id
-///   } else {
-///     Do nothing, because there is already a sequential interpolation in
-///     progress.
-///   }
-/// } else { // not sequential
-///    call block_logical_coordinates and begin interpolating for
-///    all newly-added TemporalIds.
-/// }
-///```
-///
-/// ###### New logic:
-///
 /// ```
 /// Add passed-in temporal_ids to PendingTemporalIds
 /// if (sequential) {
