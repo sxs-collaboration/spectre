@@ -203,11 +203,11 @@ void test_cylindrical_endcap_sphere_two_large() {
     // We typically expect success on the first iteration or the first
     // few iterations if we get unlucky.  Let V_O be the volume of
     // cone_opening that is contained inside sphere_two.  If
-    // cone_regular (modulo a small buffer angle, the 0.85 below)
+    // cone_regular (modulo a small buffer angle, the 0.75 below)
     // contains V_O, then success is certain the first
     // time. Otherwise, the probability of success is roughly V_R/V_O,
     // where V_R is the volume of the portion of cone_regular (modulo
-    // a small buffer angle, the 0.85 below) that is contained inside
+    // a small buffer angle, the 0.75 below) that is contained inside
     // V_O.
 
     // Pick radius of the larger sphere to enclose the smaller one
@@ -249,9 +249,9 @@ void test_cylindrical_endcap_sphere_two_large() {
 
     // Now for the rejection.  We reject the point if it is outside
     // cone_opening, and we also reject the point if it is too close
-    // to cone_opening (using a factor 0.85 that is the same as the
+    // to cone_opening (using a factor 0.75 that is the same as the
     // factor in the ASSERTS in the CylindricalEndcap constructor).
-    const double alpha = 0.85 * cone_regular_opening_angle;
+    const double alpha = 0.75 * cone_regular_opening_angle;
 
     // If beta <= alpha, then there is no max distance, i.e.
     // all distances are ok.
