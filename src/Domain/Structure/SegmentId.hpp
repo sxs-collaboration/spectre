@@ -62,9 +62,11 @@ class ElementId;
 class SegmentId {
  public:
   static constexpr size_t block_id_bits = 7;
-  static constexpr size_t refinement_bits = 5;
-  static constexpr size_t max_refinement_level = 20;
-  static_assert(block_id_bits + refinement_bits + max_refinement_level ==
+  static constexpr size_t refinement_bits = 4;
+  static constexpr size_t max_refinement_level = 16;
+  static constexpr size_t grid_index_bits = 5;
+  static_assert(block_id_bits + refinement_bits + max_refinement_level +
+                        grid_index_bits ==
                     8 * sizeof(int),
                 "Bit representation requires padding or is too large");
   static_assert(two_to_the(refinement_bits) >= max_refinement_level,
@@ -117,7 +119,15 @@ class SegmentId {
   template <size_t VolumeDim>
   friend class ElementId;
 
-  SegmentId(size_t block_id, size_t refinement_level, size_t index) noexcept;
+  /// Construct a SegmentId that stores a block ID and a grid index in addition
+  /// to the index within a block. Storing the data here makes it easier for
+  /// ElementId to satisfy the size requirements, because it just has to store
+  /// `VolumeDim` SegmentIds. ElementId is responsible for managing the block ID
+  /// and the grid index of its SegmentIds.
+  ///
+  /// \see ElementId
+  SegmentId(size_t block_id, size_t refinement_level, size_t index,
+            size_t grid_index) noexcept;
   size_t block_id() const noexcept { return block_id_; }
   void set_block_id(const size_t block_id) noexcept {
     ASSERT(block_id < two_to_the(block_id_bits),
@@ -125,10 +135,18 @@ class SegmentId {
                                       << two_to_the(block_id_bits) - 1);
     block_id_ = block_id;
   }
+  size_t grid_index() const noexcept { return grid_index_; }
+  void set_grid_index(const size_t grid_index) noexcept {
+    ASSERT(grid_index < two_to_the(grid_index_bits),
+           "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
+                                        << two_to_the(grid_index_bits) - 1);
+    grid_index_ = grid_index;
+  }
 
   unsigned block_id_ : block_id_bits;
   unsigned refinement_level_ : refinement_bits;
   unsigned index_ : max_refinement_level;
+  unsigned grid_index_ : grid_index_bits;
 };
 
 /// \cond

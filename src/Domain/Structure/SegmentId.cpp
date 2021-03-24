@@ -11,7 +11,10 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 SegmentId::SegmentId(const size_t refinement_level, const size_t index) noexcept
-    : block_id_(0), refinement_level_(refinement_level), index_(index) {
+    : block_id_(0),
+      refinement_level_(refinement_level),
+      index_(index),
+      grid_index_(0) {
   ASSERT(refinement_level <= max_refinement_level,
          "Refinement level out of bounds: " << refinement_level);
   ASSERT(index < two_to_the(refinement_level),
@@ -19,8 +22,11 @@ SegmentId::SegmentId(const size_t refinement_level, const size_t index) noexcept
 }
 
 SegmentId::SegmentId(const size_t block_id, const size_t refinement_level,
-                     const size_t index) noexcept
-    : block_id_(block_id), refinement_level_(refinement_level), index_(index) {
+                     const size_t index, const size_t grid_index) noexcept
+    : block_id_(block_id),
+      refinement_level_(refinement_level),
+      index_(index),
+      grid_index_(grid_index) {
   ASSERT(block_id < two_to_the(block_id_bits),
          "Block id out of bounds: " << block_id << "\nMaximum value is: "
                                     << two_to_the(block_id_bits) - 1);
@@ -30,6 +36,9 @@ SegmentId::SegmentId(const size_t block_id, const size_t refinement_level,
                                             << max_refinement_level);
   ASSERT(index < two_to_the(refinement_level),
          "index = " << index << ", refinement_level = " << refinement_level);
+  ASSERT(grid_index < two_to_the(grid_index_bits),
+         "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
+                                      << two_to_the(grid_index_bits) - 1);
 }
 
 // Because `ElementId` is built up of `VolumeDim` `SegmentId`s, and `ElementId`
