@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_ActiveGrid.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
+  Test_PerssonTci.cpp
   Test_Projection.cpp
   Test_Reconstruction.cpp
   Test_Tags.cpp
