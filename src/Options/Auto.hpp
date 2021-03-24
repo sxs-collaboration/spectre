@@ -85,7 +85,7 @@ struct create_from_yaml<Auto<T, Label>> {
     } catch (...) {
       // The node failed to parse as a string.  It is not the AutoLabel.
     }
-    return Auto<T, Label>{options.parse_as<T>()};
+    return Auto<T, Label>{options.parse_as<T, Metavariables>()};
   }
 };
 }  // namespace Options
