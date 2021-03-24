@@ -9,6 +9,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
@@ -43,6 +44,8 @@ using Translation3D = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
     Translation, Translation, Translation>;
 using BoundaryCondVector = std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
+using Object = domain::creators::BinaryCompactObject::Object;
+using Excision = domain::creators::BinaryCompactObject::Excision;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {
@@ -166,14 +169,22 @@ void test_connectivity() {
              {true, false}) {
           CAPTURE(use_logarithmic_map_outer_spherical_shell);
           const domain::creators::BinaryCompactObject binary_compact_object{
-              inner_radius_objectA,
-              outer_radius_objectA,
-              xcoord_objectA,
-              excise_interiorA,
-              inner_radius_objectB,
-              outer_radius_objectB,
-              xcoord_objectB,
-              excise_interiorB,
+              Object{inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
+                     excise_interiorA
+                         ? std::make_optional(
+                               Excision{with_boundary_conditions
+                                            ? create_inner_boundary_condition()
+                                            : nullptr})
+                         : std::nullopt,
+                     false, 0},
+              domain::creators::BinaryCompactObject::Object{
+                  inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
+                  excise_interiorB ? std::make_optional(Excision{
+                                         with_boundary_conditions
+                                             ? create_inner_boundary_condition()
+                                             : nullptr})
+                                   : std::nullopt,
+                  false, 0},
               radius_enveloping_cube,
               radius_enveloping_sphere,
               refinement,
@@ -181,18 +192,7 @@ void test_connectivity() {
               use_projective_map,
               use_logarithmic_map_outer_spherical_shell,
               addition_to_outer_layer_radial_refinement_level,
-              false,
-              0,
-              false,
-              0,
               nullptr,
-              with_boundary_conditions
-                  ? (excise_interiorA or excise_interiorB
-                         ? create_inner_boundary_condition()
-                         : std::make_unique<
-                               TestHelpers::domain::BoundaryConditions::
-                                   TestNoneBoundaryCondition<3>>())
-                  : nullptr,
               with_boundary_conditions ? create_outer_boundary_condition()
                                        : nullptr};
           test_binary_compact_object_construction(
@@ -228,83 +228,106 @@ void test_connectivity() {
                          radial_divisions_in_outer_layers));
           }
           if (with_boundary_conditions) {
+            using PeriodicBc = TestHelpers::domain::BoundaryConditions::
+                TestPeriodicBoundaryCondition<3>;
             CHECK_THROWS_WITH(
                 domain::creators::BinaryCompactObject(
-                    inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
-                    excise_interiorA, inner_radius_objectB,
-                    outer_radius_objectB, xcoord_objectB, excise_interiorB,
+                    Object{inner_radius_objectA, outer_radius_objectA,
+                           xcoord_objectA,
+                           excise_interiorA
+                               ? std::make_optional(Excision{
+                                     create_inner_boundary_condition()})
+                               : std::nullopt,
+                           false, 0},
+                    domain::creators::BinaryCompactObject::Object{
+                        inner_radius_objectB, outer_radius_objectB,
+                        xcoord_objectB,
+                        excise_interiorB
+                            ? std::make_optional(
+                                  Excision{create_inner_boundary_condition()})
+                            : std::nullopt,
+                        false, 0},
                     radius_enveloping_cube, radius_enveloping_sphere,
                     refinement, grid_points, use_projective_map,
                     use_logarithmic_map_outer_spherical_shell,
-                    addition_to_outer_layer_radial_refinement_level, false, 0,
-                    false, 0, nullptr,
-                    excise_interiorA or excise_interiorB
-                        ? create_inner_boundary_condition()
-                        : std::make_unique<
-                              TestHelpers::domain::BoundaryConditions::
-                                  TestNoneBoundaryCondition<3>>(),
-                    std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                         TestPeriodicBoundaryCondition<3>>(),
+                    addition_to_outer_layer_radial_refinement_level, nullptr,
+                    std::make_unique<PeriodicBc>(),
                     Options::Context{false, {}, 1, 1}),
                 Catch::Matchers::Contains("Cannot have periodic boundary "
                                           "conditions with a binary domain"));
             if (excise_interiorA or excise_interiorB) {
               CHECK_THROWS_WITH(
                   domain::creators::BinaryCompactObject(
-                      inner_radius_objectA, outer_radius_objectA,
-                      xcoord_objectA, excise_interiorA, inner_radius_objectB,
-                      outer_radius_objectB, xcoord_objectB, excise_interiorB,
+                      Object{inner_radius_objectA, outer_radius_objectA,
+                             xcoord_objectA,
+                             excise_interiorA
+                                 ? std::make_optional(
+                                       Excision{std::make_unique<PeriodicBc>()})
+                                 : std::nullopt,
+                             false, 0},
+                      Object{inner_radius_objectB, outer_radius_objectB,
+                             xcoord_objectB,
+                             excise_interiorB
+                                 ? std::make_optional(
+                                       Excision{std::make_unique<PeriodicBc>()})
+                                 : std::nullopt,
+                             false, 0},
                       radius_enveloping_cube, radius_enveloping_sphere,
                       refinement, grid_points, use_projective_map,
                       use_logarithmic_map_outer_spherical_shell,
-                      addition_to_outer_layer_radial_refinement_level, false, 0,
-                      false, 0, nullptr,
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
+                      addition_to_outer_layer_radial_refinement_level, nullptr,
                       create_outer_boundary_condition(),
                       Options::Context{false, {}, 1, 1}),
                   Catch::Matchers::Contains("Cannot have periodic boundary "
                                             "conditions with a binary domain"));
+              CHECK_THROWS_WITH(
+                  domain::creators::BinaryCompactObject(
+                      Object{inner_radius_objectA, outer_radius_objectA,
+                             xcoord_objectA,
+                             excise_interiorA
+                                 ? std::make_optional(Excision{
+                                       create_inner_boundary_condition()})
+                                 : std::nullopt,
+                             false, 0},
+                      Object{inner_radius_objectB, outer_radius_objectB,
+                             xcoord_objectB,
+                             excise_interiorB
+                                 ? std::make_optional(Excision{
+                                       create_inner_boundary_condition()})
+                                 : std::nullopt,
+                             false, 0},
+                      radius_enveloping_cube, radius_enveloping_sphere,
+                      refinement, grid_points, use_projective_map,
+                      use_logarithmic_map_outer_spherical_shell,
+                      addition_to_outer_layer_radial_refinement_level, nullptr,
+                      nullptr, Options::Context{false, {}, 1, 1}),
+                  Catch::Matchers::Contains(
+                      "Must specify either both inner and outer boundary "
+                      "conditions or neither."));
+              CHECK_THROWS_WITH(
+                  domain::creators::BinaryCompactObject(
+                      Object{inner_radius_objectA, outer_radius_objectA,
+                             xcoord_objectA,
+                             excise_interiorA
+                                 ? std::make_optional(Excision{nullptr})
+                                 : std::nullopt,
+                             false, 0},
+                      Object{inner_radius_objectB, outer_radius_objectB,
+                             xcoord_objectB,
+                             excise_interiorB
+                                 ? std::make_optional(Excision{nullptr})
+                                 : std::nullopt,
+                             false, 0},
+                      radius_enveloping_cube, radius_enveloping_sphere,
+                      refinement, grid_points, use_projective_map,
+                      use_logarithmic_map_outer_spherical_shell,
+                      addition_to_outer_layer_radial_refinement_level, nullptr,
+                      create_outer_boundary_condition(),
+                      Options::Context{false, {}, 1, 1}),
+                  Catch::Matchers::Contains(
+                      "Must specify either both inner and outer boundary "
+                      "conditions or neither."));
             }
-            CHECK_THROWS_WITH(
-                domain::creators::BinaryCompactObject(
-                    inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
-                    excise_interiorA, inner_radius_objectB,
-                    outer_radius_objectB, xcoord_objectB, excise_interiorB,
-                    radius_enveloping_cube, radius_enveloping_sphere,
-                    refinement, grid_points, use_projective_map,
-                    use_logarithmic_map_outer_spherical_shell,
-                    addition_to_outer_layer_radial_refinement_level, false, 0,
-                    false, 0, nullptr,
-                    excise_interiorA or excise_interiorB
-                        ? create_inner_boundary_condition()
-                        : std::make_unique<
-                              TestHelpers::domain::BoundaryConditions::
-                                  TestNoneBoundaryCondition<3>>(),
-                    nullptr, Options::Context{false, {}, 1, 1}),
-                Catch::Matchers::Contains(
-                    "Must specify either both inner and outer boundary "
-                    "conditions or neither."));
-            CHECK_THROWS_WITH(
-                domain::creators::BinaryCompactObject(
-                    inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
-                    excise_interiorA, inner_radius_objectB,
-                    outer_radius_objectB, xcoord_objectB, excise_interiorB,
-                    radius_enveloping_cube, radius_enveloping_sphere,
-                    refinement, grid_points, use_projective_map,
-                    use_logarithmic_map_outer_spherical_shell,
-                    addition_to_outer_layer_radial_refinement_level, false, 0,
-                    false, 0, nullptr, nullptr,
-                    create_outer_boundary_condition(),
-                    Options::Context{false, {}, 1, 1}),
-                Catch::Matchers::Contains(
-                    excise_interiorA or excise_interiorB
-                        ? std::string{"Must specify either both inner and "
-                                      "outer boundary "
-                                      "conditions or neither."}
-                        : std::string{"Inner boundary condition must be None "
-                                      "if ExciseInteriorA and ExciseInteriorB "
-                                      "are both false"}));
           }
         }
       }
@@ -331,54 +354,65 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
             "      FunctionOfTimeNames: [TranslationX, TranslationY, "
             "TranslationZ]\n"
           : "  TimeDependence: None\n"};
-  const std::string boundary_conditions{
+  const std::string interior_A{
       add_boundary_condition
-          ? std::string{"  BoundaryConditions:\n"
-                        "    InnerBoundary:\n" +
-                        std::string{excise_A or excise_B
-                                        ? "      TestBoundaryCondition:\n"
-                                          "        Direction: lower-zeta\n"
-                                          "        BlockId: 50\n"
-                                        : "      None:\n"} +
-                        "    OuterBoundary:\n"
-                        "      TestBoundaryCondition:\n"
-                        "        Direction: upper-zeta\n"
-                        "        BlockId: 50\n"}
-          : ""};
+          ? std::string{"    Interior:\n" +
+                        std::string{excise_A
+                                        ? "      ExciseWithBoundaryCondition:\n"
+                                          "        TestBoundaryCondition:\n"
+                                          "          Direction: lower-zeta\n"
+                                          "          BlockId: 50\n"
+                                        : "      Auto\n"}}
+          : "    ExciseInterior: " + stringize(excise_A) + "\n"};
+  const std::string interior_B{
+      add_boundary_condition
+          ? std::string{"    Interior:\n" +
+                        std::string{excise_B
+                                        ? "      ExciseWithBoundaryCondition:\n"
+                                          "        TestBoundaryCondition:\n"
+                                          "          Direction: lower-zeta\n"
+                                          "          BlockId: 50\n"
+                                        : "      Auto\n"}}
+          : "    ExciseInterior: " + stringize(excise_B) + "\n"};
+  const std::string outer_boundary_condition{
+      add_boundary_condition ? std::string{"    BoundaryCondition:\n"
+                                           "      TestBoundaryCondition:\n"
+                                           "        Direction: upper-zeta\n"
+                                           "        BlockId: 50\n"}
+                             : ""};
   return "BinaryCompactObject:\n"
-         "  InnerRadiusObjectA: 0.2\n"
-         "  OuterRadiusObjectA: 1.0\n"
-         "  XCoordObjectA: -2.0\n"
-         "  ExciseInteriorA: " +
-         stringize(excise_A) +
+         "  ObjectA:\n"
+         "    InnerRadius: 0.2\n"
+         "    OuterRadius: 1.0\n"
+         "    XCoord: -2.0\n" +
+         interior_A +
+         "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
-         "  InnerRadiusObjectB: 1.0\n"
-         "  OuterRadiusObjectB: 2.0\n"
-         "  XCoordObjectB: 3.0\n"
-         "  ExciseInteriorB: " +
-         stringize(excise_B) +
-         "\n"
-         "  RadiusOuterCube: 22.0\n"
-         "  RadiusOuterSphere: 25.0\n"
-         "  InitialRefinement: 1\n"
-         "  InitialGridPoints: 3\n"
-         "  UseProjectiveMap: true\n"
-         "  UseLogarithmicMapOuterSphericalShell: false\n"
-         "  AdditionToOuterLayerRadialRefinementLevel: " +
-         std::to_string(additional_refinement_outer) +
-         "\n"
-         "  UseLogarithmicMapObjectA: " +
-         stringize(use_logarithmic_map_AB) +
-         "\n"
-         "  AdditionToObjectARadialRefinementLevel: " +
+         "    AdditionToRadialRefinementLevel: " +
          std::to_string(additional_refinement_A) +
          "\n"
-         "  UseLogarithmicMapObjectB: " +
-         stringize(use_logarithmic_map_AB) +
+         "  ObjectB:\n"
+         "    InnerRadius: 1.0\n"
+         "    OuterRadius: 2.0\n"
+         "    XCoord: 3.0\n" +
+         interior_B +
+         "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
-         "  AdditionToObjectBRadialRefinementLevel: " +
-         std::to_string(additional_refinement_B) + "\n" + time_dependence +
-         boundary_conditions;
+         "    AdditionToRadialRefinementLevel: " +
+         std::to_string(additional_refinement_B) +
+         "\n"
+         "  EnvelopingCube:\n"
+         "    Radius: 22.0\n"
+         "  OuterSphere:\n"
+         "    Radius: 25.0\n"
+         "    UseLogarithmicMap: false\n"
+         "    AdditionToRadialRefinementLevel: " +
+         std::to_string(additional_refinement_outer) + "\n" +
+         outer_boundary_condition +
+         "  InitialRefinement: 1\n"
+         "  InitialGridPoints: 3\n"
+         "  UseProjectiveMap: true\n" +
+         time_dependence;
 }
 
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
@@ -500,64 +534,62 @@ void test_binary_factory() {
 void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          0.5, 1.0, 1.0, true, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
-          false, 0, false, 0, false, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
+          25.5, 32.4, 2, 6, true, false, 0, nullptr,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectA's center is expected to be negative."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          0.5, 1.0, -1.0, true, 0.3, 1.0, -1.0, true, 25.5, 32.4, 2, 6, true,
-          false, 0, false, 0, false, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
+          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
+          25.5, 32.4, 2, 6, true, false, 0, nullptr,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectB's center is expected to be positive."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          0.5, 1.0, -7.0, true, 0.3, 1.0, 8.0, true, 25.5, 32.4, 2, 6, true,
-          false, 0, false, 0, false, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false, 0},
+          {0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false, 0},
+          25.5, 32.4, 2, 6, true, false, 0, nullptr,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("The radius for the enveloping cube is too "
                                 "small! The Frustums will be malformed."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          1.5, 1.0, -1.0, true, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
-          false, 0, false, 0, false, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
+          25.5, 32.4, 2, 6, true, false, 0, nullptr,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectA's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          0.5, 1.0, -1.0, true, 3.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
-          false, 0, false, 0, false, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
+          {3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
+          25.5, 32.4, 2, 6, true, false, 0, nullptr,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectB's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          0.5, 1.0, -1.0, false, 0.3, 1.0, 1.0, true, 25.5, 32.4, 2, 6, true,
-          false, 0, true, 0, false, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {0.5, 1.0, -1.0, std::nullopt, true, 0},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
+          25.5, 32.4, 2, 6, true, false, 0, nullptr,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
-          "excise_interior_A must be true if use_logarithmic_map_object_A is "
-          "true; that is, using a logarithmically spaced radial grid in the "
+          "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object A requires excising the interior "
           "of Object A"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          0.5, 1.0, -1.0, true, 0.3, 1.0, 1.0, false, 25.5, 32.4, 2, 6, true,
-          false, 0, false, 0, true, 0, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
+          {0.3, 1.0, 1.0, std::nullopt, true, 0}, 25.5, 32.4, 2, 6, true, false,
+          0, nullptr, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
-          "excise_interior_B must be true if use_logarithmic_map_object_B is "
-          "true; that is, using a logarithmically spaced radial grid in the "
+          "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object B requires excising the interior "
           "of Object B"));
   // Note: the boundary condition-related parse errors are checked in the

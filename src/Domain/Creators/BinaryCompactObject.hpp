@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -16,6 +17,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
@@ -89,8 +91,8 @@ namespace creators {
  * surround each compact object. Note that `ObjectA` is located to the left of
  * the origin (along the negative x-axis) and `ObjectB` is located to the right
  * of the origin. `enveloping cube` refers to the outer surface of Layer 3.
- * `enveloping sphere` is the radius of the spherical outer boundary, which is
- * the outer boundary of Layer 5. The `enveloping cube` and `enveloping sphere`
+ * `outer sphere` is the radius of the spherical outer boundary, which is
+ * the outer boundary of Layer 5. The `enveloping cube` and `outer sphere`
  * are both centered at the origin. `cutting plane` refers to the plane along
  * which the domain divides into two hemispheres. In the final coordinates, the
  * cutting plane always intersects the x-axis at the origin.
@@ -139,61 +141,163 @@ class BinaryCompactObject : public DomainCreator<3> {
       domain::CoordinateMap<Frame::Logical, Frame::Inertial,
                             CoordinateMaps::Wedge3D>>;
 
-  struct InnerRadiusObjectA {
-    using type = double;
+  /// Options for an excision region in the domain
+  struct Excision {
     static constexpr Options::String help = {
-        "Inner coordinate radius of Layer 1 for Object A."};
+        "Excise the interior of the object, leaving a spherical hole in its "
+        "absence."};
+    template <typename BoundaryConditionsBase>
+    struct BoundaryCondition {
+      static std::string name() noexcept {
+        return "ExciseWithBoundaryCondition";
+      }
+      using type = std::unique_ptr<BoundaryConditionsBase>;
+      static constexpr Options::String help = {
+          "The boundary condition to impose on the excision surface."};
+    };
+    template <typename Metavariables>
+    using options = tmpl::list<BoundaryCondition<
+        domain::BoundaryConditions::get_boundary_conditions_base<
+            typename Metavariables::system>>>;
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        boundary_condition;
   };
 
-  struct OuterRadiusObjectA {
-    using type = double;
+  /// Options for one of the two objects in the binary domain
+  struct Object {
     static constexpr Options::String help = {
-        "Outer coordinate radius of Layer 1 for Object A."};
+        "Options for an object in a binary domain."};
+    struct InnerRadius {
+      using type = double;
+      static constexpr Options::String help = {
+          "Inner coordinate radius of Layer 1."};
+      static double lower_bound() noexcept { return 0.; }
+    };
+    struct OuterRadius {
+      using type = double;
+      static constexpr Options::String help = {
+          "Outer coordinate radius of Layer 1"};
+      static double lower_bound() noexcept { return 0.; }
+    };
+    struct XCoord {
+      using type = double;
+      static constexpr Options::String help = {"x-coordinate of center."};
+    };
+    struct Interior {
+      using type = Options::Auto<Excision>;
+      static constexpr Options::String help = {
+          "Specify 'ExciseWithBoundaryCondition' and a boundary condition to "
+          "excise Layer 0, leaving a spherical hole in its absence, or set to "
+          "'Auto' to fill the interior."};
+    };
+    struct ExciseInterior {
+      using type = bool;
+      static constexpr Options::String help = {
+          "Excise Layer 0, leaving a spherical hole in its absence."};
+    };
+    struct UseLogarithmicMap {
+      using type = bool;
+      static constexpr Options::String help = {
+          "Use a logarithmically spaced radial grid in the part of Layer 1 "
+          "enveloping the object (requires the interior is excised)"};
+    };
+    struct AdditionToRadialRefinementLevel {
+      using type = size_t;
+      static constexpr Options::String help = {
+          "Addition to radial refinement level in the part of Layer 1 "
+          "enveloping the object, beyond the refinement level set by "
+          "InitialRefinement."};
+    };
+    template <typename Metavariables>
+    using options = tmpl::list<
+        InnerRadius, OuterRadius, XCoord,
+        tmpl::conditional_t<
+            domain::BoundaryConditions::has_boundary_conditions_base_v<
+                typename Metavariables::system>,
+            Interior, ExciseInterior>,
+        UseLogarithmicMap, AdditionToRadialRefinementLevel>;
+    Object() = default;
+    Object(double local_inner_radius, double local_outer_radius,
+           double local_x_coord, std::optional<Excision> interior,
+           bool local_use_logarithmic_map,
+           size_t local_addition_to_radial_refinement_level) noexcept
+        : inner_radius(local_inner_radius),
+          outer_radius(local_outer_radius),
+          x_coord(local_x_coord),
+          inner_boundary_condition(
+              interior.has_value()
+                  ? std::make_optional(std::move(interior->boundary_condition))
+                  : std::nullopt),
+          use_logarithmic_map(local_use_logarithmic_map),
+          addition_to_radial_refinement_level(
+              local_addition_to_radial_refinement_level) {}
+    Object(double local_inner_radius, double local_outer_radius,
+           double local_x_coord, bool local_excise_interior,
+           bool local_use_logarithmic_map,
+           size_t local_addition_to_radial_refinement_level) noexcept
+        : inner_radius(local_inner_radius),
+          outer_radius(local_outer_radius),
+          x_coord(local_x_coord),
+          inner_boundary_condition(
+              local_excise_interior
+                  ? std::optional<std::unique_ptr<
+                        domain::BoundaryConditions::BoundaryCondition>>{nullptr}
+                  : std::nullopt),
+          use_logarithmic_map(local_use_logarithmic_map),
+          addition_to_radial_refinement_level(
+              local_addition_to_radial_refinement_level) {}
+
+    /// Whether or not the object should be excised from the domain, leaving a
+    /// spherical hole. When this is true, `inner_boundary_condition` is
+    /// guaranteed to hold a value (though it might be a `nullptr` if we are not
+    /// working with boundary conditions).
+    bool is_excised() const noexcept;
+
+    double inner_radius;
+    double outer_radius;
+    double x_coord;
+    std::optional<
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
+        inner_boundary_condition;
+    bool use_logarithmic_map;
+    size_t addition_to_radial_refinement_level;
   };
 
-  struct XCoordObjectA {
-    using type = double;
+  struct ObjectA {
+    using type = Object;
     static constexpr Options::String help = {
-        "x-coordinate of center for Object A."};
+        "Options for the object to the left of the origin (along the negative "
+        "x-axis)."};
   };
 
-  struct ExciseInteriorA {
-    using type = bool;
+  struct ObjectB {
+    using type = Object;
     static constexpr Options::String help = {
-        "Exclude Layer 0 for ObjectA. Set to `true` for a BH."};
+        "Options for the object to the right of the origin (along the positive "
+        "x-axis)."};
   };
 
-  struct InnerRadiusObjectB {
-    using type = double;
+  struct EnvelopingCube {
     static constexpr Options::String help = {
-        "Inner coordinate radius of Layer 1 for Object B."};
+        "Options for the cube enveloping the two objects."};
   };
 
-  struct OuterRadiusObjectB {
-    using type = double;
-    static constexpr Options::String help = {
-        "Outer coordinate radius of Layer 1 for Object B."};
-  };
-
-  struct XCoordObjectB {
-    using type = double;
-    static constexpr Options::String help = {
-        "x-coordinate of the center for Object B."};
-  };
-
-  struct ExciseInteriorB {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Exclude Layer 0 for ObjectB. Set to `true` for a BH."};
-  };
-
-  struct RadiusOuterCube {
+  struct RadiusEnvelopingCube {
+    using group = EnvelopingCube;
+    static std::string name() noexcept { return "Radius"; }
     using type = double;
     static constexpr Options::String help = {
         "Radius of Layer 3 which circumscribes the Frustums."};
   };
 
+  struct OuterSphere {
+    static constexpr Options::String help = {
+        "Options for the outer spherical shell."};
+  };
+
   struct RadiusOuterSphere {
+    using group = OuterSphere;
+    static std::string name() noexcept { return "Radius"; }
     using type = double;
     static constexpr Options::String help = {"Radius of the entire domain."};
   };
@@ -217,6 +321,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   };
 
   struct UseLogarithmicMapOuterSphericalShell {
+    using group = OuterSphere;
+    static std::string name() noexcept { return "UseLogarithmicMap"; }
     using type = bool;
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in Layer 5, the outer "
@@ -224,39 +330,15 @@ class BinaryCompactObject : public DomainCreator<3> {
   };
 
   struct AdditionToOuterLayerRadialRefinementLevel {
+    using group = OuterSphere;
+    static std::string name() noexcept {
+      return "AdditionToRadialRefinementLevel";
+    }
     using type = size_t;
     static constexpr Options::String help = {
         "Addition to radial refinement level in Layer 5 (the outer spherical "
         "shell that covers that wave zone), beyond the refinement "
         "level set by InitialRefinement."};
-  };
-
-  struct UseLogarithmicMapObjectA {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Use a logarithmically spaced radial grid in the part of Layer 1 "
-        "enveloping Object A (requires ExciseInteriorA == true)"};
-  };
-
-  struct AdditionToObjectARadialRefinementLevel {
-    using type = size_t;
-    static constexpr Options::String help = {
-        "Addition to radial refinement level in the part of Layer 1 enveloping "
-        "Object A, beyond the refinement level set by InitialRefinement."};
-  };
-
-  struct UseLogarithmicMapObjectB {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Use a logarithmically spaced radial grid in the part of Layer 1 "
-        "enveloping Object B (requires ExciseInteriorB == true)"};
-  };
-
-  struct AdditionToObjectBRadialRefinementLevel {
-    using type = size_t;
-    static constexpr Options::String help = {
-        "Addition to radial refinement level in the part of Layer 1 enveloping "
-        "Object B, beyond the refinement level set by InitialRefinement."};
   };
 
   struct TimeDependence {
@@ -266,107 +348,64 @@ class BinaryCompactObject : public DomainCreator<3> {
         "The time dependence of the moving mesh domain."};
   };
 
-  struct BoundaryConditions {
-    static constexpr Options::String help = "The boundary conditions to apply.";
-  };
-  template <typename BoundaryConditionsBase>
-  struct InnerBoundaryCondition {
-    static std::string name() noexcept { return "InnerBoundary"; }
-    static constexpr Options::String help =
-        "Options for the inner boundary conditions.";
-    using type = std::unique_ptr<BoundaryConditionsBase>;
-    using group = BoundaryConditions;
-  };
-
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
-    static std::string name() noexcept { return "OuterBoundary"; }
+    using group = OuterSphere;
+    static std::string name() noexcept { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "Options for the outer boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
-    using group = BoundaryConditions;
   };
 
-  using basic_options = tmpl::list<
-      InnerRadiusObjectA, OuterRadiusObjectA, XCoordObjectA, ExciseInteriorA,
-      InnerRadiusObjectB, OuterRadiusObjectB, XCoordObjectB, ExciseInteriorB,
-      RadiusOuterCube, RadiusOuterSphere, InitialRefinement, InitialGridPoints,
-      UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
-      AdditionToOuterLayerRadialRefinementLevel, UseLogarithmicMapObjectA,
-      AdditionToObjectARadialRefinementLevel, UseLogarithmicMapObjectB,
-      AdditionToObjectBRadialRefinementLevel, TimeDependence>;
-
   template <typename Metavariables>
-  using options = tmpl::conditional_t<
-      domain::BoundaryConditions::has_boundary_conditions_base_v<
-          typename Metavariables::system>,
-      tmpl::push_back<
-          basic_options,
-          InnerBoundaryCondition<
-              domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>,
-          OuterBoundaryCondition<
+  using options = tmpl::append<
+      tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, RadiusOuterSphere,
+                 InitialRefinement, InitialGridPoints, UseProjectiveMap,
+                 UseLogarithmicMapOuterSphericalShell,
+                 AdditionToOuterLayerRadialRefinementLevel, TimeDependence>,
+      tmpl::conditional_t<
+          domain::BoundaryConditions::has_boundary_conditions_base_v<
+              typename Metavariables::system>,
+          tmpl::list<OuterBoundaryCondition<
               domain::BoundaryConditions::get_boundary_conditions_base<
                   typename Metavariables::system>>>,
-      basic_options>;
+          tmpl::list<>>>;
 
   static constexpr Options::String help{
       "The BinaryCompactObject domain is a general domain for two compact "
       "objects. The user must provide the inner and outer radii of the "
       "spherical shells surrounding each of the two compact objects A and "
       "B. The radial refinement levels for these shells are (InitialRefinement "
-      "+ AdditionToObjectARadialRefinementLevel) and (InitialRefinement + "
-      "AdditionToObjectBRadialRefinementLevel), respectively.\n\n"
+      "+ Object{A,B}.AdditionToRadialRefinementLevel).\n\n"
       "The user must also provide the radius of the sphere that "
       "circumscribes the cube containing both compact objects, and the "
-      "radius of the outer boundary. The options ExciseInteriorA and "
-      "ExciseInteriorB determine whether the layer-zero blocks are present "
-      "inside each compact object. If set to `true`, the domain will not "
-      "contain layer zero for that object. The user specifies XCoordObjectA "
-      "and XCoordObjectB, the x-coordinates of the locations of the centers "
-      "of each compact object. In these coordinates, the location for the "
-      "axis of rotation is x=0. ObjectA is located on the left and ObjectB "
+      "radius of the outer boundary. The options Object{A,B}.Interior (or "
+      "Object{A,B}.ExciseInterior if we're not working with boundary "
+      "conditions) determine whether the layer-zero blocks are present "
+      "inside each compact object. If set to a boundary condition or 'false', "
+      "the domain will not contain layer zero for that object. The user "
+      "specifies Object{A,B}.XCoord, the x-coordinates of the locations of the "
+      "centers of each compact object. In these coordinates, the location for "
+      "the axis of rotation is x=0. ObjectA is located on the left and ObjectB "
       "is located on the right. Please make sure that your choices of "
       "x-coordinate locations are such that the resulting center of mass "
       "is located at zero.\n\n"
-      "Two radial layers join the outer cube to the spherical outer boundary. "
-      "The first of these layers transitions from sphericity == 0.0 on the "
-      "inner boundary to sphericity == 1.0 on the outer boundary. The second "
-      "has sphericity == 1 (so either linear or logarithmic mapping can be "
-      "used in the radial direction), extends to the spherical outer boundary "
-      "of the domain, and has a radial refinement level of (InitialRefinement "
-      "+ AdditionToOuterLayerRadialRefinementLevel)."};
+      "Two radial layers join the enveloping cube to the spherical outer "
+      "boundary. The first of these layers transitions from sphericity == 0.0 "
+      "on the inner boundary to sphericity == 1.0 on the outer boundary. The "
+      "second has sphericity == 1 (so either linear or logarithmic mapping can "
+      "be used in the radial direction), extends to the spherical outer "
+      "boundary of the domain, and has a radial refinement level of "
+      "(InitialRefinement + OuterSphere.AdditionToRadialRefinementLevel)."};
 
   BinaryCompactObject(
-      typename InnerRadiusObjectA::type inner_radius_object_A,
-      typename OuterRadiusObjectA::type outer_radius_object_A,
-      typename XCoordObjectA::type xcoord_object_A,
-      typename ExciseInteriorA::type excise_interior_A,
-      typename InnerRadiusObjectB::type inner_radius_object_B,
-      typename OuterRadiusObjectB::type outer_radius_object_B,
-      typename XCoordObjectB::type xcoord_object_B,
-      typename ExciseInteriorB::type excise_interior_B,
-      typename RadiusOuterCube::type radius_enveloping_cube,
-      typename RadiusOuterSphere::type radius_enveloping_sphere,
-      typename InitialRefinement::type initial_refinement,
-      typename InitialGridPoints::type initial_grid_points_per_dim,
-      typename UseProjectiveMap::type use_projective_map = true,
-      typename UseLogarithmicMapOuterSphericalShell::type
-          use_logarithmic_map_outer_spherical_shell = false,
-      typename AdditionToOuterLayerRadialRefinementLevel::type
-          addition_to_outer_layer_radial_refinement_level = 0,
-      typename UseLogarithmicMapObjectA::type use_logarithmic_map_object_A =
-          false,
-      typename AdditionToObjectARadialRefinementLevel::type
-          addition_to_object_A_radial_refinement_level = 0,
-      typename UseLogarithmicMapObjectB::type use_logarithmic_map_object_B =
-          false,
-      typename AdditionToObjectBRadialRefinementLevel::type
-          addition_to_object_B_radial_refinement_level = 0,
+      Object object_A, Object object_B, double radius_enveloping_cube,
+      double radius_enveloping_sphere, size_t initial_refinement,
+      size_t initial_grid_points_per_dim, bool use_projective_map = true,
+      bool use_logarithmic_map_outer_spherical_shell = false,
+      size_t addition_to_outer_layer_radial_refinement_level = 0,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          inner_boundary_condition = nullptr,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -390,31 +429,17 @@ class BinaryCompactObject : public DomainCreator<3> {
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  typename InnerRadiusObjectA::type inner_radius_object_A_{};
-  typename OuterRadiusObjectA::type outer_radius_object_A_{};
-  typename XCoordObjectA::type xcoord_object_A_{};
-  typename ExciseInteriorA::type excise_interior_A_{};
-  typename InnerRadiusObjectB::type inner_radius_object_B_{};
-  typename OuterRadiusObjectB::type outer_radius_object_B_{};
-  typename XCoordObjectB::type xcoord_object_B_{};
-  typename ExciseInteriorB::type excise_interior_B_{};
-  typename RadiusOuterCube::type radius_enveloping_cube_{};
-  typename RadiusOuterSphere::type radius_enveloping_sphere_{};
-  typename InitialRefinement::type initial_refinement_{};
-  typename InitialGridPoints::type initial_grid_points_per_dim_{};
+  Object object_A_{};
+  Object object_B_{};
+  double radius_enveloping_cube_{};
+  double radius_enveloping_sphere_{};
+  size_t initial_refinement_{};
+  size_t initial_grid_points_per_dim_{};
   static constexpr bool use_equiangular_map_ =
       false;  // Doesn't work properly yet
-  typename UseProjectiveMap::type use_projective_map_ = true;
-  typename UseLogarithmicMapOuterSphericalShell::type
-      use_logarithmic_map_outer_spherical_shell_ = false;
-  typename AdditionToOuterLayerRadialRefinementLevel::type
-      addition_to_outer_layer_radial_refinement_level_{};
-  typename UseLogarithmicMapObjectA::type use_logarithmic_map_object_A_ = false;
-  typename AdditionToObjectARadialRefinementLevel::type
-      addition_to_object_A_radial_refinement_level_{};
-  typename UseLogarithmicMapObjectB::type use_logarithmic_map_object_B_ = false;
-  typename AdditionToObjectBRadialRefinementLevel::type
-      addition_to_object_B_radial_refinement_level_{};
+  bool use_projective_map_ = true;
+  bool use_logarithmic_map_outer_spherical_shell_ = false;
+  size_t addition_to_outer_layer_radial_refinement_level_{};
   double projective_scale_factor_{};
   double translation_{};
   double length_inner_cube_{};
@@ -422,8 +447,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   size_t number_of_blocks_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
-  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      inner_boundary_condition_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
 };

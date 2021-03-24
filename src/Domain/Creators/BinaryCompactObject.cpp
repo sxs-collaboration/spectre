@@ -7,6 +7,7 @@
 #include <cmath>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <unordered_map>
@@ -14,7 +15,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
-#include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -37,78 +37,45 @@ struct Logical;
 /// \endcond
 
 namespace domain::creators {
+
+bool BinaryCompactObject::Object::is_excised() const noexcept {
+  return inner_boundary_condition.has_value();
+}
+
 BinaryCompactObject::BinaryCompactObject(
-    typename InnerRadiusObjectA::type inner_radius_object_A,
-    typename OuterRadiusObjectA::type outer_radius_object_A,
-    typename XCoordObjectA::type xcoord_object_A,
-    typename ExciseInteriorA::type excise_interior_A,
-    typename InnerRadiusObjectB::type inner_radius_object_B,
-    typename OuterRadiusObjectB::type outer_radius_object_B,
-    typename XCoordObjectB::type xcoord_object_B,
-    typename ExciseInteriorB::type excise_interior_B,
-    typename RadiusOuterCube::type radius_enveloping_cube,
-    typename RadiusOuterSphere::type radius_enveloping_sphere,
-    typename InitialRefinement::type initial_refinement,
-    typename InitialGridPoints::type initial_grid_points_per_dim,
-    typename UseProjectiveMap::type use_projective_map,
-    typename UseLogarithmicMapOuterSphericalShell::type
-        use_logarithmic_map_outer_spherical_shell,
-    typename AdditionToOuterLayerRadialRefinementLevel::type
-        addition_to_outer_layer_radial_refinement_level,
-    typename UseLogarithmicMapObjectA::type use_logarithmic_map_object_A,
-    typename AdditionToObjectARadialRefinementLevel::type
-        addition_to_object_A_radial_refinement_level,
-    typename UseLogarithmicMapObjectB::type use_logarithmic_map_object_B,
-    typename AdditionToObjectBRadialRefinementLevel::type
-        addition_to_object_B_radial_refinement_level,
+    Object object_A, Object object_B, double radius_enveloping_cube,
+    double radius_enveloping_sphere, size_t initial_refinement,
+    size_t initial_grid_points_per_dim, bool use_projective_map,
+    bool use_logarithmic_map_outer_spherical_shell,
+    size_t addition_to_outer_layer_radial_refinement_level,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        inner_boundary_condition,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
-    // clang-tidy: trivially copyable
-    : inner_radius_object_A_(std::move(inner_radius_object_A)),        // NOLINT
-      outer_radius_object_A_(std::move(outer_radius_object_A)),        // NOLINT
-      xcoord_object_A_(std::move(xcoord_object_A)),                    // NOLINT
-      excise_interior_A_(std::move(excise_interior_A)),                // NOLINT
-      inner_radius_object_B_(std::move(inner_radius_object_B)),        // NOLINT
-      outer_radius_object_B_(std::move(outer_radius_object_B)),        // NOLINT
-      xcoord_object_B_(std::move(xcoord_object_B)),                    // NOLINT
-      excise_interior_B_(std::move(excise_interior_B)),                // NOLINT
-      radius_enveloping_cube_(std::move(radius_enveloping_cube)),      // NOLINT
-      radius_enveloping_sphere_(std::move(radius_enveloping_sphere)),  // NOLINT
-      initial_refinement_(                                             // NOLINT
-          std::move(initial_refinement)),                              // NOLINT
-      initial_grid_points_per_dim_(                                    // NOLINT
-          std::move(initial_grid_points_per_dim)),                     // NOLINT
-      use_projective_map_(std::move(use_projective_map)),              // NOLINT
+    : object_A_(std::move(object_A)),
+      object_B_(std::move(object_B)),
+      radius_enveloping_cube_(radius_enveloping_cube),
+      radius_enveloping_sphere_(radius_enveloping_sphere),
+      initial_refinement_(initial_refinement),
+      initial_grid_points_per_dim_(initial_grid_points_per_dim),
+      use_projective_map_(use_projective_map),
       use_logarithmic_map_outer_spherical_shell_(
-          std::move(use_logarithmic_map_outer_spherical_shell)),  // NOLINT
+          use_logarithmic_map_outer_spherical_shell),
       addition_to_outer_layer_radial_refinement_level_(
-          addition_to_outer_layer_radial_refinement_level),  // NOLINT
-      use_logarithmic_map_object_A_(
-          std::move(use_logarithmic_map_object_A)),  // NOLINT
-      addition_to_object_A_radial_refinement_level_(
-          addition_to_object_A_radial_refinement_level),  // NOLINT
-      use_logarithmic_map_object_B_(
-          std::move(use_logarithmic_map_object_B)),  // NOLINT
-      addition_to_object_B_radial_refinement_level_(
-          addition_to_object_B_radial_refinement_level),  // NOLINT
+          addition_to_outer_layer_radial_refinement_level),
       time_dependence_(std::move(time_dependence)),
-      inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   // Determination of parameters for domain construction:
-  translation_ = 0.5 * (xcoord_object_B_ + xcoord_object_A_);
-  length_inner_cube_ = abs(xcoord_object_A_ - xcoord_object_B_);
+  translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
+  length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
   length_outer_cube_ = 2.0 * radius_enveloping_cube_ / sqrt(3.0);
-  if (xcoord_object_A_ >= 0.0) {
+  if (object_A_.x_coord >= 0.0) {
     PARSE_ERROR(
         context,
         "The x-coordinate of ObjectA's center is expected to be negative.");
   }
-  if (xcoord_object_B <= 0.0) {
+  if (object_B_.x_coord <= 0.0) {
     PARSE_ERROR(
         context,
         "The x-coordinate of ObjectB's center is expected to be positive.");
@@ -121,11 +88,11 @@ BinaryCompactObject::BinaryCompactObject(
         "malformed. A recommended radius is:\n"
             << suggested_value);
   }
-  if (outer_radius_object_A < inner_radius_object_A) {
+  if (object_A_.outer_radius < object_A_.inner_radius) {
     PARSE_ERROR(context,
                 "ObjectA's inner radius must be less than its outer radius.");
   }
-  if (outer_radius_object_B < inner_radius_object_B) {
+  if (object_B_.outer_radius < object_B_.inner_radius) {
     PARSE_ERROR(context,
                 "ObjectB's inner radius must be less than its outer radius.");
   }
@@ -138,40 +105,40 @@ BinaryCompactObject::BinaryCompactObject(
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
   }
-  if (use_logarithmic_map_object_A_ and not excise_interior_A_) {
+  if (object_A_.use_logarithmic_map and not object_A_.is_excised()) {
     PARSE_ERROR(
         context,
-        "excise_interior_A must be true if use_logarithmic_map_object_A is "
-        "true; that is, using a logarithmically spaced radial grid in the part "
+        "Using a logarithmically spaced radial grid in the part "
         "of Layer 1 enveloping Object A requires excising the interior of "
         "Object A");
   }
-  if (use_logarithmic_map_object_B_ and not excise_interior_B_) {
+  if (object_B_.use_logarithmic_map and not object_B_.is_excised()) {
     PARSE_ERROR(
         context,
-        "excise_interior_B must be true if use_logarithmic_map_object_B is "
-        "true; that is, using a logarithmically spaced radial grid in the part "
+        "Using a logarithmically spaced radial grid in the part "
         "of Layer 1 enveloping Object B requires excising the interior of "
         "Object B");
   }
-  using domain::BoundaryConditions::is_none;
-  if (outer_boundary_condition_ != nullptr and
-      ((not excise_interior_A_ and not excise_interior_B_) and
-       (inner_boundary_condition_ == nullptr or
-        not is_none(inner_boundary_condition_)))) {
+  if (object_A_.is_excised() and
+      ((*object_A_.inner_boundary_condition == nullptr) !=
+       (outer_boundary_condition_ == nullptr))) {
     PARSE_ERROR(context,
-                "Inner boundary condition must be None if ExciseInteriorA and "
-                "ExciseInteriorB are both false");
+                "Must specify either both inner and outer boundary conditions "
+                "or neither.");
   }
-  if ((outer_boundary_condition_ == nullptr) xor
-      (inner_boundary_condition_ == nullptr)) {
+  if (object_B_.is_excised() and
+      ((*object_B_.inner_boundary_condition == nullptr) !=
+       (outer_boundary_condition_ == nullptr))) {
     PARSE_ERROR(context,
                 "Must specify either both inner and outer boundary conditions "
                 "or neither.");
   }
   using domain::BoundaryConditions::is_periodic;
-  if (is_periodic(inner_boundary_condition_) or
-      is_periodic(outer_boundary_condition_)) {
+  if (is_periodic(outer_boundary_condition_) or
+      (object_A_.is_excised() and
+       is_periodic(*object_A_.inner_boundary_condition)) or
+      (object_B_.is_excised() and
+       is_periodic(*object_B_.inner_boundary_condition))) {
     PARSE_ERROR(
         context,
         "Cannot have periodic boundary conditions with a binary domain");
@@ -183,17 +150,17 @@ BinaryCompactObject::BinaryCompactObject(
   number_of_blocks_ = 54;
 
   // For each object whose interior is not excised, add 1 block
-  if (not excise_interior_A_) {
+  if (not object_A_.is_excised()) {
     number_of_blocks_++;
   }
-  if (not excise_interior_B_) {
+  if (not object_B_.is_excised()) {
     number_of_blocks_++;
   }
 }
 
 Domain<3> BinaryCompactObject::create_domain() const noexcept {
-  const double inner_sphericity_A = excise_interior_A_ ? 1.0 : 0.0;
-  const double inner_sphericity_B = excise_interior_B_ ? 1.0 : 0.0;
+  const double inner_sphericity_A = object_A_.is_excised() ? 1.0 : 0.0;
+  const double inner_sphericity_B = object_B_.is_excised() ? 1.0 : 0.0;
 
   using Maps = std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>;
@@ -205,54 +172,54 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   Maps maps{};
   // ObjectA/B is on the left/right, respectively.
   Maps maps_center_A = sph_wedge_coordinate_maps<Frame::Inertial>(
-      inner_radius_object_A_, outer_radius_object_A_, inner_sphericity_A, 1.0,
-      use_equiangular_map_, xcoord_object_A_, false, 1.0,
-      use_logarithmic_map_object_A_);
+      object_A_.inner_radius, object_A_.outer_radius, inner_sphericity_A, 1.0,
+      use_equiangular_map_, object_A_.x_coord, false, 1.0,
+      object_A_.use_logarithmic_map);
   Maps maps_cube_A = sph_wedge_coordinate_maps<Frame::Inertial>(
-      outer_radius_object_A_, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
-      use_equiangular_map_, xcoord_object_A_, false);
+      object_A_.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
+      use_equiangular_map_, object_A_.x_coord, false);
   Maps maps_center_B = sph_wedge_coordinate_maps<Frame::Inertial>(
-      inner_radius_object_B_, outer_radius_object_B_, inner_sphericity_B, 1.0,
-      use_equiangular_map_, xcoord_object_B_, false, 1.0,
-      use_logarithmic_map_object_B_);
+      object_B_.inner_radius, object_B_.outer_radius, inner_sphericity_B, 1.0,
+      use_equiangular_map_, object_B_.x_coord, false, 1.0,
+      object_B_.use_logarithmic_map);
   Maps maps_cube_B = sph_wedge_coordinate_maps<Frame::Inertial>(
-      outer_radius_object_B_, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
-      use_equiangular_map_, xcoord_object_B_, false);
+      object_B_.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
+      use_equiangular_map_, object_B_.x_coord, false);
   Maps maps_frustums = frustum_coordinate_maps<Frame::Inertial>(
       length_inner_cube_, length_outer_cube_, use_equiangular_map_,
       {{-translation_, 0.0, 0.0}}, projective_scale_factor_);
 
-  if (inner_boundary_condition_ != nullptr) {
+  if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_center_A.size(); ++i) {
       BcMap bcs{};
-      if (excise_interior_A_) {
+      if (object_A_.is_excised()) {
         bcs[Direction<3>::lower_zeta()] =
-            inner_boundary_condition_->get_clone();
+            (*object_A_.inner_boundary_condition)->get_clone();
       }
       boundary_conditions_all_blocks.push_back(std::move(bcs));
     }
   }
   std::move(maps_center_A.begin(), maps_center_A.end(),
             std::back_inserter(maps));
-  if (inner_boundary_condition_ != nullptr) {
+  if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_cube_A.size(); ++i) {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
   }
   std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
-  if (inner_boundary_condition_ != nullptr) {
+  if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_center_B.size(); ++i) {
       BcMap bcs{};
-      if (excise_interior_B_) {
+      if (object_B_.is_excised()) {
         bcs[Direction<3>::lower_zeta()] =
-            inner_boundary_condition_->get_clone();
+            (*object_B_.inner_boundary_condition)->get_clone();
       }
       boundary_conditions_all_blocks.push_back(std::move(bcs));
     }
   }
   std::move(maps_center_B.begin(), maps_center_B.end(),
             std::back_inserter(maps));
-  if (inner_boundary_condition_ != nullptr) {
+  if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_cube_B.size() + maps_frustums.size(); ++i) {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
@@ -315,18 +282,18 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
   using Identity2D = CoordinateMaps::Identity<2>;
-  if (not excise_interior_A_) {
-    if (inner_boundary_condition_ != nullptr) {
+  if (not object_A_.is_excised()) {
+    if (outer_boundary_condition_ != nullptr) {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
 
     auto shift_1d_A =
-        Affine{-1.0, 1.0, -1.0 + xcoord_object_A_, 1.0 + xcoord_object_A_};
+        Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord};
     const auto translation_A =
         CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(shift_1d_A,
                                                            Identity2D{});
 
-    const double scaled_r_inner_A = inner_radius_object_A_ / sqrt(3.0);
+    const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
@@ -347,17 +314,17 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
               translation_A));
     }
   }
-  if (not excise_interior_B_) {
-    if (inner_boundary_condition_ != nullptr) {
+  if (not object_B_.is_excised()) {
+    if (outer_boundary_condition_ != nullptr) {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
 
     auto shift_1d_B =
-        Affine{-1.0, 1.0, -1.0 + xcoord_object_B_, 1.0 + xcoord_object_B_};
+        Affine{-1.0, 1.0, -1.0 + object_B_.x_coord, 1.0 + object_B_.x_coord};
     const auto translation_B =
         CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(shift_1d_B,
                                                            Identity2D{});
-    const double scaled_r_inner_B = inner_radius_object_B_ / sqrt(3.0);
+    const double scaled_r_inner_B = object_B_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
@@ -378,11 +345,12 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
               translation_B));
     }
   }
-  Domain<3> domain{std::move(maps),
-                   corners_for_biradially_layered_domains(
-                       2, 3, not excise_interior_A_, not excise_interior_B_),
-                   {},
-                   std::move(boundary_conditions_all_blocks)};
+  Domain<3> domain{
+      std::move(maps),
+      corners_for_biradially_layered_domains(2, 3, not object_A_.is_excised(),
+                                             not object_B_.is_excised()),
+      {},
+      std::move(boundary_conditions_all_blocks)};
   if (not time_dependence_->is_none()) {
     for (size_t block = 0; block < number_of_blocks_; ++block) {
       domain.inject_time_dependent_map_for_block(
@@ -404,23 +372,23 @@ BinaryCompactObject::initial_refinement_levels() const noexcept {
       number_of_blocks_, make_array<3>(initial_refinement_)};
   // Increase the radial refinement level of the blocks corresponding to the
   // part of Layer 1 enveloping object A (block 0 through block 5, inclusive)
-  if (addition_to_object_A_radial_refinement_level_ > 0) {
+  if (object_A_.addition_to_radial_refinement_level > 0) {
     for (size_t block = 0; block < 6; ++block) {
       // Refine in the radial direction, which is direction 2
       // (i.e. the zeta direction)
       gsl::at(initial_levels[block], 2) +=
-          addition_to_object_A_radial_refinement_level_;
+          object_A_.addition_to_radial_refinement_level;
     }
   }
 
   // Increase the radial refinement level of the blocks corresponding to the
   // part of Layer 1 enveloping object B (block 12 through block 17, inclusive).
-  if (addition_to_object_B_radial_refinement_level_ > 0) {
+  if (object_B_.addition_to_radial_refinement_level > 0) {
     for (size_t block = 12; block < 18; ++block) {
       // Refine in the radial direction, which is direction 2
       // (i.e. the zeta direction)
       gsl::at(initial_levels[block], 2) +=
-          addition_to_object_B_radial_refinement_level_;
+          object_B_.addition_to_radial_refinement_level;
     }
   }
 
