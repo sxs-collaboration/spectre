@@ -22,6 +22,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/EvolutionOrdering.hpp"
+#include "Time/SelfStart.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
@@ -759,9 +760,10 @@ bool AdamsBashforthN::can_change_step_size(
   // evolution until the self-start history has been replaced with
   // "real" values.
   const evolution_less<Time> less{time_id.time_runs_forward()};
-  return history.size() == 0 or
-         (less(history.back(), time_id.step_time()) and
-          std::is_sorted(history.begin(), history.end(), less));
+  return not ::SelfStart::is_self_starting(time_id) and
+         (history.size() == 0 or
+          (less(history.back(), time_id.step_time()) and
+           std::is_sorted(history.begin(), history.end(), less)));
 }
 
 template <typename Iterator, typename Delta>
