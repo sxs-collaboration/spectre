@@ -626,6 +626,19 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                       initialization_items) noexcept
     : AlgorithmImpl() {
   (void)initialization_items;  // avoid potential compiler warnings if unused
+  // When we are using the LoadBalancing phase, we want the Main component to
+  // handle the synchronization, so the components do not participate in the
+  // charm++ `AtSync` barrier.
+  // The array parallel components are migratable so they get balanced
+  // appropriately when load balancing is triggered by the LoadBalancing phase
+  // in Main
+  if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
+                               Parallel::Algorithms::Array> and
+                Algorithm_detail::has_LoadBalancing_v<
+                    typename metavariables::Phase>) {
+    this->usesAtSync = false;
+    this->setMigratable(true);
+  }
   global_cache_ = global_cache_proxy.ckLocalBranch();
   box_ = db::create<
       db::AddSimpleTags<tmpl::flatten<

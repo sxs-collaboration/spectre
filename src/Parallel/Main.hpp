@@ -27,6 +27,7 @@
 #include "Utilities/Formaline.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/System/Exit.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
@@ -40,7 +41,7 @@ CREATE_HAS_TYPE_ALIAS_V(phase_change_tags_and_combines_list)
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(phase_change_tags_and_combines_list)
 CREATE_HAS_TYPE_ALIAS(initialize_phase_change_decision_data)
 CREATE_HAS_TYPE_ALIAS_V(initialize_phase_change_decision_data)
-}
+}  // namespace detail
 
 /// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
@@ -112,6 +113,7 @@ class Main : public CBase_Main<Metavariables> {
 
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
+  detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
   // This is only used during startup, and will be cleared after all
   // the chares are created.  It is a member variable because passing
   // local state through charm callbacks is painful.
@@ -121,6 +123,65 @@ class Main : public CBase_Main<Metavariables> {
   tuples::tagged_tuple_from_typelist<phase_change_tags_and_combines_list>
       phase_change_decision_data_;
 };
+
+namespace detail {
+
+// Charm++ AtSync effectively requires an additional global sync to the
+// quiescence detection we do for switching phases. However, AtSync only needs
+// to be called for one array to trigger the sync-based load balancing, so the
+// AtSyncIndicator is a silly hack to have a centralized indication to start
+// load-balancing. It participates in the `AtSync` barrier, but is not
+// migratable, and should only be constructed by the `Main` chare on the same
+// processor as the `Main` chare. When load-balancing occurs, main invokes the
+// member function `IndicateAtSync()`, and when `ResumeFromSync()` is called
+// from charm, `AtSyncIndicator` simply passes control back to the Main chare
+// via `execute_next_phase()`.
+template <typename Metavariables>
+class AtSyncIndicator : public CBase_AtSyncIndicator<Metavariables> {
+ public:
+  AtSyncIndicator(CProxy_Main<Metavariables> main_proxy) noexcept;
+  AtSyncIndicator(const AtSyncIndicator&) = default;
+  AtSyncIndicator& operator=(const AtSyncIndicator&) = default;
+  AtSyncIndicator(AtSyncIndicator&&) = default;
+  AtSyncIndicator& operator=(AtSyncIndicator&&) = default;
+  ~AtSyncIndicator() noexcept override {
+    (void)Parallel::charmxx::RegisterChare<
+        AtSyncIndicator<Metavariables>,
+        CkIndex_AtSyncIndicator<Metavariables>>::registrar;
+  }
+
+  void IndicateAtSync() noexcept;
+
+  void ResumeFromSync() override;
+
+  explicit AtSyncIndicator(CkMigrateMessage* msg) noexcept
+      : CBase_AtSyncIndicator<Metavariables>(msg) {}
+
+  void pup(PUP::er& p) noexcept override {
+    p | main_proxy_;
+  }
+ private:
+  CProxy_Main<Metavariables> main_proxy_;
+};
+
+template <typename Metavariables>
+AtSyncIndicator<Metavariables>::AtSyncIndicator(
+    CProxy_Main<Metavariables> main_proxy) noexcept
+    : main_proxy_{main_proxy} {
+  this->usesAtSync = true;
+  this->setMigratable(false);
+}
+
+template <typename Metavariables>
+void AtSyncIndicator<Metavariables>::IndicateAtSync() noexcept {
+  this->AtSync();
+}
+
+template <typename Metavariables>
+void AtSyncIndicator<Metavariables>::ResumeFromSync() {
+  main_proxy_.execute_next_phase();
+}
+}  // namespace detail
 
 // ================================================================
 
@@ -293,6 +354,14 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       mutable_global_cache_proxy_, this->thisProxy,
       &mutable_global_cache_dependency);
 
+  if constexpr (Algorithm_detail::has_LoadBalancing_v<
+                    typename Metavariables::Phase>) {
+    at_sync_indicator_proxy_ =
+        detail::CProxy_AtSyncIndicator<Metavariables>::ckNew();
+    at_sync_indicator_proxy_[0].insert(this->thisProxy, sys::my_proc());
+    at_sync_indicator_proxy_.doneInserting();
+  }
+
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
@@ -433,6 +502,13 @@ void Main<Metavariables>::execute_next_phase() noexcept {
   if (Metavariables::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     sys::exit();
+  }
+  if constexpr (Algorithm_detail::has_LoadBalancing_v<
+                    typename Metavariables::Phase>) {
+    if(current_phase_ == Metavariables::Phase::LoadBalancing) {
+      at_sync_indicator_proxy_.IndicateAtSync();
+      return;
+    }
   }
   tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
     tmpl::type_from<decltype(parallel_component)>::execute_next_phase(

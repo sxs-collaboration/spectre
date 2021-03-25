@@ -10,6 +10,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace Parallel {
@@ -147,6 +148,8 @@ struct build_databox_types<
 };
 
 CREATE_IS_CALLABLE(is_ready)
+CREATE_HAS_STATIC_MEMBER_VARIABLE(LoadBalancing)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(LoadBalancing)
 
 // for checking the DataBox return of an iterable action
 template <typename FirstIterableActionType>
