@@ -15,6 +15,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
+#include "Framework/CheckWithRandomValues.hpp"
+#include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
@@ -74,6 +76,24 @@ auto make_coord_map() {
 template <size_t Dim>
 void test_strain() noexcept {
   CAPTURE(Dim);
+  {
+    INFO("Random-value tests");
+    DataVector used_for_size{5};
+    pypp::check_with_random_values<1>(
+        static_cast<void (*)(gsl::not_null<tnsr::ii<DataVector, Dim>*>,
+                             const tnsr::iJ<DataVector, Dim>&)>(
+            &Elasticity::strain<DataVector, Dim>),
+        "Strain", {"strain_flat"}, {{{-1., 1.}}}, used_for_size);
+    pypp::check_with_random_values<1>(
+        static_cast<void (*)(gsl::not_null<tnsr::ii<DataVector, Dim>*>,
+                             const tnsr::iJ<DataVector, Dim>&,
+                             const tnsr::ii<DataVector, Dim>&,
+                             const tnsr::ijj<DataVector, Dim>&,
+                             const tnsr::ijj<DataVector, Dim>&,
+                             const tnsr::I<DataVector, Dim>&)>(
+            &Elasticity::strain<DataVector, Dim>),
+        "Strain", {"strain_curved"}, {{{-1., 1.}}}, used_for_size);
+  }
   const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -109,6 +129,8 @@ void test_strain() noexcept {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Elasticity.Strain",
                   "[Unit][PointwiseFunctions]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "PointwiseFunctions/Elasticity"};
   test_strain<2>();
   test_strain<3>();
 }
