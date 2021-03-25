@@ -17,6 +17,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticSolution.hpp
+  CommonVariables.hpp
+  CommonVariables.tpp
   ConstantDensityStar.hpp
   Flatness.hpp
   Schwarzschild.hpp
@@ -32,4 +34,6 @@ target_link_libraries(
   Parallel
   Utilities
   Xcts
+  XctsAnalyticData
+  XctsPointwiseFunctions
   )
