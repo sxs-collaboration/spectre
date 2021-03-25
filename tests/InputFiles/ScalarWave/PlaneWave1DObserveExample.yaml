@@ -17,6 +17,8 @@ AnalyticSolution:
         Wavenumber: 1.0
         Phase: 0.0
 
+PhaseChangeAndTriggers:
+
 Evolution:
   InitialTime: &InitialTime
     0.0

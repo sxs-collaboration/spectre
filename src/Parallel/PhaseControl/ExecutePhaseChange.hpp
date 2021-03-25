@@ -36,6 +36,17 @@ namespace Actions {
  * - DataBox: As specified by the `PhaseChange` option-created objects.
  *   - `PhaseChange` objects are permitted to perform mutations on the
  *     \ref DataBoxGroup "DataBox" to store persistent state information.
+ *
+ * \warning This action should almost always be placed at the end of the action
+ * list for a given phase, because the record of the index through the action
+ * list will not be retained during a phase change. Therefore, to avoid
+ * unexpected behavior, the phase changes should happen at the end of a phase,
+ * so that if control returns to the same phase it may continue looping as
+ * usual.
+ * If this suggestion is ignored, the typical pathology is an infinite loop of
+ * repeatedly triggering a phase change, because the trigger is examined too
+ * early in the action list for any alteration to have occurred before being
+ * interrupted again for a phase change.
  */
 template <typename PhaseChangeRegistrars, typename TriggerRegistrars>
 struct ExecutePhaseChange {

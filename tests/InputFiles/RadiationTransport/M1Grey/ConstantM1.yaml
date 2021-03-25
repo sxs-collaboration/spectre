@@ -13,6 +13,8 @@ Evolution:
     AdamsBashforthN:
       Order: 3
 
+PhaseChangeAndTriggers:
+
 DomainCreator:
   Brick:
     LowerBound: [10.5, 0.0, 0.0]

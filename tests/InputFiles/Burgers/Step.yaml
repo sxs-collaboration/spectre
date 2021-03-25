@@ -17,6 +17,8 @@ Evolution:
     AdamsBashforthN:
       Order: 3
 
+PhaseChangeAndTriggers:
+
 DomainCreator:
   Interval:
     LowerBound: [-1.0]

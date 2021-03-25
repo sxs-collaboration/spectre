@@ -421,7 +421,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
               [this, &box](auto registration_v) noexcept {
                 using registration = typename decltype(registration_v)::type;
                 registration::template perform_deregistration<
-                    ParallelComponent>(box, *global_cache_, array_index_);
+                    ParallelComponent>(boost::get<ThisVariant>(box),
+                                       *global_cache_, array_index_);
               });
         }
         if (p.isUnpacking()) {
@@ -429,7 +430,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
               [this, &box](auto registration_v) noexcept {
                 using registration = typename decltype(registration_v)::type;
                 registration::template perform_registration<ParallelComponent>(
-                    box, *global_cache_, array_index_);
+                    boost::get<ThisVariant>(box), *global_cache_, array_index_);
               });
         }
         *already_visited = true;

@@ -10,6 +10,8 @@ Evolution:
   TimeStepper:
     RungeKutta3
 
+PhaseChangeAndTriggers:
+
 DomainCreator:
   Rectangle:
     LowerBound: [-0.25, 0.0]
