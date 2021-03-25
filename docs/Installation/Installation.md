@@ -335,6 +335,9 @@ Follow these steps:
     The Charm++ build will be located in a new directory,
     `CHARM_DIR/ARCH_OPTS`, whose name may (or may not) have some of the options
     appended to the architecture.
+    In addition to the core `charm++` target, you will need to compile either
+    the `LIBS` target or the `everylb` target. This is needed so that we can
+    support the more sophisticated load balancers in SpECTRE executables.
   * On macOS 10.12 it is necessary to patch the STL implementation. Insert
     \code
     #ifndef _MACH_PORT_T
