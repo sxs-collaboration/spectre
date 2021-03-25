@@ -5,6 +5,9 @@
 #include <memory>
 #include <pup.h>
 
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
@@ -28,9 +31,12 @@ struct get_maps {
 
 template <size_t Dim>
 void register_maps_with_charm() noexcept {
-  using maps_to_register = tmpl::remove_duplicates<tmpl::flatten<
-      tmpl::transform<typename TimeDependence<Dim>::creatable_classes,
-                      get_maps<tmpl::_1>>>>;
+  using maps_to_register =
+      tmpl::remove_duplicates<tmpl::flatten<tmpl::push_back<
+          tmpl::transform<typename TimeDependence<Dim>::creatable_classes,
+                          get_maps<tmpl::_1>>,
+          domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                CoordinateMaps::Identity<Dim>>>>>;
 
   Parallel::register_classes_in_list<maps_to_register>();
 }
