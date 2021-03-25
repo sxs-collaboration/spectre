@@ -62,7 +62,7 @@ void test_cylindrical_endcap_sphere_two_small() {
     const double max_radius_two = 0.85 * (radius_one - dist_between_spheres);
 
     // Choose radius_two to be not too small compared to radius_one.
-    const double min_radius_two = 0.25 * radius_one;
+    const double min_radius_two = 0.1 * radius_one;
 
     return min_radius_two + unit_dis(gen) * (max_radius_two - min_radius_two);
   }();

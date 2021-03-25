@@ -120,7 +120,7 @@ namespace domain::CoordinateMaps {
  *   the values 0.2 and 0.95 were chosen empirically based on unit tests.
  * - \f$P\f$ is contained in sphere 2.
  * - If sphere 2 is contained in sphere 1, then
- *   - \f$0.25 R_1 \leq R_2 \leq 0.85 (R_1 - |C_1-C_2|)\f$,
+ *   - \f$0.1 R_1 \leq R_2 \leq 0.85 (R_1 - |C_1-C_2|)\f$,
  *     This prevents the two spheres from having a very narrow space between
  *     them, and it prevents sphere 2 from being very small.
  *   - \f$|P - C_2| < 0.1 R_2\f$, i.e. \f$P\f$ is near the center of sphere 2.

@@ -186,14 +186,14 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
     // We keep this as a separate condition because we may change the
     // number 0.85 in the future if we ever have reason to do so.
     ASSERT(radius_two <= 0.85 * (radius_one - dist_spheres) and
-               radius_two >= 0.25 * radius_one,
+               radius_two >= 0.1 * radius_one,
            "If sphere_two is contained in sphere_one, the "
            "map has been tested only for the case when sphere_two is not "
            "too small or two large. Here radius_two="
                << radius_two << ", radius_one=" << radius_one << ", distance="
                << dist_spheres << ", and the requirement is that "
                << 0.85 * (radius_one - dist_spheres) - radius_two
-               << " is positive and that " << radius_two - 0.25 * radius_one
+               << " is positive and that " << radius_two - 0.1 * radius_one
                << " is positive.");
 
     // We keep this as a separate condition because we may change the
