@@ -193,16 +193,19 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
                << radius_two << ", radius_one=" << radius_one << ", distance="
                << dist_spheres << ", and the requirement is that "
                << 0.85 * (radius_one - dist_spheres) - radius_two
-               << " is positive");
+               << " is positive and that " << radius_two - 0.25 * radius_one
+               << " is positive.");
 
     // We keep this as a separate condition because we may change the
     // number 0.1 in the future if we have reason to do so.
-    ASSERT(proj_radius_two_squared <= square(0.1 * radius_two),
-           "The map has been tested only for the case when "
-           "proj_center is sufficiently contained inside sphere_two. We have"
-               << proj_radius_two_squared << " vs " << square(0.1 * radius_two)
-               << ", diff = "
-               << proj_radius_two_squared - square(0.1 * radius_two));
+    ASSERT(
+        proj_radius_two_squared <= square(0.1 * radius_two),
+        "The map has been tested only for the case when "
+        "proj_center is sufficiently contained inside sphere_two. We have "
+            << proj_radius_two_squared << " vs " << square(0.1 * radius_two)
+            << ", diff = " << proj_radius_two_squared - square(0.1 * radius_two)
+            << ". Here center_two=" << center_two << ", proj_center="
+            << proj_center << ", radius_two=" << radius_two);
   } else {
     // sphere_one is contained in sphere_two.
 
