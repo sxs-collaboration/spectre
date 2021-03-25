@@ -136,6 +136,15 @@ void SchwarzschildVariables<DataType>::operator()(
 
 template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
+    const noexcept {
+  get(*dt_trace_extrinsic_curvature) = 0.;
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*>
         trace_extrinsic_curvature_gradient,
     const gsl::not_null<Cache*> /*cache*/,
