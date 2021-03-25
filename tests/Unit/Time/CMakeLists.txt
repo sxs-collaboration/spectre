@@ -6,6 +6,7 @@ set(LIBRARY "Test_Time")
 set(LIBRARY_SOURCES
   Test_EvolutionOrdering.cpp
   Test_History.cpp
+  Test_SelfStart.cpp
   Test_Slab.cpp
   Test_Tags.cpp
   Test_TakeStep.cpp

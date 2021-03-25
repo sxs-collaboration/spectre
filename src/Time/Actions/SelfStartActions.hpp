@@ -411,6 +411,16 @@ struct Cleanup {
             *tag_value = std::decay_t<decltype(*tag_value)>{};
           });
         });
+    ASSERT(
+        db::get<::Tags::HistoryEvolvedVariables<>>(box).integration_order() ==
+            db::get<::Tags::TimeStepper<>>(box).order(),
+        "Volume history order is: "
+            << db::get<::Tags::HistoryEvolvedVariables<>>(box)
+                   .integration_order()
+            << " but time stepper requires order: "
+            << db::get<::Tags::TimeStepper<>>(box).order()
+            << ". This may indicate that the step size has varied during "
+               "self-start, which should not be permitted.");
     return std::make_tuple(std::move(box));
   }
 };

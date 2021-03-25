@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  SelfStart.cpp
   Slab.cpp
   Time.cpp
   TimeSequence.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   BoundaryHistory.hpp
   EvolutionOrdering.hpp
   History.hpp
+  SelfStart.hpp
   Slab.hpp
   Tags.hpp
   TakeStep.hpp
