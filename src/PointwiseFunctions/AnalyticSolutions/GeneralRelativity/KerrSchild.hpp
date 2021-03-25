@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -544,9 +545,11 @@ class KerrSchild : public MarkAsAnalyticSolution {
     static constexpr double null_vector_0_ = -1.0;
   };
 
-  double mass_{1.0};
-  std::array<double, volume_dim> dimensionless_spin_{{0.0, 0.0, 0.0}};
-  std::array<double, volume_dim> center_{{0.0, 0.0, 0.0}};
+  double mass_{std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, volume_dim> dimensionless_spin_ =
+      make_array<volume_dim>(std::numeric_limits<double>::signaling_NaN());
+  std::array<double, volume_dim> center_ =
+      make_array<volume_dim>(std::numeric_limits<double>::signaling_NaN());
 };
 
 SPECTRE_ALWAYS_INLINE bool operator==(const KerrSchild& lhs,
