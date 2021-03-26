@@ -13,6 +13,7 @@ spectre_target_sources(
   CreateInitialElement.cpp
   Domain.cpp
   DomainHelpers.cpp
+  ElementDistribution.cpp
   ElementLogicalCoordinates.cpp
   ElementMap.cpp
   FaceNormal.cpp
@@ -32,6 +33,7 @@ spectre_target_headers(
   CreateInitialElement.hpp
   Domain.hpp
   DomainHelpers.hpp
+  ElementDistribution.hpp
   ElementLogicalCoordinates.hpp
   ElementMap.hpp
   FaceNormal.hpp
