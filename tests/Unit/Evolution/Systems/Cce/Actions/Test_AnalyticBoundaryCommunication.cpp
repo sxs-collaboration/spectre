@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -72,6 +73,9 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
+      // advance the time so that the current `TimeStepId` is valid without
+      // having to perform self-start.
+      ::Actions::AdvanceTime,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
@@ -188,7 +192,7 @@ SPECTRE_TEST_CASE(
       &runner, 0, serialize_and_deserialize(analytic_manager));
 
   // Run the initializations
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
   for (size_t i = 0; i < 3; ++i) {

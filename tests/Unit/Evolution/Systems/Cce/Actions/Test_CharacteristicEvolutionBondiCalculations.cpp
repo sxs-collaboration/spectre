@@ -36,6 +36,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -57,7 +58,9 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
-      Actions::ReceiveWorldtubeData<Metavariables>,
+      // advance the time so that the current `TimeStepId` is valid without
+      // having to perform self-start.
+      ::Actions::AdvanceTime, Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface,
       ::Actions::MutateApply<InitializeGauge>,
       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
@@ -270,7 +273,9 @@ SPECTRE_TEST_CASE(
             extraction_radius, l_max);
       });
 
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   ActionTesting::simple_action<component, TestSendToEvolution>(
       make_not_null(&runner), 0,
       ActionTesting::get_databox_tag<component, ::Tags::TimeStepId>(runner, 0),

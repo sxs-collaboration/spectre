@@ -116,7 +116,7 @@ SPECTRE_TEST_CASE(
   Variables<swsh_volume_tags_to_compute> swsh_volume_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
       number_of_radial_points};
-  TimeStepId time_step_id{true, 0, Time{Slab{1.0, 2.0}, {1, 2}}};
+  TimeStepId time_step_id{true, 0, Time{Slab{1.0, 2.0}, {0, 1}}};
 
   tmpl::for_each<swsh_boundary_tags_to_generate>([&swsh_variables, &gen,
                                                   &coefficient_distribution,
@@ -165,7 +165,7 @@ SPECTRE_TEST_CASE(
       Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
       Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
   db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
-      make_not_null(&expected_box), 1.5);
+      make_not_null(&expected_box), 1.0);
 
   tmpl::for_each<
       tmpl::append<real_boundary_tags_to_compute, swsh_boundary_tags_to_compute,

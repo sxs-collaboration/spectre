@@ -54,6 +54,14 @@ struct InitializeFirstHypersurface {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    // In some contexts, this action may get re-run (e.g. self-start procedure)
+    // In those cases, we do not want to alter the existing hypersurface data,
+    // so we just exit. However, we do want to re-run the action each time
+    // the self start 'reset's from the beginning
+    if (db::get<::Tags::TimeStepId>(box).slab_number() > 0 or
+        db::get<::Tags::TimeStepId>(box).substep_time().fraction() != 0) {
+      return {std::move(box)};
+    }
     db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
                      InitializeJ::InitializeJ::argument_tags>(
         db::get<Tags::InitializeJBase>(box), make_not_null(&box));

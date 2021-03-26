@@ -39,11 +39,11 @@ struct GhWorldtubeBoundary;
 namespace Actions {
 
 namespace detail {
-template <typename Initializer, typename ManagerTag,
+template <typename Initializer, typename ManagerTags,
           typename BoundaryCommunicationTagsList>
 struct InitializeWorldtubeBoundaryBase {
-  using initialization_tags = tmpl::list<ManagerTag>;
-  using initialization_tags_to_keep = tmpl::list<ManagerTag>;
+  using initialization_tags = ManagerTags;
+  using initialization_tags_to_keep = ManagerTags;
   using const_global_cache_tags = tmpl::list<Tags::LMax>;
 
   using simple_tags =
@@ -59,7 +59,7 @@ struct InitializeWorldtubeBoundaryBase {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     if constexpr (std::is_same_v<Tags::AnalyticBoundaryDataManager,
-                                 ManagerTag>) {
+                                 tmpl::front<ManagerTags>>) {
       if (dynamic_cast<const Solutions::RobinsonTrautman*>(
               &(db::get<Tags::AnalyticBoundaryDataManager>(box)
                     .get_generator())) != nullptr) {
@@ -72,7 +72,8 @@ struct InitializeWorldtubeBoundaryBase {
         }
       }
     }
-    if constexpr (tmpl::list_contains_v<DataBoxTagsList, ManagerTag>) {
+    if constexpr (tmpl::list_contains_v<DataBoxTagsList,
+                                        tmpl::front<ManagerTags>>) {
       const size_t l_max = db::get<Tags::LMax>(box);
       Variables<BoundaryCommunicationTagsList> boundary_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
@@ -82,7 +83,7 @@ struct InitializeWorldtubeBoundaryBase {
       return std::make_tuple(std::move(box));
     } else {
       ERROR(MakeString{} << "Missing required boundary manager tag : "
-                         << db::tag_name<ManagerTag>);
+            << db::tag_name<tmpl::front<ManagerTags>>);
     }
   }
 };
@@ -123,11 +124,11 @@ template <typename Metavariables>
 struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
     : public detail::InitializeWorldtubeBoundaryBase<
           InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>,
-          Tags::H5WorldtubeBoundaryDataManager,
+          tmpl::list<Tags::H5WorldtubeBoundaryDataManager>,
           typename Metavariables::cce_boundary_communication_tags> {
   using base_type = detail::InitializeWorldtubeBoundaryBase<
       InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>,
-      Tags::H5WorldtubeBoundaryDataManager,
+      tmpl::list<Tags::H5WorldtubeBoundaryDataManager>,
       typename Metavariables::cce_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;
@@ -161,11 +162,12 @@ template <typename Metavariables>
 struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
     : public detail::InitializeWorldtubeBoundaryBase<
           InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>,
-          Tags::GhInterfaceManager,
+          tmpl::list<Tags::GhInterfaceManager,
+                     Tags::SelfStartGhInterfaceManager>,
           typename Metavariables::cce_boundary_communication_tags> {
   using base_type = detail::InitializeWorldtubeBoundaryBase<
       InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>,
-      Tags::GhInterfaceManager,
+      tmpl::list<Tags::GhInterfaceManager, Tags::SelfStartGhInterfaceManager>,
       typename Metavariables::cce_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;
@@ -203,11 +205,11 @@ template <typename Metavariables>
 struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
     : public detail::InitializeWorldtubeBoundaryBase<
           InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
-          Tags::AnalyticBoundaryDataManager,
+          tmpl::list<Tags::AnalyticBoundaryDataManager>,
           typename Metavariables::cce_boundary_communication_tags> {
   using base_type = detail::InitializeWorldtubeBoundaryBase<
       InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
-      Tags::AnalyticBoundaryDataManager,
+      tmpl::list<Tags::AnalyticBoundaryDataManager>,
       typename Metavariables::cce_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;

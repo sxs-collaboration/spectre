@@ -229,8 +229,7 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
-    db::mutate<Tags::GhInterfaceManager>(
-        make_not_null(&box),
+    auto retrieve_data_and_send_to_evolution =
         [&time, &cache](const gsl::not_null<
                         std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
                             interface_manager) noexcept {
@@ -244,7 +243,14 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                     GhWorldtubeBoundary<Metavariables>>(cache),
                 get<0>(*gh_data), get<1>(*gh_data));
           }
-        });
+        };
+    if (SelfStart::is_self_starting(time)) {
+      db::mutate<Tags::SelfStartGhInterfaceManager>(
+          make_not_null(&box), retrieve_data_and_send_to_evolution);
+    } else {
+      db::mutate<Tags::GhInterfaceManager>(make_not_null(&box),
+                                           retrieve_data_and_send_to_evolution);
+    }
   }
 };
 

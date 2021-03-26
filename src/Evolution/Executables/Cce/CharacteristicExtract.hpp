@@ -118,7 +118,12 @@ struct EvolutionMetavars {
       "Perform Cauchy Characteristic Extraction using .h5 input data.\n"
       "Uses regularity-preserving formulation."};
 
-  enum class Phase { Initialization, Evolve, Exit };
+  enum class Phase {
+    Initialization,
+    InitializeTimeStepperHistory,
+    Evolve,
+    Exit
+  };
 
   template <typename... Tags>
   static Phase determine_next_phase(
@@ -128,6 +133,8 @@ struct EvolutionMetavars {
       const Parallel::CProxy_GlobalCache<
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     if (current_phase == Phase::Initialization) {
+      return Phase::InitializeTimeStepperHistory;
+    } else if (current_phase == Phase::InitializeTimeStepperHistory) {
       return Phase::Evolve;
     } else {
       return Phase::Exit;
