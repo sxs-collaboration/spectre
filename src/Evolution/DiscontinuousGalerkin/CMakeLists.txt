@@ -13,6 +13,7 @@ spectre_target_headers(
   MortarTags.hpp
   NormalVectorTags.hpp
   ProjectToBoundary.hpp
+  UsingSubcell.hpp
   )
 
 spectre_target_sources(
