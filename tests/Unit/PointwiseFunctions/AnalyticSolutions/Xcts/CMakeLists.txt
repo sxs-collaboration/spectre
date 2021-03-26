@@ -17,7 +17,7 @@ add_test_library(
   )
 
 target_link_libraries(
-  Test_XctsSolutions
+  ${LIBRARY}
   PRIVATE
   DataStructures
   Utilities

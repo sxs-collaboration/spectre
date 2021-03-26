@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  IO
+  ${LIBRARY}
   PRIVATE
   ArrayComponentId.cpp
   ObservationId.cpp
@@ -10,7 +10,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  IO
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ArrayComponentId.hpp

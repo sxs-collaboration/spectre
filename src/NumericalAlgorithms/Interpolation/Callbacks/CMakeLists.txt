@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_headers(
-  Interpolation
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Callbacks.hpp

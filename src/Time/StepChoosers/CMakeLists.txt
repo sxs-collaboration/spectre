@@ -2,13 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  Time
+  ${LIBRARY}
   PRIVATE
   Constant.cpp
   )
 
 spectre_target_headers(
-  Time
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ByBlock.hpp

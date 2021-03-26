@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  ScalarWave
+  ${LIBRARY}
   PRIVATE
   BoundaryCondition.cpp
   ConstraintPreservingSphericalRadiation.cpp
@@ -12,7 +12,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  ScalarWave
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BoundaryCondition.hpp

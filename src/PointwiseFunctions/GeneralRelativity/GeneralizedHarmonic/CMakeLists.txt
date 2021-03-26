@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  GeneralRelativity
+  ${LIBRARY}
   PRIVATE
   CovariantDerivOfExtrinsicCurvature.cpp
   DerivSpatialMetric.cpp
@@ -24,7 +24,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  GeneralRelativity
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ConstraintGammas.hpp

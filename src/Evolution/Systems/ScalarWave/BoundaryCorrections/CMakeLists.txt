@@ -2,14 +2,14 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  ScalarWave
+  ${LIBRARY}
   PRIVATE
   RegisterDerived.cpp
   UpwindPenalty.cpp
   )
 
 spectre_target_headers(
-  ScalarWave
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BoundaryCorrection.hpp

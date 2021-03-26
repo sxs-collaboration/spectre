@@ -3,7 +3,7 @@
 
 
 spectre_target_sources(
-  Burgers
+  ${LIBRARY}
   PRIVATE
   RegisterDerived.cpp
   Hll.cpp
@@ -11,7 +11,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  Burgers
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BoundaryCorrection.hpp

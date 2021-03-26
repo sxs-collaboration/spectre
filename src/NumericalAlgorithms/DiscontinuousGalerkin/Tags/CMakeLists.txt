@@ -2,13 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  DiscontinuousGalerkin
+  ${LIBRARY}
   PRIVATE
   Formulation.cpp
   )
 
 spectre_target_headers(
-  DiscontinuousGalerkin
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Formulation.hpp
