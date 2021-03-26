@@ -12,3 +12,5 @@ spectre_target_headers(
   Tags.hpp
   Xcts.hpp
   )
+
+add_subdirectory(BoundaryConditions)
