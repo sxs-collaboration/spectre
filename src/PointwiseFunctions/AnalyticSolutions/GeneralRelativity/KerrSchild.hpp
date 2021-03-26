@@ -296,7 +296,6 @@ class KerrSchild : public MarkAsAnalyticSolution {
     return dimensionless_spin_;
   }
 
- private:
   struct internal_tags {
     template <typename DataType>
     using x_minus_center = ::Tags::TempI<0, 3, Frame::Inertial, DataType>;
@@ -545,6 +544,7 @@ class KerrSchild : public MarkAsAnalyticSolution {
     static constexpr double null_vector_0_ = -1.0;
   };
 
+ private:
   double mass_{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, volume_dim> dimensionless_spin_ =
       make_array<volume_dim>(std::numeric_limits<double>::signaling_NaN());
