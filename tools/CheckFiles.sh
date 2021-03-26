@@ -204,7 +204,7 @@ if [ "$1" = --test ] ; then
 fi
 
 # Exclude files that are generated, out of our control, etc.
-if ! find . \
+find . \
      -type f \
      ! -path './.git/*' \
      ! -path './build*' \
@@ -219,8 +219,3 @@ if ! find . \
      ! -name deploy_key.enc \
      -print0 \
         | run_checks "${standard_checks[@]}" "${ci_checks[@]}"
-then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
-    exit 1
-fi
