@@ -41,6 +41,7 @@ add_algorithm_test(Test_AlgorithmLocalSyncAction)
 add_algorithm_test(Test_AlgorithmNestedApply1)
 add_algorithm_test(Test_AlgorithmNestedApply2)
 add_algorithm_test(Test_AlgorithmParallel)
+add_algorithm_test(Test_AlgorithmPhaseControl)
 add_algorithm_test(Test_PhaseChangeMain)
 add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
@@ -178,6 +179,7 @@ add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
   "AlgorithmParallel" "Objects migrating: 14")
 
 add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
+add_algorithm_test_with_input_file("AlgorithmPhaseControl" "Unit/Parallel")
 
 # Tests that do not require their own Chare setup and can work with the
 # unit tests
