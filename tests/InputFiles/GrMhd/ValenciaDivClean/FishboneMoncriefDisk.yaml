@@ -21,6 +21,8 @@ Evolution:
   # InitialSlabSize is only needed for local time stepping
   # InitialSlabSize: 0.01
 
+PhaseChangeAndTriggers:
+
 DomainCreator:
   Brick:
     LowerBound: [10.5, 0.0, 0.0]
