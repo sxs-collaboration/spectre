@@ -125,6 +125,34 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
   CHECK(runner.is_simple_action_queue_empty<elem_component>(0));
+
+  {
+    INFO("Deregistration");
+    intrp::Actions::RegisterElementWithInterpolator::
+        template perform_deregistration<elem_component>(
+            ActionTesting::get_databox<elem_component, tmpl::list<>>(
+                make_not_null(&runner), 0_st),
+            ActionTesting::cache<elem_component>(runner, 0_st), 0_st);
+    ActionTesting::invoke_queued_simple_action<interp_component>(
+        make_not_null(&runner), 0);
+    // No more queued simple actions.
+    CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
+    CHECK(runner.is_simple_action_queue_empty<elem_component>(0));
+
+    CHECK(ActionTesting::get_databox_tag<interp_component,
+          ::intrp::Tags::NumberOfElements>(
+               runner, 0) == 2);
+    runner.simple_action<interp_component, ::intrp::Actions::DeregisterElement>(
+        0);
+    CHECK(ActionTesting::get_databox_tag<interp_component,
+          ::intrp::Tags::NumberOfElements>(
+               runner, 0) == 1);
+    runner.simple_action<interp_component, ::intrp::Actions::DeregisterElement>(
+        0);
+    CHECK(ActionTesting::get_databox_tag<interp_component,
+                                         ::intrp::Tags::NumberOfElements>(
+              runner, 0) == 0);
+  }
 }
 
 }  // namespace
