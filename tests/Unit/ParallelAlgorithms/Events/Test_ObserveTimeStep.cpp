@@ -24,6 +24,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -33,6 +34,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -44,6 +46,10 @@ struct ContributeReductionData;
 }  // namespace observers::Actions
 
 namespace {
+static_assert(
+    tt::assert_conforms_to<Events::detail::FormatTimeOutput,
+                           observers::protocols::ReductionDataFormatter>);
+
 template <typename Metavariables>
 struct MockContributeReductionData {
   using ReductionData =
@@ -55,11 +61,13 @@ struct MockContributeReductionData {
     std::string subfile_name;
     std::vector<std::string> reduction_names;
     ReductionData reduction_data;
+    bool formatter_is_set {};
   };
 
   static std::optional<Results> results;
 
-  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
+            typename Formatter>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -67,16 +75,18 @@ struct MockContributeReductionData {
                     observers::ArrayComponentId /*sender_array_id*/,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
-                    ReductionData&& reduction_data) noexcept {
+                    ReductionData&& reduction_data,
+                    std::optional<Formatter>&& formatter) noexcept {
     if (results) {
       CHECK(results->observation_id == observation_id);
       CHECK(results->subfile_name == subfile_name);
       CHECK(results->reduction_names == reduction_names);
+      CHECK(results->formatter_is_set == formatter.has_value());
       results->reduction_data.combine(std::move(reduction_data));
     } else {
       results.emplace();
       *results = {observation_id, subfile_name, reduction_names,
-                  std::move(reduction_data)};
+                  std::move(reduction_data), formatter.has_value()};
     }
   }
 };
@@ -225,17 +235,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
       Event<tmpl::list<Events::Registrars::ObserveTimeStep<Metavariables>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
 
-  const Events::ObserveTimeStep<Metavariables> observer("time_step_subfile");
-  test_observe(observer, false);
-  test_observe(observer, true);
-  test_observe(serialize_and_deserialize(observer), false);
-  test_observe(serialize_and_deserialize(observer), true);
+  for (const bool print_to_terminal : {true, false}) {
+    const Events::ObserveTimeStep<Metavariables> observer("time_step_subfile",
+                                                          print_to_terminal);
+    test_observe(observer, false);
+    test_observe(observer, true);
+    test_observe(serialize_and_deserialize(observer), false);
+    test_observe(serialize_and_deserialize(observer), true);
 
-  const auto event = TestHelpers::test_factory_creation<EventType>(
-      "ObserveTimeStep:\n"
-      "  SubfileName: time_step_subfile");
-  test_observe(*event, false);
-  test_observe(*event, true);
-  test_observe(*serialize_and_deserialize(event), false);
-  test_observe(*serialize_and_deserialize(event), true);
+    const auto event = TestHelpers::test_factory_creation<EventType>(
+        "ObserveTimeStep:\n"
+        "  SubfileName: time_step_subfile\n"
+        "  PrintTimeToTerminal: " +
+        std::string(print_to_terminal ? "true" : "false"));
+    test_observe(*event, false);
+    test_observe(*event, true);
+    test_observe(*serialize_and_deserialize(event), false);
+    test_observe(*serialize_and_deserialize(event), true);
+  }
 }

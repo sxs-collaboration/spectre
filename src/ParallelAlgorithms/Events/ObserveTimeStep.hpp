@@ -16,7 +16,8 @@
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
+#include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
+#include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ArrayIndex.hpp"
@@ -28,6 +29,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -49,6 +51,34 @@ template <typename Metavariables>
 using ObserveTimeStep =
     ::Registration::Registrar<Events::ObserveTimeStep, Metavariables>;
 }  // namespace Registrars
+
+namespace detail {
+using ObserveTimeStepReductionData = Parallel::ReductionData<
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+    Parallel::ReductionDatum<size_t, funcl::Plus<>>,
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+    Parallel::ReductionDatum<double, funcl::Min<>>,
+    Parallel::ReductionDatum<double, funcl::Max<>>,
+    Parallel::ReductionDatum<
+        double, funcl::Plus<>,
+        funcl::Divides<funcl::Literal<1, double>, funcl::Divides<>>,
+        std::index_sequence<1>>>;
+
+struct FormatTimeOutput
+    : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
+  using reduction_data = ObserveTimeStepReductionData;
+  std::string operator()(const double time, const size_t /* num_points */,
+                         const double /* slab_size */,
+                         const double /* min_time_step */,
+                         const double /* max_time_step */,
+                         const double /* effective_time_step */) const
+      noexcept {
+    return "Current time: " + std::to_string(time);
+  }
+  // NOLINTNEXTLINE
+  void pup(PUP::er& /*p*/) noexcept {}
+};
+}  // namespace detail
 
 /*!
  * \brief %Observe the size of the time steps.
@@ -81,16 +111,7 @@ template <typename Metavariables,
               tmpl::list<Registrars::ObserveTimeStep<Metavariables>>>
 class ObserveTimeStep : public Event<EventRegistrars> {
  private:
-  using ReductionData = Parallel::ReductionData<
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<double, funcl::Min<>>,
-      Parallel::ReductionDatum<double, funcl::Max<>>,
-      Parallel::ReductionDatum<
-          double, funcl::Plus<>,
-          funcl::Divides<funcl::Literal<1, double>, funcl::Divides<>>,
-          std::index_sequence<1>>>;
+  using ReductionData = Events::detail::ObserveTimeStepReductionData;
 
  public:
   /// The name of the subfile inside the HDF5 file
@@ -101,13 +122,19 @@ class ObserveTimeStep : public Event<EventRegistrars> {
         "without a preceding '/'."};
   };
 
+  struct PrintTimeToTerminal {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether to print the time to screen."};
+  };
+
   /// \cond
   explicit ObserveTimeStep(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond
 
-  using options = tmpl::list<SubfileName>;
+  using options = tmpl::list<SubfileName, PrintTimeToTerminal>;
   static constexpr Options::String help =
       "Observe the size of the time steps.\n"
       "\n"
@@ -126,7 +153,8 @@ class ObserveTimeStep : public Event<EventRegistrars> {
       "evolutions.";
 
   ObserveTimeStep() = default;
-  explicit ObserveTimeStep(const std::string& subfile_name) noexcept;
+  explicit ObserveTimeStep(const std::string& subfile_name,
+                           const bool output_time) noexcept;
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -152,6 +180,9 @@ class ObserveTimeStep : public Event<EventRegistrars> {
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
              .ckLocalBranch();
+    auto formatter =
+        output_time_ ? std::make_optional(Events::detail::FormatTimeOutput{})
+                     : std::nullopt;
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer, observers::ObservationId(time, subfile_path_ + ".dat"),
         observers::ArrayComponentId{
@@ -162,7 +193,8 @@ class ObserveTimeStep : public Event<EventRegistrars> {
                                  "Minimum time step", "Maximum time step",
                                  "Effective time step"},
         ReductionData{time, number_of_grid_points, slab_size, step_size,
-                      step_size, number_of_grid_points / step_size});
+                      step_size, number_of_grid_points / step_size},
+        std::move(formatter));
   }
 
   using observation_registration_tags = tmpl::list<>;
@@ -176,16 +208,18 @@ class ObserveTimeStep : public Event<EventRegistrars> {
   void pup(PUP::er& p) override {
     Event<EventRegistrars>::pup(p);
     p | subfile_path_;
+    p | output_time_;
   }
 
  private:
   std::string subfile_path_;
+  bool output_time_;
 };
 
 template <typename Metavariables, typename EventRegistrars>
 ObserveTimeStep<Metavariables, EventRegistrars>::ObserveTimeStep(
-    const std::string& subfile_name) noexcept
-    : subfile_path_("/" + subfile_name) {}
+    const std::string& subfile_name, const bool output_time) noexcept
+    : subfile_path_("/" + subfile_name), output_time_(output_time) {}
 
 /// \cond
 template <typename Metavariables, typename EventRegistrars>
