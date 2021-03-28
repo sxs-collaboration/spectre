@@ -452,7 +452,8 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     using option_list = decltype(option_list_v);
     using top_level_options_and_groups =
         tmpl::remove_duplicates<tmpl::transform<
-            option_list, Options_detail::find_subgroup<tmpl::_1, Group>>>;
+            option_list,
+            Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
     // Use an ordered container so the missing options are reported in
     // the order they are given in the help string.
     std::vector<std::string> result;

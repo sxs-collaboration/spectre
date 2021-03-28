@@ -214,6 +214,17 @@ struct OuterGroupedTag {
   using group = OuterGroup;
 };
 
+template <typename>
+struct TemplatedGroup {
+  static constexpr Options::String help = {"halp"};
+};
+
+struct TagWithTemplatedGroup {
+  using type = int;
+  static constexpr Options::String help = {"halp"};
+  using group = TemplatedGroup<int>;
+};
+
 void test_options_grouped() {
   {
     INFO("Option groups");
@@ -238,6 +249,14 @@ void test_options_grouped() {
     CHECK(opts.get<InnerGroupedTag>() == 3);
     CHECK(opts.get<OuterGroupedTag>() == 1);
     CHECK(opts.get<Simple>() == 2);
+  }
+  {
+    INFO("Templated option groups");
+    Options::Parser<tmpl::list<TagWithTemplatedGroup>> opts("");
+    opts.parse(
+        "TemplatedGroup:\n"
+        "  TagWithTemplatedGroup: 3");
+    CHECK(opts.get<TagWithTemplatedGroup>() == 3);
   }
 }
 }  // namespace
