@@ -10,8 +10,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// [expand_pack_example]
 namespace {
+/// [expand_pack_example]
 template <typename... Elements, size_t... Is>
 void transform(const std::tuple<Elements...>& tupull,
                std::tuple<Elements...>& out_tupull,
@@ -22,9 +22,8 @@ void transform(const std::tuple<Elements...>& tupull,
   };
   expand_pack(func(std::get<Is>(tupull), std::get<Is>(out_tupull))...);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.expand_pack", "[Utilities][Unit]") {
+void test_expand_pack() noexcept {
   std::tuple<int, double, float> my_tupull = std::make_tuple(3, 2.7, 8.2);
   std::tuple<int, double, float> my_tupull_output;
   transform(my_tupull, my_tupull_output, std::make_index_sequence<3>{});
@@ -34,10 +33,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.expand_pack", "[Utilities][Unit]") {
 }
 /// [expand_pack_example]
 
-namespace {
 template <typename>
 struct Templated {};
-}  // namespace
 
 static_assert(tmpl::list_contains_v<tmpl::list<Templated<int>,
                                                Templated<double>>,
@@ -69,7 +66,7 @@ static_assert(
         tmpl::list<>>,
     "Failed testing list_difference");
 
-SPECTRE_TEST_CASE("Unit.Utilities.get_first_argument", "[Unit][Utilities]") {
+void test_get_first_argument() noexcept {
   const long a0 = 5;
   const long a1 = 6;
   const int a2 = -5;
@@ -80,7 +77,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.get_first_argument", "[Unit][Utilities]") {
   CHECK('7' == get_first_argument(a3, a1, a2, a0));
 }
 
-namespace {
 /// [expand_pack_left_to_right]
 template <typename... Ts>
 void test_expand_pack_left_to_right(const size_t expected,
@@ -93,8 +89,9 @@ void test_expand_pack_left_to_right(const size_t expected,
 /// [expand_pack_left_to_right]
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.EXPAND_PACK_LEFT_TO_RIGHT",
-                  "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
+  test_expand_pack();
+  test_get_first_argument();
   test_expand_pack_left_to_right(
       10, tmpl::list<std::integral_constant<size_t, 2>,
                      std::integral_constant<size_t, 4>,
