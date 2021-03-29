@@ -12,25 +12,26 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryConditions/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "Evolution/Systems/ScalarWave/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderSchemeLts.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
@@ -46,11 +47,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"      // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
@@ -114,21 +111,8 @@ struct EvolutionMetavars {
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
-  using boundary_condition_tag = initial_data_tag;
-  using normal_dot_numerical_flux =
-      Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<Dim>>;
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-  using boundary_scheme = tmpl::conditional_t<
-      local_time_stepping,
-      dg::FirstOrderScheme::FirstOrderSchemeLts<
-          Dim, typename system::variables_tag,
-          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-          normal_dot_numerical_flux, Tags::TimeStepId, time_stepper_tag>,
-      dg::FirstOrderScheme::FirstOrderScheme<
-          Dim, typename system::variables_tag,
-          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-          normal_dot_numerical_flux, Tags::TimeStepId>>;
 
   using step_choosers_common = tmpl::list<
       StepChoosers::Registrars::ByBlock<volume_dim>,
@@ -171,14 +155,7 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          domain::Tags::BoundaryDirectionsInterior<Dim>>,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme,
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      Actions::MutateApply<boundary_scheme>,
+      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
@@ -218,41 +195,28 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags = tmpl::list<
-      initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
+      initial_data_tag, time_stepper_tag,
       Tags::EventsAndTriggers<events, triggers>,
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
-  using initialization_actions = tmpl::list<
-      Actions::SetupDataBox,
-      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
-      evolution::dg::Initialization::Domain<volume_dim>,
-      Initialization::Actions::NonconservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<Dim, Frame::Logical>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
-      ScalarWave::Actions::InitializeConstraints<volume_dim>,
-      dg::Actions::InitializeInterfaces<
-          system,
-          dg::Initialization::slice_tags_to_face<
-              typename system::variables_tag,
-              ScalarWave::Tags::ConstraintGamma2>,
-          dg::Initialization::slice_tags_to_exterior<
-              ScalarWave::Tags::ConstraintGamma2>,
-          dg::Initialization::face_compute_tags<
-              ScalarWave::Tags::CharacteristicFieldsCompute<volume_dim>>,
-          dg::Initialization::exterior_compute_tags<
-              ScalarWave::Tags::CharacteristicFieldsCompute<volume_dim>>,
-          true, true>,
-      Initialization::Actions::AddComputeTags<tmpl::push_back<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
-          evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
-                                           analytic_solution_fields>>>,
-      dg::Actions::InitializeMortars<boundary_scheme>,
-      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_actions =
+      tmpl::list<Actions::SetupDataBox,
+                 Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
+                 evolution::dg::Initialization::Domain<volume_dim>,
+                 Initialization::Actions::NonconservativeSystem<system>,
+                 evolution::Initialization::Actions::SetVariables<
+                     domain::Tags::Coordinates<Dim, Frame::Logical>>,
+                 Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
+                 ScalarWave::Actions::InitializeConstraints<volume_dim>,
+                 Initialization::Actions::AddComputeTags<tmpl::push_back<
+                     StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
+                     evolution::Tags::AnalyticCompute<
+                         Dim, initial_data_tag, analytic_solution_fields>>>,
+                 ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using dg_element_array = DgElementArray<
       EvolutionMetavars,
@@ -332,6 +296,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
+    &ScalarWave::BoundaryConditions::register_derived_with_charm,
+    &ScalarWave::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<
@@ -340,6 +306,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         StepChooser<metavariables::slab_choosers>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
+    &ScalarWave::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,

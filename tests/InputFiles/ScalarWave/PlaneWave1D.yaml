@@ -36,11 +36,15 @@ DomainCreator:
     LowerBound: [0.0]
     Midpoint: [3.14159]
     UpperBound: [6.283185307179586]
-    IsPeriodicIn: [true]
     InitialRefinement: [1]
     InitialGridPoints: [[7, 3]]
+    BoundaryConditions:
+      LowerBoundary: DirichletAnalytic
+      UpperBoundary: DirichletAnalytic
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -50,9 +54,6 @@ SpatialDiscretization:
 #   ExpFilter0:
 #     Alpha: 12
 #     HalfPower: 32
-
-NumericalFlux:
-  UpwindPenalty:
 
 EventsAndTriggers:
   ? Slabs:

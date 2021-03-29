@@ -39,7 +39,6 @@ DomainCreator:
   Interval:
     LowerBound: [0.0]
     UpperBound: [6.283185307179586]
-    IsPeriodicIn: [true]
     InitialRefinement: [2]
     InitialGridPoints: [7]
     TimeDependence:
@@ -48,8 +47,13 @@ DomainCreator:
         InitialExpirationDeltaT: Auto
         Velocity: [0.5]
         FunctionOfTimeNames: ["Translation"]
+    BoundaryConditions:
+      LowerBoundary: Periodic
+      UpperBoundary: Periodic
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -58,9 +62,6 @@ SpatialDiscretization:
 # ExpFilter0:
 #   Alpha: 12
 #   HalfPower: 32
-
-NumericalFlux:
-  UpwindPenalty:
 
 # [observe_event_trigger]
 EventsAndTriggers:
