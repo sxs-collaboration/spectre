@@ -48,10 +48,10 @@ void test_cylindrical_endcap_sphere_two_small() {
   CAPTURE(radius_one);
 
   // Make sure z_plane intersects sphere_one on the +z side of the
-  // center. We don't allow the plane to be displaced by less than 20%
+  // center. We don't allow the plane to be displaced by less than 15%
   // or more than 95% of the radius.
   const double z_plane =
-      center_one[2] + (0.2 + 0.75 * unit_dis(gen)) * radius_one;
+      center_one[2] + (0.15 + 0.8 * unit_dis(gen)) * radius_one;
   CAPTURE(z_plane);
 
   // Choose radius_two.
@@ -142,10 +142,10 @@ void test_cylindrical_endcap_sphere_two_large() {
   CAPTURE(radius_one);
 
   // Make sure z_plane intersects sphere_one on the +z side of the
-  // center. We don't allow the plane to be displaced by less than 20%
+  // center. We don't allow the plane to be displaced by less than 15%
   // or more than 95% of the radius.
   const double z_plane =
-      center_one[2] + (0.2 + 0.75 * unit_dis(gen)) * radius_one;
+      center_one[2] + (0.15 + 0.8 * unit_dis(gen)) * radius_one;
   CAPTURE(z_plane);
 
   // Consider a cone formed by taking the intersection of z_plane and

@@ -134,7 +134,7 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
                 "jacobians are likely to be large and the map has not been "
                 "tested for these parameters.");
   ASSERT(
-      abs(cos_theta) >= 0.2,
+      abs(cos_theta) >= 0.15,
       "z_plane is too close to the center of sphere_one. "
           << "cos_theta = " << cos_theta
           << ". The map is not singular, but the jacobians are likely to be "

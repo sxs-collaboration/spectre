@@ -116,8 +116,8 @@ namespace domain::CoordinateMaps {
  *   invertibility cone); The 0.85 was chosen empirically based on
  *   unit tests.
  * - \f$z_\mathrm{P}\f$ is not too close to the center or the edge of sphere 1.
- *   Here we demand that \f$0.2 \leq \cos(\theta) \leq 0.95\f$, where
- *   the values 0.2 and 0.95 were chosen empirically based on unit tests.
+ *   Here we demand that \f$0.15 \leq \cos(\theta) \leq 0.95\f$, where
+ *   the values 0.15 and 0.95 were chosen empirically based on unit tests.
  * - \f$P\f$ is contained in sphere 2.
  * - If sphere 2 is contained in sphere 1, then
  *   - \f$0.1 R_1 \leq R_2 \leq 0.85 (R_1 - |C_1-C_2|)\f$,
