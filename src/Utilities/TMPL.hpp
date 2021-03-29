@@ -585,4 +585,31 @@ constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
 template <typename Sequence1, typename Sequence2>
 using list_difference =
     fold<Sequence2, Sequence1, lazy::remove<_state, _element>>;
+
+namespace detail {
+template <typename List>
+struct as_pack_impl;
+
+template <template <typename...> typename L, typename... Args>
+struct as_pack_impl<L<Args...>> {
+  template <typename F>
+  static constexpr decltype(auto) apply(F&& f) {
+    return std::forward<F>(f)(type_<Args>{}...);
+  }
+};
+}  // namespace detail
+
+/// Call a functor with the types from a list.
+///
+/// Given a typelist `List = tmpl::list<A, B, ...>` (not necessarily
+/// with head `tmpl::list`), calls \p f as `f(tmpl::type_<A>{},
+/// tmpl::type_<B>{}, ...)` and returns the result.
+///
+/// This is useful for converting a typelist into a parameter pack.
+///
+/// \snippet Utilities/Test_TMPL.cpp as_pack
+template <typename List, typename F>
+constexpr decltype(auto) as_pack(F&& f) {
+  return detail::as_pack_impl<List>::apply(std::forward<F>(f));
+}
 }  // namespace brigand

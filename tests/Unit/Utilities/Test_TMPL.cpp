@@ -87,6 +87,21 @@ void test_expand_pack_left_to_right(const size_t expected,
   CHECK(sum == expected);
 }
 /// [expand_pack_left_to_right]
+
+static_assert(tmpl::as_pack<tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>,
+                                       tmpl::size_t<3>>>([](auto... args) {
+                return (... + tmpl::type_from<decltype(args)>::value);
+              }) == 6);
+
+void test_as_pack() noexcept {
+  /// [as_pack]
+  using List = tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>, tmpl::size_t<3>>;
+  const size_t result = tmpl::as_pack<List>([](auto... args) {
+    return (... + tmpl::type_from<decltype(args)>::value);
+  });
+  CHECK(result == 6);
+  /// [as_pack]
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
@@ -97,4 +112,5 @@ SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
                      std::integral_constant<size_t, 4>,
                      std::integral_constant<size_t, 1>,
                      std::integral_constant<size_t, 3>>{});
+  test_as_pack();
 }
