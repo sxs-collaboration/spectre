@@ -58,8 +58,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.mortar_to_element",
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
-          const auto& projection = projection_matrix_mortar_to_element(
-              Spectral::MortarSize::Full, mesh_dest, mesh_source);
+          const auto& projection = projection_matrix_child_to_parent(
+              mesh_source, mesh_dest, Spectral::MortarSize::Full);
           for (size_t test_order = 0;
                test_order < num_points_source;
                ++test_order) {
@@ -112,8 +112,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.element_to_mortar",
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
-          const auto& projection = projection_matrix_element_to_mortar(
-              Spectral::MortarSize::Full, mesh_dest, mesh_source);
+          const auto& projection = projection_matrix_parent_to_child(
+              mesh_source, mesh_dest, Spectral::MortarSize::Full);
           for (size_t test_order = 0;
                test_order < num_points_source;
                ++test_order) {
@@ -155,8 +155,8 @@ void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
   // _element indicates the coordinate system on the large interval.
   // _mortar indicates the coordinate system on one of the small intervals.
 
-  const auto& projection = projection_matrix_mortar_to_element(
-      mortar_size, mesh_element, mesh_self_mortar);
+  const auto& projection = projection_matrix_child_to_parent(
+      mesh_self_mortar, mesh_element, mortar_size);
 
   const size_t num_points_self_mortar = mesh_self_mortar.extents(0);
   const size_t num_points_element = mesh_element.extents(0);
@@ -290,16 +290,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.element_to_mortar",
             // The function is contained in the destination space, so
             // projection should not alter it.
             {
-              const auto& projection = projection_matrix_element_to_mortar(
-                  Spectral::MortarSize::UpperHalf, mesh_dest, mesh_source);
+              const auto& projection = projection_matrix_parent_to_child(
+                  mesh_source, mesh_dest, Spectral::MortarSize::UpperHalf);
               const DataVector projected_data =
                   apply_matrix(projection, source_data);
               CHECK_ITERABLE_APPROX(
                   projected_data, pow(to_upper_half(points_dest), test_order));
             }
             {
-              const auto& projection = projection_matrix_element_to_mortar(
-                  Spectral::MortarSize::LowerHalf, mesh_dest, mesh_source);
+              const auto& projection = projection_matrix_parent_to_child(
+                  mesh_source, mesh_dest, Spectral::MortarSize::LowerHalf);
               const DataVector projected_data =
                   apply_matrix(projection, source_data);
               CHECK_ITERABLE_APPROX(

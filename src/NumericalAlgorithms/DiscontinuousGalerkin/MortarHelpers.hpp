@@ -97,8 +97,8 @@ Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
     const auto& slice_size = gsl::at(mortar_size, i);
     if (slice_size != Spectral::MortarSize::Full or
         face_slice_mesh != mortar_slice_mesh) {
-      gsl::at(projection_matrices, i) = projection_matrix_element_to_mortar(
-          slice_size, mortar_slice_mesh, face_slice_mesh);
+      gsl::at(projection_matrices, i) = projection_matrix_parent_to_child(
+          face_slice_mesh, mortar_slice_mesh, slice_size);
     }
   }
   return apply_matrices(projection_matrices, vars, face_mesh.extents());
@@ -129,8 +129,8 @@ Variables<Tags> project_from_mortar(
     const auto& slice_size = gsl::at(mortar_size, i);
     if (slice_size != Spectral::MortarSize::Full or
         face_slice_mesh != mortar_slice_mesh) {
-      gsl::at(projection_matrices, i) = projection_matrix_mortar_to_element(
-          slice_size, face_slice_mesh, mortar_slice_mesh);
+      gsl::at(projection_matrices, i) = projection_matrix_child_to_parent(
+          mortar_slice_mesh, face_slice_mesh, slice_size);
     }
   }
   return apply_matrices(projection_matrices, vars, mortar_mesh.extents());
