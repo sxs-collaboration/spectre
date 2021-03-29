@@ -34,6 +34,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
@@ -220,6 +221,8 @@ class Parser {
   std::string help() const noexcept;
 
  private:
+  template <typename, typename>
+  friend class Parser;
   template <typename, typename, typename>
   friend struct Options_detail::get_impl;
 
@@ -248,6 +251,9 @@ class Parser {
   /// groups in this list.
   using tags_and_subgroups_list = tmpl::remove_duplicates<tmpl::transform<
       OptionList, Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
+
+  /// All top-level subgroups
+  using subgroups = tmpl::list_difference<tags_and_subgroups_list, OptionList>;
 
   // The maximum length of an option label.
   static constexpr int max_label_size_ = 70;
@@ -306,6 +312,20 @@ class Parser {
   Context context_{};
   std::string input_source_{};
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
+
+  template <typename Subgroup>
+  struct SubgroupParser {
+    using type = Parser<Options_detail::options_in_group<OptionList, Subgroup>,
+                        Subgroup>;
+  };
+
+  tuples::tagged_tuple_from_typelist<
+      tmpl::transform<subgroups, tmpl::bind<SubgroupParser, tmpl::_1>>>
+      subgroup_parsers_ =
+          tmpl::as_pack<subgroups>([](auto... subgroup_tags) noexcept {
+            return decltype(subgroup_parsers_)(
+                tmpl::type_from<decltype(subgroup_tags)>::help...);
+          });
 
   // The choices made for option alternatives in a depth-first order.
   // Starting from the front of the option list, when reaching the
@@ -510,6 +530,15 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
                 << (MakeString{} << valid_names) << "\n" << parsing_help(node));
   }
 
+  tmpl::for_each<subgroups>([this](auto subgroup_v) {
+    using subgroup = tmpl::type_from<decltype(subgroup_v)>;
+    auto& subgroup_parser =
+        tuples::get<SubgroupParser<subgroup>>(subgroup_parsers_);
+    subgroup_parser.context_ = context_;
+    subgroup_parser.context_.append("In group " + name<subgroup>());
+    subgroup_parser.parse(parsed_options_.find(name<subgroup>())->second);
+  });
+
   // Any actual warnings will be printed by later calls to get or
   // apply, but it is not clear how to determine in those functions
   // whether this message should be printed.
@@ -528,13 +557,10 @@ struct get_impl {
         tmpl::list_contains_v<OptionList, Tag>,
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
-    const std::string subgroup_label = name<Subgroup>();
-    Parser<options_in_group<OptionList, Subgroup>, Subgroup> subgroup_options(
-        Subgroup::help);
-    subgroup_options.context_ = opts.context_;
-    subgroup_options.context_.append("In group " + subgroup_label);
-    subgroup_options.parse(opts.parsed_options_.find(subgroup_label)->second);
-    return subgroup_options.template get<Tag, Metavariables>();
+    return tuples::get<typename Parser<
+        OptionList, Group>::template SubgroupParser<Subgroup>>(
+               opts.subgroup_parsers_)
+        .template get<Tag, Metavariables>();
   }
 };
 
