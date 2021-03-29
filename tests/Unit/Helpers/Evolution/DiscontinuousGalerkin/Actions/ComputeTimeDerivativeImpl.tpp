@@ -1844,6 +1844,10 @@ void test_impl(const Spectral::Quadrature quadrature,
                       Dim, typename dt_variables_tag::type>{})
               .at(mortar_id_east)
               .local_data(time_step_id);
+      CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
+                        Dim, typename dt_variables_tag::type>{})
+                .at(mortar_id_east)
+                .integration_order() == 1);
       check_mortar_data(east_mortar_data, mortar_id_east);
     } else {
       CHECK_ITERABLE_APPROX(
@@ -1904,6 +1908,10 @@ void test_impl(const Spectral::Quadrature quadrature,
                         Dim, typename dt_variables_tag::type>{})
                 .at(mortar_id_south)
                 .local_data(time_step_id);
+        CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
+                        Dim, typename dt_variables_tag::type>{})
+                .at(mortar_id_south)
+                .integration_order() == 1);
         check_mortar_data(south_mortar_data, mortar_id_south);
       } else {
         CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
@@ -1927,6 +1935,15 @@ void test_impl(const Spectral::Quadrature quadrature,
                       element.id()})),
           compute_expected_mortar_data(mortar_id_south.first,
                                        mortar_id_south.second, false));
+    }
+  }
+  if constexpr (LocalTimeStepping) {
+    for (const auto& mortar_data :
+         get_tag(::evolution::dg::Tags::MortarData<Dim>{})) {
+      // When doing local time stepping the MortarData should've been moved into
+      // the MortarDataHistory.
+      CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
+      CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
     }
   }
 }

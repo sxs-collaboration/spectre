@@ -122,7 +122,7 @@ struct Mortars {
               db::get<::domain::Tags::InitialExtents<Dim>>(box),
               db::get<evolution::dg::Tags::Quadrature>(box),
               db::get<::domain::Tags::Element<Dim>>(box),
-              db::get<::Tags::TimeStepId>(box),
+              db::get<::Tags::Next<::Tags::TimeStepId>>(box),
               db::get<::domain::Tags::Mesh<Dim>>(box));
       typename Tags::MortarDataHistory<
           Dim, typename db::add_tag_prefix<

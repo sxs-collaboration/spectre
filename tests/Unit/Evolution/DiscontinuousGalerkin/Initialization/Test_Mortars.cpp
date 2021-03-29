@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -47,7 +48,7 @@ struct component {
       domain::Tags::BoundaryDirectionsInterior<Metavariables::volume_dim>;
 
   using simple_tags =
-      tmpl::list<::Tags::TimeStepId,
+      tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
                  domain::Tags::Element<Metavariables::volume_dim>,
                  domain::Tags::Mesh<Metavariables::volume_dim>,
                  evolution::dg::Tags::Quadrature>;
@@ -97,7 +98,7 @@ template <bool LocalTimeStepping, size_t Dim>
 void test_impl(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Element<Dim>& element, const TimeStepId& time_step_id,
-    const Spectral::Quadrature quadrature,
+    const TimeStepId& next_time_step_id, const Spectral::Quadrature quadrature,
     const MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
     const MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         expected_mortar_sizes,
@@ -110,7 +111,7 @@ void test_impl(
   MockRuntimeSystem runner{initial_extents};
   ActionTesting::emplace_component_and_initialize<component<metavars>>(
       &runner, element.id(),
-      {time_step_id, element,
+      {time_step_id, next_time_step_id, element,
        domain::Initialization::create_initial_mesh(
            initial_extents, element.id(), quadrature, {}),
        quadrature});
@@ -154,7 +155,7 @@ void test_impl(
   for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
     const auto& mortar_id = mortar_id_and_mesh.first;
     if (mortar_id.second != ElementId<Dim>::external_boundary_id()) {
-      CHECK(mortar_next_temporal_ids.at(mortar_id) == time_step_id);
+      CHECK(mortar_next_temporal_ids.at(mortar_id) == next_time_step_id);
     }
   }
 
@@ -185,6 +186,7 @@ struct Test<1, LocalTimeStepping> {
     neighbors[Direction<1>::upper_xi()] = Neighbors<1>{{east_id}, {}};
     const Element<1> element{element_id, neighbors};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
+    const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
     // We are working with 2 mortars here: a domain boundary at lower xi
     // and an interface at upper xi.
@@ -203,8 +205,8 @@ struct Test<1, LocalTimeStepping> {
                                             {Direction<1>::upper_xi(), {}}};
 
     test_impl<LocalTimeStepping>(initial_extents, element, time_step_id,
-                                 quadrature, expected_mortar_meshes,
-                                 expected_mortar_sizes,
+                                 next_time_step_id, quadrature,
+                                 expected_mortar_meshes, expected_mortar_sizes,
                                  expected_normal_covector_quantities);
   }
 };
@@ -234,6 +236,7 @@ struct Test<2, LocalTimeStepping> {
 
     const Element<2> element{element_id, neighbors};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
+    const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
     // We are working with 4 mortars here: the domain boundary west and north,
     // and interfaces south and east.
@@ -263,8 +266,8 @@ struct Test<2, LocalTimeStepping> {
                                             {Direction<2>::upper_eta(), {}}};
 
     test_impl<LocalTimeStepping>(initial_extents, element, time_step_id,
-                                 quadrature, expected_mortar_meshes,
-                                 expected_mortar_sizes,
+                                 next_time_step_id, quadrature,
+                                 expected_mortar_meshes, expected_mortar_sizes,
                                  expected_normal_covector_quantities);
   }
 };
@@ -297,6 +300,7 @@ struct Test<3, LocalTimeStepping> {
 
     const Element<3> element{element_id, neighbors};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
+    const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
     const auto interface_mortar_id_right =
         std::make_pair(Direction<3>::upper_xi(), right_id);
@@ -328,8 +332,8 @@ struct Test<3, LocalTimeStepping> {
             {Direction<3>::lower_zeta(), {}}, {Direction<3>::upper_zeta(), {}}};
 
     test_impl<LocalTimeStepping>(initial_extents, element, time_step_id,
-                                 quadrature, expected_mortar_meshes,
-                                 expected_mortar_sizes,
+                                 next_time_step_id, quadrature,
+                                 expected_mortar_meshes, expected_mortar_sizes,
                                  expected_normal_covector_quantities);
   }
 };
