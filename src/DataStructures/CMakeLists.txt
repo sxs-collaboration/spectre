@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ApplyMatrices.cpp
+  DynamicBuffer.cpp
   Index.cpp
   IndexIterator.cpp
   LeviCivitaIterator.cpp
@@ -30,6 +31,7 @@ spectre_target_headers(
   DenseMatrix.hpp
   DenseVector.hpp
   DiagonalModalOperator.hpp
+  DynamicBuffer.hpp
   FixedHashMap.hpp
   GeneralIndexIterator.hpp
   IdPair.hpp

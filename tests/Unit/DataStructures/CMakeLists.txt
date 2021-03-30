@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_DenseMatrixAsserts.cpp
   Test_DenseVector.cpp
   Test_DiagonalModalOperator.cpp
+  Test_DynamicBuffer.cpp
   Test_FixedHashMap.cpp
   Test_GeneralIndexIterator.cpp
   Test_IdPair.cpp
