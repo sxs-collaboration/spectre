@@ -38,3 +38,5 @@ target_link_libraries(
   INTERFACE RootFinding
   INTERFACE Utilities
   )
+
+add_subdirectory(BoundaryCorrections)
