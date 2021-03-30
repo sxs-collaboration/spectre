@@ -76,8 +76,9 @@ for node in $(echo $SLURM_NODELIST | scontrol show hostnames); do
   echo "host ${node}" >> nodelist.$SLURM_JOBID
 done
 
-# The 19 is there because Charm++ uses one thread per node for communication
-# Here, -np should take the number of nodes (must be the same as --nodes
+# The (SLURM_NTASKS_PER_NODE - 1) is there because Charm++ uses one thread per
+# node for communication
+# Here, ++np should take the number of nodes (must be the same as --nodes
 # in the #SBATCH options above).
 WORKER_THREADS_PER_NODE=$((SLURM_NTASKS_PER_NODE - 1))
 WORKER_THREADS=$((SLURM_NPROCS - SLURM_NNODES))
@@ -85,4 +86,18 @@ SPECTRE_COMMAND="${SPECTRE_EXECUTABLE} ++np ${SLURM_NNODES} \
 ++p ${WORKER_THREADS} ++ppn ${WORKER_THREADS_PER_NODE} \
 ++nodelist nodelist.${SLURM_JOBID}"
 
-charmrun ${SPECTRE_COMMAND} --input-file ${SPECTRE_INPUT_FILE}
+
+# When invoking through `charmrun`, charm will initiate remote sessions which
+# will wipe out environment settings unless it is forced to re-initialize the
+# spectre environment between the start of the remote session and starting the
+# spectre executable
+echo "#!/bin/sh
+source ${SPECTRE_BUILD_DIR}/../support/Environments/ocean_clang.sh
+spectre_load_modules
+\$@
+" > ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID}
+
+chmod u+x ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID}
+
+charmrun ++runscript ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID} \
+         ${SPECTRE_COMMAND} --input-file ${SPECTRE_INPUT_FILE}
