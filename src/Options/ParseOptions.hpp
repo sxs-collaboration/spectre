@@ -353,6 +353,23 @@ Parser<OptionList, Group>::Parser(std::string help_text) noexcept
 }
 
 template <typename OptionList, typename Group>
+void Parser<OptionList, Group>::parse(std::string options) noexcept {
+  context_.append("In string");
+  input_source_ = std::move(options);
+  try {
+    parse(YAML::Load(input_source_));
+  } catch (const YAML::Exception& e) {
+    parser_error(e);
+  }
+}
+
+template <typename OptionList, typename Group>
+void Parser<OptionList, Group>::parse(const Option& options) {
+  context_ = options.context();
+  parse(options.node());
+}
+
+template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse_file(
     const std::string& file_name) noexcept {
   context_.append("In " + file_name);
@@ -369,23 +386,6 @@ void Parser<OptionList, Group>::parse_file(
   } catch (const YAML::Exception& e) {
     parser_error(e);
   }
-}
-
-template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse(std::string options) noexcept {
-  context_.append("In string");
-  input_source_ = std::move(options);
-  try {
-    parse(YAML::Load(input_source_));
-  } catch (const YAML::Exception& e) {
-    parser_error(e);
-  }
-}
-
-template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse(const Option& options) {
-  context_ = options.context();
-  parse(options.node());
 }
 
 namespace Options_detail {
