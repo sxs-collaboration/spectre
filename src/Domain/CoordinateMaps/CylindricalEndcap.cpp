@@ -152,16 +152,6 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
              << radius_one << ", radius_two = " << radius_two
              << ", dist_spheres = " << dist_spheres);
 
-  // Check if we are too close to singular.  We do this check
-  // separately from the earlier similar check because this check may
-  // be changed in the future based on further testing and further
-  // logic that may be added (for example we may want to change the
-  // 0.85 to some other number), but the previous check (without the
-  // 0.85) is a hard limit that should always be obeyed.
-  ASSERT(acos(abs(cos_alpha)) < abs(0.85 * asin(cos_theta)),
-         "Parameters are close to where the map becomes "
-         "non-invertible.  The map has not been tested for this case.");
-
   const double proj_radius_two_squared =
       square(center_two[0] - proj_center[0]) +
       square(center_two[1] - proj_center[1]) +
@@ -174,6 +164,24 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
 
   if (dist_spheres + radius_two < radius_one) {
     // sphere_two is contained in sphere_one
+
+    // Check if we are too close to singular.  We do this check
+    // separately from the earlier similar check because this check
+    // may be changed in the future based on further testing and
+    // further logic that may be added (for example we may want to
+    // change the 0.85 to some other number), but the previous check
+    // (without the 0.85) is a hard limit that should always be
+    // obeyed.  We also use a different threshold for sphere_two
+    // contained inside sphere_one than we do for sphere_one contained
+    // inside sphere_two.
+    ASSERT(acos(abs(cos_alpha)) < abs(0.85 * asin(cos_theta)),
+           "Parameters are close to where the map becomes non-invertible. "
+           "acos(abs(cos_alpha)) = "
+               << acos(abs(cos_alpha)) << " and abs(asin(cos_theta)) = "
+               << abs(asin(cos_theta)) << ", so the ratio is "
+               << acos(abs(cos_alpha)) / abs(asin(cos_theta))
+               << ". The map has not been tested for this "
+                  "case.");
 
     // We keep this as a separate condition because we may change the
     // number 0.85 in the future if we ever have reason to do so.
@@ -197,6 +205,24 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
                << proj_radius_two_squared - square(0.1 * radius_two));
   } else {
     // sphere_one is contained in sphere_two.
+
+    // Check if we are too close to singular.  We do this check
+    // separately from the earlier similar check because this check
+    // may be changed in the future based on further testing and
+    // further logic that may be added (for example we may want to
+    // change the 0.75 to some other number), but the previous check
+    // (without the 0.75) is a hard limit that should always be
+    // obeyed.  We also use a different threshold for sphere_two
+    // contained inside sphere_one than we do for sphere_one contained
+    // inside sphere_two.
+    ASSERT(acos(abs(cos_alpha)) < abs(0.75 * asin(cos_theta)),
+           "Parameters are close to where the map becomes non-invertible. "
+           "acos(abs(cos_alpha)) = "
+               << acos(abs(cos_alpha)) << " and abs(asin(cos_theta)) = "
+               << abs(asin(cos_theta)) << ", so the ratio is "
+               << acos(abs(cos_alpha)) / abs(asin(cos_theta))
+               << ". The map has not been tested for this "
+                  "case.");
 
     ASSERT(1.01 * (dist_spheres + radius_one) <= radius_two,
            "The map has been tested only for the case when "
