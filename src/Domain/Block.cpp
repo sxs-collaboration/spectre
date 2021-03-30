@@ -39,8 +39,14 @@ Block<VolumeDim>::Block(
   ASSERT(external_boundary_conditions.empty() or
              external_boundary_conditions.size() ==
                  2 * VolumeDim - neighbors_.size(),
-         "Must have either no boundary conditions or one boundary condition "
-         "for each external boundary.");
+         "Block " << id
+                  << " must have either no boundary conditions or one boundary "
+                     "condition "
+                     "for each external boundary. Here "
+                     "external_boundary_conditions.size()="
+                  << external_boundary_conditions.size()
+                  << " but VolumeDim= " << VolumeDim
+                  << " and neighbors_.size()=" << neighbors_.size());
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
