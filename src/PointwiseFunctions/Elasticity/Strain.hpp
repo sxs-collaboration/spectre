@@ -8,12 +8,34 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace Elasticity {
 
 /*!
- * \brief The symmetric strain \f$S_{ij}=\nabla_{(i} \xi_{j)}\f$ in the elastic
- * material.
+ * \brief The symmetric strain \f$S_{ij} = \partial_{(i} \xi_{j)}\f$ on a flat
+ * background in Cartesian coordinates.
+ */
+template <typename DataType, size_t Dim>
+void strain(gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
+            const tnsr::iJ<DataType, Dim>& deriv_displacement) noexcept;
+
+/*!
+ * \brief The symmetric strain \f$S_{ij} = \nabla_{(i} \gamma_{j)k} \xi^k =
+ * \partial_{(i} \gamma_{j)k} \xi^k - \Gamma_{kij} \xi^k\f$ on a
+ * background metric \f$\gamma_{ij}\f$.
+ */
+template <typename DataType, size_t Dim>
+void strain(gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
+            const tnsr::iJ<DataType, Dim>& deriv_displacement,
+            const tnsr::ii<DataType, Dim>& metric,
+            const tnsr::ijj<DataType, Dim>& deriv_metric,
+            const tnsr::ijj<DataType, Dim>& christoffel_first_kind,
+            const tnsr::I<DataType, Dim>& displacement) noexcept;
+
+/*!
+ * \brief The symmetric strain \f$S_{ij} = \partial_{(i} \xi_{j)}\f$ on a flat
+ * background in Cartesian coordinates.
  *
  * Note that this function involves a numeric differentiation of the
  * displacement vector.

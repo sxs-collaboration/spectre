@@ -32,6 +32,8 @@ namespace Xcts {
  * (L\beta)^{ij} = 2\left(\gamma^{ik}\gamma^{jl} -
  * \frac{1}{3} \gamma^{jk}\gamma^{kl}\right) B_{kl}
  * \f}
+ *
+ * Note that the strain can be computed with `Elasticity::strain`.
  */
 template <typename DataType>
 void longitudinal_operator(gsl::not_null<tnsr::II<DataType, 3>*> result,
