@@ -88,26 +88,14 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       helpers::Tags::Range<NewtonianEuler::Tags::MassDensityCons>,
       helpers::Tags::Range<
           NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>
-      ranges_for_conservation{std::array{1.0e-30, 1.0},
-                              std::array{1.0e-30, 1.0}};
+      ranges{std::array{1.0e-30, 1.0}, std::array{1.0e-30, 1.0}};
 
   helpers::test_boundary_correction_conservation<
       NewtonianEuler::System<Dim, EosType, DummyInitialData>>(
       gen, NewtonianEuler::BoundaryCorrections::Hll<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      volume_data, ranges_for_conservation);
-
-  const tuples::TaggedTuple<
-      helpers::Tags::Range<NewtonianEuler::Tags::MassDensityCons>,
-      helpers::Tags::Range<
-          NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>,
-      helpers::Tags::Range<typename NewtonianEuler::BoundaryCorrections::Hll<
-          Dim>::LargestOutgoingCharSpeed>,
-      helpers::Tags::Range<typename NewtonianEuler::BoundaryCorrections::Hll<
-          Dim>::LargestIngoingCharSpeed>>
-      ranges_for_python{std::array{1.0e-30, 1.0}, std::array{1.0e-30, 1.0},
-                        std::array{0.0, 1.0}, std::array{-1.0, 0.0}};
+      volume_data, ranges);
 
   helpers::test_boundary_correction_with_python<
       NewtonianEuler::System<Dim, EosType, DummyInitialData>,
@@ -125,7 +113,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       NewtonianEuler::BoundaryCorrections::Hll<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      volume_data, ranges_for_python);
+      volume_data, ranges);
 
   const auto hll = TestHelpers::test_factory_creation<
       NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>("Hll:");
@@ -146,7 +134,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       dynamic_cast<const NewtonianEuler::BoundaryCorrections::Hll<Dim>&>(*hll),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
-      volume_data, ranges_for_python);
+      volume_data, ranges);
 }
 }  // namespace
 

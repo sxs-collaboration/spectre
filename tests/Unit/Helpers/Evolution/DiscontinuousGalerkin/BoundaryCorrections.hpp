@@ -566,16 +566,10 @@ void test_with_python(
   tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &fields_on_face,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
-    // If this range tag is for an argument to dg_boundary_terms only, don't try
-    // to extract it from this Variables
-    if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
-                                        tag>) {
-      const std::array<double, 2>& range =
-          tuples::get<Tags::Range<tag>>(ranges);
-      std::uniform_real_distribution<> local_dist(range[0], range[1]);
-      fill_with_random_values(make_not_null(&get<tag>(fields_on_face)),
-                              generator, make_not_null(&local_dist));
-    }
+    const std::array<double, 2>& range = tuples::get<Tags::Range<tag>>(ranges);
+    std::uniform_real_distribution<> local_dist(range[0], range[1]);
+    fill_with_random_values(make_not_null(&get<tag>(fields_on_face)), generator,
+                            make_not_null(&local_dist));
   });
 
   auto unit_normal_covector = make_with_random_values<
@@ -597,6 +591,14 @@ void test_with_python(
         make_not_null(&unit_normal_covector),
         make_not_null(&unit_normal_vector),
         get<inv_spatial_metric>(fields_on_face));
+
+    using spatial_metric =
+        gr::Tags::SpatialMetric<FaceDim + 1, Frame::Inertial, DataVector>;
+    if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
+                                        spatial_metric>) {
+      detail::adjust_spatial_metric_or_inverse(
+          make_not_null(&get<spatial_metric>(fields_on_face)));
+    }
   }
 
   std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
@@ -682,40 +684,92 @@ void test_with_python(
       });
 
   // Now we need to check the dg_boundary_terms function.
-  // Fill all fields with random values in [-1,1), then, for each tag with a
-  // specified range, overwrite with new random values in [min,max)
-  auto interior_package_data =
-      make_with_random_values<Variables<dg_package_field_tags>>(
+  //
+  // In order for the package data to have a self-consistent state (not all
+  // things being packaged are independent), we compute the packaged data.
+  // We reuse the previously computed packaged data as the interior packaged
+  // data.
+  const auto& interior_package_data = package_data;
+
+  auto exterior_fields_on_face =
+      make_with_random_values<Variables<face_tags_with_curved_background>>(
           generator, make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &interior_package_data,
+  tmpl::for_each<tmpl::list<RangeTags...>>([&generator,
+                                            &exterior_fields_on_face,
                                             &ranges](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
-    // If this range tag is for an argument to dg_package_data only, don't try
-    // to extract it from this Variables
-    if constexpr (tmpl::list_contains_v<dg_package_field_tags, tag>) {
-      const std::array<double, 2>& range =
-          tuples::get<Tags::Range<tag>>(ranges);
-      std::uniform_real_distribution<> local_dist(range[0], range[1]);
-      fill_with_random_values(make_not_null(&get<tag>(interior_package_data)),
-                              generator, make_not_null(&local_dist));
-    }
+    const std::array<double, 2>& range = tuples::get<Tags::Range<tag>>(ranges);
+    std::uniform_real_distribution<> local_dist(range[0], range[1]);
+    fill_with_random_values(make_not_null(&get<tag>(exterior_fields_on_face)),
+                            generator, make_not_null(&local_dist));
   });
 
-  // Same as above but for exterior data
-  auto exterior_package_data =
-      make_with_random_values<Variables<dg_package_field_tags>>(
-          generator, make_not_null(&dist), used_for_size);
-  tmpl::for_each<tmpl::list<RangeTags...>>([&generator, &exterior_package_data,
-                                            &ranges](auto tag_v) {
-    using tag = tmpl::type_from<decltype(tag_v)>;
-    if constexpr (tmpl::list_contains_v<dg_package_field_tags, tag>) {
-      const std::array<double, 2>& range =
-          tuples::get<Tags::Range<tag>>(ranges);
-      std::uniform_real_distribution<> local_dist(range[0], range[1]);
-      fill_with_random_values(make_not_null(&get<tag>(exterior_package_data)),
-                              generator, make_not_null(&local_dist));
+  tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>
+      exterior_unit_normal_covector;
+  tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>
+      exterior_unit_normal_vector{};
+  if constexpr (not curved_background) {
+    exterior_unit_normal_covector = unit_normal_covector;
+    for (auto& t : exterior_unit_normal_covector) {
+      t *= -1.0;
     }
-  });
+  } else {
+    using inv_spatial_metric = typename detail::inverse_spatial_metric_tag<
+        curved_background>::template f<System>;
+    exterior_unit_normal_covector = unit_normal_covector;
+    for (auto& t : exterior_unit_normal_covector) {
+      t *= -1.0;
+    }
+
+    // make the exterior inverse spatial metric be close to the interior one
+    // since the solution should be smooth. We can't change too much because we
+    // want the spatial metric to have diagonal terms much larger than the
+    // off-diagonal terms.
+    std::uniform_real_distribution<> inv_metric_change_dist(0.999, 1.0);
+    for (size_t i = 0; i < FaceDim + 1; ++i) {
+      for (size_t j = i; j < FaceDim + 1; ++j) {
+        get<inv_spatial_metric>(exterior_fields_on_face).get(i, j) =
+            inv_metric_change_dist(*generator) *
+            get<inv_spatial_metric>(fields_on_face).get(i, j);
+      }
+    }
+    detail::normalize_vector_and_covector(
+        make_not_null(&exterior_unit_normal_covector),
+        make_not_null(&exterior_unit_normal_vector),
+        get<inv_spatial_metric>(exterior_fields_on_face));
+
+    // if dg_package_data depends on the (not inverted) spatial metric, we also
+    // adjust the spatial metric. Note that for testing purposes, the metric and
+    // inverse metric don't need to be inverses of each other. However, we do
+    // want both to be physically reasonable, i.e., close to flat space.
+    using spatial_metric =
+        gr::Tags::SpatialMetric<FaceDim + 1, Frame::Inertial, DataVector>;
+    if constexpr (tmpl::list_contains_v<face_tags_with_curved_background,
+                                        spatial_metric>) {
+      // as for external inverse metric: we get the external metric by slightly
+      // tweaking the internal metric
+      for (size_t i = 0; i < FaceDim + 1; ++i) {
+        for (size_t j = i; j < FaceDim + 1; ++j) {
+          get<spatial_metric>(exterior_fields_on_face).get(i, j) =
+              inv_metric_change_dist(*generator) *
+              get<spatial_metric>(fields_on_face).get(i, j);
+        }
+      }
+    }
+  }
+
+  Variables<dg_package_field_tags> exterior_package_data{used_for_size.size()};
+  if constexpr (curved_background) {
+    call_dg_package_data(
+        make_not_null(&exterior_package_data), correction,
+        exterior_fields_on_face, volume_data, exterior_unit_normal_covector,
+        exterior_unit_normal_vector, mesh_velocity, face_tags{});
+  } else {
+    call_dg_package_data(make_not_null(&exterior_package_data), correction,
+                         exterior_fields_on_face, volume_data,
+                         exterior_unit_normal_covector, mesh_velocity,
+                         face_tags{});
+  }
 
   // We don't need to prefix the VariablesTags with anything because we are not
   // interacting with any code that cares about what the tags are, just that the
@@ -802,8 +856,7 @@ void test_with_python(
  *   positive quantities are randomly generated on the interval
  *   `[lower_bound,upper_bound)`, choosing `lower_bound` to be `0` or some small
  *   number. The default interval if a tag is not listed is `[-1,1)`. The range
- *   is used for setting the random inputs to `dg_package_data` and
- *   `dg_boundary_terms`.
+ *   is used for setting the random inputs to `dg_package_data`.
  */
 template <typename System, typename ConversionClassList = tmpl::list<>,
           typename BoundaryCorrection, size_t FaceDim, typename... VolumeTags,
