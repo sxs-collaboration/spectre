@@ -11,11 +11,13 @@ spectre_target_sources(
   Affine.cpp
   BulgedCube.cpp
   CylindricalEndcap.cpp
+  CylindricalFlatEndcap.cpp
   CylindricalSide.cpp
   DiscreteRotation.cpp
   EquatorialCompression.cpp
   Equiangular.cpp
   FocallyLiftedEndcap.cpp
+  FocallyLiftedFlatEndcap.cpp
   FocallyLiftedMap.cpp
   FocallyLiftedMapHelpers.cpp
   FocallyLiftedSide.cpp
@@ -37,11 +39,13 @@ spectre_target_headers(
   CoordinateMap.tpp
   CoordinateMapHelpers.hpp
   CylindricalEndcap.hpp
+  CylindricalFlatEndcap.hpp
   CylindricalSide.hpp
   DiscreteRotation.hpp
   EquatorialCompression.hpp
   Equiangular.hpp
   FocallyLiftedEndcap.hpp
+  FocallyLiftedFlatEndcap.hpp
   FocallyLiftedMap.hpp
   FocallyLiftedMapHelpers.hpp
   FocallyLiftedSide.hpp

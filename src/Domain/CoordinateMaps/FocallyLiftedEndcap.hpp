@@ -385,7 +385,7 @@ class Endcap {
 
   template <typename T>
   void forward_map(
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           target_coords,
       const std::array<T, 3>& source_coords) const noexcept;
 
@@ -398,29 +398,30 @@ class Endcap {
       double sigma_in) const noexcept;
 
   template <typename T>
-  void jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
-                                             Frame::NoFrame>*>& jacobian_out,
+  void jacobian(const gsl::not_null<
+                    tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
+                    jacobian_out,
                 const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  void inv_jacobian(
-      const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
-                                   Frame::NoFrame>*>& inv_jacobian_out,
-      const std::array<T, 3>& source_coords) const noexcept;
+  void inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
+                                                 Frame::NoFrame>*>
+                        inv_jacobian_out,
+                    const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  void sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& sigma_out,
+  void sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
              const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
   void deriv_sigma(
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           deriv_sigma_out,
       const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
   void dxbar_dsigma(
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           dxbar_dsigma_out,
       const std::array<T, 3>& source_coords) const noexcept;
 
@@ -431,7 +432,7 @@ class Endcap {
 
   template <typename T>
   void deriv_lambda_tilde(
-      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>&
+      const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           deriv_lambda_tilde_out,
       const std::array<T, 3>& target_coords, const T& lambda_tilde,
       const std::array<double, 3>& projection_point) const noexcept;
