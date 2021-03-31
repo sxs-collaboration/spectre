@@ -162,3 +162,37 @@ def covariant_deriv_extrinsic_curvture(extrinsic_curvature,
         spatial_christoffel_second_kind, extrinsic_curvature) - np.einsum(
             'ljk,li->kij', spatial_christoffel_second_kind,
             extrinsic_curvature)
+
+
+def gh_spatial_ricci_tensor(phi, deriv_phi, inverse_spatial_metric):
+    ricci_deriv_terms = 0.25 * (
+        np.einsum("kl,jlki->ij", inverse_spatial_metric, deriv_phi[:, :, 1:,
+                                                                   1:]) +
+        np.einsum("kl,ilkj->ij", inverse_spatial_metric, deriv_phi[:, :, 1:,
+                                                                   1:]) -
+        np.einsum("kl,jikl->ij", inverse_spatial_metric, deriv_phi[:, :, 1:,
+                                                                   1:]) -
+        np.einsum("kl,ijkl->ij", inverse_spatial_metric, deriv_phi[:, :, 1:,
+                                                                   1:]) +
+        np.einsum("kl,kijl->ij", inverse_spatial_metric, deriv_phi[:, :, 1:,
+                                                                   1:]) +
+        np.einsum("kl,kjil->ij", inverse_spatial_metric, deriv_phi[:, :, 1:,
+                                                                   1:]) -
+        2 * np.einsum("kl,lkij->ij", inverse_spatial_metric,
+                      deriv_phi[:, :, 1:, 1:]))
+
+    spatial_phi_Ijj = 0.5 * np.einsum("kl,lij->kij", inverse_spatial_metric,
+                                      phi[:, 1:, 1:])
+    spatial_phi_ijK = 0.5 * np.einsum("kl,ijl->ijk", inverse_spatial_metric,
+                                      phi[:, 1:, 1:])
+    d_minus_two_b = np.einsum(
+        "kl,lii->k", inverse_spatial_metric, spatial_phi_ijK) - 2 * np.einsum(
+            "kl,iil->k", inverse_spatial_metric, spatial_phi_Ijj)
+
+    return ricci_deriv_terms + 0.5 * (
+        np.einsum("ijk,k->ij", phi[:, 1:, 1:], d_minus_two_b) +
+        np.einsum("jik,k->ij", phi[:, 1:, 1:], d_minus_two_b) -
+        np.einsum("kij,k->ij", phi[:, 1:, 1:], d_minus_two_b)) + np.einsum(
+            "ikl,jlk->ij", spatial_phi_ijK, spatial_phi_ijK) + 2 * np.einsum(
+                "kil,kjl->ij", spatial_phi_Ijj, spatial_phi_ijK
+            ) - 2 * np.einsum("kli,lkj->ij", spatial_phi_Ijj, spatial_phi_Ijj)
