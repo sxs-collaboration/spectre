@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedEndcap.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedFlatEndcap.hpp"
+#include "Domain/CoordinateMaps/FocallyLiftedFlatSide.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMapHelpers.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedSide.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -370,6 +371,7 @@ bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
                                       FocallyLiftedInnerMaps::FlatEndcap,
+                                      FocallyLiftedInnerMaps::FlatSide,
                                       FocallyLiftedInnerMaps::Side))
 
 #undef INSTANTIATE
@@ -390,6 +392,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (FocallyLiftedInnerMaps::Endcap,
                          FocallyLiftedInnerMaps::FlatEndcap,
+                         FocallyLiftedInnerMaps::FlatSide,
                          FocallyLiftedInnerMaps::Side),
                         (double, DataVector,
                          std::reference_wrapper<const double>,
