@@ -62,7 +62,8 @@ class AnalyticSolution : public ::AnalyticData<3, Registrars> {
     return call_with_dynamic_type<
         tuples::TaggedTuple<RequestedTags...>,
         tmpl::filter<creatable_classes,
-                     std::is_base_of<AnalyticSolution<Registrars>, tmpl::_1>>>(
+                     std::is_base_of<tmpl::pin<AnalyticSolution<Registrars>>,
+                                     tmpl::_1>>>(
         this, [&x](auto* const derived) noexcept {
           return derived->variables(x, tmpl::list<RequestedTags...>{});
         });
