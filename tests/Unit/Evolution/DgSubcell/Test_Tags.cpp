@@ -58,6 +58,9 @@ void test() {
       subcell_mesh);
   CHECK(db::get<evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>>(
             logical_coords_box) == logical_coordinates(subcell_mesh));
+
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::Tags::TciStatusCompute<Dim>>("TciStatus");
 }
 }  // namespace
 
