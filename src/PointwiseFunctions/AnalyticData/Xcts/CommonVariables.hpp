@@ -20,6 +20,7 @@ namespace Xcts::AnalyticData {
 /// Tags for variables that analytic-data classes can share
 template <typename DataType>
 using common_tags = tmpl::list<
+    Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelFirstKind<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelSecondKind<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelContracted<DataType, 3, Frame::Inertial>,
@@ -54,6 +55,11 @@ using common_tags = tmpl::list<
 template <typename DataType, typename Cache>
 struct CommonVariables {
   static constexpr size_t Dim = 3;
+  void operator()(
+      gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
+      const noexcept;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> conformal_christoffel_first_kind,
       gsl::not_null<Cache*> cache,
