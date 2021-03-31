@@ -157,6 +157,14 @@ struct Initialize {
         });
     if (cell_is_troubled) {
       // Set variables on subcells.
+      if constexpr (Metavariables::system::
+                        has_primitive_and_conservative_vars) {
+        db::mutate<typename Metavariables::system::primitive_variables_tag>(
+            make_not_null(&box),
+            [&subcell_mesh](const auto prim_vars_ptr) noexcept {
+              prim_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
+            });
+      }
       evolution::Initialization::Actions::SetVariables<
           Tags::Coordinates<Metavariables::volume_dim, Frame::Logical>>::
           apply(box, inboxes, cache, array_index, ActionList{},
