@@ -18,6 +18,7 @@ spectre_target_headers(
   System.hpp
   StressEnergy.hpp
   Tags.hpp
+  TimeDerivativeTerms.hpp
   )
 
 target_link_libraries(

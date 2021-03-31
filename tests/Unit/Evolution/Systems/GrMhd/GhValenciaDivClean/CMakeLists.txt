@@ -6,6 +6,7 @@ set(LIBRARY "Test_GhValenciaDivClean")
 set(LIBRARY_SOURCES
   Test_Tags.cpp
   Test_StressEnergy.cpp
+  Test_TimeDerivativeTerms.cpp
   )
 
 add_test_library(
