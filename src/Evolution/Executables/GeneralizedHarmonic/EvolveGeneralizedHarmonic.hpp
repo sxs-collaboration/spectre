@@ -157,10 +157,9 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
-  using step_choosers_common =
-      tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+  using step_choosers_common = tmpl::list<
+      StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
+      StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
   using step_choosers_for_slab_only =
@@ -327,9 +326,10 @@ struct EvolutionMetavars {
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>>,
           true, true>,
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<evolution::Tags::AnalyticCompute<
-              volume_dim, analytic_solution_tag, analytic_solution_fields>>>,
+      Initialization::Actions::AddComputeTags<tmpl::push_back<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
+          evolution::Tags::AnalyticCompute<volume_dim, analytic_solution_tag,
+                                           analytic_solution_fields>>>,
       dg::Actions::InitializeMortars<boundary_scheme, true>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;

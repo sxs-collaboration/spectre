@@ -13,8 +13,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace Burgers {
-namespace Tags {
+namespace Burgers::Tags {
 void CharacteristicSpeedsCompute::function(
     const gsl::not_null<return_type*> result,
     const Scalar<DataVector>& u,
@@ -25,11 +24,11 @@ void CharacteristicSpeedsCompute::function(
          << get(u).size() << " and " << get<0>(normal).size());
   gsl::at(*result, 0) = get<0>(normal)[0] > 0.0 ? get(u) : -get(u);
 }
-}  // namespace Tags
 
-double ComputeLargestCharacteristicSpeed::apply(
+void ComputeLargestCharacteristicSpeed::function(
+    const gsl::not_null<double*> speed,
     const Scalar<DataVector>& u) noexcept {
-  return max(abs(get(u)));
+  *speed = max(abs(get(u)));
 }
-}  // namespace Burgers
+}  // namespace Burgers::Tags
 /// \endcond

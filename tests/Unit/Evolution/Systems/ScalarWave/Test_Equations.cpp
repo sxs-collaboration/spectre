@@ -89,6 +89,3 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.NormalDotFluxes",
   check_normal_dot_fluxes<2>(3, time);
   check_normal_dot_fluxes<3>(3, time);
 }
-
-static_assert(1.0 == ScalarWave::ComputeLargestCharacteristicSpeed::apply(),
-              "Failed testing ScalarWave::ComputeLargestCharacteristicSpeed.");

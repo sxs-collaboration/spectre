@@ -399,7 +399,8 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
       const tnsr::I<DataVector, DIM(data)>& velocity,                          \
       const Scalar<DataVector>& sound_speed,                                   \
       const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
-  template struct NewtonianEuler::ComputeLargestCharacteristicSpeed<DIM(data)>;
+  template struct NewtonianEuler::Tags::ComputeLargestCharacteristicSpeed<DIM( \
+      data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

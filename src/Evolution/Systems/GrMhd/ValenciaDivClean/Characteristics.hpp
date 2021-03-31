@@ -167,12 +167,23 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
         spatial_metric, unit_normal, equation_of_state);
   }
 };
-}  // namespace Tags
 
-struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<>;
-  static double apply() noexcept { return 1.0; }
+struct LargestCharacteristicSpeed : db::SimpleTag {
+  using type = double;
 };
 
+struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
+                                           LargestCharacteristicSpeed {
+  using argument_tags = tmpl::list<>;
+  using return_type = double;
+  using base = LargestCharacteristicSpeed;
+  static void function(const gsl::not_null<double*> speed) noexcept {
+    // note: this is an approximation valid only in flat spacetime. For better
+    // CFL estimates, this should be updated to calculate the characteristic
+    // speed based on the lapse and shift.
+    *speed = 1.0;
+  }
+};
+}  // namespace Tags
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

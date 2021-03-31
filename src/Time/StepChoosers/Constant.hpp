@@ -46,7 +46,10 @@ class Constant : public StepChooser<StepChooserRegistrars> {
     ASSERT(value_ > 0., "Requested step magnitude should be positive.");
   }
 
+  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
+
   using argument_tags = tmpl::list<>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(

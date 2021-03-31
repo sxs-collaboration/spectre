@@ -308,12 +308,11 @@ class ChangeSlabSize : public Event<EventRegistrars> {
 
     double desired_slab_size = std::numeric_limits<double>::infinity();
     for (const auto& step_chooser : step_choosers_) {
-      desired_slab_size = std::min(
-          desired_slab_size,
-          step_chooser
-              ->desired_step(time_step_id.step_time().slab().duration().value(),
-                             box_for_step_choosers, cache)
-              .first);
+      desired_slab_size =
+          std::min(desired_slab_size,
+                   step_chooser->desired_slab(
+                       time_step_id.step_time().slab().duration().value(),
+                       box_for_step_choosers, cache));
     }
 
     const auto& component_proxy =

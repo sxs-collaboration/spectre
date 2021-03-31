@@ -129,10 +129,9 @@ struct EvolutionMetavars {
   using limiter = Tags::Limiter<
       Limiters::Minmod<3, typename system::variables_tag::tags_list>>;
 
-  using step_choosers_common =
-      tmpl::list<//StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+  using step_choosers_common = tmpl::list<
+      // StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
+      StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
   using step_choosers_for_slab_only =
@@ -239,6 +238,8 @@ struct EvolutionMetavars {
               tmpl::list<evolution::Tags::AnalyticCompute<
                   3, initial_data_tag, analytic_variables_tags>>>,
           tmpl::list<>>,
+      Initialization::Actions::AddComputeTags<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       dg::Actions::InitializeMortars<boundary_scheme>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<3>,

@@ -175,13 +175,14 @@ evolved_fields_from_characteristic_fields(
 }
 
 template <size_t Dim, typename Frame>
-double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
+void Tags::ComputeLargestCharacteristicSpeed<Dim, Frame>::function(
+    const gsl::not_null<double*> speed,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::ii<DataVector, Dim, Frame>& spatial_metric) noexcept {
   const auto shift_magnitude = magnitude(shift, spatial_metric);
-  return std::max(max(abs(1. + get(gamma_1)) * get(shift_magnitude)),
-                  max(get(shift_magnitude) + get(lapse)));
+  *speed = std::max(max(abs(1. + get(gamma_1)) * get(shift_magnitude)),
+                    max(get(shift_magnitude) + get(lapse)));
 }
 }  // namespace GeneralizedHarmonic
 
@@ -254,8 +255,8 @@ double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
               unit_normal_one_form) noexcept;                               \
   template struct GeneralizedHarmonic::                                     \
       EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data), FRAME(data)>; \
-  template struct GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<   \
-      DIM(data), FRAME(data)>;
+  template struct GeneralizedHarmonic::Tags::                               \
+      ComputeLargestCharacteristicSpeed<DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (Frame::Inertial, Frame::Grid))

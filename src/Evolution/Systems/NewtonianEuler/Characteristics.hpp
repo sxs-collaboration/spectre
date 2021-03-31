@@ -133,17 +133,24 @@ struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
     characteristic_speeds<Dim>(result, velocity, sound_speed, normal);
   }
 };
-}  // namespace Tags
 
-template <size_t Dim>
-struct ComputeLargestCharacteristicSpeed {
-  using argument_tags =
-      tmpl::list<Tags::Velocity<DataVector, Dim>, Tags::SoundSpeed<DataVector>>;
 
-  static double apply(const tnsr::I<DataVector, Dim>& velocity,
-                      const Scalar<DataVector>& sound_speed) noexcept {
-    return max(get(magnitude(velocity)) + get(sound_speed));
-  }
+struct LargestCharacteristicSpeed : db::SimpleTag {
+  using type = double;
 };
 
+template <size_t Dim>
+struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
+                                           db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Tags::Velocity<DataVector, Dim>, Tags::SoundSpeed<DataVector>>;
+  using return_type = double;
+  using base = LargestCharacteristicSpeed;
+  static void function(const gsl::not_null<double*> speed,
+                       const tnsr::I<DataVector, Dim>& velocity,
+                       const Scalar<DataVector>& sound_speed) noexcept {
+    *speed = max(get(magnitude(velocity)) + get(sound_speed));
+  }
+};
+}  // namespace Tags
 }  // namespace NewtonianEuler

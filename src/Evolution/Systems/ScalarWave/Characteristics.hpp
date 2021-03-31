@@ -221,6 +221,22 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
                                               unit_normal_one_form);
   };
 };
+
+struct LargestCharacteristicSpeed : db::SimpleTag {
+  using type = double;
+};
+
+/// Compute the maximum magnitude of the characteristic speeds.
+struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
+                                           db::ComputeTag {
+  using argument_tags = tmpl::list<>;
+  using return_type = double;
+  using base = LargestCharacteristicSpeed;
+  SPECTRE_ALWAYS_INLINE static constexpr void function(
+      const gsl::not_null<double*> speed) noexcept {
+    *speed = 1.0;
+  }
+};
 }  // namespace Tags
 // @}
 }  // namespace ScalarWave

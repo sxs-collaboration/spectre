@@ -230,18 +230,27 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
 };
 // @}
 
+namespace Tags{
+struct LargestCharacteristicSpeed : db::SimpleTag {
+  using type = double;
+};
 /*!
  * \brief Computes the largest magnitude of the characteristic speeds.
  */
 template <size_t Dim, typename Frame>
-struct ComputeLargestCharacteristicSpeed {
+struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
+                                           LargestCharacteristicSpeed {
   using argument_tags = tmpl::list<
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim, Frame, DataVector>,
       gr::Tags::SpatialMetric<Dim, Frame, DataVector>>;
-  static double apply(
-      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+  using return_type = double;
+  using base = LargestCharacteristicSpeed;
+  static void function(
+      const gsl::not_null<double*> speed, const Scalar<DataVector>& gamma_1,
+      const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
       const tnsr::ii<DataVector, Dim, Frame>& spatial_metric) noexcept;
 };
+}  // namespace Tags
 }  // namespace GeneralizedHarmonic

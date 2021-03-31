@@ -395,4 +395,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Characteristics",
                                          lower_bound, upper_bound);
   test_evolved_from_characteristic_fields_analytic<3>(
       plane_wave_solution, grid_size, lower_bound, upper_bound);
+
+  double largest_characteristic_speed =
+      std::numeric_limits<double>::signaling_NaN();
+  ScalarWave::Tags::ComputeLargestCharacteristicSpeed::function(
+      make_not_null(&largest_characteristic_speed));
+  CHECK(largest_characteristic_speed == 1.0);
 }

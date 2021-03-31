@@ -105,6 +105,25 @@ struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
+/// \brief Tag for the stepper error measure.
+template <typename Tag>
+struct StepperError : db::PrefixTag, db::SimpleTag {
+  static std::string name() noexcept {
+    return "StepperError(" + db::tag_name<Tag>() + ")";
+  }
+  using type = typename Tag::type;
+  using tag = Tag;
+};
+
+/// \ingroup TimeGroup
+/// \brief Tag indicating whether the stepper error has been updated on the
+/// current step
+struct StepperErrorUpdated : db::SimpleTag {
+  using type = bool;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
 /// Tag for TimeStepper boundary history
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 struct BoundaryHistory : db::SimpleTag {
@@ -230,4 +249,9 @@ struct StepController : db::SimpleTag {
     return deserialize<type>(serialize<type>(step_controller).data());
   }
 };
+
+/// \ingroup TimeGroup
+/// \brief A tag that is true if the `ErrorControl` step chooser is one of the
+/// option-created `Event`s.
+struct IsUsingTimeSteppingErrorControlBase : db::BaseTag {};
 }  // namespace Tags

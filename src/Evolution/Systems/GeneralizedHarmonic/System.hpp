@@ -44,7 +44,7 @@ struct System {
       CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
   using char_speeds_tag = Tags::CharacteristicSpeeds<Dim, Frame::Inertial>;
   using compute_largest_characteristic_speed =
-      ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>;
+      Tags::ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<

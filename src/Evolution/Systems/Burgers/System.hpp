@@ -34,7 +34,7 @@ struct System {
   using volume_fluxes = Fluxes;
 
   using compute_largest_characteristic_speed =
-      ComputeLargestCharacteristicSpeed;
+      Tags::ComputeLargestCharacteristicSpeed;
 
   using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute;
   using char_speeds_tag = Tags::CharacteristicSpeeds;
