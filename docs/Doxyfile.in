@@ -101,8 +101,7 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       =
 
-EXCLUDE_SYMBOLS        = *brigand*                                    \
-                         charm_init_*                                 \
+EXCLUDE_SYMBOLS        = charm_init_*                                 \
                          *detail*                                     \
                          PUP*                                         \
                          SPECTRE_TEST_CASE*                           \
