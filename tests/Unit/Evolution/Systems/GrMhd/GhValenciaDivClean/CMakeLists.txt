@@ -5,6 +5,7 @@ set(LIBRARY "Test_GhValenciaDivClean")
 
 set(LIBRARY_SOURCES
   Test_Tags.cpp
+  Test_StressEnergy.cpp
   )
 
 add_test_library(
@@ -12,4 +13,5 @@ add_test_library(
   "Evolution/Systems/GrMhd/GhValenciaDivClean"
   "${LIBRARY_SOURCES}"
   "Framework;GhValenciaDivClean"
+  "DomainHelpers;Framework;GeneralRelativityHelpers;GeneralizedHarmonic;ValenciaDivClean;GhValenciaDivClean"
   )

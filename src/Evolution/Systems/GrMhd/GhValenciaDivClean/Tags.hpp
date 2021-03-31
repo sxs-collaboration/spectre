@@ -8,6 +8,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 
 namespace grmhd::GhValenciaDivClean {
+/// %Tags for the combined system of the Generalized Harmonic formulation for
+/// the Einstein field equations and the Valencia GRMHD formulation.
 namespace Tags {
 
 /// Represents the stress-energy tensor of the matter in the MHD sector of the
