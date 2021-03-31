@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -95,10 +96,35 @@ void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
     const noexcept {
-  std::fill(conformal_metric->begin(), conformal_metric->end(), 0.);
   get<0, 0>(*conformal_metric) = 1.;
   get<1, 1>(*conformal_metric) = 1.;
   get<2, 2>(*conformal_metric) = 1.;
+  get<0, 1>(*conformal_metric) = 0.;
+  get<0, 2>(*conformal_metric) = 0.;
+  get<1, 2>(*conformal_metric) = 0.;
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::II<DataType, 3>*> inv_conformal_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::InverseConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+    const noexcept {
+  get<0, 0>(*inv_conformal_metric) = 1.;
+  get<1, 1>(*inv_conformal_metric) = 1.;
+  get<2, 2>(*inv_conformal_metric) = 1.;
+  get<0, 1>(*inv_conformal_metric) = 0.;
+  get<0, 2>(*inv_conformal_metric) = 0.;
+  get<1, 2>(*inv_conformal_metric) = 0.;
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept {
+  std::fill(deriv_conformal_metric->begin(), deriv_conformal_metric->end(), 0.);
 }
 
 template <typename DataType>
@@ -150,6 +176,17 @@ void SchwarzschildVariables<DataType>::operator()(
 
 template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> lapse,
+    const gsl::not_null<Cache*> cache,
+    gr::Tags::Lapse<DataType> /*meta*/) const noexcept {
+  *lapse = cache->get_var(Tags::LapseTimesConformalFactor<DataType>{});
+  const auto& conformal_factor =
+      cache->get_var(Tags::ConformalFactor<DataType>{});
+  get(*lapse) /= get(conformal_factor);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*>
         lapse_times_conformal_factor_gradient,
     const gsl::not_null<Cache*> cache,
@@ -170,6 +207,17 @@ void SchwarzschildVariables<DataType>::operator()(
     Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
     const noexcept {
   std::fill(shift_background->begin(), shift_background->end(), 0.);
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::II<DataType, 3, Frame::Inertial>*>
+        longitudinal_shift_background_minus_dt_conformal_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+        DataType, 3, Frame::Inertial> /*meta*/) const noexcept {
+  std::fill(longitudinal_shift_background_minus_dt_conformal_metric->begin(),
+            longitudinal_shift_background_minus_dt_conformal_metric->end(), 0.);
 }
 
 template <typename DataType>
@@ -213,41 +261,23 @@ void SchwarzschildVariables<DataType>::operator()(
   std::fill(momentum_density->begin(), momentum_density->end(), 0.);
 }
 
-template <typename DataType>
-void SchwarzschildVariables<DataType>::operator()(
-    const gsl::not_null<Scalar<DataType>*>
-        fixed_source_for_hamiltonian_constraint,
-    const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
-    const noexcept {
-  std::fill(fixed_source_for_hamiltonian_constraint->begin(),
-            fixed_source_for_hamiltonian_constraint->end(), 0.);
-}
-
-template <typename DataType>
-void SchwarzschildVariables<DataType>::operator()(
-    const gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
-    const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-    const noexcept {
-  std::fill(fixed_source_for_lapse_equation->begin(),
-            fixed_source_for_lapse_equation->end(), 0.);
-}
-
-template <typename DataType>
-void SchwarzschildVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
-    const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<
-        Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
-    const noexcept {
-  std::fill(fixed_source_momentum_constraint->begin(),
-            fixed_source_momentum_constraint->end(), 0.);
-}
-
 template class SchwarzschildVariables<double>;
 template class SchwarzschildVariables<DataVector>;
 
 }  // namespace Xcts::Solutions::detail
+
+// Instantiate implementations for common variables
+template class Xcts::Solutions::CommonVariables<
+    double,
+    typename Xcts::Solutions::detail::SchwarzschildVariables<double>::Cache>;
+template class Xcts::Solutions::CommonVariables<
+    DataVector, typename Xcts::Solutions::detail::SchwarzschildVariables<
+                    DataVector>::Cache>;
+template class Xcts::AnalyticData::CommonVariables<
+    double,
+    typename Xcts::Solutions::detail::SchwarzschildVariables<double>::Cache>;
+template class Xcts::AnalyticData::CommonVariables<
+    DataVector, typename Xcts::Solutions::detail::SchwarzschildVariables<
+                    DataVector>::Cache>;
 
 /// \endcond

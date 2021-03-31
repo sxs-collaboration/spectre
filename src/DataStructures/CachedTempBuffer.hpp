@@ -61,3 +61,18 @@ class CachedTempBuffer {
       ((void)Tags{}, false)...};
   Computer computer_;
 };
+
+namespace CachedTempBuffer_detail {
+template <typename Computer, typename Tags>
+struct CachedTempBufferFromTypelistImpl;
+template <typename Computer, typename... Tags>
+struct CachedTempBufferFromTypelistImpl<Computer, tmpl::list<Tags...>> {
+  using type = CachedTempBuffer<Computer, Tags...>;
+};
+}  // namespace CachedTempBuffer_detail
+
+/// Instantiate a `CachedTempBuffer` from a typelist instead of a parameter pack
+template <typename Computer, typename Tags>
+using cached_temp_buffer_from_typelist =
+    typename CachedTempBuffer_detail::CachedTempBufferFromTypelistImpl<
+        Computer, Tags>::type;

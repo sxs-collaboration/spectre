@@ -8,8 +8,16 @@ from scipy.optimize import newton
 # Isotropic Schwarzschild coordinates
 
 
-def conformal_spatial_metric_isotropic(x, mass):
+def conformal_metric_isotropic(x, mass):
     return np.identity(3)
+
+
+def inv_conformal_metric_isotropic(x, mass):
+    return np.identity(3)
+
+
+def deriv_conformal_metric_isotropic(x, mass):
+    return np.zeros((3, 3, 3))
 
 
 def extrinsic_curvature_trace_isotropic(x, mass):
@@ -40,8 +48,17 @@ def lapse_times_conformal_factor_gradient_isotropic(x, mass):
     return 0.5 * mass * x / r**3
 
 
+def lapse_isotropic(x, mass):
+    return (lapse_times_conformal_factor_isotropic(x, mass) /
+            conformal_factor_isotropic(x, mass))
+
+
 def shift_background(x, mass):
     return np.zeros(3)
+
+
+def longitudinal_shift_background_minus_dt_conformal_metric(x, mass):
+    return np.zeros((3, 3))
 
 
 def shift_isotropic(x, mass):
@@ -50,6 +67,23 @@ def shift_isotropic(x, mass):
 
 def shift_strain_isotropic(x, mass):
     return np.zeros((3, 3))
+
+
+def longitudinal_shift_isotropic(x, mass):
+    return np.zeros((3, 3))
+
+
+def shift_dot_extrinsic_curvature_trace_gradient_isotropic(x, mass):
+    return 0.
+
+
+def longitudinal_shift_minus_dt_conformal_metric_square_isotropic(x, mass):
+    return 0.
+
+
+def longitudinal_shift_minus_dt_conformal_metric_over_lapse_square_isotropic(
+    x, mass):
+    return 0.
 
 
 # Matter sources

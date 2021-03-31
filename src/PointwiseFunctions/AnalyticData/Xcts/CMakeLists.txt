@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY AnalyticData)
+set(LIBRARY XctsAnalyticData)
 
 add_spectre_library(${LIBRARY} INTERFACE)
 
@@ -10,12 +10,17 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticData.hpp
-  Tags.hpp
+  CommonVariables.hpp
+  CommonVariables.tpp
   )
 
-add_subdirectory(Burgers)
-add_subdirectory(CurvedWaveEquation)
-add_subdirectory(Elasticity)
-add_subdirectory(GrMhd)
-add_subdirectory(NewtonianEuler)
-add_subdirectory(Xcts)
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  DataStructures
+  ErrorHandling
+  GeneralRelativity
+  LinearOperators
+  Spectral
+  Utilities
+  )

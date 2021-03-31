@@ -8,6 +8,7 @@
 
 #include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -15,7 +16,9 @@
 #include "Options/ParseOptions.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -139,27 +142,40 @@ bool operator!=(const SchwarzschildImpl& lhs,
                 const SchwarzschildImpl& rhs) noexcept;
 
 template <typename DataType>
-struct SchwarzschildVariables {
-  using Cache = CachedTempBuffer<
-      SchwarzschildVariables,
-      Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-      gr::Tags::TraceExtrinsicCurvature<DataType>,
-      ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      Tags::ConformalFactor<DataType>,
-      ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      Tags::LapseTimesConformalFactor<DataType>,
-      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
-      Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
-      Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
-      gr::Tags::EnergyDensity<DataType>, gr::Tags::StressTrace<DataType>,
-      gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-      ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
-      ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
-      ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
+struct SchwarzschildVariables;
+
+template <typename DataType>
+using SchwarzschildVariablesCache = cached_temp_buffer_from_typelist<
+    SchwarzschildVariables<DataType>,
+    tmpl::push_front<
+        common_tags<DataType>,
+        Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+        Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>,
+        ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+        gr::Tags::TraceExtrinsicCurvature<DataType>,
+        ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
+        Tags::ConformalFactor<DataType>,
+        ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+                      Frame::Inertial>,
+        gr::Tags::Lapse<DataType>, Tags::LapseTimesConformalFactor<DataType>,
+        ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+        Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+        Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+            DataType, 3, Frame::Inertial>,
+        Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+        Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
+        gr::Tags::EnergyDensity<DataType>, gr::Tags::StressTrace<DataType>,
+        gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>>>;
+
+template <typename DataType>
+struct SchwarzschildVariables
+    : CommonVariables<DataType, SchwarzschildVariablesCache<DataType>> {
+  static constexpr size_t Dim = 3;
+  using Cache = SchwarzschildVariablesCache<DataType>;
+  using CommonVariables<DataType,
+                        SchwarzschildVariablesCache<DataType>>::operator();
 
   const tnsr::I<DataType, 3>& x;
   double mass;
@@ -170,6 +186,16 @@ struct SchwarzschildVariables {
                   Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
       const noexcept;
   void operator()(
+      gsl::not_null<tnsr::II<DataType, 3>*> inv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Tags::InverseConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+      const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(
       gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
       gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const noexcept;
@@ -178,6 +204,11 @@ struct SchwarzschildVariables {
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
                     tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
+      const noexcept;
   void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
                   gsl::not_null<Cache*> cache,
                   Tags::ConformalFactor<DataType> /*meta*/) const noexcept;
@@ -186,6 +217,9 @@ struct SchwarzschildVariables {
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
                     Frame::Inertial> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<Scalar<DataType>*> lapse,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::Lapse<DataType> /*meta*/) const noexcept;
   void operator()(
       gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
@@ -200,6 +234,11 @@ struct SchwarzschildVariables {
                   gsl::not_null<Cache*> cache,
                   Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
       const noexcept;
+  void operator()(gsl::not_null<tnsr::II<DataType, 3, Frame::Inertial>*>
+                      longitudinal_shift_background_minus_dt_conformal_metric,
+                  gsl::not_null<Cache*> cache,
+                  Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+                      DataType, 3, Frame::Inertial> /*meta*/) const noexcept;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> shift_excess,
       gsl::not_null<Cache*> cache,
@@ -218,22 +257,6 @@ struct SchwarzschildVariables {
                   gsl::not_null<Cache*> cache,
                   gr::Tags::MomentumDensity<3, Frame::Inertial,
                                             DataType> /*meta*/) const noexcept;
-  void operator()(
-      gsl::not_null<Scalar<DataType>*> fixed_source_for_hamiltonian_constraint,
-      gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
-      const noexcept;
-  void operator()(
-      gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
-      gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-      const noexcept;
-  void operator()(
-      gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
-      gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<
-          Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
-      const noexcept;
 };
 
 }  // namespace detail
@@ -289,7 +312,22 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
     using VarsComputer = detail::SchwarzschildVariables<DataType>;
     typename VarsComputer::Cache cache{
-        get_size(*x.begin()), VarsComputer{x, mass_, coordinate_system_}};
+        get_size(*x.begin()),
+        VarsComputer{
+            {{std::nullopt, std::nullopt}}, x, mass_, coordinate_system_}};
+    return {cache.get_var(RequestedTags{})...};
+  }
+
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
+      const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
+          inv_jacobian,
+      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+    using VarsComputer = detail::SchwarzschildVariables<DataVector>;
+    typename VarsComputer::Cache cache{
+        get_size(*x.begin()),
+        VarsComputer{{{mesh, inv_jacobian}}, x, mass_, coordinate_system_}};
     return {cache.get_var(RequestedTags{})...};
   }
 
