@@ -13,6 +13,7 @@ spectre_target_sources(
   Brick.cpp
   Cylinder.cpp
   Disk.cpp
+  ExpandOverBlocks.cpp
   FrustalCloak.cpp
   Interval.cpp
   Rectangle.cpp
@@ -34,6 +35,7 @@ spectre_target_headers(
   Cylinder.hpp
   Disk.hpp
   DomainCreator.hpp
+  ExpandOverBlocks.hpp
   FrustalCloak.hpp
   Interval.hpp
   Rectangle.hpp

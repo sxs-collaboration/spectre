@@ -8,11 +8,13 @@
 #include <cmath>
 #include <memory>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -24,21 +26,19 @@ struct Inertial;
 }  // namespace Frame
 
 namespace domain::creators {
-Cylinder::Cylinder(double inner_radius, double outer_radius, double lower_bound,
-                   double upper_bound, bool is_periodic_in_z,
-                   size_t initial_refinement,
-                   std::array<size_t, 3> initial_number_of_grid_points,
-                   bool use_equiangular_map,
-                   std::vector<double> radial_partitioning,
-                   std::vector<double> height_partitioning,
-                   const Options::Context& context)
+Cylinder::Cylinder(
+    const double inner_radius, const double outer_radius,
+    const double lower_bound, const double upper_bound,
+    const bool is_periodic_in_z,
+    const typename InitialRefinement::type& initial_refinement,
+    const typename InitialRefinement::type& initial_number_of_grid_points,
+    const bool use_equiangular_map, std::vector<double> radial_partitioning,
+    std::vector<double> height_partitioning, const Options::Context& context)
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
       lower_bound_(lower_bound),
       upper_bound_(upper_bound),
       is_periodic_in_z_(is_periodic_in_z),
-      initial_refinement_(initial_refinement),
-      initial_number_of_grid_points_(initial_number_of_grid_points),
       use_equiangular_map_(use_equiangular_map),
       radial_partitioning_(std::move(radial_partitioning)),
       height_partitioning_(std::move(height_partitioning)) {
@@ -98,20 +98,71 @@ Cylinder::Cylinder(double inner_radius, double outer_radius, double lower_bound,
               std::to_string(upper_bound_));
     }
   }
+
+  // Create block names and groups
+  const size_t num_shells = 1 + radial_partitioning_.size();
+  const size_t num_layers = 1 + height_partitioning_.size();
+  static std::array<std::string, 4> direction_descriptions{"East", "North",
+                                                           "West", "South"};
+  std::vector<std::string> block_names{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups{};
+  for (size_t layer = 0; layer < num_layers; ++layer) {
+    std::string layer_prefix =
+        num_layers > 1 ? "Layer" + std::to_string(layer) : "";
+    block_names.push_back(layer_prefix + "InnerCube");
+    for (size_t shell = 0; shell < num_shells; ++shell) {
+      std::string shell_prefix =
+          num_shells > 1 ? "Shell" + std::to_string(shell) : "";
+      std::string group_name = layer_prefix + shell_prefix + "Wedges";
+      for (size_t direction = 0; direction < 4; ++direction) {
+        std::string block_name = layer_prefix + shell_prefix +
+                                 gsl::at(direction_descriptions, direction);
+        block_names.push_back(block_name);
+        block_groups[group_name].insert(block_name);
+      }
+    }
+  }
+
+  // Expand initial refinement and number of grid points over all blocks
+  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names,
+                                                       std::move(block_groups)};
+  try {
+    initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
+  } catch (const std::exception& error) {
+    PARSE_ERROR(context, "Invalid 'InitialRefinement': " << error.what());
+  }
+  try {
+    initial_number_of_grid_points_ =
+        std::visit(expand_over_blocks, initial_number_of_grid_points);
+  } catch (const std::exception& error) {
+    PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
+  }
+
+  // Set refinement and number of grid points of the central cubes in x and y to
+  // the value in angular direction of the wedges and shells
+  for (size_t layer = 0; layer < num_layers; layer++) {
+    auto& central_cube_refinement =
+        initial_refinement_.at(layer * (1 + 4 * num_shells));
+    auto& central_cube_grid_points =
+        initial_number_of_grid_points_.at(layer * (1 + 4 * num_shells));
+    central_cube_refinement[0] = central_cube_refinement[1];
+    central_cube_grid_points[0] = central_cube_grid_points[1];
+  }
 }
 
 Cylinder::Cylinder(
-    double inner_radius, double outer_radius, double lower_bound,
-    double upper_bound,
+    const double inner_radius, const double outer_radius,
+    const double lower_bound, const double upper_bound,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         lower_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         upper_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         mantle_boundary_condition,
-    size_t initial_refinement,
-    std::array<size_t, 3> initial_number_of_grid_points,
-    bool use_equiangular_map, std::vector<double> radial_partitioning,
+    const typename InitialRefinement::type& initial_refinement,
+    const typename InitialRefinement::type& initial_number_of_grid_points,
+    const bool use_equiangular_map, std::vector<double> radial_partitioning,
     std::vector<double> height_partitioning, const Options::Context& context)
     : Cylinder(inner_radius, outer_radius, lower_bound, upper_bound, false,
                initial_refinement, initial_number_of_grid_points,
@@ -237,24 +288,11 @@ Domain<3> Cylinder::create_domain() const noexcept {
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const noexcept {
-  std::vector<std::array<size_t, 3>> gridpoints_vector;
-  for (size_t layer = 0; layer < 1 + height_partitioning_.size(); layer++) {
-    gridpoints_vector.push_back({{initial_number_of_grid_points_.at(1),
-                                  initial_number_of_grid_points_.at(1),
-                                  initial_number_of_grid_points_.at(2)}});
-    for (size_t shell = 0; shell < 1 + radial_partitioning_.size(); shell++) {
-      for (size_t face = 0; face < 4; face++) {
-        gridpoints_vector.push_back(initial_number_of_grid_points_);
-      }
-    }
-  }
-  return gridpoints_vector;
+  return initial_number_of_grid_points_;
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels() const
     noexcept {
-  return {(1 + 4 * (1 + radial_partitioning_.size())) *
-              (1 + height_partitioning_.size()),
-          make_array<3>(initial_refinement_)};
+  return initial_refinement_;
 }
 }  // namespace domain::creators

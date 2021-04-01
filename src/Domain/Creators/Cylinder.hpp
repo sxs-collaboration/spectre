@@ -5,6 +5,8 @@
 
 #include <array>
 #include <cstddef>
+#include <unordered_map>
+#include <variant>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -37,9 +39,9 @@ namespace domain::creators {
 ///
 /// The outer shell can be split into sub-shells and the cylinder can be split
 /// into disks along its height.
-/// The block numbering starts at the inner square and goes clockwise, starting
-/// with the eastern wedge, through consecutive shells, then repeats this
-/// pattern for all layers bottom to top.
+/// The block numbering starts at the inner square and goes counter-clockwise,
+/// starting with the eastern wedge (+x-direction), through consecutive shells,
+/// then repeats this pattern for all layers bottom to top.
 ///
 /// \image html Cylinder.png "The Cylinder Domain."
 class Cylinder : public DomainCreator<3> {
@@ -91,15 +93,27 @@ class Cylinder : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type = size_t;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial refinement level in each dimension."};
+        "Initial refinement level. Specify one of: a single number, a list "
+        "representing [r, theta, z], or such a list for every block in the "
+        "domain. The central cube always uses the value for 'theta' in both "
+        "x- and y-direction."};
   };
 
   struct InitialGridPoints {
-    using type = std::array<size_t, 3>;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial number of grid points in [r, theta, z]."};
+        "Initial number of grid points. Specify one of: a single number, a "
+        "list representing [r, theta, z], or such a list for every block in "
+        "the domain. The central cube always uses the value for 'theta' in "
+        "both x- and y-direction."};
   };
 
   struct UseEquiangularMap {
@@ -185,39 +199,43 @@ class Cylinder : public DomainCreator<3> {
       "multiple disks. Including this partitioning, the number of Blocks is \n"
       "given by (1 + 4*(1+n_s)) * (1+n_z), where n_s is the \n"
       "length of RadialPartitioning and n_z the length of \n"
-      "HeightPartitioning.\n"
+      "HeightPartitioning. The block numbering starts at the inner square \n"
+      "and goes counter-clockwise, starting with the eastern wedge \n"
+      "(+x-direction) through consecutive shells, then repeats this pattern \n"
+      "for all layers bottom to top. The wedges are named as follows: \n"
+      "  +x-direction: East \n"
+      "  +y-direction: North \n"
+      "  -x-direction: West \n"
+      "  -y-direction: South \n"
       "The circularity of the wedge changes from 0 to 1 within the first \n"
       "shell.\n"
-      "Only one refinement level for all dimensions is currently supported.\n"
-      "The number of gridpoints in each dimension can be set independently, \n"
-      "except for x and y in the square where they are equal to the number \n"
-      "of gridpoints along the angular dimension of the wedges.\n"
       "Equiangular coordinates give better gridpoint spacings in the angular\n"
       "direction, while equidistant coordinates give better gridpoint\n"
       "spacings in the center block."};
 
-  Cylinder(double inner_radius, double outer_radius, double lower_bound,
-           double upper_bound, bool is_periodic_in_z, size_t initial_refinement,
-           std::array<size_t, 3> initial_number_of_grid_points,
-           bool use_equiangular_map,
-           std::vector<double> radial_partitioning = {},
-           std::vector<double> height_partitioning = {},
-           const Options::Context& context = {});
+  Cylinder(
+      double inner_radius, double outer_radius, double lower_bound,
+      double upper_bound, bool is_periodic_in_z,
+      const typename InitialRefinement::type& initial_refinement,
+      const typename InitialRefinement::type& initial_number_of_grid_points,
+      bool use_equiangular_map, std::vector<double> radial_partitioning = {},
+      std::vector<double> height_partitioning = {},
+      const Options::Context& context = {});
 
-  Cylinder(double inner_radius, double outer_radius, double lower_bound,
-           double upper_bound,
-           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-               lower_boundary_condition,
-           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-               upper_boundary_condition,
-           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-               mantle_boundary_condition,
-           size_t initial_refinement,
-           std::array<size_t, 3> initial_number_of_grid_points,
-           bool use_equiangular_map,
-           std::vector<double> radial_partitioning = {},
-           std::vector<double> height_partitioning = {},
-           const Options::Context& context = {});
+  Cylinder(
+      double inner_radius, double outer_radius, double lower_bound,
+      double upper_bound,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          lower_boundary_condition,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          upper_boundary_condition,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          mantle_boundary_condition,
+      const typename InitialRefinement::type& initial_refinement,
+      const typename InitialRefinement::type& initial_number_of_grid_points,
+      bool use_equiangular_map, std::vector<double> radial_partitioning = {},
+      std::vector<double> height_partitioning = {},
+      const Options::Context& context = {});
 
   Cylinder() = default;
   Cylinder(const Cylinder&) = delete;
@@ -230,8 +248,8 @@ class Cylinder : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels()
+      const noexcept override;
 
  private:
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
@@ -239,8 +257,8 @@ class Cylinder : public DomainCreator<3> {
   double lower_bound_{std::numeric_limits<double>::signaling_NaN()};
   double upper_bound_{std::numeric_limits<double>::signaling_NaN()};
   bool is_periodic_in_z_{true};
-  size_t initial_refinement_{};
-  std::array<size_t, 3> initial_number_of_grid_points_{};
+  std::vector<std::array<size_t, 3>> initial_refinement_{};
+  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
   bool use_equiangular_map_{false};
   std::vector<double> radial_partitioning_{};
   std::vector<double> height_partitioning_{};
