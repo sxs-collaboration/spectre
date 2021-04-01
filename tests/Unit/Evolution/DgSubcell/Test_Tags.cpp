@@ -13,6 +13,7 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -36,6 +37,9 @@ template <size_t Dim>
 void test() {
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Mesh<Dim>>(
       "Subcell(Mesh)");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
+          Dim>>("NeighborDataForReconstructionAndRdmpTci");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>>(
       "LogicalCoordinates");

@@ -11,6 +11,7 @@ spectre_target_headers(
   Coordinates.hpp
   Inactive.hpp
   Mesh.hpp
+  NeighborData.hpp
   SubcellOptions.hpp
   Tags.hpp
   TciGridHistory.hpp
