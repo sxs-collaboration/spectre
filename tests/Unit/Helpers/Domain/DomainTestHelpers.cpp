@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                  // IWYU pragma: keep
@@ -475,6 +476,46 @@ void test_physical_separation(
   }
 }
 
+// Given a vector of Blocks, tests that the determinant of the Jacobian is
+// positive at all corners of those Blocks.
+template <size_t VolumeDim>
+void test_det_jac_positive(
+    const std::vector<Block<VolumeDim>>& blocks, double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
+  std::array<tnsr::I<double, VolumeDim, Frame::Logical>, two_to_the(VolumeDim)>
+      corner_points{};
+  size_t index = 0;
+  for (VolumeCornerIterator<VolumeDim> vci; vci; ++vci, ++index) {
+    gsl::at(corner_points, index) =
+        tnsr::I<double, VolumeDim, Frame::Logical>(vci.coords_of_corner());
+  }
+  for(const auto& block: blocks) {
+    CAPTURE(block.id());
+    if (block.is_time_dependent()) {
+      const auto& map_logical_to_grid = block.moving_mesh_logical_to_grid_map();
+      const auto& map_grid_to_inertial =
+          block.moving_mesh_grid_to_inertial_map();
+      for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
+        CAPTURE(i);
+        CHECK(get(determinant(map_logical_to_grid.jacobian(
+                  gsl::at(corner_points, i)))) > 0.0);
+        CHECK(get(determinant(map_grid_to_inertial.jacobian(
+                  map_logical_to_grid(gsl::at(corner_points, i)), time,
+                  functions_of_time))) > 0.0);
+      }
+    } else {
+      const auto& map = block.stationary_map();
+      for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
+        CAPTURE(i);
+        CHECK(get(determinant(map.jacobian(gsl::at(corner_points, i)))) >
+              0.0);
+      }
+    }
+  }
+}
+
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_volume(
     const ElementId<VolumeDim>& element_id) noexcept {
@@ -541,6 +582,12 @@ tnsr::i<DataType, SpatialDim> unit_basis_form(
       const std::vector<std::array<size_t, DIM(data)>>&               \
           initial_refinement_levels) noexcept;                        \
   template void test_physical_separation(                             \
+      const std::vector<Block<DIM(data)>>& blocks, const double time, \
+      const std::unordered_map<                                       \
+          std::string,                                                \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&  \
+          functions_of_time) noexcept;                                \
+  template void test_det_jac_positive(                                \
       const std::vector<Block<DIM(data)>>& blocks, const double time, \
       const std::unordered_map<                                       \
           std::string,                                                \
