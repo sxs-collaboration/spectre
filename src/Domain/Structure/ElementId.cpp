@@ -33,16 +33,19 @@ static_assert(sizeof(ElementId<3>) == 3 * sizeof(int),
               "Wrong size for ElementId<3>");
 
 template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(const size_t block_id) noexcept
-    : segment_ids_(make_array<VolumeDim>(SegmentId(block_id, 0, 0))) {}
+ElementId<VolumeDim>::ElementId(const size_t block_id,
+                                const size_t grid_index) noexcept
+    : segment_ids_(
+          make_array<VolumeDim>(SegmentId(block_id, 0, 0, grid_index))) {}
 
 template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(
-    const size_t block_id,
-    std::array<SegmentId, VolumeDim> segment_ids) noexcept
+ElementId<VolumeDim>::ElementId(const size_t block_id,
+                                std::array<SegmentId, VolumeDim> segment_ids,
+                                const size_t grid_index) noexcept
     : segment_ids_(segment_ids) {
   for (size_t d = 0; d < VolumeDim; ++d) {
     gsl::at(segment_ids_, d).set_block_id(block_id);
+    gsl::at(segment_ids_, d).set_grid_index(grid_index);
   }
 }
 
@@ -53,7 +56,7 @@ ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
   gsl::at(new_segment_ids, dim) =
       gsl::at(new_segment_ids, dim).id_of_child(side);
-  return {block_id(), new_segment_ids};
+  return {block_id(), new_segment_ids, grid_index()};
 }
 
 template <size_t VolumeDim>
@@ -61,7 +64,7 @@ ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(const size_t dim) const
     noexcept {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
   gsl::at(new_segment_ids, dim) = gsl::at(new_segment_ids, dim).id_of_parent();
-  return {block_id(), new_segment_ids};
+  return {block_id(), new_segment_ids, grid_index()};
 }
 
 template <size_t VolumeDim>
@@ -84,7 +87,11 @@ ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
                          const ElementId<VolumeDim>& id) noexcept {
-  os << "[B" << id.block_id() << ',' << id.segment_ids() << ']';
+  os << "[B" << id.block_id() << ',' << id.segment_ids();
+  if (id.grid_index() > 0) {
+    os << ",G" << id.grid_index();
+  }
+  os << ']';
   return os;
 }
 

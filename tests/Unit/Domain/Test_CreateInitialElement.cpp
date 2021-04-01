@@ -485,5 +485,33 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
         Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 6}}}}},
                      aligned}}});
 
+  {
+    // element with a non-zero grid index
+    const size_t grid_index = 3;
+    test_create_initial_element(
+        ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 4}}}, grid_index},
+        test_block, refinement,
+        {{Direction<2>::upper_xi(),
+          Neighbors<2>{
+              {ElementId<2>{
+                  0, {{SegmentId{2, 3}, SegmentId{3, 4}}}, grid_index}},
+              aligned}},
+         {Direction<2>::lower_xi(),
+          Neighbors<2>{
+              {ElementId<2>{
+                  0, {{SegmentId{2, 1}, SegmentId{3, 4}}}, grid_index}},
+              aligned}},
+         {Direction<2>::upper_eta(),
+          Neighbors<2>{
+              {ElementId<2>{
+                  0, {{SegmentId{2, 2}, SegmentId{3, 5}}}, grid_index}},
+              aligned}},
+         {Direction<2>::lower_eta(),
+          Neighbors<2>{
+              {ElementId<2>{
+                  0, {{SegmentId{2, 2}, SegmentId{3, 3}}}, grid_index}},
+              aligned}}});
+  }
+
   test_h_refinement();
 }

@@ -16,11 +16,12 @@ class ElementId;
 /// \brief Create the `ElementId`s of the a single Block
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> initial_element_ids(
-    size_t block_id, std::array<size_t, VolumeDim> initial_ref_levs) noexcept;
+    size_t block_id, std::array<size_t, VolumeDim> initial_ref_levs,
+    size_t grid_index = 0) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Create the `ElementId`s of the initial computational domain.
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> initial_element_ids(
-    const std::vector<std::array<size_t, VolumeDim>>&
-        initial_refinement_levels) noexcept;
+    const std::vector<std::array<size_t, VolumeDim>>& initial_refinement_levels,
+    size_t grid_index = 0) noexcept;

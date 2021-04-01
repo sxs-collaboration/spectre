@@ -30,7 +30,8 @@ class er;
  *
  * It is constructed from the BlockId of the Block to which the Element belongs
  * and the VolumeDim SegmentIds that label the segments of the Block that the
- * Element covers.
+ * Element covers. An optional `grid_index` identifies elements with the same
+ * BlockId and SegmentIds across multiple grids.
  *
  * \details
  * The `ElementId` serves as an index that is compatible with Charm++ and
@@ -59,11 +60,11 @@ class ElementId {
   ~ElementId() noexcept = default;
 
   /// Create the ElementId of the root Element of a Block.
-  explicit ElementId(size_t block_id) noexcept;
+  explicit ElementId(size_t block_id, size_t grid_index = 0) noexcept;
 
   /// Create an arbitrary ElementId.
-  ElementId(size_t block_id,
-            std::array<SegmentId, VolumeDim> segment_ids) noexcept;
+  ElementId(size_t block_id, std::array<SegmentId, VolumeDim> segment_ids,
+            size_t grid_index = 0) noexcept;
 
   ElementId<VolumeDim> id_of_child(size_t dim, Side side) const noexcept;
 
@@ -78,6 +79,17 @@ class ElementId {
             }),
         "Not all of the `SegmentId`s inside `ElementId` have same `BlockId`.");
     return segment_ids_[0].block_id();
+  }
+
+  size_t grid_index() const noexcept {
+    ASSERT(alg::all_of(segment_ids_,
+                       [this](const SegmentId& local_id) noexcept {
+                         return local_id.grid_index() ==
+                                segment_ids_[0].grid_index();
+                       }),
+           "Not all of the `SegmentId`s inside `ElementId` have the same "
+           "`grid_index`.");
+    return segment_ids_[0].grid_index();
   }
 
   const std::array<SegmentId, VolumeDim>& segment_ids() const noexcept {
@@ -129,7 +141,8 @@ template <size_t VolumeDim>
 inline bool operator==(const ElementId<VolumeDim>& lhs,
                        const ElementId<VolumeDim>& rhs) noexcept {
   return lhs.block_id() == rhs.block_id() and
-         lhs.segment_ids() == rhs.segment_ids();
+         lhs.segment_ids() == rhs.segment_ids() and
+         lhs.grid_index() == rhs.grid_index();
 }
 
 template <size_t VolumeDim>

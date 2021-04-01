@@ -33,8 +33,9 @@ Element<VolumeDim> create_initial_element(
 
   // Declare two helper lambdas for setting the neighbors of an element
   const auto compute_element_neighbor_in_other_block =
-      [&block, &initial_refinement_levels, &neighbors_of_block, &segment_ids](
-          const Direction<VolumeDim>& direction) noexcept {
+      [&block, &initial_refinement_levels, &neighbors_of_block, &segment_ids,
+       grid_index = element_id.grid_index()](
+         const Direction<VolumeDim>& direction) noexcept {
     const auto& block_neighbor = neighbors_of_block.at(direction);
     const auto& orientation = block_neighbor.orientation();
     const auto direction_in_neighbor = orientation(direction);
@@ -122,7 +123,8 @@ Element<VolumeDim> create_initial_element(
           }
         }
       }
-      neighbor_ids.insert({block_neighbor.id(), segment_ids_of_neighbor});
+      neighbor_ids.insert(
+          {block_neighbor.id(), segment_ids_of_neighbor, grid_index});
     next_index:;
     }
     return std::make_pair(
@@ -143,7 +145,8 @@ Element<VolumeDim> create_initial_element(
         direction,
         Neighbors<VolumeDim>(
             {{ElementId<VolumeDim>{element_id.block_id(),
-                                   std::move(segment_ids_of_neighbor)}}},
+                                   std::move(segment_ids_of_neighbor),
+                                   element_id.grid_index()}}},
             OrientationMap<VolumeDim>{}));
   };
 
