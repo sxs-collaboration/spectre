@@ -144,13 +144,14 @@ void test_boundary_correction_conservation_impl(
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const tuples::TaggedTuple<Tags::Range<RangeTags>...>& ranges,
     const bool use_moving_mesh, const ::dg::Formulation dg_formulation,
-    const ZeroOnSmoothSolution zero_on_smooth_solution) {
+    const ZeroOnSmoothSolution zero_on_smooth_solution, const double eps) {
   CAPTURE(use_moving_mesh);
   CAPTURE(dg_formulation);
   CAPTURE(FaceDim);
   constexpr bool curved_background =
       detail::has_inverse_spatial_metric_tag_v<System>;
   CAPTURE(curved_background);
+  Approx custom_approx = Approx::custom().epsilon(eps).scale(1.0);
 
   using variables_tags = typename System::variables_tag::tags_list;
   using primitive_variables_tags = detail::get_system_primitive_vars<
@@ -398,8 +399,8 @@ void test_boundary_correction_conservation_impl(
     });
     {
       INFO("Check weak and strong boundary terms match.");
-      CHECK_VARIABLES_APPROX(boundary_corrections,
-                             expected_boundary_corrections);
+      CHECK_VARIABLES_CUSTOM_APPROX(
+          boundary_corrections, expected_boundary_corrections, custom_approx);
     }
 
     if (zero_on_smooth_solution == ZeroOnSmoothSolution::Yes) {
@@ -435,13 +436,13 @@ void test_boundary_correction_conservation_impl(
                              ::dg::Formulation::StrongInertial);
       Variables<dt_variables_tags> expected_zero_boundary_correction{
           face_mesh.number_of_grid_points(), 0.0};
-      tmpl::for_each<dt_variables_tags>([&expected_zero_boundary_correction,
+      tmpl::for_each<dt_variables_tags>([&custom_approx,
+                                         &expected_zero_boundary_correction,
                                          &zero_boundary_correction](
                                             auto dt_variables_tag_v) noexcept {
         using dt_variables_tag = tmpl::type_from<decltype(dt_variables_tag_v)>;
         const std::string tag_name = db::tag_name<dt_variables_tag>();
         CAPTURE(tag_name);
-        Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
         CHECK_ITERABLE_CUSTOM_APPROX(
             get<dt_variables_tag>(zero_boundary_correction),
             get<dt_variables_tag>(expected_zero_boundary_correction),
@@ -460,15 +461,16 @@ void test_boundary_correction_conservation_impl(
     // Check that the flux leaving one element equals the flux entering its
     // neighbor, i.e., F*(interior, exterior) == -F*(exterior, interior)
     reverse_side_boundary_corrections *= -1.0;
-    tmpl::for_each<flux_variables>([&boundary_corrections,
+    tmpl::for_each<flux_variables>([&boundary_corrections, &custom_approx,
                                     &reverse_side_boundary_corrections](
                                        auto flux_variable_tag_v) {
       using flux_variable_tag = tmpl::type_from<decltype(flux_variable_tag_v)>;
       const std::string tag_name = db::tag_name<flux_variable_tag>();
       CAPTURE(tag_name);
-      CHECK_ITERABLE_APPROX(
+      CHECK_ITERABLE_CUSTOM_APPROX(
           get<::Tags::dt<flux_variable_tag>>(reverse_side_boundary_corrections),
-          get<::Tags::dt<flux_variable_tag>>(boundary_corrections));
+          get<::Tags::dt<flux_variable_tag>>(boundary_corrections),
+          custom_approx);
     });
   } else {
     ERROR("DG formulation must be StrongInertial or WeakInertial, not "
@@ -490,13 +492,14 @@ void test_boundary_correction_conservation(
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const tuples::TaggedTuple<Tags::Range<RangeTags>...>& ranges,
     const ZeroOnSmoothSolution zero_on_smooth_solution =
-        ZeroOnSmoothSolution::Yes) {
+        ZeroOnSmoothSolution::Yes,
+    const double eps = 1.0e-12) {
   for (const auto use_moving_mesh : {true, false}) {
     for (const auto& dg_formulation :
          {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
       detail::test_boundary_correction_conservation_impl<System>(
           generator, correction, face_mesh, volume_data, ranges,
-          use_moving_mesh, dg_formulation, zero_on_smooth_solution);
+          use_moving_mesh, dg_formulation, zero_on_smooth_solution, eps);
     }
   }
 }
