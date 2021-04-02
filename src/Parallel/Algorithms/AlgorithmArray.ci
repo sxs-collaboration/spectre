@@ -4,6 +4,7 @@
 module AlgorithmArray {
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
+  include "Parallel/MaxInlineMethodsReached.hpp";
 
   // note: the array index here is a hack to use our own types in the chare
   // array index. The way the ci file is parsed as of charm++ 6.10.2 is such
@@ -24,24 +25,36 @@ module AlgorithmArray {
             typename ParallelComponent::initialization_tags>
             initialization_items);
 
+    // Ordinarily, indiscriminate use of [inline] has the danger of arbitrarily
+    // deep recursive function calls, which then exceed the stack limits of the
+    // machine that it is running on and errors. We modify the charm definition
+    // of this function (via a patch in tools/CharmModulePatches) to switch to
+    // message-passing when the recursive depth is high, using
+    // Parallel::detail::max_inline_methods_reached() in
+    // MaxInlineMethodsReached.hpp. This allows us to inline up to a set limit
+    // (improving performance) and support load-balancing and debug
+    // instrumentation performed during charm entry method calls, while being
+    // certain to avoid stack overflows.
+
     template <typename Action, typename... Args>
-    entry void simple_action(std::tuple<Args...> & args);
+    entry [inline] void simple_action(std::tuple<Args...> & args);
 
     template <typename Action>
-    entry void simple_action();
+    entry [inline] void simple_action();
 
     template <typename Action, typename Arg>
     entry[reductiontarget] void reduction_action(Arg arg);
 
-    entry void perform_algorithm();
+    entry [inline] void perform_algorithm();
 
-    entry void perform_algorithm(bool);
+    entry [inline] void perform_algorithm(bool);
 
     entry void start_phase(typename ParallelComponent::metavariables::Phase);
 
     template <typename ReceiveTag, typename ReceiveData_t>
-    entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,
-                            bool enable_if_disabled = false);
+    entry [inline] void receive_data(typename ReceiveTag::temporal_id&,
+                                    ReceiveData_t&,
+                                    bool enable_if_disabled = false);
 
     entry void set_terminate(bool);
   }

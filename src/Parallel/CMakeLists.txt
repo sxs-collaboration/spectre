@@ -32,6 +32,7 @@ spectre_target_headers(
   InitializationFunctions.hpp
   Invoke.hpp
   Main.hpp
+  MaxInlineMethodsReached.hpp
   NodeLock.hpp
   ParallelComponentHelpers.hpp
   PhaseDependentActionList.hpp

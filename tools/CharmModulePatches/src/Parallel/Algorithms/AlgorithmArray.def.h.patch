@@ -1,0 +1,49 @@
+Distributed under the MIT License.
+See LICENSE.txt for details.
+--- AlgorithmArray.def.h	2021-04-01 14:42:23.928094971 -0700
++++ alterations/AlgorithmArray.def.h	2021-04-01 14:44:19.599096051 -0700
+@@ -310,7 +310,7 @@
+ {
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+     _TRACE_BEGIN_EXECUTE_DETAILED(0,ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_simple_action_marshall2<Action, Args...>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+     LDObjHandle objHandle;
+@@ -360,7 +360,7 @@
+ {
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+     _TRACE_BEGIN_EXECUTE_DETAILED(0,ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_simple_action_void<Action>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+     LDObjHandle objHandle;
+@@ -442,7 +442,7 @@
+ {
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+     _TRACE_BEGIN_EXECUTE_DETAILED(0,ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::idx_perform_algorithm_void()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+     LDObjHandle objHandle;
+@@ -479,7 +479,7 @@
+ {
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+     _TRACE_BEGIN_EXECUTE_DETAILED(0,ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::idx_perform_algorithm_marshall6()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+     LDObjHandle objHandle;
+@@ -557,7 +557,7 @@
+ {
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+     _TRACE_BEGIN_EXECUTE_DETAILED(0,ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall8<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+     LDObjHandle objHandle;
