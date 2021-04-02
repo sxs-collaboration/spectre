@@ -121,6 +121,8 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
         Actions::AddTemporalIdsToInterpolationTarget<InterpolationTargetTag>>(
         target, std::vector<TimeStepId>{time_id});
   }
+
+  bool needs_evolved_variables() const noexcept override { return true; }
 };
 
 /// \cond

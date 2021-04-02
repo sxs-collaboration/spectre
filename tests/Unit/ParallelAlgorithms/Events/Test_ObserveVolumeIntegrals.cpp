@@ -252,6 +252,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   CHECK(results.volume == expected_volume);
   CHECK(results.volume_integrals.size() == num_tensor_components);
   CHECK(results.volume_integrals == expected_volume_integrals);
+
+  CHECK(observe->needs_evolved_variables());
 }
 }  // namespace
 

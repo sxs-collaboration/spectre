@@ -59,6 +59,8 @@ struct initialize_elements_and_queue_simple_actions {
         tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>>
         event{};
 
+    CHECK(event.needs_evolved_variables());
+
     // Run event on all elements.
     for (const auto& element_id : element_ids) {
       // 1. Get vars and mesh

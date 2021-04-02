@@ -87,7 +87,11 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  TestHelpers::test_factory_creation<Event<tmpl::list<>>>("Completion");
+  {
+    const auto completion =
+        TestHelpers::test_factory_creation<Event<tmpl::list<>>>("Completion");
+    CHECK(not completion->needs_evolved_variables());
+  }
 
   check_trigger(true, "Always");
   check_trigger(false, "Not: Always");

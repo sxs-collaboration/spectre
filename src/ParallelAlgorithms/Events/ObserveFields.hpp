@@ -349,6 +349,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             observers::ObservationKey(subfile_path_ + ".vol")};
   }
 
+  bool needs_evolved_variables() const noexcept override { return true; }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
     Event<EventRegistrars>::pup(p);

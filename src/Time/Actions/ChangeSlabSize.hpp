@@ -329,6 +329,13 @@ class ChangeSlabSize : public Event<EventRegistrars> {
         component_proxy);
   }
 
+  bool needs_evolved_variables() const noexcept override {
+    // This depends on the chosen StepChoosers, but they don't have a
+    // way to report this information so we just return true to be
+    // safe.
+    return true;
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
     Event<EventRegistrars>::pup(p);

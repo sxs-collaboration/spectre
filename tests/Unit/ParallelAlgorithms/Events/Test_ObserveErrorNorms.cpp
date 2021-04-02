@@ -331,6 +331,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
     ++num_tensors_observed;
   });
   CHECK(results.errors.size() == num_tensors_observed);
+
+  CHECK(observe->needs_evolved_variables());
 }
 
 template <typename System, bool HasAnalyticSolutions>

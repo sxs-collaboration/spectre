@@ -203,6 +203,8 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
             observers::ObservationKey(subfile_path_ + ".dat")};
   }
 
+  bool needs_evolved_variables() const noexcept override { return true; }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     Event<EventRegistrars>::pup(p);
