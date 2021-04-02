@@ -88,6 +88,15 @@ struct MockContributeReductionData {
       *results = {observation_id, subfile_name, reduction_names,
                   std::move(reduction_data), formatter.has_value()};
     }
+
+    if (formatter.has_value()) {
+      const auto formatted_msg = (*formatter)(
+        0.123, 3, 1.560, 3.141, 2.7818, 1023.3, 9.32, 4.148
+      );
+      CHECK(formatted_msg ==
+        "Simulation time: 0.123000s\n"
+        "  Wall time: 9.320000s (min) - 4.148000s (max)");
+    }
   }
 };
 
@@ -227,6 +236,8 @@ void test_observe(const Observer& observer,
   CHECK(std::get<4>(reduction_data.data()) == expected_max_step);
   CHECK(results->reduction_names[5] == "Effective time step");
   CHECK(std::get<5>(reduction_data.data()) == approx(expected_effective_step));
+  CHECK(results->reduction_names[6] == "Minimum Walltime");
+  CHECK(results->reduction_names[7] == "Maximum Walltime");
 }
 }  // namespace
 

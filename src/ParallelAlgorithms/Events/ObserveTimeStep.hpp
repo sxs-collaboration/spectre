@@ -8,6 +8,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 #include <string>
+#include <sstream>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -62,7 +63,9 @@ using ObserveTimeStepReductionData = Parallel::ReductionData<
     Parallel::ReductionDatum<
         double, funcl::Plus<>,
         funcl::Divides<funcl::Literal<1, double>, funcl::Divides<>>,
-        std::index_sequence<1>>>;
+        std::index_sequence<1>>,
+    Parallel::ReductionDatum<double, funcl::Min<>>,
+    Parallel::ReductionDatum<double, funcl::Max<>>>;
 
 struct FormatTimeOutput
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
@@ -71,9 +74,16 @@ struct FormatTimeOutput
                          const double /* slab_size */,
                          const double /* min_time_step */,
                          const double /* max_time_step */,
-                         const double /* effective_time_step */) const
+                         const double /* effective_time_step */,
+                         const double min_wall_time,
+                         const double max_wall_time) const
       noexcept {
-    return "Current time: " + std::to_string(time);
+    std::stringstream ss;
+    ss  << "Simulation time: " << std::to_string(time)
+        << "s\n  Wall time: " << std::to_string(min_wall_time)
+        << "s (min) - "
+        << std::to_string(max_wall_time) << "s (max)";
+    return ss.str();
   }
   // NOLINTNEXTLINE
   void pup(PUP::er& /*p*/) noexcept {}
@@ -175,6 +185,7 @@ class ObserveTimeStep : public Event<EventRegistrars> {
     const size_t number_of_grid_points = variables.number_of_grid_points();
     const double slab_size = time_step.slab().duration().value();
     const double step_size = abs(time_step.value());
+    const double wall_time = sys::wall_time();
 
     auto& local_observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
@@ -191,9 +202,11 @@ class ObserveTimeStep : public Event<EventRegistrars> {
         subfile_path_,
         std::vector<std::string>{"Time", "NumberOfPoints", "Slab size",
                                  "Minimum time step", "Maximum time step",
-                                 "Effective time step"},
+                                 "Effective time step", "Minimum Walltime",
+                                 "Maximum Walltime"},
         ReductionData{time, number_of_grid_points, slab_size, step_size,
-                      step_size, number_of_grid_points / step_size},
+                      step_size, number_of_grid_points / step_size, wall_time,
+                      wall_time},
         std::move(formatter));
   }
 
