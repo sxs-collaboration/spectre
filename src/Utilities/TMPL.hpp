@@ -24,6 +24,7 @@
 #include "Utilities/TmplDigraph.hpp"  // IWYU pragma: export
 
 namespace brigand {
+/// \cond
 namespace detail {
 template <bool b, typename O, typename L, std::size_t I, typename R,
           typename U = void>
@@ -65,6 +66,7 @@ struct call_replace_at_impl
     : replace_at_impl<(I::value > 15), brigand::clear<L>, L, I::value + 1, R> {
 };
 }  // namespace detail
+/// \endcond
 
 namespace lazy {
 template <typename L, typename I, typename R>
