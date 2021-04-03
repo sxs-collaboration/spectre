@@ -32,7 +32,7 @@ struct MomentumSquared {
 };
 /// \endcond
 
-/// Minerbo (maximum entropy) closure for the M1 scheme
+// Minerbo (maximum entropy) closure for the M1 scheme
 double minerbo_closure_function(const double zeta) noexcept {
   return 1.0 / 3.0 +
          square(zeta) * (0.4 - 2.0 / 15.0 * zeta + 0.4 * square(zeta));

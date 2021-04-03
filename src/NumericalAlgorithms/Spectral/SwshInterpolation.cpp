@@ -299,7 +299,7 @@ struct ClenshawRecurrenceConstants {
     }
   }
 
-  /// Serialization for Charm++.
+  // Serialization for Charm++.
   void pup(PUP::er& p) noexcept {  // NOLINT
     p | alpha_prefactor;
     p | alpha_constant;

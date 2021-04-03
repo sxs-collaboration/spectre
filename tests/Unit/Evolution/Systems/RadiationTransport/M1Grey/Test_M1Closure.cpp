@@ -19,7 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// Test M1 closure function
+// Test M1 closure function
 SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.M1Closure",
                   "[Unit][M1Grey]") {
   const DataVector used_for_size(5);

@@ -43,7 +43,7 @@ RunTests::RunTests(CkArgMsg* msg) {
   sys::abort("A catch test has failed.");
 }
 
-#include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep
+#include "tests/Unit/RunTests.def.h"
 
 // Needed for tests that use the GlobalCache since it registers itself with
 // Charm++. However, since Parallel/CharmMain.tpp isn't included in the RunTests

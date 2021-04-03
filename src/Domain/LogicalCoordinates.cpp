@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines functions logical_coordinates and interface_logical_coordinates
-
 #include "Domain/LogicalCoordinates.hpp"
 
 #include <array>

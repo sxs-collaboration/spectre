@@ -31,4 +31,4 @@ RunTests::RunTests(CkArgMsg* msg) {
   sys::abort("A catch test has failed.");
 }
 
-#include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep
+#include "tests/Unit/RunTests.def.h"

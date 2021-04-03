@@ -23,10 +23,8 @@
 // IWYU pragma: no_include "DataStructures/Index.hpp"
 
 namespace {
-/*!
- * Given a vector of contiguous data and an array giving the dimensions of the
- * matrix returns a `vector<vector<T>>` representing the matrix.
- */
+// Given a vector of contiguous data and an array giving the dimensions of the
+// matrix returns a `vector<vector<T>>` representing the matrix.
 Matrix vector_to_matrix(const std::vector<double>& raw_data,
                         const std::array<hsize_t, 2>& size) {
   Matrix temp(size[0], size[1]);

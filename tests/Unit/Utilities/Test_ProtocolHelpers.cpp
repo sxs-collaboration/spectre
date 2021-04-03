@@ -14,7 +14,7 @@ namespace {
 
 /// [named_protocol]
 namespace protocols {
-/*!
+/*
  * \brief Has a name.
  *
  * Requires the class has these member functions:
