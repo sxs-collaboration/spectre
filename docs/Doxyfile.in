@@ -89,8 +89,9 @@ INPUT = @SPECTRE_DOXYGEN_GROUPS@ \
 # Add tutorials directory
 INPUT += @PROJECT_SOURCE_DIR@/docs
 
-FILE_PATTERNS          = *.cpp \
-                         *.hpp \
+# We don't parse cpp files because Doxygen has trouble with some template
+# expressions and we place documentation in header files anyway.
+FILE_PATTERNS          = *.hpp \
                          *.md
 
 RECURSIVE              = YES
