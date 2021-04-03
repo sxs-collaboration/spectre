@@ -11,7 +11,9 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -49,6 +51,9 @@ void test() {
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
       "InertialCoordinates");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>(
+      "InverseJacobian(Logical,Grid)");
 
   TestHelpers::db::test_compute_tag<
       evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>(
@@ -72,6 +77,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags",
                   "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::ActiveGrid>(
       "ActiveGrid");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
+      "Det(InverseJacobian(Logical,Grid))");
+  TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::DidRollback>(
+      "DidRollback");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::Inactive<Var1>>("Inactive(Var1)");
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Inactive<

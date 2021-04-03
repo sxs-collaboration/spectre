@@ -9,7 +9,9 @@ spectre_target_headers(
   HEADERS
   ActiveGrid.hpp
   Coordinates.hpp
+  DidRollback.hpp
   Inactive.hpp
+  Jacobians.hpp
   Mesh.hpp
   NeighborData.hpp
   SubcellOptions.hpp
