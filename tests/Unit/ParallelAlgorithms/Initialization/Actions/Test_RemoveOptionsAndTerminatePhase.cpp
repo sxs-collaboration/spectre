@@ -108,11 +108,11 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  /// [actions]
+  // [actions]
   using initialization_actions =
       tmpl::list<Action0, Action1,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
-  /// [actions]
+  // [actions]
 
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,

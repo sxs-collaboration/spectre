@@ -47,13 +47,13 @@ std::ostream& operator<<(std::ostream& os, Animal t) noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
-  /// [static_cache]
+  // [static_cache]
   const static auto cache =
       make_static_cache<CacheRange<0_st, 3_st>, CacheRange<3_st, 5_st>>(
           [](const size_t a, const size_t b) noexcept { return a + b; });
   CHECK(cache(0, 3) == 3);  // smallest entry
   CHECK(cache(2, 4) == 6);  // largest entry
-  /// [static_cache]
+  // [static_cache]
 
   std::vector<std::pair<size_t, size_t>> calls;
   const auto cache2 =
@@ -98,11 +98,11 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   CHECK(small_cache() == 5);
   CHECK(small_calls == 1);
 
-  /// [static_cache_no_args]
+  // [static_cache_no_args]
   const auto simple_small_cache =
       make_static_cache([]() noexcept { return size_t{10}; });
   CHECK(simple_small_cache() == 10);
-  /// [static_cache_no_args]
+  // [static_cache_no_args]
 
   // check enum caching functionality
   const auto enum_generator_tuple =
@@ -136,12 +136,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
                                value);
     };
   };
-  /// [static_cache_with_enum]
+  // [static_cache_with_enum]
   const auto simple_enum_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>>([
   ](const Color color) noexcept { return std::string{MakeString{} << color}; });
   CHECK(simple_enum_cache(Color::Red) == "Red");
-  /// [static_cache_with_enum]
+  // [static_cache_with_enum]
 
   const auto int_cache = make_static_cache<CacheRange<-5, 10>>(
       [](const int val) noexcept { return pow<3>(val); });
@@ -166,7 +166,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
           std::make_tuple(3, static_cast<size_t>(color) + 1, 4));
   }
 
-  /// [static_cache_with_enum_and_numeric]
+  // [static_cache_with_enum_and_numeric]
   const auto simple_enum_size_t_enum_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>,
       CacheRange<3_st, 5_st>,
@@ -179,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
         "Red3Labradoodle");
   CHECK(simple_enum_size_t_enum_cache(Color::Purple, 4, Animal::Poodle) ==
         "Purple4Poodle");
-  /// [static_cache_with_enum_and_numeric]
+  // [static_cache_with_enum_and_numeric]
   const auto enum_size_t_enum_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>,
       CacheRange<3_st, 5_st>,

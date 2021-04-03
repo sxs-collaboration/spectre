@@ -6,7 +6,7 @@
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
 namespace {
-/// [CREATE_HAS_EXAMPLE]
+// [CREATE_HAS_EXAMPLE]
 CREATE_HAS_STATIC_MEMBER_VARIABLE(foo)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(foo)
 CREATE_HAS_STATIC_MEMBER_VARIABLE(foobar)
@@ -26,6 +26,6 @@ static_assert(not has_foobar_v<testing_create_has_static_member_variable>,
 static_assert(
     not has_foobar_v<testing_create_has_static_member_variable, size_t>,
     "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
-/// [CREATE_HAS_EXAMPLE]
+// [CREATE_HAS_EXAMPLE]
 
 }  // namespace

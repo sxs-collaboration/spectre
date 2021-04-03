@@ -54,11 +54,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
-  /// [h5file_readwrite_get_header]
+  // [h5file_readwrite_get_header]
   h5::H5File<h5::AccessType::ReadWrite> my_file0(h5_file_name);
   // Check that the header was written correctly
   const std::string header = my_file0.get<h5::Header>("/header").get_header();
-  /// [h5file_readwrite_get_header]
+  // [h5file_readwrite_get_header]
   my_file0.close_current_object();
 
   const auto check_header = [&h5_file_name](const auto& my_file) noexcept {
@@ -180,14 +180,14 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorCannotAppendReadOnly",
   h5::H5File<h5::AccessType::ReadOnly> my_file(file_name, true);
 }
 
-/// [willfail_example_for_dev_doc]
+// [willfail_example_for_dev_doc]
 // [[OutputRegex, File './Unit.IO.H5.FileErrorExists.h5' already exists and we
 // are not allowed to append. To reduce the risk of accidental deletion you must
 // explicitly delete the file first using the file_system library in
 // SpECTRE or through your shell.]]
 SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorExists", "[Unit][IO][H5]") {
   ERROR_TEST();
-  /// [willfail_example_for_dev_doc]
+  // [willfail_example_for_dev_doc]
   std::string file_name = "./Unit.IO.H5.FileErrorExists.h5";
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
@@ -196,9 +196,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorExists", "[Unit][IO][H5]") {
   // pure virtual method called
   // terminate called recursively
   {
-    /// [h5file_readwrite_file]
+    // [h5file_readwrite_file]
     h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-    /// [h5file_readwrite_file]
+    // [h5file_readwrite_file]
   }
   h5::H5File<h5::AccessType::ReadWrite> my_file_2(file_name);
 }
@@ -241,16 +241,16 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Version", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
   {
-    /// [h5file_write_version]
+    // [h5file_write_version]
     h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
     my_file.insert<h5::Version>("/the_version", version_number);
-    /// [h5file_write_version]
+    // [h5file_write_version]
   }
 
   h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
-  /// [h5file_read_version]
+  // [h5file_read_version]
   const auto& const_version = my_file.get<h5::Version>("/the_version");
-  /// [h5file_read_version]
+  // [h5file_read_version]
   CHECK(version_number == const_version.get_version());
   auto& version = my_file.get<h5::Version>("/the_version");
   CHECK(version_number == version.get_version());
@@ -306,7 +306,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
   std::array<hsize_t, 2> size_of_data{{4, 4}};
   CHECK(error_file.get_dimensions() == size_of_data);
 
-  /// [h5dat_get_data]
+  // [h5dat_get_data]
   const Matrix data_in_dat_file = []() {
     Matrix result(4, 4);
     result(0, 0) = 0.0;
@@ -328,7 +328,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
     return result;
   }();
   CHECK(error_file.get_data() == data_in_dat_file);
-  /// [h5dat_get_data]
+  // [h5dat_get_data]
 
   {
     const auto subset = error_file.get_data_subset({1, 2}, 1, 2);
@@ -343,7 +343,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
     CHECK(subset == answer);
   }
   {
-    /// [h5dat_get_subset]
+    // [h5dat_get_subset]
     const auto subset = error_file.get_data_subset({1, 3}, 1, 3);
     const Matrix answer = []() {
       Matrix result(3, 2);
@@ -356,7 +356,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
       return result;
     }();
     CHECK(subset == answer);
-    /// [h5dat_get_subset]
+    // [h5dat_get_subset]
   }
   {
     const auto subset = error_file.get_data_subset({0, 3}, 0, 2);
@@ -629,7 +629,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << h5_file_name << "'");
 }
 
-/// [[OutputRegex, Failed HDF5 operation: Failed to open dataset 'no_dataset']]
+// [[OutputRegex, Failed HDF5 operation: Failed to open dataset 'no_dataset']]
 SPECTRE_TEST_CASE("Unit.IO.H5.read_data_error", "[Unit][IO][H5]") {
   ERROR_TEST();
   const std::string file_name("Unit.IO.H5.read_data_error.h5");

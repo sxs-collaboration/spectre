@@ -12,7 +12,7 @@
 #include "DataStructures/VectorImpl.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"
 
-/// [get_vector_element_type_example]
+// [get_vector_element_type_example]
 static_assert(std::is_same_v<get_vector_element_type_t<DataVector>, double>,
               "Failed testing type trait get_vector_element_type");
 
@@ -26,7 +26,7 @@ static_assert(std::is_same_v<get_vector_element_type_t<std::complex<double>*>,
 
 static_assert(std::is_same_v<get_vector_element_type_t<DataVector&>, double>,
               "Failed testing type trait get_vector_element_type");
-/// [get_vector_element_type_example]
+// [get_vector_element_type_example]
 
 static_assert(is_derived_of_vector_impl_v<DataVector>,
               "Failed testing type trait is_derived_of_vector_impl");

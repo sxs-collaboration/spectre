@@ -52,14 +52,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       "RestMassDensity");
   TestHelpers::db::test_simple_tag<hydro::Tags::SoundSpeedSquared<DataVector>>(
       "SoundSpeedSquared");
-  /// [prefix_example]
+  // [prefix_example]
   TestHelpers::db::test_simple_tag<
       hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Grid>>(
       "Grid_SpatialVelocity");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Logical>>(
       "Logical_SpatialVelocityOneForm");
-  /// [prefix_example]
+  // [prefix_example]
   TestHelpers::db::test_simple_tag<hydro::Tags::SpatialVelocitySquared<double>>(
       "SpatialVelocitySquared");
   TestHelpers::db::test_simple_tag<

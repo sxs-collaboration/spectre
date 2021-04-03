@@ -10,7 +10,7 @@
 
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_parent_path",
                   "[Unit][Utilities]") {
-  /// [get_parent_path]
+  // [get_parent_path]
   CHECK("/test/path/to/dir"s ==
         file_system::get_parent_path("/test/path/to/dir/dummy.txt"));
   CHECK("/test/path/to"s == file_system::get_parent_path("/test/path/to/dir/"));
@@ -22,12 +22,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_parent_path",
   CHECK("."s == file_system::get_parent_path("usr"));
   CHECK("."s == file_system::get_parent_path(".."));
   CHECK("."s == file_system::get_parent_path(""));
-  /// [get_parent_path]
+  // [get_parent_path]
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name",
                   "[Unit][Utilities]") {
-  /// [get_file_name]
+  // [get_file_name]
   CHECK("dummy.txt"s ==
         file_system::get_file_name("/test/path/to/dir/dummy.txt"));
   CHECK(".dummy.txt"s ==
@@ -37,7 +37,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name",
   CHECK(".dummy.txt"s == file_system::get_file_name(".dummy.txt"));
   CHECK("dummy.txt"s == file_system::get_file_name("dummy.txt"));
   CHECK(".dummy"s == file_system::get_file_name(".dummy"));
-  /// [get_file_name]
+  // [get_file_name]
 }
 
 // [[OutputRegex, Failed to find a file in the given path: '/']]

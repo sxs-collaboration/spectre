@@ -183,7 +183,7 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
     INFO("Overlap iterator");
     {
       // Give an example to include in the docs
-      /// [overlap_iterator]
+      // [overlap_iterator]
       // Overlap region:
       // + - - - + -xi->
       // | X X O |
@@ -204,7 +204,7 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
         ++i;
       }
       CHECK(i == expected_volume_offsets.size());
-      /// [overlap_iterator]
+      // [overlap_iterator]
     }
     // Overlap region: [X X O] -xi->
     test_overlap_iterator(Index<1>{3}, 2, Direction<1>::lower_xi(), {{0, 1}});

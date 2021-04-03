@@ -36,7 +36,7 @@ using one_var = tmpl::list<Var1<Dim>>;
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
   // clang-format off
-  /// [transpose_matrix]
+  // [transpose_matrix]
   const DataVector matrix{ 1.,  2.,  3.,
                            4.,  5.,  6.,
                            7.,  8.,  9.,
@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
   CHECK(transpose(matrix, 3, 4) == DataVector{1.,  4.,  7., 10.,
                                               2.,  5.,  8., 11.,
                                               3.,  6.,  9., 12.});
-  /// [transpose_matrix]
+  // [transpose_matrix]
   // clang-format on
 
   DataVector transposed_matrix(12);
@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
   CHECK(transposed_matrix ==
         DataVector{1., 4., 7., 10., 2., 5., 8., 11., 3., 6., 9., 12.});
 
-  /// [return_transpose_example]
+  // [return_transpose_example]
   const size_t chunk_size = 8;
   const size_t number_of_chunks = 2;
   const size_t n_pts = chunk_size * number_of_chunks;
@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
             transposed_data[j + number_of_chunks * i]);
     }
   }
-  /// [return_transpose_example]
+  // [return_transpose_example]
   std::fill(transposed_data.begin(), transposed_data.end(), 0.0);
   DataVector ref_to_data;
   ref_to_data.set_data_ref(&data);
@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
     }
   }
 
-  /// [transpose_by_not_null_example]
+  // [transpose_by_not_null_example]
   const size_t chunk_size_vars = 8;
   const size_t n_grid_pts = 2 * chunk_size_vars;
   Variables<two_vars<2>> variables(n_grid_pts, 0.);
@@ -106,9 +106,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
             transposed_vars.data()[j + number_of_chunks_vars * i]);  // NOLINT
     }
   }
-  /// [transpose_by_not_null_example]
+  // [transpose_by_not_null_example]
 
-  /// [partial_transpose_example]
+  // [partial_transpose_example]
   Variables<one_var<2>> partial_vars(n_grid_pts, 0.);
   get<Var1<2>>(partial_vars) = get<Var1<2>>(variables);
   Variables<one_var<2>> partial_transpose(n_grid_pts, 0.);
@@ -126,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
             partial_vars.data()[i + chunk_size_vars * j]);    // NOLINT
     }
   }
-  /// [partial_transpose_example]
+  // [partial_transpose_example]
 
   const auto another_partial_transpose =
       transpose<Variables<two_vars<2>>, Variables<one_var<2>>>(

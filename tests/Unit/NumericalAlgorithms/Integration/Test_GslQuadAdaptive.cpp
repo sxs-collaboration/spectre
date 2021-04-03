@@ -11,12 +11,12 @@
 #include "NumericalAlgorithms/Integration/GslQuadAdaptive.hpp"
 
 namespace {
-/// [integrated_function]
+// [integrated_function]
 double gaussian(const double x, const double mean,
                 const double factor) noexcept {
   return 2. * factor / sqrt(M_PI) * exp(-square(x - mean));
 }
-/// [integrated_function]
+// [integrated_function]
 
 double integrable_singularity(const double x, const double factor) noexcept {
   return factor * cos(sqrt(abs(x))) / sqrt(abs(x));
@@ -33,7 +33,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
   {
     INFO("StandardGaussKronrod");
     // Construct the integration and give an example
-    /// [integration_example]
+    // [integration_example]
     const integration::GslQuadAdaptive<
         integration::GslIntegralType::StandardGaussKronrod>
         integration{20};
@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
     const auto result = integration(
         [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
         lower_boundary, upper_boundary, absolute_tolerance, 4);
-    /// [integration_example]
+    // [integration_example]
     CHECK(result == custom_approx(factor * erf(upper_boundary - mean) -
                                   factor * erf(lower_boundary - mean)));
     CHECK_THROWS(integration(

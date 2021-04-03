@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 
-/// [get_element_example_indexing_callable]
+// [get_element_example_indexing_callable]
 struct ArrayOfArraysIndexFunctor {
   template <size_t OuterArraySize, size_t InnerArraySize, typename T>
   T& operator()(std::array<std::array<T, InnerArraySize>, OuterArraySize>&
@@ -24,9 +24,9 @@ struct ArrayOfArraysIndexFunctor {
         .at(index / OuterArraySize);
   }
 };
-/// [get_element_example_indexing_callable]
+// [get_element_example_indexing_callable]
 
-/// [get_size_example_size_callable]
+// [get_size_example_size_callable]
 struct ArrayOfArraysSizeFunctor {
   template <size_t OuterArraySize, size_t InnerArraySize, typename T>
   size_t operator()(
@@ -35,7 +35,7 @@ struct ArrayOfArraysSizeFunctor {
     return OuterArraySize * InnerArraySize;
   }
 };
-/// [get_size_example_size_callable]
+// [get_size_example_size_callable]
 
 namespace {
 struct HalfDataVectorSize {

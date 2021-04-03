@@ -6,7 +6,7 @@
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace {
-/// [CREATE_IS_CALLABLE_EXAMPLE]
+// [CREATE_IS_CALLABLE_EXAMPLE]
 CREATE_IS_CALLABLE(foo)
 CREATE_IS_CALLABLE_V(foo)
 CREATE_IS_CALLABLE_R_V(foo)
@@ -30,5 +30,5 @@ static_assert(not is_foo_callable_r_v<int, bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foobar_callable_v<bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
-/// [CREATE_IS_CALLABLE_EXAMPLE]
+// [CREATE_IS_CALLABLE_EXAMPLE]
 }  // namespace

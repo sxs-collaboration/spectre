@@ -91,7 +91,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.LeviCivitaIterator",
   CHECK(i == 24);
 
   // Demonstrate using the iterator to compute a cross product
-  /// [levi_civita_iterator_example]
+  // [levi_civita_iterator_example]
   const std::array<double, 3> vector_a = {{2.0, 3.0, 4.0}};
   const std::array<double, 3> vector_b = {{7.0, 6.0, 5.0}};
   const std::array<double, 3> a_cross_b_expected = {{-9.0, 18.0, -9.0}};
@@ -102,5 +102,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.LeviCivitaIterator",
         it.sign() * gsl::at(vector_a, it[1]) * gsl::at(vector_b, it[2]);
   }
   CHECK_ITERABLE_APPROX(a_cross_b, a_cross_b_expected);
-  /// [levi_civita_iterator_example]
+  // [levi_civita_iterator_example]
 }

@@ -122,7 +122,7 @@ struct increment_count_actions_called {
 };
 
 struct no_op {
-  /// [apply_iterative]
+  // [apply_iterative]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -132,7 +132,7 @@ struct no_op {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept
-  /// [apply_iterative]
+  // [apply_iterative]
   {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
@@ -214,10 +214,10 @@ struct NoOpsComponent {
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    /// [start_phase]
+    // [start_phase]
     Parallel::get_parallel_component<NoOpsComponent>(local_cache)
         .start_phase(next_phase);
-    /// [start_phase]
+    // [start_phase]
     if (next_phase == Metavariables::Phase::NoOpsFinish) {
       Parallel::simple_action<no_op_test::finalize>(
           Parallel::get_parallel_component<NoOpsComponent>(local_cache));
@@ -381,10 +381,10 @@ struct MutateComponent {
       Parallel::simple_action<add_remove_test::test_args>(
           Parallel::get_parallel_component<MutateComponent>(local_cache),
           4.82937, std::vector<double>{3.2, -8.4, 7.5});
-      /// [simple_action_call]
+      // [simple_action_call]
       Parallel::simple_action<add_remove_test::finalize>(
           Parallel::get_parallel_component<MutateComponent>(local_cache));
-      /// [simple_action_call]
+      // [simple_action_call]
     }
   }
 };
@@ -394,13 +394,13 @@ struct MutateComponent {
 //////////////////////////////////////////////////////////////////////
 
 namespace receive_data_test {
-/// [int receive tag insert]
+// [int receive tag insert]
 struct IntReceiveTag
     : public Parallel::InboxInserters::MemberInsert<IntReceiveTag> {
   using temporal_id = TestAlgorithmArrayInstance;
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
 };
-/// [int receive tag insert]
+// [int receive tag insert]
 
 struct add_int0_from_receive {
   using inbox_tags = tmpl::list<IntReceiveTag>;
@@ -429,7 +429,7 @@ struct add_int0_from_receive {
         ++a >= 5);
   }
 
-  /// [is_ready_example]
+  // [is_ready_example]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex>
   static bool is_ready(
@@ -437,7 +437,7 @@ struct add_int0_from_receive {
       const tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept
-      /// [is_ready_example]
+      // [is_ready_example]
   {
     const auto& inbox = tuples::get<IntReceiveTag>(inboxes);
     // The const_cast in this function is purely for testing purposes, this is
@@ -504,7 +504,7 @@ struct initialize {
 
 struct finalize {
   using inbox_tags = tmpl::list<IntReceiveTag>;
-  /// [requires_action]
+  // [requires_action]
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
@@ -512,7 +512,7 @@ struct finalize {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
-    /// [requires_action]
+    // [requires_action]
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              TestAlgorithmArrayInstance{4});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
@@ -599,11 +599,11 @@ struct iterate_increment_int0 {
     }
 
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == max_int0_value);
-    /// [out_of_order_action]
+    // [out_of_order_action]
     return std::tuple<decltype(std::move(box)), bool, size_t>(
         std::move(box), true,
         tmpl::index_of<ActionList, iterate_increment_int0>::value + 1);
-    /// [out_of_order_action]
+    // [out_of_order_action]
   }
 };
 
@@ -663,14 +663,14 @@ struct AnyOrderComponent {
 };
 
 struct TestMetavariables {
-  /// [component_list_example]
+  // [component_list_example]
   using component_list = tmpl::list<NoOpsComponent<TestMetavariables>,
                                     MutateComponent<TestMetavariables>,
                                     ReceiveComponent<TestMetavariables>,
                                     AnyOrderComponent<TestMetavariables>>;
-  /// [component_list_example]
+  // [component_list_example]
 
-  /// [help_string_example]
+  // [help_string_example]
   static constexpr Options::String help =
       "An executable for testing the core functionality of the Algorithm. "
       "Actions that do not perform any operations (no-ops), invoking simple "
@@ -679,9 +679,9 @@ struct TestMetavariables {
       "out-of-order execution of Actions are all tested. All tests are run "
       "just by running the executable, no input file or command line arguments "
       "are required";
-  /// [help_string_example]
+  // [help_string_example]
 
-  /// [determine_next_phase_example]
+  // [determine_next_phase_example]
   enum class Phase {
     Initialization,
     NoOpsStart,
@@ -729,19 +729,19 @@ struct TestMetavariables {
 
     return Phase::Exit;
   }
-  /// [determine_next_phase_example]
+  // [determine_next_phase_example]
 };
 
-/// [charm_init_funcs_example]
+// [charm_init_funcs_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
-/// [charm_init_funcs_example]
+// [charm_init_funcs_example]
 
-/// [charm_main_example]
+// [charm_main_example]
 using charmxx_main_component = Parallel::Main<TestMetavariables>;
-/// [charm_main_example]
+// [charm_main_example]
 
 // [[OutputRegex, AlgorithmImpl has been constructed with a nullptr]]
 SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.NullptrConstructError",

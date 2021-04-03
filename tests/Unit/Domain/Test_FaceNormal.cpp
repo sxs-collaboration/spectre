@@ -203,13 +203,13 @@ void check_time_dependent(
 
 void test_face_normal_coordinate_map() {
   INFO("Test coordinate map");
-  /// [face_normal_example]
+  // [face_normal_example]
   const Mesh<0> mesh_0d;
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0));
   const auto normal_1d_lower =
       unnormalized_face_normal(mesh_0d, map_1d, Direction<1>::lower_xi());
-  /// [face_normal_example]
+  // [face_normal_example]
 
   CHECK(normal_1d_lower.get(0) == DataVector(1, -0.2));
 

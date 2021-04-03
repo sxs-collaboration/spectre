@@ -27,14 +27,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.CachedFunction", "[Unit][Utilities]") {
     return a < b;
   };
 
-  /// [make_cached_function_example]
+  // [make_cached_function_example]
   auto cached = make_cached_function<const std::string&>(func);
 
   // Specifying all the arguments
   auto cached2 =
       make_cached_function<const std::string&, std::map, decltype(comparator)>(
           func, std::move(comparator));
-  /// [make_cached_function_example]
+  // [make_cached_function_example]
 
   static_assert(std::is_same_v<decltype(cached)::input, std::string>,
                 "Wrong input type");

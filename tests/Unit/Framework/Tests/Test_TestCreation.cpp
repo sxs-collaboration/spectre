@@ -212,11 +212,11 @@ void test_test_creation() {
   CHECK(TestHelpers::test_creation<double, TwoGroup<double>>("1.846") == 1.846);
 
   // Test class that doesn't need metavariables when not passing metavariables
-  /// [size_t_argument]
+  // [size_t_argument]
   CHECK(
       TestHelpers::test_creation<ClassWithoutMetavariables>("SizeT: 7").value ==
       7);
-  /// [size_t_argument]
+  // [size_t_argument]
 
   CHECK(
       TestHelpers::test_creation<ClassWithoutMetavariables,
@@ -292,12 +292,12 @@ void test_test_creation() {
 void test_test_factory_creation() {
   // Test derived class that doesn't need metavariables when not passing
   // metavariables
-  /// [size_t_argument_base]
+  // [size_t_argument_base]
   CHECK(TestHelpers::test_factory_creation<BaseClass>(
             "DerivedClassWithoutMetavariables:\n"
             "  SizeT: 5")
             ->get_value() == 5);
-  /// [size_t_argument_base]
+  // [size_t_argument_base]
   CHECK(TestHelpers::test_factory_creation<BaseClass,
                                            NoGroup<std::unique_ptr<BaseClass>>>(
             "DerivedClassWithoutMetavariables:\n"
@@ -389,9 +389,9 @@ void test_test_factory_creation() {
 }
 
 void test_test_enum_creation() {
-  /// [enum_purple]
+  // [enum_purple]
   CHECK(TestHelpers::test_creation<Color>("Purple") == Color::Purple);
-  /// [enum_purple]
+  // [enum_purple]
   CHECK(TestHelpers::test_creation<Color, TestHelpers::TestCreationOpt<Color>>(
             "Purple") == Color::Purple);
   CHECK(TestHelpers::test_creation<Color, NoGroup<Color>>("Purple") ==

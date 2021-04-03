@@ -44,7 +44,7 @@ struct TestMetavariables;
 // correctly.
 static constexpr int number_of_1d_array_elements = 46;
 
-/// [reduce_sum_int_action]
+// [reduce_sum_int_action]
 struct ProcessReducedSumOfInts {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
@@ -57,9 +57,9 @@ struct ProcessReducedSumOfInts {
                              value);
   }
 };
-/// [reduce_sum_int_action]
+// [reduce_sum_int_action]
 
-/// [reduce_rms_action]
+// [reduce_rms_action]
 struct ProcessErrorNorms {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
@@ -74,9 +74,9 @@ struct ProcessErrorNorms {
         error_v, sqrt(number_of_1d_array_elements * square(1.0e-4) / points)));
   }
 };
-/// [reduce_rms_action]
+// [reduce_rms_action]
 
-/// [custom_reduction_action]
+// [custom_reduction_action]
 struct ProcessCustomReductionAction {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
@@ -99,7 +99,7 @@ struct ProcessCustomReductionAction {
                           8 * reduced_int * number_of_1d_array_elements}));
   }
 };
-/// [custom_reduction_action]
+// [custom_reduction_action]
 
 template <class Metavariables>
 struct SingletonParallelComponent {
@@ -138,18 +138,18 @@ struct ArrayReduce {
             cache);
     const auto& singleton_proxy = Parallel::get_parallel_component<
         SingletonParallelComponent<Metavariables>>(cache);
-    /// [contribute_to_reduction_example]
+    // [contribute_to_reduction_example]
     Parallel::ReductionData<Parallel::ReductionDatum<int, funcl::Plus<>>>
         my_send_int{array_index};
     Parallel::contribute_to_reduction<ProcessReducedSumOfInts>(
         my_send_int, my_proxy, singleton_proxy);
-    /// [contribute_to_reduction_example]
-    /// [contribute_to_broadcast_reduction]
+    // [contribute_to_reduction_example]
+    // [contribute_to_broadcast_reduction]
     Parallel::contribute_to_reduction<ProcessReducedSumOfInts>(
         my_send_int, my_proxy, array_proxy);
-    /// [contribute_to_broadcast_reduction]
+    // [contribute_to_broadcast_reduction]
 
-    /// [contribute_to_rms_reduction]
+    // [contribute_to_rms_reduction]
     using RmsRed = Parallel::ReductionDatum<double, funcl::Plus<>,
                                             funcl::Sqrt<funcl::Divides<>>,
                                             std::index_sequence<0>>;
@@ -158,9 +158,9 @@ struct ArrayReduce {
         error_reduction{3, square(1.0e-3), square(1.0e-4)};
     Parallel::contribute_to_reduction<ProcessErrorNorms>(error_reduction,
                                                          my_proxy, array_proxy);
-    /// [contribute_to_rms_reduction]
+    // [contribute_to_rms_reduction]
 
-    /// [custom_contribute_to_reduction_example]
+    // [custom_contribute_to_reduction_example]
     std::unordered_map<std::string, int> my_send_map;
     my_send_map["unity"] = array_index;
     my_send_map["double"] = 2 * array_index;
@@ -216,12 +216,12 @@ struct ArrayReduce {
     Parallel::contribute_to_reduction<ProcessCustomReductionAction>(
         ReductionType{10, my_send_map, std::vector<int>{array_index, 10, -8}},
         my_proxy, singleton_proxy);
-    /// [custom_contribute_to_reduction_example]
-    /// [custom_contribute_to_broadcast_reduction]
+    // [custom_contribute_to_reduction_example]
+    // [custom_contribute_to_broadcast_reduction]
     Parallel::contribute_to_reduction<ProcessCustomReductionAction>(
         ReductionType{10, my_send_map, std::vector<int>{array_index, 10, -8}},
         my_proxy, array_proxy);
-    /// [custom_contribute_to_broadcast_reduction]
+    // [custom_contribute_to_broadcast_reduction]
   }
 };
 

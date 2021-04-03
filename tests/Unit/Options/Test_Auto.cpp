@@ -117,7 +117,7 @@ void test_parsing() noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__ < 11
-/// [example_class]
+// [example_class]
 class ExampleClass {
  public:
   ExampleClass() = default;
@@ -144,7 +144,7 @@ class ExampleClass {
   int value{};
   std::optional<double> optional_value{};
 };
-/// [example_class]
+// [example_class]
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 11
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__ < 11
@@ -166,7 +166,7 @@ class NonCopyableArgument {
 };
 
 void test_use_as_option() noexcept {
-  /// [example_create]
+  // [example_create]
   const auto example1 = TestHelpers::test_creation<ExampleClass>(
       "AutoArg: 7\n"
       "OptionalArg: 10.");
@@ -177,7 +177,7 @@ void test_use_as_option() noexcept {
       "OptionalArg: None");
   CHECK(example2.value == -12);
   CHECK(example2.optional_value == std::nullopt);
-  /// [example_create]
+  // [example_create]
 
   // Make sure this compiles.
   TestHelpers::test_creation<NonCopyableArgument>("AutoArg: Auto");

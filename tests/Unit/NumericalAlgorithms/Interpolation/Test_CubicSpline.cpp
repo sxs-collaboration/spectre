@@ -37,13 +37,13 @@ void test_cubic_spline(const F& function, const double lower_bound,
       Approx::custom().epsilon(tolerance_interior).scale(1.);
 
   // Construct the interpolant and give an example
-  /// [interpolate_example]
+  // [interpolate_example]
   intrp::CubicSpline interpolant{x_values, y_values};
   const double x_to_interpolate_to =
       lower_bound + (upper_bound - lower_bound) / 2.;
   CHECK(interpolant(x_to_interpolate_to) ==
         custom_approx_interior(function(x_to_interpolate_to)));
-  /// [interpolate_example]
+  // [interpolate_example]
 
   // Check that the interpolation is exact at the datapoints
   for (const auto& x_value : x_values) {

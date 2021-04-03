@@ -41,34 +41,34 @@ struct PushbackCounter : db::SimpleTag {
   using type = size_t;
 };
 
-/// [map tag]
+// [map tag]
 struct MapTag : public Parallel::InboxInserters::Map<MapTag> {
   using temporal_id = size_t;
   using type = std::unordered_map<temporal_id, std::unordered_map<int, int>>;
 };
-/// [map tag]
+// [map tag]
 
-/// [member insert tag]
+// [member insert tag]
 struct MemberInsertTag
     : public Parallel::InboxInserters::MemberInsert<MemberInsertTag> {
   using temporal_id = size_t;
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
 };
-/// [member insert tag]
+// [member insert tag]
 
-/// [value tag]
+// [value tag]
 struct ValueTag : public Parallel::InboxInserters::Value<ValueTag> {
   using temporal_id = size_t;
   using type = std::unordered_map<temporal_id, int>;
 };
-/// [value tag]
+// [value tag]
 
-/// [pushback tag]
+// [pushback tag]
 struct PushbackTag : public Parallel::InboxInserters::Pushback<PushbackTag> {
   using temporal_id = size_t;
   using type = std::unordered_map<temporal_id, std::vector<int>>;
 };
-/// [pushback tag]
+// [pushback tag]
 }  // namespace Tags
 
 namespace Actions {

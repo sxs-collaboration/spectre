@@ -24,7 +24,7 @@ struct SomeVolumeArgument : VolumeArgumentBase, db::SimpleTag {
   static std::string name() noexcept { return "SomeVolumeArgument"; }
 };
 
-/// [interface_invokable_example]
+// [interface_invokable_example]
 struct ComputeSomethingOnInterface {
   using argument_tags = tmpl::list<SomeNumber, SomeVolumeArgument>;
   using volume_tags = tmpl::list<SomeVolumeArgument>;
@@ -34,7 +34,7 @@ struct ComputeSomethingOnInterface {
     return factor * some_number_on_interface + volume_argument;
   }
 };
-/// [interface_invokable_example]
+// [interface_invokable_example]
 
 struct ComputeWithTemplateParameters {
   using argument_tags = tmpl::list<SomeNumber>;
@@ -67,7 +67,7 @@ void test_interface_apply(
                                    SomeVolumeArgument>>(
           element, directions, number_on_interfaces, 1.);
   // Test applying a function to the interface and give an example
-  /// [interface_apply_example]
+  // [interface_apply_example]
   const auto computed_number_on_interfaces =
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, SomeVolumeArgument>,
                       tmpl::list<SomeVolumeArgument>>(
@@ -84,7 +84,7 @@ void test_interface_apply(
         computed_number_on_interfaces.at(direction_and_expected_result.first) ==
         direction_and_expected_result.second);
   }
-  /// [interface_apply_example]
+  // [interface_apply_example]
 
   // Test volume base tag
   const auto computed_numbers_with_base_tag =
@@ -98,10 +98,10 @@ void test_interface_apply(
   CHECK(computed_numbers_with_base_tag == computed_number_on_interfaces);
 
   // Test overload that takes a stateless invokable
-  /// [interface_apply_example_stateless]
+  // [interface_apply_example_stateless]
   const auto computed_numbers_with_struct =
       interface_apply<DirectionsTag, ComputeSomethingOnInterface>(box, 2.);
-  /// [interface_apply_example_stateless]
+  // [interface_apply_example_stateless]
   CHECK(computed_numbers_with_struct == computed_number_on_interfaces);
 
   {

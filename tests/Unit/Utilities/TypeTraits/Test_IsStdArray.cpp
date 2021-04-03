@@ -9,7 +9,7 @@ namespace {
 class D;
 }  // namespace
 
-/// [is_std_array_example]
+// [is_std_array_example]
 static_assert(tt::is_std_array<std::array<double, 3>>::value,
               "Failed testing type trait is_std_array");
 static_assert(tt::is_std_array_t<std::array<double, 3>>::value,
@@ -20,4 +20,4 @@ static_assert(not tt::is_std_array<double>::value,
               "Failed testing type trait is_std_array");
 static_assert(tt::is_std_array<std::array<D, 10>>::value,
               "Failed testing type trait is_std_array");
-/// [is_std_array_example]
+// [is_std_array_example]

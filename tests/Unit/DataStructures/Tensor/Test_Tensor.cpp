@@ -28,14 +28,14 @@
 #include "Utilities/TypeTraits.hpp"
 // IWYU pragma: no_forward_declare Tensor
 
-/// [change_up_lo]
+// [change_up_lo]
 using Index = SpatialIndex<3, UpLo::Lo, Frame::Grid>;
 using UpIndex = change_index_up_lo<Index>;
 static_assert(std::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
               "Failed testing change_index_up_lo");
-/// [change_up_lo]
+// [change_up_lo]
 
-/// [is_frame_physical]
+// [is_frame_physical]
 static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
               "Failed testing Frame::is_frame_physical");
 static_assert(not Frame::is_frame_physical_v<Frame::Distorted>,
@@ -44,7 +44,7 @@ static_assert(not Frame::is_frame_physical_v<Frame::Grid>,
               "Failed testing Frame::is_frame_physical");
 static_assert(Frame::is_frame_physical_v<Frame::Inertial>,
               "Failed testing Frame::is_frame_physical");
-/// [is_frame_physical]
+// [is_frame_physical]
 
 // Test Symmetry metafunction
 static_assert(
@@ -223,33 +223,33 @@ static_assert(check_construction.rank() == 4, "Wrong structure");
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
                   "[DataStructures][Unit]") {
-  /// [spatial_vector]
+  // [spatial_vector]
   tnsr::I<double, 3, Frame::Grid> spatial_vector3{};
-  /// [spatial_vector]
+  // [spatial_vector]
   CHECK(spatial_vector3.component_name(std::array<size_t, 1>{{0}}) == "x");
   CHECK(spatial_vector3.component_name(std::array<size_t, 1>{{1}}) == "y");
   CHECK(spatial_vector3.component_name(std::array<size_t, 1>{{2}}) == "z");
 
-  /// [spacetime_vector]
+  // [spacetime_vector]
   tnsr::A<double, 3, Frame::Grid> spacetime_vector3{};
-  /// [spacetime_vector]
+  // [spacetime_vector]
   CHECK(spacetime_vector3.component_name(std::array<size_t, 1>{{0}}) == "t");
   CHECK(spacetime_vector3.component_name(std::array<size_t, 1>{{1}}) == "x");
   CHECK(spacetime_vector3.component_name(std::array<size_t, 1>{{2}}) == "y");
   CHECK(spacetime_vector3.component_name(std::array<size_t, 1>{{3}}) == "z");
 
-  /// [scalar]
+  // [scalar]
   Tensor<double> scalar{};
-  /// [scalar]
+  // [scalar]
   CHECK(scalar.component_name() == "Scalar");
 
-  /// [rank_3_122]
+  // [rank_3_122]
   Tensor<double, Symmetry<1, 2, 2>,
          index_list<SpacetimeIndex<1, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<1, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<1, UpLo::Lo, Frame::Grid>>>
       tensor_1{};
-  /// [rank_3_122]
+  // [rank_3_122]
   CHECK(tensor_1.component_name(std::array<size_t, 3>{{0, 0, 0}}) == "txx");
   CHECK(tensor_1.component_name(std::array<size_t, 3>{{1, 0, 0}}) == "xxx");
 
@@ -516,7 +516,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
   }
 
   {
-    /// [index_dim]
+    // [index_dim]
     using T = Tensor<double, Symmetry<1, 2, 3>,
                      index_list<SpacetimeIndex<2, UpLo::Up, Frame::Inertial>,
                                 SpatialIndex<1, UpLo::Up, Frame::Inertial>,
@@ -529,7 +529,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     CHECK(T::index_dim(1) == 1);
     CHECK(T::index_dim(2) == 2);
     CHECK(T::index_dims() == std::array<size_t, 3>{{3, 1, 2}});
-    /// [index_dim]
+    // [index_dim]
   }
 
   Tensor<double, Symmetry<3>,
@@ -1340,11 +1340,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
                   "[Unit][DataStructures]") {
   // NOTE: This test depends on the implementation of serialize and Tensor,
   // but that is inevitable without making the test more complicated.
-  /// [init_vector]
+  // [init_vector]
   tnsr::I<DataVector, 3, Frame::Grid> tensor_data_vector{
       {{{1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}}};
   Scalar<DataVector> scalar_data_vector{{{{1., 2., 3.}}}};
-  /// [init_vector]
+  // [init_vector]
   CHECK(std::make_pair(std::vector<std::string>{"x", "y", "z"},
                        std::vector<DataVector>{
                            {1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}) ==
@@ -1364,7 +1364,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
         scalar.get_vector_of_data());
 }
 
-/// [example_spectre_test_case]
+// [example_spectre_test_case]
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
   CHECK("Logical" == get_output(Frame::Logical{}));
@@ -1373,7 +1373,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
   CHECK("Distorted" == get_output(Frame::Distorted{}));
   CHECK("NoFrame" == get_output(Frame::NoFrame{}));
 }
-/// [example_spectre_test_case]
+// [example_spectre_test_case]
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
                   "[Unit][DataStructures]") {

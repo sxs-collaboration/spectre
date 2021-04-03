@@ -199,17 +199,17 @@ void test_functional_against_function(
   }
 }
 
-/// [using_sinusoid]
+// [using_sinusoid]
 using Sinusoid = funcl::Multiplies<
     funcl::Identity,
     funcl::Sin<funcl::Plus<funcl::Identity, funcl::Multiplies<>>>>;
-///[using_sinusoid]
+// [using_sinusoid]
 
-/// [using_gaussian]
+// [using_gaussian]
 using GaussianExp =
     funcl::Negate<funcl::Square<funcl::Minus<Identity, Literal<5, double>>>>;
 using Gaussian = funcl::Exp<GaussianExp>;
-/// [using_gaussian]
+// [using_gaussian]
 
 void test_get_argument() noexcept {
   CHECK(GetArgument<1>{}(-2) == -2);

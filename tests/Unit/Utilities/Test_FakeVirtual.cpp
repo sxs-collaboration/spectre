@@ -14,7 +14,7 @@
 
 namespace {
 
-/// [fake_virtual_example]
+// [fake_virtual_example]
 DEFINE_FAKE_VIRTUAL(fv)
 
 class Derived;
@@ -46,7 +46,7 @@ class Derived : public Base::Inherit {
     return x + 3;
   }
 };
-/// [fake_virtual_example]
+// [fake_virtual_example]
 
 std::string called_func;
 std::vector<std::string> called_types;

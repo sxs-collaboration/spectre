@@ -42,7 +42,7 @@ void test_simple() noexcept {
 }
 
 void test_bounds() noexcept {
-  /// [double_root_find]
+  // [double_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
   const double upper = 2.0;
@@ -50,7 +50,7 @@ void test_bounds() noexcept {
   const auto f_lambda = [](double x) { return 2.0 - square(x); };
 
   auto root = RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
-  /// [double_root_find]
+  // [double_root_find]
 
   CHECK(std::abs(root - sqrt(2.0)) < abs_tol);
   CHECK(std::abs(root - sqrt(2.0)) / sqrt(2.0) < rel_tol);
@@ -95,7 +95,7 @@ void test_bounds() noexcept {
 }
 
 void test_datavector() noexcept {
-  /// [datavector_root_find]
+  // [datavector_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
   const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
@@ -108,7 +108,7 @@ void test_datavector() noexcept {
 
   const auto root_no_function_values =
       RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
-  /// [datavector_root_find]
+  // [datavector_root_find]
 
   auto check_root = [&abs_tol,&rel_tol](const DataVector& root) noexcept {
     CHECK(std::abs(root[0] - sqrt(2.0)) < abs_tol);

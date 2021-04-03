@@ -59,7 +59,7 @@ struct InitializeNodegroup {
   }
 };
 
-/// [synchronous_action_example]
+// [synchronous_action_example]
 struct SyncGetPointerFromNodegroup {
   using return_type = size_t*;
   template <typename ParallelComponent, typename DbTagsList>
@@ -88,7 +88,7 @@ struct SyncGetPointerFromNodegroup {
     }
   }
 };
-/// [synchronous_action_example]
+// [synchronous_action_example]
 
 struct SyncGetConstRefFromNodegroup {
   using return_type = const size_t&;
@@ -148,12 +148,12 @@ struct TestSyncActionIncrement {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    /// [synchronous_action_invocation_example]
+    // [synchronous_action_invocation_example]
     size_t* step_number =
         Parallel::local_synchronous_action<SyncGetPointerFromNodegroup>(
             Parallel::get_parallel_component<NodegroupComponent<Metavariables>>(
                 cache));
-    /// [synchronous_action_invocation_example]
+    // [synchronous_action_invocation_example]
     Parallel::local_synchronous_action<IncrementNodegroupStep>(
         Parallel::get_parallel_component<NodegroupComponent<Metavariables>>(
             cache));

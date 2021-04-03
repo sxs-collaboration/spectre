@@ -48,7 +48,7 @@ struct not_streamable_tag {
   using type = not_streamable;
 };
 
-/// [expand_tuple_example_function]
+// [expand_tuple_example_function]
 struct FirstArg {
   using type = int;
 };
@@ -58,14 +58,14 @@ struct SecondArg {
 double test_function(const int first_arg, const double second_arg) {
   return static_cast<double>(first_arg) + second_arg;
 }
-/// [expand_tuple_example_function]
+// [expand_tuple_example_function]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
-  /// [construction_example]
+  // [construction_example]
   tuples::TaggedTuple<name, age, email, parents, not_streamable_tag> test(
       "bla", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"}, 0);
-  /// [construction_example]
+  // [construction_example]
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
@@ -74,11 +74,11 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
     CHECK(ss.str() == "(bla, 17, bla@bla.bla, (Mom,Dad), NOT STREAMABLE)");
   }
   CHECK(test.size() == 5);
-  /// [get_example]
+  // [get_example]
   CHECK("bla" == tuples::get<name>(test));
   CHECK(17 == tuples::get<age>(test));
   CHECK("bla@bla.bla" == tuples::get<email>(test));
-  /// [get_example]
+  // [get_example]
   auto& name_temp = tuples::get<name>(test);
   name_temp = "Dennis";
   CHECK(tuples::get<name>(test) == "Dennis");
@@ -112,11 +112,11 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
             "Eamonn", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"},
             0});
 
-  /// [reorder_example]
+  // [reorder_example]
   const auto test4 = tuples::reorder<
       tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>>(
       std::move(test));
-  /// [reorder_example]
+  // [reorder_example]
   CHECK(test4 ==
         tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
             "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
@@ -124,14 +124,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
 
   {
     INFO("Expand tuple");
-    /// [expand_tuple_example]
+    // [expand_tuple_example]
     const double extra_factor = 3.;
     const double result = tuples::apply(
         [&extra_factor](const auto&... expanded_args) {
           return extra_factor * test_function(expanded_args...);
         },
         tuples::TaggedTuple<FirstArg, SecondArg>{1, 2.});
-    /// [expand_tuple_example]
+    // [expand_tuple_example]
     CHECK(result == 9.);
     CHECK(1 == tuples::apply<tmpl::list<FirstArg>>(
                    [](const int arg) { return arg; },

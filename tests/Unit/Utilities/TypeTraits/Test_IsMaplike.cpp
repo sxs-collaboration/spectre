@@ -12,7 +12,7 @@ class C {};
 class D {};
 }  // namespace
 
-/// [is_maplike_example]
+// [is_maplike_example]
 static_assert(tt::is_maplike<std::unordered_map<int, double>>::value,
               "Failed testing type trait is_maplike");
 static_assert(tt::is_maplike_t<std::unordered_map<int, double>>::value,
@@ -25,4 +25,4 @@ static_assert(not tt::is_maplike<std::vector<C>>::value,
               "Failed testing type trait is_maplike");
 static_assert(not tt::is_maplike<D>::value,
               "Failed testing type trait is_maplike");
-/// [is_maplike_example]
+// [is_maplike_example]

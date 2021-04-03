@@ -121,14 +121,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Hll{};
   std::iota(Hll.begin(), Hll.end(), 0.0);
-  /// [use_tensor_index]
+  // [use_tensor_index]
   auto Gll = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
                                                      Hll(ti_a, ti_b));
   auto Gll2 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
                                                       Hll(ti_b, ti_a));
   auto Gll3 = TensorExpressions::evaluate<ti_a, ti_b>(
       All(ti_a, ti_b) + Hll(ti_b, ti_a) + All(ti_b, ti_a) - Hll(ti_b, ti_a));
-  /// [use_tensor_index]
+  // [use_tensor_index]
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
       CHECK(Gll.get(i, j) == All.get(i, j) + Hll.get(i, j));

@@ -301,7 +301,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
 #pragma GCC diagnostic ignored "-Wunused-comparison"
 #endif
 
-/// [example_of_error_test]
+// [example_of_error_test]
 // [[OutputRegex, Out of range slab fraction]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.Init.0", "[Unit][Time]") {
   ASSERTION_TEST();
@@ -310,7 +310,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
-/// [example_of_error_test]
+// [example_of_error_test]
 
 // [[OutputRegex, Out of range slab fraction]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.Init.1", "[Unit][Time]") {

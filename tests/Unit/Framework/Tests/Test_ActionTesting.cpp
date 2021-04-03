@@ -35,7 +35,7 @@ struct simple_action_c_mock;
 struct threaded_action_b;
 struct threaded_action_b_mock;
 
-/// [tags for const global cache]
+// [tags for const global cache]
 struct ValueTag : db::SimpleTag {
   using type = int;
   static std::string name() noexcept { return "ValueTag"; }
@@ -45,7 +45,7 @@ struct PassedToB : db::SimpleTag {
   using type = double;
   static std::string name() noexcept { return "PassedToB"; }
 };
-/// [tags for const global cache]
+// [tags for const global cache]
 
 template <typename Metavariables>
 struct component_for_simple_action_mock {
@@ -60,17 +60,17 @@ struct component_for_simple_action_mock {
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 
-  /// [simple action replace]
+  // [simple action replace]
   using replace_these_simple_actions =
       tmpl::list<simple_action_a, simple_action_c, threaded_action_b>;
   using with_these_simple_actions =
       tmpl::list<simple_action_a_mock, simple_action_c_mock,
                  threaded_action_b_mock>;
-  /// [simple action replace]
-  /// [threaded action replace]
+  // [simple action replace]
+  // [threaded action replace]
   using replace_these_threaded_actions = tmpl::list<threaded_action_b>;
   using with_these_threaded_actions = tmpl::list<threaded_action_b_mock>;
-  /// [threaded action replace]
+  // [threaded action replace]
 };
 
 struct simple_action_a_mock {
@@ -188,9 +188,9 @@ struct SimpleActionMockMetavariables {
 struct MockMetavariablesWithGlobalCacheTags {
   using component_list = tmpl::list<
       component_for_simple_action_mock<MockMetavariablesWithGlobalCacheTags>>;
-  /// [const global cache metavars]
+  // [const global cache metavars]
   using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
-  /// [const global cache metavars]
+  // [const global cache metavars]
 
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -199,13 +199,13 @@ void test_mock_runtime_system_constructors() {
   using metavars = MockMetavariablesWithGlobalCacheTags;
   using component = component_for_simple_action_mock<metavars>;
   // Test whether we can construct with tagged tuples in different orders.
-  /// [constructor const global cache tags known]
+  // [constructor const global cache tags known]
   ActionTesting::MockRuntimeSystem<metavars> runner1{{3, 7.0}};
-  /// [constructor const global cache tags known]
-  /// [constructor const global cache tags unknown]
+  // [constructor const global cache tags known]
+  // [constructor const global cache tags unknown]
   ActionTesting::MockRuntimeSystem<metavars> runner2{
       tuples::TaggedTuple<PassedToB, ValueTag>{7.0, 3}};
-  /// [constructor const global cache tags unknown]
+  // [constructor const global cache tags unknown]
   ActionTesting::emplace_component<component>(&runner1, 0);
   ActionTesting::emplace_component<component>(&runner2, 0);
   const auto& cache1 = ActionTesting::cache<component>(runner1, 0_st);
@@ -223,12 +223,12 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
       component_for_simple_action_mock<metavars>>(&runner, 0, {0, -1});
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  /// [get databox]
+  // [get databox]
   const auto& box =
       ActionTesting::get_databox<component_for_simple_action_mock<metavars>,
                                  db::AddSimpleTags<ValueTag, PassedToB>>(runner,
                                                                          0);
-  /// [get databox]
+  // [get databox]
   CHECK(db::get<PassedToB>(box) == -1);
   runner.simple_action<component_for_simple_action_mock<metavars>,
                        simple_action_b>(0, 0);
@@ -239,20 +239,20 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
           0);
   CHECK(db::get<PassedToB>(box) == 0);
   CHECK(db::get<ValueTag>(box) == 11);
-  /// [invoke simple action]
+  // [invoke simple action]
   ActionTesting::simple_action<component_for_simple_action_mock<metavars>,
                                simple_action_b>(make_not_null(&runner), 0, 2);
-  /// [invoke simple action]
+  // [invoke simple action]
   REQUIRE(not
-          /// [simple action queue empty]
+          // [simple action queue empty]
           ActionTesting::is_simple_action_queue_empty<
               component_for_simple_action_mock<metavars>>(runner, 0)
-          /// [simple action queue empty]
+          // [simple action queue empty]
   );
-  /// [invoke queued simple action]
+  // [invoke queued simple action]
   ActionTesting::invoke_queued_simple_action<
       component_for_simple_action_mock<metavars>>(make_not_null(&runner), 0);
-  /// [invoke queued simple action]
+  // [invoke queued simple action]
   CHECK(db::get<PassedToB>(box) == 2);
   CHECK(db::get<ValueTag>(box) == 25);
   runner.simple_action<component_for_simple_action_mock<metavars>,
@@ -277,10 +277,10 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   CHECK(db::get<PassedToB>(box) == 3);
   CHECK(db::get<ValueTag>(box) == 25);
 
-  /// [invoke threaded action]
+  // [invoke threaded action]
   ActionTesting::threaded_action<component_for_simple_action_mock<metavars>,
                                  threaded_action_a>(make_not_null(&runner), 0);
-  /// [invoke threaded action]
+  // [invoke threaded action]
   CHECK(db::get<ValueTag>(box) == 35);
 
   ActionTesting::threaded_action<component_for_simple_action_mock<metavars>,
@@ -358,9 +358,9 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
   // Runs Action0
   runner.next_action<component>(0);
   CHECK(
-      /// [tag is retrievable]
+      // [tag is retrievable]
       ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0)
-      /// [tag is retrievable]
+      // [tag is retrievable]
   );
   CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
         6);
@@ -429,15 +429,15 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
             .empty());
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK(
-      /// [const get inbox tags]
+      // [const get inbox tags]
       ActionTesting::get_inbox_tag<component, Tags::ValueTag>(runner, 0).at(1)
-      /// [const get inbox tags]
+      // [const get inbox tags]
       == 23);
-  /// [get inbox tags]
+  // [get inbox tags]
   ActionTesting::get_inbox_tag<component, Tags::ValueTag>(
       make_not_null(&runner), 0)
       .clear();
-  /// [get inbox tags]
+  // [get inbox tags]
   CHECK(ActionTesting::get_inbox_tag<component, Tags::ValueTag>(
             make_not_null(&runner), 0)
             .empty());
@@ -466,7 +466,7 @@ struct ComponentA {
 template <typename Metavariables>
 struct ComponentB;
 
-/// [mock component b]
+// [mock component b]
 template <typename Metavariables>
 struct ComponentBMock {
   using metavariables = Metavariables;
@@ -484,7 +484,7 @@ struct ComponentBMock {
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 };
-/// [mock component b]
+// [mock component b]
 
 struct ActionCalledOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
@@ -499,7 +499,7 @@ struct ActionCalledOnComponentB {
   }
 };
 
-/// [action call component b]
+// [action call component b]
 struct CallActionOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
@@ -510,7 +510,7 @@ struct CallActionOnComponentB {
         Parallel::get_parallel_component<ComponentB<Metavariables>>(cache));
   }
 };
-/// [action call component b]
+// [action call component b]
 
 struct Metavariables {
   using component_list =
@@ -526,24 +526,24 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component<component_a>(&runner, 0);
-  /// [initialize component b]
+  // [initialize component b]
   ActionTesting::emplace_component_and_initialize<
       ComponentBMock<Metavariables>>(&runner, 0, {0});
-  /// [initialize component b]
+  // [initialize component b]
 
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
   CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
         0);
   ActionTesting::simple_action<component_a, CallActionOnComponentB>(
       make_not_null(&runner), 0);
-  /// [component b mock checks]
+  // [component b mock checks]
   CHECK(not ActionTesting::is_simple_action_queue_empty<component_b_mock>(
       runner, 0));
   ActionTesting::invoke_queued_simple_action<component_b_mock>(
       make_not_null(&runner), 0);
   CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
         5);
-  /// [component b mock checks]
+  // [component b mock checks]
 }
 }  // namespace TestComponentMocking
 
