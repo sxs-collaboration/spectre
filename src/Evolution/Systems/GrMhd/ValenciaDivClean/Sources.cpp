@@ -21,7 +21,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace {
 void densitized_stress(
     const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> result,
@@ -263,4 +262,3 @@ void ComputeSources::apply(
       constraint_damping_parameter);
 }
 }  // namespace grmhd::ValenciaDivClean
-/// \endcond

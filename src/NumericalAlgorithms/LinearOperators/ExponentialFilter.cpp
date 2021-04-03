@@ -11,7 +11,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
-/// \cond HIDDEN_SYMBOLS
 namespace Filters {
 
 template <size_t FilterIndex>
@@ -78,4 +77,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 #undef INSTANTIATE
 
 }  // namespace Filters
-/// \endcond

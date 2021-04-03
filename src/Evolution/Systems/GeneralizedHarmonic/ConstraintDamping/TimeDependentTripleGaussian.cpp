@@ -132,7 +132,5 @@ bool operator!=(const TimeDependentTripleGaussian& lhs,
   return not(lhs == rhs);
 }
 }  // namespace GeneralizedHarmonic::ConstraintDamping
-/// \cond
 PUP::able::PUP_ID GeneralizedHarmonic::ConstraintDamping::
     TimeDependentTripleGaussian::my_PUP_ID = 0;  // NOLINT
-/// \endcond

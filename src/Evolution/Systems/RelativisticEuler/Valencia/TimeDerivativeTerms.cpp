@@ -12,7 +12,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 namespace RelativisticEuler::Valencia {
 namespace detail {
 template <size_t Dim>
@@ -124,4 +123,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 #undef DIM
 }  // namespace RelativisticEuler::Valencia
-/// \endcond

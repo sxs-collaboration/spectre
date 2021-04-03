@@ -14,7 +14,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace grmhd {
 namespace AnalyticData {
 
@@ -152,4 +151,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 
 }  // namespace AnalyticData
 }  // namespace grmhd
-/// \endcond

@@ -15,7 +15,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace CurvedScalarWave {
-/// \cond
 template <size_t Dim>
 void TimeDerivative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
@@ -66,7 +65,6 @@ void TimeDerivative<Dim>::apply(
     }
   }
 }
-/// \endcond
 }  // namespace CurvedScalarWave
 // Generate explicit instantiations of partial_derivatives function as well as
 // all other functions in Equations.cpp

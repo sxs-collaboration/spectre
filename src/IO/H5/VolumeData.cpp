@@ -30,7 +30,6 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 
-/// \cond HIDDEN_SYMBOLS
 namespace h5 {
 namespace {
 // Append the element extents and connectevity to the total extents and
@@ -415,4 +414,3 @@ std::vector<std::vector<std::string>> VolumeData::get_quadratures(
 }
 
 }  // namespace h5
-/// \endcond HIDDEN_SYMBOLS

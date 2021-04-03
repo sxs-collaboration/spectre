@@ -87,7 +87,6 @@ void Sinusoid<1, Fr>::pup(PUP::er& p) {
 }
 }  // namespace MathFunctions
 
-/// \cond
 template MathFunctions::Sinusoid<1, Frame::Grid>::Sinusoid(
     const double amplitude, const double wavenumber,
     const double phase) noexcept;
@@ -128,4 +127,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial),
 #undef FRAME
 #undef INSTANTIATE
 
-/// \endcond

@@ -8,7 +8,6 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 BoundaryCondition<Dim>::BoundaryCondition(CkMigrateMessage* const msg) noexcept
@@ -28,4 +27,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace ScalarWave::BoundaryConditions
-/// \endcond

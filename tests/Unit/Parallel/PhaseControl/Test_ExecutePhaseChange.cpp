@@ -38,12 +38,10 @@ template <PhaseControl::ArbitrationStrategy Strategy, size_t Index,
           typename PhaseChangeRegistrars =
               tmpl::list<Registrars::TestPhaseChange<Strategy, Index>>>
 struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
-  /// \cond
   TestPhaseChange() = default;
   explicit TestPhaseChange(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestPhaseChange);  // NOLINT
-  /// \endcond
   static std::string name() noexcept {
     if constexpr (Strategy ==
                   PhaseControl::ArbitrationStrategy::RunPhaseImmediately) {

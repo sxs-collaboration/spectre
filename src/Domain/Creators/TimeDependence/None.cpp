@@ -50,7 +50,6 @@ bool operator!=(const None<Dim>& lhs, const None<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-/// \cond
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -65,5 +64,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef GET_DIM
 #undef INSTANTIATION
-/// \endcond
 }  // namespace domain::creators::time_dependence

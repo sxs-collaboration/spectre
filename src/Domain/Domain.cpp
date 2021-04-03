@@ -133,7 +133,6 @@ void Domain<VolumeDim>::pup(PUP::er& p) noexcept {
   p | blocks_;
 }
 
-/// \cond HIDDEN_SYMBOLS
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                       \
@@ -150,7 +149,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond
 
 // Some compilers (clang 3.9.1) don't instantiate the default argument
 // to the second Domain constructor.

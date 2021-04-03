@@ -25,7 +25,6 @@
 #include "Utilities/StaticCache.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 
 namespace Spectral::Swsh {
 
@@ -671,4 +670,3 @@ GENERATE_INSTANTIATIONS(INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef GET_SPIN
 
 }  // namespace Spectral::Swsh
-/// \endcond

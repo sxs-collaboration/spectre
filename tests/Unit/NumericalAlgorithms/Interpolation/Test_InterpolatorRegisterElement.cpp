@@ -18,12 +18,10 @@
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
 
-/// \cond
 class DataVector;
 namespace intrp::Tags {
 struct NumberOfElements;
 }  // namespace intrp::Tags
-/// \endcond
 
 namespace {
 

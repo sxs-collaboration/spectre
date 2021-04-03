@@ -30,11 +30,9 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"
 
-/// \cond
 namespace Frame {
 struct Logical;
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 

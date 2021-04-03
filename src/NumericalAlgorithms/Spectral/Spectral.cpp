@@ -295,7 +295,6 @@ const DataVector& quadrature_weights(const size_t num_points) noexcept {
       QuadratureWeightsGenerator<BasisType, QuadratureType>>(num_points);
 }
 
-/// \cond
 // clang-tidy: Macro arguments should be in parentheses, but we want to append
 // template parameters here.
 #define PRECOMPUTED_SPECTRAL_QUANTITY(function_name, return_type,      \
@@ -322,7 +321,6 @@ PRECOMPUTED_SPECTRAL_QUANTITY(linear_filter_matrix, Matrix,
                               LinearFilterMatrixGenerator)
 
 #undef PRECOMPUTED_SPECTRAL_QUANTITY
-/// \endcond
 
 template <Basis BasisType, Quadrature QuadratureType, typename T>
 Matrix interpolation_matrix(const size_t num_points,
@@ -549,7 +547,6 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
 
 }  // namespace
 
-/// \cond
 // clang-tidy: Macro arguments should be in parentheses, but we want to append
 // template parameters here.
 #define SPECTRAL_QUANTITY_FOR_MESH(function_name, return_type)           \
@@ -573,7 +570,6 @@ SPECTRAL_QUANTITY_FOR_MESH(nodal_to_modal_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
 
 #undef SPECTRAL_QUANTITY_FOR_MESH
-/// \endcond
 
 template <typename T>
 Matrix interpolation_matrix(const Mesh<1>& mesh,
@@ -590,7 +586,6 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
 
 }  // namespace Spectral
 
-/// \cond HIDDEN_SYMBOLS
 #define BASIS(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define QUAD(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                                  \
@@ -645,9 +640,7 @@ template const DataVector& Spectral::collocation_points<
 template const DataVector& Spectral::quadrature_weights<
     Spectral::Basis::FiniteDifference, Spectral::Quadrature::FaceCentered>(
     size_t) noexcept;
-/// \endcond
 
-/// \cond
 template <>
 Spectral::Quadrature
 Options::create_from_yaml<Spectral::Quadrature>::create<void>(
@@ -686,4 +679,3 @@ Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
                   << "\" to Spectral::Basis. Must be one "
                      "of Chebyshev, Legendre, or FiniteDifference.");
 }
-/// \endcond

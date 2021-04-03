@@ -50,7 +50,6 @@ Scalar<DataVector> potential_energy_density(
   return result;
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                        \
@@ -70,6 +69,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace Elasticity

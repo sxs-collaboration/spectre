@@ -60,7 +60,5 @@ TimeStepId RungeKutta3::next_time_id_for_error(
 }
 }  // namespace TimeSteppers
 
-/// \cond
 PUP::able::PUP_ID TimeSteppers::RungeKutta3::my_PUP_ID =  // NOLINT
     0;
-/// \endcond

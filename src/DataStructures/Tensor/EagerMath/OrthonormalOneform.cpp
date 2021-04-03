@@ -12,7 +12,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 template <typename DataType, size_t VolumeDim, typename Frame>
 void orthonormal_oneform(
     const gsl::not_null<tnsr::i<DataType, VolumeDim, Frame>*> orthonormal_form,
@@ -123,4 +122,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SECOND_FORM, (double, DataVector),
 #undef DIM
 #undef FRAME
 #undef DTYPE
-/// \endcond

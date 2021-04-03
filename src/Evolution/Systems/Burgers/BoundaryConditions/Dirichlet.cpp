@@ -13,7 +13,6 @@
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Burgers::BoundaryConditions {
 Dirichlet::Dirichlet(const double u_value) noexcept : u_value_(u_value) {}
 
@@ -45,4 +44,3 @@ std::optional<std::string> Dirichlet::dg_ghost(
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Dirichlet::my_PUP_ID = 0;
 }  // namespace Burgers::BoundaryConditions
-/// \endcond

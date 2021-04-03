@@ -45,7 +45,6 @@ T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
 }
 }  // namespace
 
-/// \cond
 template <>
 DataVector compute_basis_function_value<Basis::Legendre>(
     const size_t k, const DataVector& x) noexcept {
@@ -69,7 +68,6 @@ double compute_basis_function_normalization_square<Basis::Legendre>(
     const size_t k) noexcept {
   return 2. / (2. * k + 1.);
 }
-/// \endcond
 
 // Algorithms to compute Legendre-Gauss quadrature
 
@@ -105,7 +103,6 @@ LegendrePolynomialAndDerivative::LegendrePolynomialAndDerivative(
 
 }  // namespace
 
-/// \cond
 template <>
 std::pair<DataVector, DataVector>
 compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
@@ -155,7 +152,6 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
   }
   return std::make_pair(std::move(x), std::move(w));
 }
-/// \endcond
 
 // Algorithms to compute Legendre-Gauss-Lobatto quadrature
 
@@ -196,7 +192,6 @@ EvaluateQandL::EvaluateQandL(const size_t poly_degree,
 
 }  // namespace
 
-/// \cond
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     Basis::Legendre, Quadrature::GaussLobatto>(
@@ -274,6 +269,5 @@ Matrix spectral_indefinite_integral_matrix<Basis::Legendre>(
   }
   return constant * indef_int;
 }
-/// \endcond
 
 }  // namespace Spectral

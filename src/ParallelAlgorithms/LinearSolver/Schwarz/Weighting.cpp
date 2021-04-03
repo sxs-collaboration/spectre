@@ -201,7 +201,6 @@ Scalar<DataVector> intruding_weight(
   return weight;
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(r, data)                                                \
   template void element_weight(                                             \
@@ -231,6 +230,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace LinearSolver::Schwarz

@@ -7,11 +7,9 @@
 
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-/// \endcond
 
 namespace intrp::OptionHolders {
 template <typename Frame>
@@ -44,7 +42,6 @@ bool operator!=(const ApparentHorizon<Frame>& lhs,
 }
 
 // Explicit instantiations
-/// \cond
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
@@ -57,5 +54,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Inertial))
 
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond
 }  // namespace intrp::OptionHolders

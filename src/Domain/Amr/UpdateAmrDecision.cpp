@@ -102,7 +102,6 @@ bool update_amr_decision(
   return my_amr_decision_changed;
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                 \
@@ -117,5 +116,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 }  // namespace amr

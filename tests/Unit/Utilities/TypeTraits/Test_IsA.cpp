@@ -17,13 +17,11 @@
 
 #include "Utilities/TypeTraits/IsA.hpp"
 
-/// \cond
 namespace {
 class A;
 class C;
 class D;
 } // namespace
-/// \endcond
 
 /// [is_a_example]
 static_assert(tt::is_a<std::vector, std::vector<double>>::value,

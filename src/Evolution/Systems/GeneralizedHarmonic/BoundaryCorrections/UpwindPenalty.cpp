@@ -17,7 +17,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"  // IWYU pragma: keep
 
-/// \cond
 namespace GeneralizedHarmonic::BoundaryCorrections {
 template <size_t Dim>
 UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg) noexcept
@@ -289,4 +288,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace GeneralizedHarmonic::BoundaryCorrections
-/// \endcond

@@ -26,6 +26,4 @@ void Translation<DerivOrder>::operator()(
 }  // namespace ControlErrors
 }  // namespace TestHelpers
 
-/// \cond
 template class TestHelpers::ControlErrors::Translation<2>;
-/// \endcond

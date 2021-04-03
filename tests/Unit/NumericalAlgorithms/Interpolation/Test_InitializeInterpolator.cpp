@@ -21,9 +21,7 @@
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
 
-/// \cond
 class DataVector;
-/// \endcond
 
 namespace {
 

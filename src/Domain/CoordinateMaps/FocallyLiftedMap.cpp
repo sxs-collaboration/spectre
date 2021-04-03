@@ -359,7 +359,6 @@ bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
 }
 
 // Explicit instantiations
-/// \cond
 #define IMAP(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
@@ -401,6 +400,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 #undef INSTANTIATE
 #undef DTYPE
 #undef IMAP
-/// \endcond
 
 }  // namespace domain::CoordinateMaps

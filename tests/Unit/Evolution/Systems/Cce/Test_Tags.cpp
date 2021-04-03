@@ -11,9 +11,7 @@
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
-/// \cond
 class ComplexDataVector;
-/// \endcond
 namespace {
 struct SomeTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;

@@ -3,7 +3,6 @@
 
 #include "Utilities/TypeTraits/IsCallable.hpp"
 
-/// \cond
 namespace {
 class A {
  public:
@@ -17,7 +16,6 @@ class B {
   }
 };
 }  // namespace
-/// \endcond
 
 /// [is_callable_example]
 static_assert(not tt::is_callable<A, int, double>::value,

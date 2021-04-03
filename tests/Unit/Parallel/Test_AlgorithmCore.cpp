@@ -71,9 +71,7 @@ struct hash<TestAlgorithmArrayInstance> {
 };
 }  // namespace std
 
-/// \cond
 struct ElementId {};
-/// \endcond
 
 struct CountActionsCalled : db::SimpleTag {
   static std::string name() noexcept { return "CountActionsCalled"; }

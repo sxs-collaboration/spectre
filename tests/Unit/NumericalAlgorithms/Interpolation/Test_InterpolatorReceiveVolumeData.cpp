@@ -57,7 +57,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// \cond
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 namespace intrp::Actions {
@@ -82,7 +81,6 @@ struct TemporalIds;
 template <typename TemporalId>
 struct VolumeVarsInfo;
 }  // namespace intrp::Tags
-/// \endcond
 
 namespace {
 

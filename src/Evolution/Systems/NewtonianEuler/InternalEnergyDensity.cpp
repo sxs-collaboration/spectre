@@ -8,7 +8,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace NewtonianEuler {
 template <typename DataType>
 void internal_energy_density(
@@ -45,4 +44,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 #undef DTYPE
 }  // namespace NewtonianEuler
-/// \endcond

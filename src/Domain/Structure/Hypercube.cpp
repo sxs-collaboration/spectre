@@ -213,7 +213,6 @@ bool operator!=(
   return not(lhs == rhs);
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(ELEMENT_DIM, HYPERCUBE_DIM)                              \
   template struct HypercubeElement<ELEMENT_DIM, HYPERCUBE_DIM>;              \
@@ -253,4 +252,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CELL, (3))
 #undef INSTANTIATE_EDGE
 #undef INSTANTIATE_FACE
 #undef INSTANTIATE_CELL
-/// \endcond

@@ -24,7 +24,6 @@
 
 namespace Cce::Solutions {
 
-/// \cond
 TeukolskyWave::TeukolskyWave(const double extraction_radius,
                              const double amplitude,
                              const double duration) noexcept
@@ -321,5 +320,4 @@ void TeukolskyWave::pup(PUP::er& p) noexcept {
 }
 
 PUP::able::PUP_ID TeukolskyWave::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::Solutions

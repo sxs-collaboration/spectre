@@ -48,6 +48,4 @@ void FunctionOfTimeUpdater<DerivOrder>::modify(
   }
 }
 
-/// \cond
 template class FunctionOfTimeUpdater<2>;
-/// \endcond

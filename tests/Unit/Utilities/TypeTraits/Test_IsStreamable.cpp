@@ -6,7 +6,6 @@
 
 #include "Utilities/TypeTraits/IsStreamable.hpp"
 
-/// \cond
 namespace {
 class A {};
 
@@ -18,7 +17,6 @@ class D {};
 
 std::ostream& operator<<(std::ostream& os, const D&) noexcept;
 }  // namespace TestHelpers
-/// \endcond
 
 /// [is_streamable_example]
 static_assert(not tt::is_streamable<std::ostream, C>::value,

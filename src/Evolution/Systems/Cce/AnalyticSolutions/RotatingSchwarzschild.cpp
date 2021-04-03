@@ -20,7 +20,6 @@
 
 namespace Cce::Solutions {
 
-/// \cond
 RotatingSchwarzschild::RotatingSchwarzschild(const double extraction_radius,
                                              const double mass,
                                              const double frequency) noexcept
@@ -120,5 +119,4 @@ void RotatingSchwarzschild::pup(PUP::er& p) noexcept {
 }
 
 PUP::able::PUP_ID RotatingSchwarzschild::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::Solutions

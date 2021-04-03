@@ -10,7 +10,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace NewtonianEuler {
 template <typename DataType, size_t ThermodynamicDim>
 void sound_speed_squared(
@@ -69,4 +68,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2))
 #undef THERMO_DIM
 #undef DTYPE
 }  // namespace NewtonianEuler
-/// \endcond

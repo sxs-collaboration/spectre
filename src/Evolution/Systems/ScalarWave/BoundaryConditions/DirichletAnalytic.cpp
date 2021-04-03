@@ -9,7 +9,6 @@
 
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
@@ -39,4 +38,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace ScalarWave::BoundaryConditions
-/// \endcond

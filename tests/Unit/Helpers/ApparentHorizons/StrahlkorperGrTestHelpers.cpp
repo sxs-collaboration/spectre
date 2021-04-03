@@ -17,7 +17,6 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
-/// \cond
 namespace TestHelpers {
 namespace Schwarzschild {
 
@@ -224,4 +223,3 @@ template Scalar<DataVector> TestHelpers::Kerr::horizon_ricci_scalar(
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
     const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
     const double mass, const std::array<double, 3>& spin) noexcept;
-/// \endcond

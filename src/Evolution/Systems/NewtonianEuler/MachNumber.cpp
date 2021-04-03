@@ -10,7 +10,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace NewtonianEuler {
 template <typename DataType, size_t Dim, typename Fr>
 void mach_number(const gsl::not_null<Scalar<DataType>*> result,
@@ -45,4 +44,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3))
 #undef DIM
 #undef DTYPE
 }  // namespace NewtonianEuler
-/// \endcond

@@ -148,7 +148,5 @@ bool operator!=(const AdamsBashforthN& lhs,
 }
 }  // namespace TimeSteppers
 
-/// \cond
 PUP::able::PUP_ID TimeSteppers::AdamsBashforthN::my_PUP_ID =  // NOLINT
     0;
-/// \endcond

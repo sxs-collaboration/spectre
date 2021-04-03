@@ -104,7 +104,6 @@ UniformTranslation<MeshDim>::functions_of_time() const noexcept {
   return result;
 }
 
-/// \cond
 template <>
 auto UniformTranslation<1>::map_for_composition() const noexcept
     -> MapForComposition {
@@ -182,7 +181,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef GET_DIM
 #undef INSTANTIATION
-/// \endcond
 }  // namespace creators::time_dependence
 
 using Translation = CoordinateMaps::TimeDependent::Translation;

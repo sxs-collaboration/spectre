@@ -12,7 +12,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
@@ -100,4 +99,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

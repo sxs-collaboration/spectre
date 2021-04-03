@@ -13,11 +13,9 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace Burgers {
 void Fluxes::apply(const gsl::not_null<tnsr::I<DataVector, 1>*> flux,
                    const Scalar<DataVector>& u) noexcept {
   get<0>(*flux) = 0.5 * square(get(u));
 }
 }  // namespace Burgers
-/// \endcond

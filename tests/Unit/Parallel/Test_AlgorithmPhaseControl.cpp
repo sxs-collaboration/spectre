@@ -83,12 +83,10 @@ struct ComponentBeta;
 template <typename TriggerRegistrars =
               tmpl::list<Registrars::TempPhaseATrigger>>
 struct TempPhaseATrigger : public Trigger<TriggerRegistrars> {
-  /// \cond
   TempPhaseATrigger() = default;
   explicit TempPhaseATrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TempPhaseATrigger);  // NOLINT
-  /// \endcond
 
   static constexpr Options::String help{
     "Trigger for going to TempPhaseA."};
@@ -104,12 +102,10 @@ struct TempPhaseATrigger : public Trigger<TriggerRegistrars> {
 template <typename TriggerRegistrars =
               tmpl::list<Registrars::TempPhaseBTrigger>>
 struct TempPhaseBTrigger : public Trigger<TriggerRegistrars> {
-  /// \cond
   TempPhaseBTrigger() = default;
   explicit TempPhaseBTrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TempPhaseBTrigger);  // NOLINT
-  /// \endcond
 
   static constexpr Options::String help{"Trigger for going to TempPhaseB."};
   using options = tmpl::list<>;

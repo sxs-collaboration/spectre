@@ -18,7 +18,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace ScalarWave::BoundaryConditions {
 namespace detail {
 SphericalRadiationType convert_spherical_radiation_type_from_yaml(
@@ -121,4 +120,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace ScalarWave::BoundaryConditions
-/// \endcond

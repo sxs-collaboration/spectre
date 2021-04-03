@@ -16,7 +16,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 namespace {
 // compute gauge wave H
 template <typename DataType, size_t Dim>
@@ -361,4 +360,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 }  // namespace Solutions
 }  // namespace gr
-/// \endcond

@@ -15,7 +15,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace Poisson::Solutions::detail {
 
 template <typename DataType, size_t Dim>
@@ -72,4 +71,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector), (3))
 #undef INSTANTIATE
 
 }  // namespace Poisson::Solutions::detail
-/// \endcond

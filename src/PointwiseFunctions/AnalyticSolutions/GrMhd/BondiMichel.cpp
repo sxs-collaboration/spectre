@@ -17,7 +17,6 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
-/// \cond
 namespace grmhd {
 namespace Solutions {
 
@@ -373,4 +372,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 }  // namespace Solutions
 }  // namespace grmhd
-/// \endcond

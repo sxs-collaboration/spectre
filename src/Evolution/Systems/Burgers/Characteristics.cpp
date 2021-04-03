@@ -12,7 +12,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace Burgers::Tags {
 void CharacteristicSpeedsCompute::function(
     const gsl::not_null<return_type*> result,
@@ -31,4 +30,3 @@ void ComputeLargestCharacteristicSpeed::function(
   *speed = max(abs(get(u)));
 }
 }  // namespace Burgers::Tags
-/// \endcond

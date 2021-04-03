@@ -23,9 +23,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
-/// \cond
 class DataVector;
-/// \endcond
 
 namespace {
 struct Var1 : db::SimpleTag {

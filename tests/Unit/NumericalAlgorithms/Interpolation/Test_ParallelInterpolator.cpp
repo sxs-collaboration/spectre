@@ -56,7 +56,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// \cond
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 namespace Parallel {
@@ -67,7 +66,6 @@ namespace StrahlkorperTags {
 template <typename Frame>
 struct Strahlkorper;
 }  // namespace StrahlkorperTags
-/// \endcond
 
 namespace {
 // Simple DataBoxItems for test.

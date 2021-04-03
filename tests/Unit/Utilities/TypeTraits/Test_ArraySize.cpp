@@ -5,11 +5,9 @@
 
 #include "Utilities/TypeTraits/ArraySize.hpp"
 
-/// \cond
 namespace {
 class A {};
 }  // namespace
-/// \endcond
 
 /// [array_size_example]
 static_assert(tt::array_size<std::array<double, 3>>::value == 3,

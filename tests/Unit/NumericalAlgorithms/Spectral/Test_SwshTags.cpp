@@ -17,10 +17,8 @@
 // IWYU pragma: no_forward_declare SpinWeighted
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 class ComplexDataVector;
 class ComplexModalVector;
-/// \endcond
 
 namespace Spectral::Swsh::Tags {
 namespace {

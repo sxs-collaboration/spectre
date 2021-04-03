@@ -22,12 +22,10 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 
-/// \cond
 namespace Frame {
 struct Logical;
 struct Inertial;
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 Brick::Brick(

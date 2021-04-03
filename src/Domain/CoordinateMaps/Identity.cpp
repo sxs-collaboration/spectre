@@ -44,7 +44,6 @@ template class Identity<2>;
 template class Identity<3>;
 
 // Explicit instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -69,6 +68,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace domain::CoordinateMaps

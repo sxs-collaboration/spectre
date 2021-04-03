@@ -10,7 +10,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace ScalarWave {
-/// \cond
 template <size_t Dim>
 void TimeDerivative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
@@ -47,5 +46,4 @@ void TimeDerivative<Dim>::apply(
 template class TimeDerivative<1>;
 template class TimeDerivative<2>;
 template class TimeDerivative<3>;
-/// \endcond
 }  // namespace ScalarWave

@@ -20,12 +20,10 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 
-/// \cond
 namespace Frame {
 struct Inertial;
 struct Logical;
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 Interval::Interval(

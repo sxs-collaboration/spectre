@@ -105,12 +105,10 @@ struct CorrectionBase : public PUP::able {
 
   explicit CorrectionBase(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
 
-  /// \cond
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_abstract(CorrectionBase);  // NOLINT
 #pragma GCC diagnostic pop
-  /// \endcond
 
   virtual std::unique_ptr<CorrectionBase> get_clone() const noexcept = 0;
 };
@@ -141,11 +139,9 @@ struct Correction final : public CorrectionBase {
     return std::make_unique<Correction>(*this);
   }
 
-  /// \cond
   explicit Correction(CkMigrateMessage* msg) noexcept : CorrectionBase(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Correction);  // NOLINT
-  /// \endcond
   void pup(PUP::er& p) override { CorrectionBase::pup(p); }
 
   double dg_package_data(

@@ -17,7 +17,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Numeric.hpp"
 
-/// \cond
 namespace hydro::Solutions {
 
 template <size_t Dim, bool IsRelativistic>
@@ -216,4 +215,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (1, 2, 3), (true, false),
 #undef INSTANTIATE_LORENTZ_FACTOR
 #undef INSTANTIATE_VECTORS
 }  // namespace hydro::Solutions
-/// \endcond

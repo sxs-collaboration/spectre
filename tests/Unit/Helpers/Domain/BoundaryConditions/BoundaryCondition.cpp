@@ -11,7 +11,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace TestHelpers::domain::BoundaryConditions {
 template <size_t Dim>
 BoundaryConditionBase<Dim>::BoundaryConditionBase(
@@ -116,4 +115,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATION
 }  // namespace TestHelpers::domain::BoundaryConditions
-/// \endcond

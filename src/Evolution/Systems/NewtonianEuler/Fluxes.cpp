@@ -12,7 +12,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace NewtonianEuler {
 namespace detail {
 template <size_t Dim>
@@ -74,4 +73,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond

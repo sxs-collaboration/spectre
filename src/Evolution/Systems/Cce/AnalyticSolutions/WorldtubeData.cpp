@@ -28,7 +28,6 @@
 
 namespace Cce::Solutions {
 
-/// \cond
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
     const size_t output_l_max, double /*time*/,
@@ -279,5 +278,4 @@ void WorldtubeData::pup(PUP::er& p) noexcept {
   }
 }
 
-/// \endcond
 }  // namespace Cce::Solutions

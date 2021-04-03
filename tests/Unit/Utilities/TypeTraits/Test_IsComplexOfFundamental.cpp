@@ -6,9 +6,7 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
-/// \cond
 class DataVector;
-/// \endcond
 
 /// [is_complex_of_fundamental]
 static_assert(tt::is_complex_of_fundamental_v<std::complex<double>>,

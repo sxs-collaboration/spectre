@@ -22,7 +22,6 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Xcts::Solutions {
 
 std::ostream& operator<<(std::ostream& os,
@@ -280,4 +279,3 @@ template class Xcts::AnalyticData::CommonVariables<
     DataVector, typename Xcts::Solutions::detail::SchwarzschildVariables<
                     DataVector>::Cache>;
 
-/// \endcond

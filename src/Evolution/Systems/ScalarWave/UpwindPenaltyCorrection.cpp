@@ -16,7 +16,6 @@
 #include "Utilities/Gsl.hpp"   // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"  // IWYU pragma: keep
 
-/// \cond
 namespace ScalarWave {
 template <size_t Dim>
 void UpwindPenaltyCorrection<Dim>::package_data(
@@ -175,4 +174,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace ScalarWave
-/// \endcond

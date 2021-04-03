@@ -12,7 +12,6 @@
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
@@ -55,4 +54,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace GeneralizedHarmonic::BoundaryConditions
-/// \endcond

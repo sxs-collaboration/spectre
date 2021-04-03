@@ -170,8 +170,6 @@ void NoIncomingRadiation::pup(PUP::er& p) noexcept {
   p | max_iterations_;
 }
 
-/// \cond
 PUP::able::PUP_ID NoIncomingRadiation::my_PUP_ID = 0;
-/// \endcond
 }  // namespace InitializeJ
 }  // namespace Cce

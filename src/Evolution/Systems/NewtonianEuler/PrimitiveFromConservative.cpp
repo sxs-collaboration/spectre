@@ -16,7 +16,6 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace NewtonianEuler {
 
 template <size_t Dim, size_t ThermodynamicDim>
@@ -64,4 +63,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 #undef DIM
 #undef THERMO_DIM
 #undef INSTANTIATE
-/// \endcond

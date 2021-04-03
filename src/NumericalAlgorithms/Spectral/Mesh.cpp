@@ -66,7 +66,6 @@ std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const noexcept {
   return result;
 }
 
-/// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
 void Mesh<Dim>::pup(PUP::er& p) noexcept {
   p | extents_;
@@ -134,4 +133,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SLICE_AWAY, (1, 2, 3))
 #undef GEN_OP
 #undef INSTANTIATE_MESH
 #undef INSTANTIATE_SLICE_AWAY
-/// \endcond

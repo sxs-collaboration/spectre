@@ -21,7 +21,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace Elasticity::Solutions::detail {
 
 namespace {
@@ -226,4 +225,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 #undef INSTANTIATE
 
 }  // namespace Elasticity::Solutions::detail
-/// \endcond

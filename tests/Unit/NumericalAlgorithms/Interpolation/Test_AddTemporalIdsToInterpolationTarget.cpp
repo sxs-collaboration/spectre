@@ -32,7 +32,6 @@
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
 
-/// \cond
 class DataVector;
 namespace intrp::Tags {
 template <typename TemporalId>
@@ -44,7 +43,6 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-/// \endcond
 
 namespace {
 

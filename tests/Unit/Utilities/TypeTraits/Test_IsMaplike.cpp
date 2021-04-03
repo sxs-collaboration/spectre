@@ -7,12 +7,10 @@
 
 #include "Utilities/TypeTraits/IsMaplike.hpp"
 
-/// \cond
 namespace {
 class C {};
 class D {};
 }  // namespace
-/// \endcond
 
 /// [is_maplike_example]
 static_assert(tt::is_maplike<std::unordered_map<int, double>>::value,

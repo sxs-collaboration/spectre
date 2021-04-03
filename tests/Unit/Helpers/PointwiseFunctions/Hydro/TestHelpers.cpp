@@ -16,7 +16,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace TestHelpers {
 namespace hydro {
 template <typename DataType>
@@ -157,4 +156,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_TENSORS, (double, DataVector), (1, 2, 3))
 #undef DTYPE
 }  // namespace hydro
 }  // namespace TestHelpers
-/// \endcond

@@ -13,11 +13,9 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-/// \endcond
 
 namespace {
 

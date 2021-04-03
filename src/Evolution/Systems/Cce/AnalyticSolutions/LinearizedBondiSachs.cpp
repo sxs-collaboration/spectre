@@ -23,7 +23,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce::Solutions {
-/// \cond
 namespace LinearizedBondiSachs_detail {
 namespace InitializeJ {
 LinearizedBondiSachs::LinearizedBondiSachs(
@@ -617,5 +616,4 @@ void LinearizedBondiSachs::pup(PUP::er& p) noexcept {
 }
 
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::Solutions

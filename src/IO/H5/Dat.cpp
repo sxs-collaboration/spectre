@@ -38,7 +38,6 @@ Matrix vector_to_matrix(const std::vector<double>& raw_data,
 }  // namespace
 
 namespace h5 {
-/// \cond HIDDEN_SYMBOLS
 Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
          const std::string& name, std::vector<std::string> legend,
          const uint32_t version)
@@ -103,7 +102,6 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
 }
 
 Dat::~Dat() { CHECK_H5(H5Dclose(dataset_id_), "Failed to close dataset"); }
-/// \endcond HIDDEN_SYMBOLS
 
 void Dat::append_impl(const hsize_t number_of_rows,
                       const std::vector<double>& data) {

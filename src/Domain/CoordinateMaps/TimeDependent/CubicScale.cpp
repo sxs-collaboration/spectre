@@ -406,7 +406,6 @@ bool operator==(const CubicScale<Dim>& lhs,
 }
 
 // Explicit instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
@@ -463,5 +462,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond
 }  // namespace domain::CoordinateMaps::TimeDependent

@@ -221,7 +221,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
   CHECK(destructive_resize_check.size() == destructive_resize_copy.size() + 1);
 }
 
-/// \cond HIDDEN_SYMBOLS
 // A macro which will static_assert fail when LHSTYPE OP RHSTYPE succeeds during
 // SFINAE. Used to make sure we can't violate spin addition rules.
 // clang-tidy: wants parens around macro argument, but that breaks macro
@@ -245,5 +244,4 @@ CHECK_TYPE_OPERATION_FAIL(spin_check_3, +,
                           decltype(std::declval<SpinZero>() *
                                    std::declval<SpinTwo>()),
                           SpinOne);
-/// \endcond
 }  // namespace

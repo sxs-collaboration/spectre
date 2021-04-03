@@ -22,7 +22,6 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-/// \cond
 struct densitized_eta_minus_kappaJ {
   using type = Scalar<DataVector>;
 };
@@ -30,7 +29,6 @@ struct densitized_eta_minus_kappaJ {
 struct kappaT_lapse {
   using type = Scalar<DataVector>;
 };
-/// \endcond
 }  // namespace
 
 namespace RadiationTransport::M1Grey::detail {

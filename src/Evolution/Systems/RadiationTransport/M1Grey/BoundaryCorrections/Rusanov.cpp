@@ -15,7 +15,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace RadiationTransport::M1Grey::BoundaryCorrections::Rusanov_detail {
 
 void dg_package_data_impl(
@@ -89,4 +88,3 @@ void dg_boundary_terms_impl(
 }
 
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections::Rusanov_detail
-/// \endcond

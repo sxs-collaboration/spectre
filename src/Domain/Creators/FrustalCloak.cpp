@@ -17,7 +17,6 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 struct Logical;
@@ -26,7 +25,6 @@ namespace domain {
 template <typename, typename, size_t>
 class CoordinateMapBase;
 }  // namespace domain
-/// \endcond
 
 namespace domain::creators {
 FrustalCloak::FrustalCloak(

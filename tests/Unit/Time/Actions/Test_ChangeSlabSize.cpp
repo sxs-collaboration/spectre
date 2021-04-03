@@ -28,7 +28,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// \cond
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 namespace Tags {
 template <typename Tag>
@@ -36,7 +35,6 @@ struct Next;
 template <typename Tag>
 struct dt;
 }  // namespace Tags
-/// \endcond
 
 namespace {
 struct Var : db::SimpleTag {

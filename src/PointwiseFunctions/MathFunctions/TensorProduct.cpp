@@ -75,7 +75,6 @@ tnsr::ii<T, Dim> TensorProduct<Dim>::second_derivatives(
 
 }  // namespace MathFunctions
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -108,4 +107,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond

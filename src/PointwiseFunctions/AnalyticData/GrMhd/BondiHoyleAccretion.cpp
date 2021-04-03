@@ -15,7 +15,6 @@
 
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
 
-/// \cond
 namespace grmhd {
 namespace AnalyticData {
 
@@ -241,4 +240,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 
 }  // namespace AnalyticData
 }  // namespace grmhd
-/// \endcond

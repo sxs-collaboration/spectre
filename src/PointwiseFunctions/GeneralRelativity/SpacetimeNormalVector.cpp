@@ -12,7 +12,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
@@ -62,4 +61,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

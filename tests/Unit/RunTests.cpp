@@ -51,9 +51,7 @@ RunTests::RunTests(CkArgMsg* msg) {
 // queued for registration.
 namespace Parallel::charmxx {
 class RegistrationHelper;
-/// \cond
 std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
 size_t charm_register_list_capacity = 0;
 size_t charm_register_list_size = 0;
-/// \endcond
 }  // namespace Parallel::charmxx

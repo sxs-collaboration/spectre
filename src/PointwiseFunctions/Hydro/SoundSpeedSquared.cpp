@@ -12,7 +12,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace hydro {
 
 template <typename DataType, size_t ThermodynamicDim>
@@ -78,4 +77,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2))
 #undef THERMO_DIM
 #undef INSTANTIATE
 }  // namespace hydro
-/// \endcond

@@ -104,7 +104,6 @@ bool operator==(const CoordinateMaps::Equiangular& lhs,
 }
 
 // Explicit instantiations
-/// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
@@ -123,5 +122,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond
 }  // namespace domain::CoordinateMaps

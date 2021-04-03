@@ -3,7 +3,6 @@
 
 #include "Utilities/TypeTraits/HasEquivalence.hpp"
 
-/// \cond
 namespace {
 class A {};
 }  // namespace
@@ -13,7 +12,6 @@ class C {};
 
 bool operator==(const C&, const C&);
 }  // namespace TestHelpers
-/// \endcond
 
 /// [has_equivalence_example]
 static_assert(not tt::has_equivalence<A>::value,

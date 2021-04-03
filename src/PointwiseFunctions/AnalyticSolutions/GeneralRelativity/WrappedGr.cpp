@@ -15,7 +15,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
-/// \cond
 namespace GeneralizedHarmonic::Solutions {
 // Preprocessor logic to avoid defining variables() functions for
 // tags other than the three the wrapper adds (i.e., other than
@@ -302,4 +301,3 @@ GENERATE_INSTANTIATIONS(
 #undef DIM
 #undef STYPE
 #undef INSTANTIATE
-/// \endcond

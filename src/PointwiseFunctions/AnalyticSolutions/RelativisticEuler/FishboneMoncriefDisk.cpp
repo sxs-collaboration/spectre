@@ -25,7 +25,6 @@
 // functions
 // IWYU pragma: no_include <complex>
 
-/// \cond
 namespace RelativisticEuler {
 namespace Solutions {
 
@@ -409,4 +408,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 }  // namespace Solutions
 }  // namespace RelativisticEuler
-/// \endcond

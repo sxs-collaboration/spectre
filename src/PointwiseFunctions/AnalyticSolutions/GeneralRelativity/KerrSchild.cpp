@@ -19,7 +19,6 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-/// \cond
 namespace gr::Solutions {
 
 KerrSchild::KerrSchild(const double mass,
@@ -552,4 +551,3 @@ template class KerrSchild::IntermediateVars<double>;
 template class KerrSchild::IntermediateComputer<DataVector>;
 template class KerrSchild::IntermediateComputer<double>;
 }  // namespace gr::Solutions
-/// \endcond

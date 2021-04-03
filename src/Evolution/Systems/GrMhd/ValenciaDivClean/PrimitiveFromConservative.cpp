@@ -32,7 +32,6 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace grmhd::ValenciaDivClean {
 
 template <typename OrderedListOfPrimitiveRecoverySchemes,
@@ -197,4 +196,3 @@ GENERATE_INSTANTIATIONS(
 #undef INSTANTIATION
 #undef THERMODIM
 #undef RECOVERY
-/// \endcond

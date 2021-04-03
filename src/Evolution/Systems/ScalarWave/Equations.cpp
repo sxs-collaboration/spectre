@@ -13,7 +13,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarWave {
-/// \cond
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
@@ -30,7 +29,6 @@ void ComputeNormalDotFluxes<Dim>::apply(
     phi_normal_dot_flux->get(i) = 0.0;
   }
 }
-/// \endcond
 }  // namespace ScalarWave
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

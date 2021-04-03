@@ -100,7 +100,5 @@ const std::array<Time::rational_t, 6> DormandPrince5::c_ = {
     {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}, {1, 1}}};
 }  // namespace TimeSteppers
 
-/// \cond
 PUP::able::PUP_ID TimeSteppers::DormandPrince5::my_PUP_ID =  // NOLINT
     0;
-/// \endcond

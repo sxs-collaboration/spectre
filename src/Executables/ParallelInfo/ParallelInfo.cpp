@@ -15,7 +15,6 @@
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
-/// \cond HIDDEN_SYMBOLS
 ParallelInfo::ParallelInfo(CkArgMsg* msg) {
   // clang-tidy: do not use pointer arithmetic
   Parallel::printf("Executing '%s' using %d processors.\n",
@@ -96,7 +95,6 @@ NodeGroupReporter::NodeGroupReporter(const CkCallback& cb_end_report) {
   print_info();
   this->contribute(cb_end_report);
 }
-/// \endcond
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"

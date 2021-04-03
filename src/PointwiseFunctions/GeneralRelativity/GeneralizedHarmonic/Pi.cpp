@@ -12,7 +12,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void pi(const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
@@ -105,4 +104,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

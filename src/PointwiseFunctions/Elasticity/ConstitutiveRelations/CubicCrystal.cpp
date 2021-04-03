@@ -58,9 +58,7 @@ double CubicCrystal::poisson_ratio() const noexcept {
   return 1. / (1. + (c_11_ / c_12_));
 }
 
-/// \cond
 PUP::able::PUP_ID CubicCrystal::my_PUP_ID = 0;
-/// \endcond
 
 void CubicCrystal::pup(PUP::er& p) noexcept {
   p | c_11_;

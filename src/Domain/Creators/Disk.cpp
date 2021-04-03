@@ -22,12 +22,10 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 struct Logical;
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 Disk::Disk(typename InnerRadius::type inner_radius,

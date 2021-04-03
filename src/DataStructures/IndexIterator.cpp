@@ -29,7 +29,6 @@ IndexIterator<Dim>& IndexIterator<Dim>::operator++() {
   return *this;
 }
 
-/// \cond
 template <>
 IndexIterator<0>& IndexIterator<0>::operator++() {
   valid_ = false;
@@ -41,4 +40,3 @@ template class IndexIterator<1>;
 template class IndexIterator<2>;
 template class IndexIterator<3>;
 template class IndexIterator<4>;
-/// \endcond

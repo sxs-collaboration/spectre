@@ -54,7 +54,6 @@ class FunctionOfLorentzFactor {
 };
 }  // namespace
 
-/// \cond
 namespace grmhd::ValenciaDivClean {
 FixConservatives::FixConservatives(
     const double minimum_rest_mass_density_times_lorentz_factor,
@@ -247,4 +246,3 @@ bool operator!=(const FixConservatives& lhs,
   return not(lhs == rhs);
 }
 }  // namespace grmhd::ValenciaDivClean
-/// \endcond

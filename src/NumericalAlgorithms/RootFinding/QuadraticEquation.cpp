@@ -144,7 +144,6 @@ struct root_between_values_impl<DataVector> {
 }  // namespace detail
 
 // Explicit instantiations
-/// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                               \
@@ -159,4 +158,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond

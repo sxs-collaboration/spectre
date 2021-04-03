@@ -13,7 +13,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace {
 template <size_t Dim>
 void densitized_stress(
@@ -149,4 +148,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef DIM
 
 }  // namespace RelativisticEuler::Valencia
-/// \endcond

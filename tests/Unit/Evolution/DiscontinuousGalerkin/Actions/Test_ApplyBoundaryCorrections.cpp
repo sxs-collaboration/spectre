@@ -81,11 +81,9 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
     using type = Scalar<DataVector>;
   };
 
-  /// \cond
   explicit BoundaryTerms(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
-  /// \endcond
   BoundaryTerms() = default;
   BoundaryTerms(const BoundaryTerms&) = default;
   BoundaryTerms& operator=(const BoundaryTerms&) = default;

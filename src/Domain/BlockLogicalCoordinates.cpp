@@ -127,7 +127,6 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
 }
 
 // Explicit instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -144,4 +143,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef FRAME
 #undef DIM
 #undef INSTANTIATE
-/// \endcond

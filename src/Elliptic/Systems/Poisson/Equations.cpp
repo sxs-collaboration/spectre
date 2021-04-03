@@ -51,7 +51,6 @@ void auxiliary_fluxes(
   }
 }
 
-/// \cond
 template <size_t Dim>
 void Fluxes<Dim, Geometry::FlatCartesian>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
@@ -109,7 +108,6 @@ void Sources<Dim, Geometry::Curved>::apply(
         tnsr::i<DataVector, Dim>*> /*equation_for_field_gradient*/,
     const tnsr::i<DataVector, Dim>& /*christoffel_contracted*/,
     const Scalar<DataVector>& /*field*/) noexcept {}
-/// \endcond
 
 }  // namespace Poisson
 

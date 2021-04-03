@@ -127,11 +127,9 @@ struct BoundaryTerms final
     using type = Scalar<DataVector>;
   };
 
-  /// \cond
   explicit BoundaryTerms(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
-  /// \endcond
   BoundaryTerms(const bool mesh_is_moving, const double sign_of_normal)
       : mesh_is_moving_(mesh_is_moving), sign_of_normal_(sign_of_normal) {}
   BoundaryTerms() = default;

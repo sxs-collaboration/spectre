@@ -18,7 +18,6 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 namespace CurvedScalarWave {
-/// \cond
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
@@ -56,7 +55,6 @@ void ComputeNormalDotFluxes<Dim>::apply(
         shift_dot_normal * phi.get(i);
   }
 }
-/// \endcond
 }  // namespace CurvedScalarWave
 // Generate explicit instantiations of partial_derivatives function as well as
 // all other functions in Equations.cpp

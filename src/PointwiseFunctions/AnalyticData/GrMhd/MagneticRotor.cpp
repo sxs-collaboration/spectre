@@ -34,7 +34,6 @@ Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
 }
 }  // namespace
 
-/// \cond
 namespace grmhd::AnalyticData {
 
 MagneticRotor::MagneticRotor(
@@ -209,4 +208,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 }  // namespace grmhd::AnalyticData
-/// \endcond

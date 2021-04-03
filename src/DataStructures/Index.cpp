@@ -9,7 +9,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
-/// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
 void Index<Dim>::pup(PUP::er& p) noexcept {
   p | indices_;
@@ -46,4 +45,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 #undef DIM
 #undef GEN_OP
 #undef INSTANTIATE
-/// \endcond

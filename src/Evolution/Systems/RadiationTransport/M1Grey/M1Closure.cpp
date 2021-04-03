@@ -23,14 +23,12 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-/// \cond
 struct MomentumUp {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;
 };
 struct MomentumSquared {
   using type = Scalar<DataVector>;
 };
-/// \endcond
 
 // Minerbo (maximum entropy) closure for the M1 scheme
 double minerbo_closure_function(const double zeta) noexcept {

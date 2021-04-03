@@ -20,7 +20,6 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
-/// \cond
 namespace pypp {
 SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
     const std::string &cur_dir_relative_to_unit_test_path) {
@@ -82,4 +81,3 @@ void SetupLocalPythonEnvironment::finalize_env() {
 bool SetupLocalPythonEnvironment::initialized = false;
 bool SetupLocalPythonEnvironment::finalized = false;
 }  // namespace pypp
-/// \endcond

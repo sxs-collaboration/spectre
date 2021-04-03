@@ -34,7 +34,5 @@ std::complex<double> LinearSpanInterpolator::interpolate(
   return interpolate_impl(source_points, values, target_point);
 }
 
-/// \cond
 PUP::able::PUP_ID intrp::LinearSpanInterpolator::my_PUP_ID = 0;
-/// \endcond
 }  // namespace intrp

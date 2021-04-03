@@ -12,7 +12,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
@@ -137,4 +136,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

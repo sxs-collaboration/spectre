@@ -49,7 +49,6 @@ T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
 }
 }  // namespace
 
-/// \cond
 template <>
 DataVector compute_basis_function_value<Basis::Chebyshev>(
     const size_t k, const DataVector& x) noexcept {
@@ -77,11 +76,9 @@ double compute_basis_function_normalization_square<Basis::Chebyshev>(
     return M_PI_2;
   }
 }
-/// \endcond
 
 // Algorithm to compute Chebyshev-Gauss quadrature
 
-/// \cond
 template <>
 std::pair<DataVector, DataVector>
 compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
@@ -97,11 +94,9 @@ compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
   }
   return std::make_pair(std::move(x), std::move(w));
 }
-/// \endcond
 
 // Algorithm to compute Chebyshev-Gauss-Lobatto quadrature
 
-/// \cond
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     Basis::Chebyshev, Quadrature::GaussLobatto>(
@@ -151,6 +146,5 @@ Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
   }
   return constant * indef_int;
 }
-/// \endcond
 
 }  // namespace Spectral

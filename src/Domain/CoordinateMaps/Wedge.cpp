@@ -443,7 +443,6 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
 }
 
 // Explicit instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -477,5 +476,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3),
 #undef DTYPE
 #undef INSTANTIATE_DIM
 #undef INSTANTIATE_DTYPE
-/// \endcond
 }  // namespace domain::CoordinateMaps

@@ -37,7 +37,6 @@ bool operator!=(const LineSegment<VolumeDim>& lhs,
   return not(lhs == rhs);
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                        \
@@ -51,7 +50,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace OptionHolders
 }  // namespace intrp

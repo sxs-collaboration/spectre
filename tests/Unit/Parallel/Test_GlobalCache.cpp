@@ -219,10 +219,8 @@ struct TestMetavariables {
 // PerformAlgorithmCallback because they can be mocked.
 class UseCkCallbackAsCallback : public Parallel::Callback {
  public:
-  /// \cond
   explicit UseCkCallbackAsCallback(CkMigrateMessage* /*unused*/) noexcept {}
   WRAPPED_PUPable_decl(UseCkCallbackAsCallback);
-  /// \endcond
   explicit UseCkCallbackAsCallback(const CkCallback& callback)
       : callback_(callback) {}
   void invoke() noexcept override { callback_.send(nullptr); }
@@ -554,14 +552,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.MutableGlobalCache.NullptrConstructError",
 
 // --------- registration stuff below -------
 
-/// \cond
 PUPable_def(UseCkCallbackAsCallback)
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Triangle::my_PUP_ID = 0;   // NOLINT
 PUP::able::PUP_ID Square::my_PUP_ID = 0;     // NOLINT
 PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};

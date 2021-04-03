@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 
-/// \cond
 namespace Burgers::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
     : BoundaryCondition(msg) {}
@@ -31,5 +30,4 @@ void DirichletAnalytic::flux_impl(
 
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Burgers::BoundaryConditions

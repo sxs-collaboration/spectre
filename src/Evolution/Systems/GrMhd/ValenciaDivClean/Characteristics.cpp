@@ -20,7 +20,6 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 
 namespace {
 void compute_characteristic_speeds(
@@ -237,4 +236,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 #undef GET_DIM
 #undef INSTANTIATION
 }  // namespace grmhd::ValenciaDivClean
-/// \endcond

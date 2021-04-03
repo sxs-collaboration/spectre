@@ -11,7 +11,6 @@
 
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
 
-/// \cond
 namespace grmhd {
 namespace Solutions {
 
@@ -82,4 +81,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_VECTORS
 }  // namespace Solutions
 }  // namespace grmhd
-/// \endcond

@@ -103,7 +103,6 @@ volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
   return {std::move(indices_buffer), std::move(volume_and_slice_indices)};
 }
 
-/// \cond HIDDEN_SYMBOLS
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATION(r, data)                                                 \
   template SliceIterator::SliceIterator(const Index<DIM(data)>&, const size_t, \
@@ -120,4 +119,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATION
-/// \endcond

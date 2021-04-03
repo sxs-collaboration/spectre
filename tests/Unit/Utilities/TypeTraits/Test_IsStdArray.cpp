@@ -5,11 +5,9 @@
 
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 
-/// \cond
 namespace {
 class D;
 }  // namespace
-/// \endcond
 
 /// [is_std_array_example]
 static_assert(tt::is_std_array<std::array<double, 3>>::value,

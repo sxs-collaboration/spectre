@@ -15,7 +15,6 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace h5 {
-/// \cond HIDDEN_SYMOLS
 Header::Header(const bool exists, detail::OpenGroup&& group,
                const hid_t location, const std::string& name)
     : group_(std::move(group)) {
@@ -69,5 +68,4 @@ const std::string Header::printenv_delimiter_{
     "############### printenv ###############\n"};
 const std::string Header::library_versions_delimiter_{
     "############### library versions ###############\n"};
-/// \endcond
 }  // namespace h5

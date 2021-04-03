@@ -11,7 +11,6 @@
 
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
-/// \cond
 namespace gr {
 namespace Solutions {
 
@@ -260,4 +259,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond

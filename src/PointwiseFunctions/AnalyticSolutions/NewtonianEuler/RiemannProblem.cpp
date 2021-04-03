@@ -73,7 +73,6 @@ struct FunctionOfPressureAndData {
 
 }  // namespace
 
-/// \cond
 namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
@@ -536,4 +535,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
 #undef INSTANTIATE_VELOCITY
 
 }  // namespace NewtonianEuler::Solutions
-/// \endcond

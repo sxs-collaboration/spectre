@@ -12,7 +12,6 @@
 #include "Utilities/Formaline.hpp"
 
 namespace h5 {
-/// \cond HIDDEN_SYMOLS
 SourceArchive::SourceArchive(const bool exists, detail::OpenGroup&& group,
                              const hid_t location,
                              const std::string& name) noexcept
@@ -26,5 +25,4 @@ SourceArchive::SourceArchive(const bool exists, detail::OpenGroup&& group,
                name + extension());
   }
 }
-/// \endcond
 }  // namespace h5
