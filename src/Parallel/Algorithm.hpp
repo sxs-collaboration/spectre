@@ -162,8 +162,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   using metavariables = typename ParallelComponent::metavariables;
   /// List off all the Tags that can be received into the Inbox
   using inbox_tags_list = Parallel::get_inbox_tags<all_actions_list>;
-  /// The type of the object used to identify the element of the array, group
-  /// or nodegroup spatially. The default should be an `int`.
+  /// The type of the object used to identify the element of the array, group,
+  /// or nodegroup spatially. The default depends on the component, see
+  /// ParallelComponentHelpers.
   using array_index = typename get_array_index<
       typename ParallelComponent::chare_type>::template f<ParallelComponent>;
 
