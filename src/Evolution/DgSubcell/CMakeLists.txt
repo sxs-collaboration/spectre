@@ -18,6 +18,7 @@ spectre_target_headers(
   Projection.hpp
   RdmpTci.hpp
   Reconstruction.hpp
+  SliceData.hpp
   SubcellOptions.hpp
   TciStatus.hpp
   TwoMeshRdmpTci.hpp
@@ -33,6 +34,7 @@ spectre_target_sources(
   PerssonTci.cpp
   Projection.cpp
   Reconstruction.cpp
+  SliceData.cpp
   SubcellOptions.cpp
   TciStatus.cpp
   )
