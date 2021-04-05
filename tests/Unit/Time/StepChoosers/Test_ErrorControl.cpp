@@ -177,17 +177,17 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
     {
       INFO("Test error control step fixed by relative tolerance");
       const StepChoosers::ErrorControl<EvolvedVariablesTag> error_control{
-          0.0, 5.0e-4, 2.0, 0.5, 0.95};
+          0.0, 3.0e-4, 2.0, 0.5, 0.95};
       std::optional<double> previous_step_error;
       const auto first_result =
           get_suggestion(make_not_null(&previous_step_error), error_control,
                          step_values, step_errors, 1.0, stepper_order);
-      // manually calculated in the special case in question: only absolute
+      // manually calculated in the special case in question: only relative
       // errors constrained
       const double expected_linf_error =
           max(flattened_step_errors /
               (flattened_step_values + flattened_step_errors)) /
-          5.0e-4;
+          3.0e-4;
       CHECK(approx(first_result.first) ==
             0.95 / pow(expected_linf_error, 1.0 / stepper_order));
       CHECK(first_result.second);
@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       const double new_expected_linf_error =
           max(1.2 * flattened_step_errors /
               (flattened_step_values + 1.2 * flattened_step_errors)) /
-          5.0e-4;
+          3.0e-4;
       CHECK(approx(second_result.first) ==
             0.95 * first_result.first /
                 (pow(pow(new_expected_linf_error, 1.0 / stepper_order), 0.7) *
