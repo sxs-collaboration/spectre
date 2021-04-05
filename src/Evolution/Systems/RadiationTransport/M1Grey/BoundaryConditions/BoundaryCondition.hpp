@@ -6,6 +6,7 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,7 +22,10 @@ namespace RadiationTransport::M1Grey::BoundaryConditions {
 template <typename... NeutrinoSpecies>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<DirichletAnalytic<NeutrinoSpecies...>>;
+  using creatable_classes =
+      tmpl::list<DirichletAnalytic<NeutrinoSpecies...>,
+                 domain::BoundaryConditions::Periodic<
+                     BoundaryCondition<NeutrinoSpecies...>>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
