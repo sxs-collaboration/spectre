@@ -105,7 +105,7 @@ void test_simple_tag(const std::string& expected_name) {
                 "db::ComputeTag");
   static_assert(detail::has_type_v<Tag>);
   if constexpr (detail::has_base_v<Tag>) {
-    static_assert(::db::is_base_tag_v<Tag::base>,
+    static_assert(::db::is_base_tag_v<typename Tag::base>,
                   "The base type alias of a simple tag must be a base tag.");
   }
   static_assert(not std::is_same_v<Tag, typename Tag::type>,

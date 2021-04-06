@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_PrefixHelpers.cpp
   Test_TagName.cpp
   Test_TagTraits.cpp
+  Test_TestHelpers.cpp
   )
 
 add_test_library(

@@ -28,6 +28,10 @@ struct NamedSimpleWithNamedBase : NamedBase, db::SimpleTag {
   static std::string name() noexcept { return "NameOfSimpleWithNamedBase"; }
 };
 
+struct SimpleWithForwardedBase : TestHelpers::db::Tags::Base, db::SimpleTag {
+  using base = TestHelpers::db::Tags::Base;
+};
+
 struct SimpleNamedCompute : TestHelpers::db::Tags::Simple, db::ComputeTag {
   static std::string name() noexcept { return "NameOfSimpleCompute"; }
 };
@@ -178,6 +182,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<SimpleWithNamedBase>() == "NameOfBase");
   CHECK(db::tag_name<NamedSimpleWithNamedBase>() ==
         "NameOfSimpleWithNamedBase");
+  CHECK(db::tag_name<SimpleWithForwardedBase>() == "Base");
   CHECK(db::tag_name<SimpleNamedCompute>() == "NameOfSimpleCompute");
   CHECK(db::tag_name<NamedSimpleNamedCompute>() == "NameOfNamedSimpleCompute");
   CHECK(db::tag_name<NamedSimpleCompute>() == "NameOfSimple");
