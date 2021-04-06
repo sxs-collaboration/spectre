@@ -432,12 +432,11 @@ struct add_int0_from_receive {
   // [is_ready_example]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept
-      // [is_ready_example]
+  static bool is_ready(const db::DataBox<DbTags>& box,
+                       const tuples::TaggedTuple<InboxTags...>& inboxes,
+                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                       const ArrayIndex& /*array_index*/) noexcept
+  // [is_ready_example]
   {
     const auto& inbox = tuples::get<IntReceiveTag>(inboxes);
     // The const_cast in this function is purely for testing purposes, this is

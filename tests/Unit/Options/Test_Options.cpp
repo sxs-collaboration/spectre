@@ -996,7 +996,7 @@ struct Alternatives {
   static constexpr Options::String help = "halp";
   Alternatives() = default;
 
-// [alternatives]
+  // [alternatives]
   using options = tmpl::list<
       A, Options::Alternatives<tmpl::list<B>, tmpl::list<C>, tmpl::list<D, E>>,
       F>;
@@ -1006,7 +1006,7 @@ struct Alternatives {
       : a_(a), c_(c), f_(std::move(f)) {}
   Alternatives(double a, std::vector<int> d, bool e, std::string f)
       : a_(a), d_(std::move(d)), e_(e), f_(std::move(f)) {}
-// [alternatives]
+  // [alternatives]
 
   double a_{-1.0};
   int b_{-1};

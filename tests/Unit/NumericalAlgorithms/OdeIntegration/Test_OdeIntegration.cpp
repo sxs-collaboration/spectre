@@ -12,7 +12,6 @@
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.OdeIntegration",
                   "[Unit][NumericalAlgorithms]") {
-
   // explicit stepper for an array of fundamental types
   // [explicit_fundamental_array_system]
   const auto oscillatory_array_system = [](const std::array<double, 2>& state,

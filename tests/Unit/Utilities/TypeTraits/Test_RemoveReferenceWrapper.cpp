@@ -142,4 +142,3 @@ static_assert(
         int>,
     "Failed testing remove_cvref_wrap");
 // [remove_cvref_wrap]
-

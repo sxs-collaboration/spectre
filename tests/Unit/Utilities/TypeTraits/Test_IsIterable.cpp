@@ -15,4 +15,3 @@ static_assert(tt::is_iterable_v<std::vector<double>>,
 static_assert(not tt::is_iterable<double>::value,
               "Failed testing type trait is_iterable");
 // [is_iterable_example]
-
