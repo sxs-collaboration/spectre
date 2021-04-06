@@ -100,7 +100,7 @@ void test_primitive_from_conservative(
                                     sqrt_det_spatial_metric, equation_of_state);
 
   Approx larger_approx =
-      Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e6);
+      Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e7);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_rest_mass_density, rest_mass_density,
                                larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_specific_internal_energy,
