@@ -19,36 +19,38 @@
 
 namespace Spectral {
 
-std::ostream& operator<<(std::ostream& os, MortarSize mortar_size) noexcept {
+std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept {
   switch (mortar_size) {
-    case MortarSize::Full:
+    case ChildSize::Full:
       return os << "Full";
-    case MortarSize::UpperHalf:
+    case ChildSize::UpperHalf:
       return os << "UpperHalf";
-    case MortarSize::LowerHalf:
+    case ChildSize::LowerHalf:
       return os << "LowerHalf";
     default:
-      ERROR("Invalid MortarSize");
+      ERROR(
+          "Invalid ChildSize. Expected one of: 'Full', 'UpperHalf', "
+          "'LowerHalf'");
   }
 }
 
-const Matrix& projection_matrix_mortar_to_element(
-    const MortarSize size, const Mesh<1>& element_mesh,
-    const Mesh<1>& mortar_mesh) noexcept {
-  ASSERT(element_mesh.basis(0) == Basis::Legendre and
-             mortar_mesh.basis(0) == Basis::Legendre,
+const Matrix& projection_matrix_child_to_parent(
+    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh,
+    const ChildSize size) noexcept {
+  ASSERT(parent_mesh.basis(0) == Basis::Legendre and
+             child_mesh.basis(0) == Basis::Legendre,
          "Projections only implemented on Legendre basis");
   ASSERT(
-      element_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre> and
-          mortar_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre>,
+      parent_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre> and
+          child_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre>,
       "Mesh has more points than supported by its quadrature.");
-  ASSERT(element_mesh.extents(0) <= mortar_mesh.extents(0),
-         "Requested projection matrix from mortar with fewer points ("
-             << mortar_mesh.extents(0) << ") than the element ("
-             << element_mesh.extents(0) << ")");
+  ASSERT(parent_mesh.extents(0) <= child_mesh.extents(0),
+         "Requested projection matrix from child with fewer points ("
+             << child_mesh.extents(0) << ") than the parent ("
+             << parent_mesh.extents(0) << ")");
 
   switch (size) {
-    case MortarSize::Full: {
+    case ChildSize::Full: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
@@ -85,11 +87,11 @@ const Matrix& projection_matrix_mortar_to_element(
 
             return projection;
           });
-      return cache(element_mesh.quadrature(0), element_mesh.extents(0),
-                   mortar_mesh.quadrature(0), mortar_mesh.extents(0));
+      return cache(parent_mesh.quadrature(0), parent_mesh.extents(0),
+                   child_mesh.quadrature(0), child_mesh.extents(0));
     }
 
-    case MortarSize::UpperHalf: {
+    case ChildSize::UpperHalf: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
@@ -165,11 +167,11 @@ const Matrix& projection_matrix_mortar_to_element(
 
         return projection;
       });
-      return cache(element_mesh.quadrature(0), element_mesh.extents(0),
-                   mortar_mesh.quadrature(0), mortar_mesh.extents(0));
+      return cache(parent_mesh.quadrature(0), parent_mesh.extents(0),
+                   child_mesh.quadrature(0), child_mesh.extents(0));
     }
 
-    case MortarSize::LowerHalf: {
+    case ChildSize::LowerHalf: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
@@ -190,8 +192,8 @@ const Matrix& projection_matrix_mortar_to_element(
 
         // The lower-half matrices are generated from the upper-half
         // matrices using symmetry.
-        const auto& projection_upper_half = projection_matrix_mortar_to_element(
-            MortarSize::UpperHalf, mesh_element, mesh_mortar);
+        const auto& projection_upper_half = projection_matrix_child_to_parent(
+            mesh_mortar, mesh_element, ChildSize::UpperHalf);
 
         Matrix projection_lower_half(extents_element, extents_mortar);
         for (size_t i = 0; i < extents_element; ++i) {
@@ -203,33 +205,33 @@ const Matrix& projection_matrix_mortar_to_element(
 
         return projection_lower_half;
       });
-      return cache(element_mesh.quadrature(0), element_mesh.extents(0),
-                   mortar_mesh.quadrature(0), mortar_mesh.extents(0));
+      return cache(parent_mesh.quadrature(0), parent_mesh.extents(0),
+                   child_mesh.quadrature(0), child_mesh.extents(0));
     }
 
     default:
-      ERROR("Invalid MortarSize");
+      ERROR("Invalid ChildSize");
   }
 }
 
-const Matrix& projection_matrix_element_to_mortar(
-    const MortarSize size, const Mesh<1>& mortar_mesh,
-    const Mesh<1>& element_mesh) noexcept {
-  ASSERT(mortar_mesh.basis(0) == Basis::Legendre and
-             element_mesh.basis(0) == Basis::Legendre,
+const Matrix& projection_matrix_parent_to_child(
+    const Mesh<1>& parent_mesh, const Mesh<1>& child_mesh,
+    const ChildSize size) noexcept {
+  ASSERT(child_mesh.basis(0) == Basis::Legendre and
+             parent_mesh.basis(0) == Basis::Legendre,
          "Projections only implemented on Legendre basis");
   ASSERT(
-      mortar_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre> and
-          element_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre>,
+      child_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre> and
+          parent_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre>,
       "Mesh has more points than supported by its quadrature. Has "
-          << mortar_mesh.extents(0) << " and max allowed is "
+          << child_mesh.extents(0) << " and max allowed is "
           << (maximum_number_of_points<Basis::Legendre>)
           << " for the mortar mesh, while for the element mesh has "
-          << element_mesh.extents(0) << " points.");
-  ASSERT(mortar_mesh.extents(0) >= element_mesh.extents(0),
+          << parent_mesh.extents(0) << " points.");
+  ASSERT(child_mesh.extents(0) >= parent_mesh.extents(0),
          "Requested projection matrix to mortar with fewer points ("
-             << mortar_mesh.extents(0) << ") than the element ("
-             << element_mesh.extents(0) << ")");
+             << child_mesh.extents(0) << ") than the element ("
+             << parent_mesh.extents(0) << ")");
 
   // Element-to-mortar projections are always interpolations.
   const auto make_interpolators = [](auto interval_transform) noexcept {
@@ -250,7 +252,7 @@ const Matrix& projection_matrix_element_to_mortar(
   };
 
   switch (size) {
-    case MortarSize::Full: {
+    case ChildSize::Full: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
@@ -259,11 +261,11 @@ const Matrix& projection_matrix_element_to_mortar(
                            Quadrature::GaussLobatto>,
           CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>(
           make_interpolators([](const DataVector& x) noexcept { return x; }));
-      return cache(mortar_mesh.quadrature(0), mortar_mesh.extents(0),
-                   element_mesh.quadrature(0), element_mesh.extents(0));
+      return cache(child_mesh.quadrature(0), child_mesh.extents(0),
+                   parent_mesh.quadrature(0), parent_mesh.extents(0));
     }
 
-    case MortarSize::UpperHalf: {
+    case ChildSize::UpperHalf: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
@@ -274,11 +276,11 @@ const Matrix& projection_matrix_element_to_mortar(
           make_interpolators([](const DataVector& x) noexcept {
             return DataVector(0.5 * (x + 1.));
           }));
-      return cache(mortar_mesh.quadrature(0), mortar_mesh.extents(0),
-                   element_mesh.quadrature(0), element_mesh.extents(0));
+      return cache(child_mesh.quadrature(0), child_mesh.extents(0),
+                   parent_mesh.quadrature(0), parent_mesh.extents(0));
     }
 
-    case MortarSize::LowerHalf: {
+    case ChildSize::LowerHalf: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
@@ -289,12 +291,12 @@ const Matrix& projection_matrix_element_to_mortar(
           make_interpolators([](const DataVector& x) noexcept {
             return DataVector(0.5 * (x - 1.));
           }));
-      return cache(mortar_mesh.quadrature(0), mortar_mesh.extents(0),
-                   element_mesh.quadrature(0), element_mesh.extents(0));
+      return cache(child_mesh.quadrature(0), child_mesh.extents(0),
+                   parent_mesh.quadrature(0), parent_mesh.extents(0));
     }
 
     default:
-      ERROR("Invalid MortarSize");
+      ERROR("Invalid ChildSize");
   }
 }
 

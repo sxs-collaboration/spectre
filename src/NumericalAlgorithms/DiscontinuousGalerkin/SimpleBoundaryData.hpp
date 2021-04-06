@@ -20,9 +20,6 @@ template <size_t Dim>
 struct Mesh;
 template <size_t Dim>
 struct OrientationMap;
-namespace Spectral {
-enum class MortarSize;
-}  // namespace Spectral
 /// \endcond
 
 namespace dg {
@@ -66,8 +63,7 @@ struct SimpleBoundaryData {
   template <size_t MortarDim>
   SimpleBoundaryData<FieldTags, ExtraDataTags> project_to_mortar(
       const Mesh<MortarDim>& face_mesh, const Mesh<MortarDim>& mortar_mesh,
-      const std::array<Spectral::MortarSize, MortarDim>& mortar_size) const
-      noexcept {
+      const MortarSize<MortarDim>& mortar_size) const noexcept {
     SimpleBoundaryData<FieldTags, ExtraDataTags> projected_data{};
     projected_data.field_data = dg::project_to_mortar(
         this->field_data, face_mesh, mortar_mesh, mortar_size);
