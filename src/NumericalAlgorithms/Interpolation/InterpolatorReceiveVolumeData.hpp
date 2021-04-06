@@ -66,7 +66,7 @@ struct InterpolatorReceiveVolumeData {
               .emplace(std::make_pair(
                   element_id,
                   typename Tags::VolumeVarsInfo<Metavariables>::Info{
-                      mesh, std::move(vars)}));
+                      mesh, std::move(vars), {}}));
         });
 
     // Try to interpolate data for all InterpolationTargets.

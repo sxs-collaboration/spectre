@@ -7,7 +7,9 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -15,6 +17,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace intrp {
@@ -31,26 +34,52 @@ namespace intrp {
 
 namespace interpolator_detail {
 
+namespace detail {
+
+CREATE_HAS_TYPE_ALIAS(compute_vars_to_interpolate)
+CREATE_HAS_TYPE_ALIAS_V(compute_vars_to_interpolate)
+
+template <typename Tag, typename Frame>
+using any_index_in_frame_impl =
+    TensorMetafunctions::any_index_in_frame<typename Tag::type, Frame>;
+}  // namespace detail
+
+// Returns true if any of the tensors in TagList have any of their
+// indices in the given frame.
+template <typename TagList, typename Frame>
+constexpr bool any_index_in_frame_v =
+    tmpl::any<TagList, tmpl::bind<detail::any_index_in_frame_impl, tmpl::_1,
+                                  Frame>>::value;
+
 // Interpolates data onto a set of points desired by an InterpolationTarget.
 template <typename InterpolationTargetTag, typename Metavariables,
           typename DbTags>
 void interpolate_data(
     const gsl::not_null<db::DataBox<DbTags>*> box,
+    Parallel::GlobalCache<Metavariables>& cache,
     const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-  db::mutate_apply<tmpl::list<Tags::InterpolatedVarsHolders<Metavariables>>,
-                   tmpl::list<Tags::VolumeVarsInfo<Metavariables>>>(
-      [&temporal_id](
-          const gsl::not_null<
-              typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
+  db::mutate_apply<
+      tmpl::list<::intrp::Tags::InterpolatedVarsHolders<Metavariables>,
+                 ::intrp::Tags::VolumeVarsInfo<Metavariables>>,
+      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>(
+      [&cache, &temporal_id](
+          const gsl::not_null<typename ::intrp::Tags::InterpolatedVarsHolders<
+              Metavariables>::type*>
               holders,
-          const typename Tags::VolumeVarsInfo<Metavariables>::type&
-              volume_vars_info) noexcept {
+          const gsl::not_null<
+              typename ::intrp::Tags::VolumeVarsInfo<Metavariables>::type*>
+              volume_vars_info,
+          const Domain<Metavariables::volume_dim>& domain) noexcept {
         auto& interp_info =
             get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
                 *holders)
                 .infos.at(temporal_id);
 
-        for (const auto& volume_info_outer : volume_vars_info) {
+        // Avoid compiler warning for unused variable in some 'if
+        // constexpr' branches.
+        (void)cache;
+
+        for (auto& volume_info_outer : *volume_vars_info) {
           // Are we at the right time?
           if (volume_info_outer.first != temporal_id) {
             continue;
@@ -78,36 +107,75 @@ void interpolate_data(
           // Construct local vars and interpolate.
           for (const auto& element_coord_pair : element_coord_holders) {
             const auto& element_id = element_coord_pair.first;
-            const auto& element_coord_holder = element_coord_pair.second;
-            const auto& volume_info = volume_info_outer.second.at(element_id);
+            auto& volume_info = volume_info_outer.second.at(element_id);
+            auto& vars_to_interpolate =
+                get<::intrp::Tags::VarsToInterpolateToTarget<
+                    InterpolationTargetTag>>(volume_info.vars_to_interpolate);
 
-            // Construct local_vars which is some set of variables
-            // derived from volume_info.vars plus an arbitrary set
-            // of compute items in
-            // InterpolationTargetTag::compute_items_on_source.
+            if constexpr (detail::has_compute_vars_to_interpolate_v<
+                              InterpolationTargetTag>) {
+              if (vars_to_interpolate.size() == 0) {
+                // vars_to_interpolate has not been filled for
+                // this element at this temporal_id.  So fill it. How we
+                // fill it will depend on whether we need to change frames.
+                vars_to_interpolate.initialize(
+                    volume_info.vars_from_element.number_of_grid_points());
 
-            auto new_box = db::create<
-                db::AddSimpleTags<::Tags::Variables<
-                    typename Metavariables::interpolator_source_vars>>,
-                db::AddComputeTags<
-                    typename InterpolationTargetTag::compute_items_on_source>>(
-                volume_info.vars);
+                if constexpr (any_index_in_frame_v<typename Metavariables::
+                                                       interpolator_source_vars,
+                                                   Frame::Inertial> and
+                              any_index_in_frame_v<
+                                  typename InterpolationTargetTag::
+                                      vars_to_interpolate_to_target,
+                                  Frame::Grid>) {
+                  // Need to do frame transformations.
 
-            Variables<
-                typename InterpolationTargetTag::vars_to_interpolate_to_target>
-                local_vars(volume_info.mesh.number_of_grid_points());
-
-            tmpl::for_each<
-                typename InterpolationTargetTag::vars_to_interpolate_to_target>(
-                [&new_box, &local_vars](auto x) noexcept {
-                  using tag = typename decltype(x)::type;
-                  get<tag>(local_vars) = db::get<tag>(new_box);
-                });
+                  // The functions of time are always guaranteed to be
+                  // up-to-date here, because they are guaranteed to be
+                  // up-to-date before calling SendPointsToInterpolator
+                  // (which is guaranteed to be called before
+                  // interpolate_data is called).
+                  const auto& functions_of_time =
+                      get<domain::Tags::FunctionsOfTime>(cache);
+                  const auto& block = domain.blocks().at(element_id.block_id());
+                  ElementMap<3, ::Frame::Grid> map_logical_to_grid{
+                      element_id,
+                      block.moving_mesh_logical_to_grid_map().get_clone()};
+                  const auto invjac_logical_to_grid =
+                      map_logical_to_grid.inv_jacobian(
+                          logical_coordinates(volume_info.mesh));
+                  const auto jac_grid_to_inertial =
+                      block.moving_mesh_grid_to_inertial_map().jacobian(
+                          map_logical_to_grid(
+                              logical_coordinates(volume_info.mesh)),
+                          temporal_id.step_time().value(), functions_of_time);
+                  InterpolationTargetTag::compute_vars_to_interpolate::apply(
+                      make_not_null(&vars_to_interpolate),
+                      volume_info.vars_from_element, volume_info.mesh,
+                      jac_grid_to_inertial, invjac_logical_to_grid);
+                } else {
+                  InterpolationTargetTag::compute_vars_to_interpolate::apply(
+                      make_not_null(&vars_to_interpolate),
+                      volume_info.vars_from_element, volume_info.mesh);
+                }
+              }
+            }
 
             // Now interpolate.
+            const auto& element_coord_holder = element_coord_pair.second;
             intrp::Irregular<Metavariables::volume_dim> interpolator(
                 volume_info.mesh, element_coord_holder.element_logical_coords);
-            interp_info.vars.emplace_back(interpolator.interpolate(local_vars));
+            if constexpr (detail::has_compute_vars_to_interpolate_v<
+                              InterpolationTargetTag>) {
+              interp_info.vars.emplace_back(
+                  interpolator.interpolate(vars_to_interpolate));
+            } else {
+              // If compute_vars_to_interpolate does not exist, then
+              // volume_info.vars_from_element is the same as
+              // volume_info.vars_to_interpolate.
+              interp_info.vars.emplace_back(
+                  interpolator.interpolate(volume_info.vars_from_element));
+            }
             interp_info.global_offsets.emplace_back(
                 element_coord_holder.offsets);
           }
@@ -138,7 +206,7 @@ void try_to_interpolate(
   }
 
   interpolator_detail::interpolate_data<InterpolationTargetTag, Metavariables>(
-      box, temporal_id);
+      box, *cache, temporal_id);
 
   // Send interpolated data only if interpolation has been done on all
   // of the local elements.
@@ -158,10 +226,11 @@ void try_to_interpolate(
 
     // Clear interpolated data, since we don't need it anymore.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
-        box, [&temporal_id](
-                 const gsl::not_null<typename Tags::InterpolatedVarsHolders<
-                     Metavariables>::type*>
-                     holders_l) noexcept {
+        box,
+        [&temporal_id](
+            const gsl::not_null<
+                typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
+                holders_l) noexcept {
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
               *holders_l)
               .infos.erase(temporal_id);

@@ -100,6 +100,16 @@ struct SquareCompute : Square, db::ComputeTag {
 };
 }  // namespace Tags
 
+struct ComputeSquare {
+  template <typename SrcTag, typename DestTag>
+  static void apply(
+      const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
+      const Variables<tmpl::list<SrcTag>>& src_vars,
+      const Mesh<3>& /* mesh */) noexcept {
+    get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
+  }
+};
+
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -205,7 +215,7 @@ struct mock_interpolator {
 struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
-    using compute_items_on_source = tmpl::list<Tags::SquareCompute>;
+    using compute_vars_to_interpolate = ComputeSquare;
     using compute_items_on_target = tmpl::list<>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
