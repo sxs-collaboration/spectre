@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ComputeGhQuantities.cpp
   Test_ComputeSpacetimeQuantities.cpp
   Test_IndexManipulation.cpp
+  Test_InterfaceNullNormal.cpp
   Test_KerrSchildCoords.cpp
   Test_ProjectionOperators.cpp
   Test_Ricci.cpp

@@ -61,6 +61,44 @@ void test_projection_operator(const DataType& used_for_size) {
         "transverse_projection_operator_mixed_from_spatial_input",
         {{{-1., 1.}}}, used_for_size);
   }
+
+  {
+    tnsr::AA<DataType, SpatialDim, Frame::Inertial> (*f)(
+        const tnsr::AA<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::A<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::I<DataType, SpatialDim, Frame::Inertial>&) =
+        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
+                                            DataType>;
+    pypp::check_with_random_values<1>(
+        f, "ProjectionOperators", "projection_operator_transverse_to_interface",
+        {{{-1., 1.}}}, used_for_size);
+  }
+
+  {
+    tnsr::aa<DataType, SpatialDim, Frame::Inertial> (*f)(
+        const tnsr::aa<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
+        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
+                                            DataType>;
+    pypp::check_with_random_values<1>(
+        f, "ProjectionOperators", "projection_operator_transverse_to_interface",
+        {{{-1., 1.}}}, used_for_size);
+  }
+
+  {
+    tnsr::Ab<DataType, SpatialDim, Frame::Inertial> (*f)(
+        const tnsr::A<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::I<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
+        &gr::transverse_projection_operator<SpatialDim, Frame::Inertial,
+                                            DataType>;
+    pypp::check_with_random_values<1>(
+        f, "ProjectionOperators",
+        "projection_operator_transverse_to_interface_mixed", {{{-1., 1.}}},
+        used_for_size);
+  }
 }
 }  // namespace
 
