@@ -2,3 +2,4 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(ValenciaDivClean)
+add_subdirectory(GhValenciaDivClean)
