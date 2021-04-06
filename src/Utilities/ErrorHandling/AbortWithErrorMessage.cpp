@@ -6,6 +6,7 @@
 #include <array>
 #include <charm++.h>
 #include <execinfo.h>
+#include <link.h>
 #include <memory>
 #include <sstream>
 
@@ -15,6 +16,20 @@
 
 namespace {
 struct FillBacktrace {};
+
+// Convert the address to the virtual memory address inside the
+// library/executable. This is the address that addr2line and llvm-addr2line
+// expect.
+void* convert_to_virtual_memory_address(const void* addr) {
+  Dl_info info;
+  link_map* link_map = nullptr;
+  dladdr1(addr, &info,
+          reinterpret_cast<void**>(&link_map),  // NOLINT
+          RTLD_DL_LINKMAP);
+  // NOLINTNEXTLINE
+  return reinterpret_cast<void*>(reinterpret_cast<size_t>(addr) -
+                                 link_map->l_addr);
+}
 
 std::ostream& operator<<(std::ostream& os, const FillBacktrace& /*unused*/) {
   // 3 for the stream operator and abort_with_error_message, 10 for the
@@ -26,7 +41,18 @@ std::ostream& operator<<(std::ostream& os, const FillBacktrace& /*unused*/) {
       backtrace_symbols(trace_elems.data(), trace_elem_count), free};
   // Start at 3 to ignore stream operator and abort_with_error_message
   for (int i = 3; i < trace_elem_count; ++i) {
-    os << stack_syms.get()[i] << "\n";
+    Dl_info info;
+    const auto i_st = static_cast<size_t>(i);
+    // clang-tidy wants us to use gsl::at, but it would be nice not to make
+    // error handling depend on GSL/Utilities libs to avoid cyclic dependencies.
+    if (dladdr(trace_elems[i_st], &info) != 0) {  // NOLINT
+      void* vma_addr =
+          convert_to_virtual_memory_address(trace_elems[i_st]);  // NOLINT
+      os << stack_syms.get()[i] << " Address for addr2line: " << vma_addr
+         << "\n";
+    } else {
+      os << stack_syms.get()[i] << "\n";
+    }
   }
   return os;
 }

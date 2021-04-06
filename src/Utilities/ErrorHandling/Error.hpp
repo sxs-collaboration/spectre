@@ -10,6 +10,7 @@
 #include <string>
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
+#include "Utilities/ErrorHandling/Breakpoint.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/System/Abort.hpp"
@@ -56,6 +57,7 @@
  */
 #define CERROR(m)                                                             \
   do {                                                                        \
+    breakpoint();                                                             \
     sys::abort("\n################ ERROR ################\nLine: "s +         \
                std::to_string(__LINE__) + " of file '"s + __FILE__ + "'\n"s + \
                m + /* NOLINT */                                               \
