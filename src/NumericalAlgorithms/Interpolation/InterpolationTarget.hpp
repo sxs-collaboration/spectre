@@ -41,10 +41,33 @@ namespace intrp {
 /// - vars_to_interpolate_to_target:
 ///      A `tmpl::list` of tags describing variables to interpolate.
 ///      Will be used to construct a `Variables`.
+/// - compute_vars_to_interpolate:
+///      A struct with at least one of the functions
+///```
+/// static void apply(const gsl::not_null<
+///                  Variables<vars_to_interpolate_to_target>*>,
+///                  const Variables<Metavariables::interpolator_source_vars>&,
+///                  const Mesh<Dim>&);
+/// static void apply(const gsl::not_null<
+///                  Variables<vars_to_interpolate_to_target>*>,
+///                  const Variables<Metavariables::interpolator_source_vars>&,
+///                  const Mesh<Dim>&,
+///                  const Jacobian<DataVector, Dim, TargetFrame, SrcFrame>&,
+///                  const InverseJacobian<DataVector, Dim,
+///                  ::Frame::Logical, TargetFrame>&);
+///```
+///     that fills `vars_to_interpolate_to_target`.  Here Dim is
+///     `Metavariables::volume_dim`, SrcFrame is the frame of
+///     `Metavariables::interpolator_source_vars` and
+///      TargetFrame is the frame of `vars_to_interpolate_to_target`.
+///      The overload without Jacobians treats the case in which
+///      TargetFrame is the same as SrcFrame.
+///      Used only *with* the Interpolator ParallelComponent.
 /// - compute_items_on_source:
 ///      A `tmpl::list` of compute items that uses
 ///      `Metavariables::interpolator_source_vars` as input and computes the
 ///      `Variables` defined by `vars_to_interpolate_to_target`.
+///      Used only *without* the Interpolator ParallelComponent.
 /// - compute_items_on_target:
 ///      A `tmpl::list` of compute items that uses
 ///      `vars_to_interpolate_to_target` as input.
