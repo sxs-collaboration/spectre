@@ -24,7 +24,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace grmhd::AnalyticData {
 
 MagnetizedFmDisk::MagnetizedFmDisk(
@@ -261,4 +260,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
 #undef NEED_SPACETIME
 #undef INSTANTIATE
 }  // namespace grmhd::AnalyticData
-/// \endcond

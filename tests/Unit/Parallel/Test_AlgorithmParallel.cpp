@@ -81,7 +81,7 @@ struct UnpackCounter : db::SimpleTag {
   using type = AlgorithmParallel_detail::UnpackCounter;
 };
 
-/// [int_receive_tag]
+// [int_receive_tag]
 struct IntReceiveTag {
   using temporal_id = int;
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
@@ -93,7 +93,7 @@ struct IntReceiveTag {
     (*inbox)[temporal_id_v].insert(std::forward<ReceiveDataType>(data));
   }
 };
-/// [int_receive_tag]
+// [int_receive_tag]
 }  // namespace Tags
 
 struct TestMetavariables;
@@ -133,9 +133,9 @@ struct RestartMe {
 };
 
 struct CountReceives {
-  /// [int_receive_tag_list]
+  // [int_receive_tag_list]
   using inbox_tags = tmpl::list<Tags::IntReceiveTag>;
-  /// [int_receive_tag_list]
+  // [int_receive_tag_list]
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -162,7 +162,7 @@ struct CountReceives {
     // We do not do a broadcast so that we can check inline entry methods on
     // array work. We pass "true" as the second argument to start the
     // algorithm up again on the arrays
-    /// [call_on_indexed_array]
+    // [call_on_indexed_array]
     auto& array_parallel_component =
         Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(
             cache);
@@ -170,13 +170,13 @@ struct CountReceives {
       Parallel::receive_data<Tags::IntReceiveTag>(array_parallel_component[i],
                                                   0, 101, true);
     }
-    /// [call_on_indexed_array]
-    /// [return_with_termination]
+    // [call_on_indexed_array]
+    // [return_with_termination]
     return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), true);
-    /// [return_with_termination]
+    // [return_with_termination]
   }
 
-  /// [int_receive_tag_is_ready]
+  // [int_receive_tag_is_ready]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex>
   static bool is_ready(
@@ -187,7 +187,7 @@ struct CountReceives {
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     return int_receives.size() == 70;
   }
-  /// [int_receive_tag_is_ready]
+  // [int_receive_tag_is_ready]
 };
 }  // namespace SingletonActions
 
@@ -250,14 +250,14 @@ struct AddIntValue10 {
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.empty() or int_receives.size() == 1);
     if (int_receives.size() == 1) {
-      /// [broadcast_to_group]
+      // [broadcast_to_group]
       auto& group_parallel_component = Parallel::get_parallel_component<
           GroupParallelComponent<Metavariables>>(cache);
       Parallel::receive_data<Tags::IntReceiveTag>(
           group_parallel_component,
           db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
           db::get<Tags::CountActionsCalled>(box));
-      /// [broadcast_to_group]
+      // [broadcast_to_group]
     }
     db::mutate<Tags::CountActionsCalled>(
         make_not_null(&box),
@@ -315,9 +315,9 @@ struct IncrementInt0 {
         });
     db::mutate<Tags::Int0>(make_not_null(&box),
                            [](const gsl::not_null<int*> int0) { ++*int0; });
-    /// [return_forward_as_tuple]
+    // [return_forward_as_tuple]
     return std::forward_as_tuple(std::move(box));
-    /// [return_forward_as_tuple]
+    // [return_forward_as_tuple]
   }
 };
 
@@ -376,12 +376,12 @@ struct SendToSingleton {
     auto& singleton_parallel_component = Parallel::get_parallel_component<
         SingletonParallelComponent<Metavariables>>(cache);
     // Send CountActionsCalled to the SingletonParallelComponent several times
-    /// [receive_broadcast]
+    // [receive_broadcast]
     Parallel::receive_data<Tags::IntReceiveTag>(
         singleton_parallel_component,
         db::get<Tags::CountActionsCalled>(box) + 1000 * array_index,
         db::get<Tags::CountActionsCalled>(box), true);
-    /// [receive_broadcast]
+    // [receive_broadcast]
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -516,7 +516,7 @@ struct Initialize {
 
 }  // namespace NodegroupActions
 
-/// [singleton_parallel_component]
+// [singleton_parallel_component]
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
@@ -540,9 +540,9 @@ struct SingletonParallelComponent {
     }
   }
 };
-/// [singleton_parallel_component]
+// [singleton_parallel_component]
 
-/// [array_parallel_component]
+// [array_parallel_component]
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
@@ -590,7 +590,7 @@ struct ArrayParallelComponent {
     }
   }
 };
-/// [array_parallel_component]
+// [array_parallel_component]
 
 template <class Metavariables>
 struct GroupParallelComponent {
@@ -665,7 +665,7 @@ struct TestMetavariables {
   }
 };
 
-/// [charm_include_example]
+// [charm_include_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &disable_openblas_multithreading};
 static const std::vector<void (*)()> charm_init_proc_funcs{
@@ -674,4 +674,4 @@ static const std::vector<void (*)()> charm_init_proc_funcs{
 using charmxx_main_component = Parallel::Main<TestMetavariables>;
 
 #include "Parallel/CharmMain.tpp"  // IWYU pragma: keep
-/// [charm_include_example]
+// [charm_include_example]

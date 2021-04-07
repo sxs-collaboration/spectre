@@ -8,7 +8,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/OptimizerHacks.hpp"
 
-/// \cond
 template <size_t Dim, typename TargetFrame>
 ElementMap<Dim, TargetFrame>::ElementMap(
     ElementId<Dim> element_id,
@@ -80,4 +79,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
 #undef GET_DIM
 #undef GET_FRAME
 #undef INSTANTIATION
-/// \endcond

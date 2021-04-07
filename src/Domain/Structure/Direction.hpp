@@ -84,6 +84,7 @@ std::ostream& operator<<(std::ostream& os,
 // INLINE DEFINITIONS
 //##############################################################################
 
+/// \cond
 // clang-tidy: redundant declaration false positive. Needs to be here because of
 // the Axis enum, otherwise won't compile.
 template <size_t VolumeDim>
@@ -143,7 +144,6 @@ inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
   return Direction<VolumeDim>(axis_, ::opposite(side_));
 }
 
-/// \cond NEVER
 template <>
 inline const std::array<Direction<1>, 2>&
 Direction<1>::all_directions() noexcept {

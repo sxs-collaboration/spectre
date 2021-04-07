@@ -14,7 +14,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t VolumeDim, typename Frame, typename DataType>
 void spatial_ricci_tensor(
@@ -166,4 +165,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

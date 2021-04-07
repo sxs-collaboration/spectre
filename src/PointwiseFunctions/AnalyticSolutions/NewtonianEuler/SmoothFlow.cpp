@@ -17,7 +17,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Numeric.hpp"
 
-/// \cond
 namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
@@ -65,4 +64,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 #undef INSTANTIATE_CLASS
 #undef DIM
 }  // namespace NewtonianEuler::Solutions
-/// \endcond

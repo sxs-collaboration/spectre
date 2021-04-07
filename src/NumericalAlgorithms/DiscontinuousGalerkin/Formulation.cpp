@@ -22,7 +22,6 @@ std::ostream& operator<<(std::ostream& os, const Formulation t) noexcept {
 }
 }  // namespace dg
 
-/// \cond
 template <>
 dg::Formulation Options::create_from_yaml<dg::Formulation>::create<void>(
     const Options::Option& options) {
@@ -37,4 +36,3 @@ dg::Formulation Options::create_from_yaml<dg::Formulation>::create<void>(
                                      << "\" to dg::Formulation. Must be one "
                                         "of StrongInertial or WeakInertial.");
 }
-/// \endcond

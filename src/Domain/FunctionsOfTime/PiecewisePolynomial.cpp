@@ -215,7 +215,6 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
 
 // do explicit instantiation of MaxDeriv = {2,3,4}
 // along with all combinations of MaxDerivReturned = {0,...,MaxDeriv}
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -244,5 +243,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (4), (0, 1, 2, 3, 4))
 #undef DIM
 #undef DIMRETURNED
 #undef INSTANTIATE
-/// \endcond
 }  // namespace domain::FunctionsOfTime

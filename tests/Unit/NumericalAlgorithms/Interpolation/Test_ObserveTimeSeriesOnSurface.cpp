@@ -73,14 +73,12 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace StrahlkorperGr::Tags {
 template <typename Frame>
 struct AreaElement;
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral;
 }  // namespace StrahlkorperGr::Tags
-/// \endcond
 
 namespace {
 // Simple DataBoxItems for test.

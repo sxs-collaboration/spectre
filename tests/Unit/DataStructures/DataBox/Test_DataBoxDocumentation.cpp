@@ -24,7 +24,7 @@ class DataBox;
 // clang-format off
 namespace {
 double working_without_databoxes_1() noexcept {
-/// [working_without_databoxes_small_program_1]
+// [working_without_databoxes_small_program_1]
 // Set up variables:
 const double velocity = 4.0;
 const double radius = 2.0;
@@ -35,24 +35,24 @@ const double volume = 10.0;
 const double mass = density * volume;
 const double acceleration = velocity * velocity / radius;
 return mass * acceleration;
-/// [working_without_databoxes_small_program_1]
+// [working_without_databoxes_small_program_1]
 }
 
-/// [working_without_databoxes_mass_compute]
+// [working_without_databoxes_mass_compute]
 double mass_compute(const double density, const double volume) noexcept {
   return density * volume;
 }
-/// [working_without_databoxes_mass_compute]
+// [working_without_databoxes_mass_compute]
 
-/// [working_without_databoxes_accel_compute]
+// [working_without_databoxes_accel_compute]
 double acceleration_compute(
     const double velocity, const double radius) noexcept {
   return velocity * velocity / radius;
 }
-/// [working_without_databoxes_accel_compute]
+// [working_without_databoxes_accel_compute]
 
 double working_without_databoxes_2() noexcept {
-/// [working_without_databoxes_small_program_2]
+// [working_without_databoxes_small_program_2]
 // Set up variables:
 const double velocity = 4.0;
 const double radius = 2.0;
@@ -63,30 +63,30 @@ const double volume = 10.0;
 const double mass = mass_compute(density, volume);
 const double acceleration = acceleration_compute(velocity, radius);
 return mass * acceleration;
-/// [working_without_databoxes_small_program_2]
+// [working_without_databoxes_small_program_2]
 }
 
-/// [working_without_databoxes_force_compute]
+// [working_without_databoxes_force_compute]
 double force_compute(const double velocity, const double radius,
                      const double density, const double volume) noexcept {
   const double mass = mass_compute(density, volume);
   const double acceleration = acceleration_compute(velocity, radius);
   return mass *  acceleration;
 }
-/// [working_without_databoxes_force_compute]
+// [working_without_databoxes_force_compute]
 
 void failed_acceleration() noexcept {
-/// [working_without_databoxes_failed_accel]
+// [working_without_databoxes_failed_accel]
 const double velocity = 4.0;
 const double radius = 2.0;
 const double acceleration = acceleration_compute(velocity, radius);
 const double failed_acceleration = acceleration_compute(radius, velocity);
-/// [working_without_databoxes_failed_accel]
+// [working_without_databoxes_failed_accel]
   CHECK(not(acceleration == failed_acceleration));
 }
 
 double std_map_databox_1() noexcept {
-/// [std_map_databox_small_program_1]
+// [std_map_databox_small_program_1]
 // Set up variables:
 const double velocity = 4.0;
 const double radius = 2.0;
@@ -99,34 +99,34 @@ naive_databox["Velocity"] = velocity;
 naive_databox["Radius"] = radius;
 naive_databox["Density"] = density;
 naive_databox["Volume"] = volume;
-/// [std_map_databox_small_program_1]
+// [std_map_databox_small_program_1]
   return naive_databox["Density"] * naive_databox["Volume"] *
          naive_databox["Velocity"] * naive_databox["Velocity"] /
          naive_databox["Radius"];
 }
 
-/// [std_map_databox_mass_compute]
+// [std_map_databox_mass_compute]
 double mass_compute(const std::map<std::string, double>& box) noexcept {
   return box.at("Density") * box.at("Volume");
 }
-/// [std_map_databox_mass_compute]
+// [std_map_databox_mass_compute]
 
-/// [std_map_databox_accel_compute]
+// [std_map_databox_accel_compute]
 double acceleration_compute(const std::map<std::string, double>& box) noexcept {
   return box.at("Velocity") * box.at("Velocity") / box.at("Radius");
 }
-/// [std_map_databox_accel_compute]
+// [std_map_databox_accel_compute]
 
-/// [std_map_databox_force_compute]
+// [std_map_databox_force_compute]
 double force_compute(const std::map<std::string, double>& box) noexcept {
   const double mass = mass_compute(box);
   const double acceleration = acceleration_compute(box);
   return mass * acceleration;
 }
-/// [std_map_databox_force_compute]
+// [std_map_databox_force_compute]
 
 double std_map_databox_2() noexcept {
-/// [std_map_databox_small_program_2]
+// [std_map_databox_small_program_2]
 // Set up variables:
 const double velocity = 4.0;
 const double radius = 2.0;
@@ -142,39 +142,39 @@ naive_databox["Volume"] = volume;
 
 // Use variables:
 return force_compute(naive_databox);
-/// [std_map_databox_small_program_2]
+// [std_map_databox_small_program_2]
 }
 
 bool std_tuple_databox_example() noexcept {
-/// [std_tuple_databox_1]
+// [std_tuple_databox_1]
 std::tuple<double, size_t, bool> sophomore_databox =
   std::make_tuple(1.2, 8, true);
-/// [std_tuple_databox_1]
+// [std_tuple_databox_1]
 
-/// [std_tuple_databox_2]
+// [std_tuple_databox_2]
 const bool bool_quantity = std::get<bool>(sophomore_databox);
 // value obtained is `true`
-/// [std_tuple_databox_2]
+// [std_tuple_databox_2]
 return bool_quantity;
 }
 
 namespace sophomore {
-/// [std_tuple_tags]
+// [std_tuple_tags]
 struct Velocity{};
 struct Radius{};
 struct Density{};
 struct Volume{};
-/// [std_tuple_tags]
+// [std_tuple_tags]
 
 double std_tuple_databox_1() noexcept {
-/// [std_tuple_small_program_1]
+// [std_tuple_small_program_1]
 std::tuple<std::pair<Velocity,double>,
            std::pair<Radius, double>, std::pair<Density, double>,
            std::pair<Volume, double>> sophomore_databox =
   std::make_tuple(std::make_pair(Velocity{}, 4.0),
                   std::make_pair(Radius{}, 2.0), std::make_pair(Density{}, 0.5),
                   std::make_pair(Volume{}, 10.0));
-/// [std_tuple_small_program_1]
+// [std_tuple_small_program_1]
   return std::get<std::pair<Density, double>>(sophomore_databox).second *
          std::get<std::pair<Volume, double>>(sophomore_databox).second *
          std::get<std::pair<Velocity, double>>(sophomore_databox).second *
@@ -182,34 +182,34 @@ std::tuple<std::pair<Velocity,double>,
          std::get<std::pair<Radius, double>>(sophomore_databox).second;
 }
 
-/// [std_tuple_mass_compute]
+// [std_tuple_mass_compute]
 template<typename... Pairs>
 double mass_compute(const std::tuple<Pairs...>& box) noexcept {
   return std::get<std::pair<Density, double>>(box).second *
          std::get<std::pair<Volume, double>>(box).second;
 }
-/// [std_tuple_mass_compute]
+// [std_tuple_mass_compute]
 
-/// [std_tuple_acceleration_compute]
+// [std_tuple_acceleration_compute]
 template<typename... Pairs>
 double acceleration_compute(const std::tuple<Pairs...>& box) noexcept {
   return std::get<std::pair<Velocity, double>>(box).second *
          std::get<std::pair<Velocity, double>>(box).second /
          std::get<std::pair<Radius, double>>(box).second;
 }
-/// [std_tuple_acceleration_compute]
+// [std_tuple_acceleration_compute]
 
-/// [std_tuple_force_compute]
+// [std_tuple_force_compute]
 template<typename... Pairs>
 double force_compute(const std::tuple<Pairs...>& box) noexcept {
   const double mass = mass_compute(box);
   const double acceleration = acceleration_compute(box);
   return mass * acceleration;
 }
-/// [std_tuple_force_compute]
+// [std_tuple_force_compute]
 
 double std_tuple_databox_2() noexcept {
-/// [std_tuple_small_program_2]
+// [std_tuple_small_program_2]
 std::tuple<std::pair<Velocity,double>,
            std::pair<Radius, double>, std::pair<Density, double>,
            std::pair<Volume, double>> sophomore_databox =
@@ -217,13 +217,13 @@ std::tuple<std::pair<Velocity,double>,
                   std::make_pair(Radius{}, 2.0), std::make_pair(Density{}, 0.5),
                   std::make_pair(Volume{}, 10.0));
 
-/// [std_tuple_small_program_2]
+// [std_tuple_small_program_2]
   return force_compute(sophomore_databox);
 }
 } // namespace sophomore
 
 namespace junior {
-/// [tagged_tuple_tags]
+// [tagged_tuple_tags]
 struct Velocity {
   using type = double;
 };
@@ -236,13 +236,13 @@ struct Density {
 struct Volume {
   using type = double;
 };
-/// [tagged_tuple_tags]
+// [tagged_tuple_tags]
 
 double tagged_tuple_databox_1() noexcept {
-/// [tagged_tuple_databox_1]
+// [tagged_tuple_databox_1]
 tuples::TaggedTuple<Velocity, Radius, Density, Volume> junior_databox{
   4.0, 2.0, 0.5, 10.0};
-/// [tagged_tuple_databox_1]
+// [tagged_tuple_databox_1]
   return tuples::get<Density>(junior_databox) *
          tuples::get<Volume>(junior_databox) *
          tuples::get<Velocity>(junior_databox) *
@@ -250,33 +250,33 @@ tuples::TaggedTuple<Velocity, Radius, Density, Volume> junior_databox{
          tuples::get<Radius>(junior_databox);
 }
 
-/// [tagged_tuple_mass_compute]
+// [tagged_tuple_mass_compute]
 template<typename... Tags>
 double mass_compute(const tuples::TaggedTuple<Tags...>& box) noexcept {
   return tuples::get<Density>(box) * tuples::get<Volume>(box);
 }
-/// [tagged_tuple_mass_compute]
+// [tagged_tuple_mass_compute]
 
-/// [tagged_tuple_acceleration_compute]
+// [tagged_tuple_acceleration_compute]
 template<typename... Tags>
 double acceleration_compute(const tuples::TaggedTuple<Tags...>& box) noexcept {
   return tuples::get<Velocity>(box) * tuples::get<Velocity>(box) /
          tuples::get<Radius>(box);
 }
-/// [tagged_tuple_acceleration_compute]
+// [tagged_tuple_acceleration_compute]
 
-/// [tagged_tuple_force_compute]
+// [tagged_tuple_force_compute]
 template<typename... Tags>
 double force_compute(const tuples::TaggedTuple<Tags...>& box) noexcept {
   const double mass = mass_compute(box);
   const double acceleration = acceleration_compute(box);
   return mass * acceleration;
 }
-/// [tagged_tuple_force_compute]
+// [tagged_tuple_force_compute]
 } // namespace junior
 
 namespace proper{
-/// [proper_databox_tags]
+// [proper_databox_tags]
 struct Velocity : db::SimpleTag {
   using type = double;
 };
@@ -292,17 +292,17 @@ struct Volume : db::SimpleTag {
 struct Mass : db::SimpleTag {
   using type = double;
 };
-/// [proper_databox_tags]
+// [proper_databox_tags]
 
 double refined_databox_1() noexcept {
-/// [refined_databox]
+// [refined_databox]
 const auto refined_databox = db::create<
     db::AddSimpleTags<
       Velocity, Radius, Density, Volume>>(4.0, 2.0, 0.5, 10.0);
-/// [refined_databox]
-/// [refined_databox_get]
+// [refined_databox]
+// [refined_databox_get]
 const double velocity = db::get<Velocity>(refined_databox);
-/// [refined_databox_get]
+// [refined_databox_get]
 const double radius = db::get<Radius>(refined_databox);
 const double density = db::get<Density>(refined_databox);
 const double volume = db::get<Volume>(refined_databox);
@@ -313,14 +313,14 @@ void mass_from_density_and_volume(const gsl::not_null<double*> result,
   const double density, const double volume) noexcept {
   *result = density * volume;
 }
-/// [compute_tags]
+// [compute_tags]
 struct MassCompute : db::ComputeTag, Mass {
   using base = Mass;
   using return_type = double;
   static constexpr auto function = &mass_from_density_and_volume;
   using argument_tags = tmpl::list<Density, Volume>;
 };
-/// [compute_tags]
+// [compute_tags]
 
 void acceleration_from_velocity_and_radius(const gsl::not_null<double*> result,
   const double velocity, const double radius) noexcept {
@@ -338,7 +338,7 @@ struct AccelerationCompute : db::ComputeTag, Acceleration {
   using argument_tags = tmpl::list<Velocity, Radius>;
 };
 
-/// [compute_tags_force_compute]
+// [compute_tags_force_compute]
 struct Force : db::SimpleTag {
   using type = double;
 };
@@ -351,10 +351,10 @@ struct ForceCompute : db::ComputeTag, Force {
     *result = mass * acceleration; }
   using argument_tags = tmpl::list<Mass, Acceleration>;
 };
-/// [compute_tags_force_compute]
+// [compute_tags_force_compute]
 } // namespace proper
 
-/// [mutate_tags]
+// [mutate_tags]
 struct Time : db::SimpleTag {
   using type = double;
 };
@@ -370,9 +370,9 @@ struct EarthGravity : db::SimpleTag {
 struct FallingSpeed : db::SimpleTag {
   using type = double;
 };
-/// [mutate_tags]
+// [mutate_tags]
 
-/// [intended_mutation]
+// [intended_mutation]
 struct IntendedMutation {
   static void apply(const gsl::not_null<double*> time,
      const gsl::not_null<double*> falling_speed,
@@ -382,9 +382,9 @@ struct IntendedMutation {
     *falling_speed += time_step * earth_gravity;
   }
 };
-/// [intended_mutation]
+// [intended_mutation]
 
-/// [intended_mutation2]
+// [intended_mutation2]
 struct IntendedMutation2 {
   using return_tags = tmpl::list<Time, FallingSpeed>;
   using argument_tags = tmpl::list<TimeStep, EarthGravity>;
@@ -397,9 +397,9 @@ struct IntendedMutation2 {
     *falling_speed += time_step * earth_gravity;
   }
 };
-/// [intended_mutation2]
+// [intended_mutation2]
 
-/// [my_first_action]
+// [my_first_action]
 template <typename Mutator>
 struct MyFirstAction{
   template<typename DbTagsList>
@@ -409,7 +409,7 @@ struct MyFirstAction{
     db::mutate_apply<Mutator>(time_dependent_databox);
   }
 };
-/// [my_first_action]
+// [my_first_action]
 
 } // namespace
 // clang-format on
@@ -470,7 +470,7 @@ const auto refined_databox = db::create<
                                               volume);
 CHECK(force == db::get<proper::Force>(refined_databox));
 
-/// [time_dep_databox]
+// [time_dep_databox]
 auto time_dependent_databox = db::create<
     db::AddSimpleTags<
       Time, TimeStep, EarthGravity, FallingSpeed>>(0.0, 0.1, -9.8, -10.0);
@@ -487,31 +487,31 @@ db::mutate_apply<
     *falling_speed += time_step * earth_gravity;
   },
   make_not_null(&time_dependent_databox));
-/// [time_dep_databox]
+// [time_dep_databox]
 CHECK(0.0 + 0.1 == approx(db::get<Time>(time_dependent_databox)));
 CHECK(-10.0 + 0.1 * -9.8 ==
   approx(db::get<FallingSpeed>(time_dependent_databox)));
 
-/// [time_dep_databox2]
+// [time_dep_databox2]
 db::mutate_apply<
   tmpl::list<Time, FallingSpeed>,
   tmpl::list<TimeStep, EarthGravity>>(
     IntendedMutation{}, make_not_null(&time_dependent_databox));
-/// [time_dep_databox2]
+// [time_dep_databox2]
 CHECK(0.0 + 0.2 == approx(db::get<Time>(time_dependent_databox)));
 CHECK(-10.0 + 0.2 * -9.8 ==
   approx(db::get<FallingSpeed>(time_dependent_databox)));
 
-/// [time_dep_databox3]
+// [time_dep_databox3]
 db::mutate_apply<IntendedMutation2>(make_not_null(&time_dependent_databox));
-/// [time_dep_databox3]
+// [time_dep_databox3]
 CHECK(0.0 + 0.3 == approx(db::get<Time>(time_dependent_databox)));
 CHECK(-10.0 + 0.3 * -9.8 ==
   approx(db::get<FallingSpeed>(time_dependent_databox)));
 
-/// [time_dep_databox4]
+// [time_dep_databox4]
 MyFirstAction<IntendedMutation2>::apply(make_not_null(&time_dependent_databox));
-/// [time_dep_databox4]
+// [time_dep_databox4]
 CHECK(0.0 + 0.4 == approx(db::get<Time>(time_dependent_databox)));
 CHECK(-10.0 + 0.4 * -9.8 ==
   approx(db::get<FallingSpeed>(time_dependent_databox)));

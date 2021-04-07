@@ -581,6 +581,27 @@ prevent_cpp_includes_test() {
 }
 standard_checks+=(prevent_cpp_includes)
 
+# Check for Doxygen-comments in cpp files. We don't parse cpp files with
+# Doxygen, so they shouldn't contain Doxygen-formatting.
+prevent_cpp_doxygen() {
+    [[ $1 =~ \.cpp$ ]] && staged_grep -q '/// \|/\*\!' "$1"
+}
+prevent_cpp_doxygen_report() {
+    echo "Found Doxygen-formatting in cpp file:"
+    pretty_grep '/// \|/\*\!' "$@"
+    echo "Doxygen-formatting only has an effect in header files."
+    echo "Use standard C++ comments in cpp files."
+}
+prevent_cpp_doxygen_test() {
+    test_check fail foo.cpp '/// Dox.'$'\n'
+    test_check fail foo.cpp '/*! Dox.'$'\n'
+    test_check fail foo.cpp '/*!'$'\n'' * Dox.'$'\n'
+    test_check pass foo.cpp '// Dox.'$'\n'
+    test_check pass foo.cpp '/* Dox.'$'\n'
+    test_check pass foo.cpp '/*'$'\n'' * Dox.'$'\n'
+}
+standard_checks+=(prevent_cpp_doxygen)
+
 # Prevent editing RunSingleTest files. We may need to occasionally update these
 # files, but it's at least less than once a year.
 #

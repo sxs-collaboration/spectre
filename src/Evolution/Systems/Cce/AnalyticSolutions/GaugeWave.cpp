@@ -24,7 +24,6 @@
 
 namespace Cce::Solutions {
 
-/// \cond
 GaugeWave::GaugeWave(const double extraction_radius, const double mass,
                      const double frequency, const double amplitude,
                      const double peak_time, const double duration) noexcept
@@ -210,5 +209,4 @@ void GaugeWave::pup(PUP::er& p) noexcept {
 }
 
 PUP::able::PUP_ID GaugeWave::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::Solutions

@@ -8,7 +8,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace gr {
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
@@ -134,4 +133,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

@@ -28,7 +28,7 @@ struct FuncAndDeriv {
 };
 
 void test_simple() noexcept {
-  /// [double_newton_raphson_root_find]
+  // [double_newton_raphson_root_find]
   const size_t digits = 8;
   const double correct = sqrt(2.);
   const double guess = 1.5;
@@ -39,7 +39,7 @@ void test_simple() noexcept {
   };
   const auto root_from_lambda = RootFinder::newton_raphson(
       func_and_deriv_lambda, guess, lower, upper, digits);
-  /// [double_newton_raphson_root_find]
+  // [double_newton_raphson_root_find]
   const auto root_from_free = RootFinder::newton_raphson(
       func_and_deriv_free, guess, lower, upper, digits);
   const FuncAndDeriv func_and_deriv_functor{};
@@ -74,7 +74,7 @@ void test_bounds() noexcept {
 }
 
 void test_datavector() noexcept {
-  /// [datavector_newton_raphson_root_find]
+  // [datavector_newton_raphson_root_find]
   const size_t digits = 8;
   const DataVector guess{1.6, 1.9, -1.6, -1.9};
   const DataVector lower{sqrt(2.), sqrt(2.), -2., -3.};
@@ -88,7 +88,7 @@ void test_datavector() noexcept {
 
   const auto root = RootFinder::newton_raphson(func_and_deriv_lambda, guess,
                                                lower, upper, digits);
-  /// [datavector_newton_raphson_root_find]
+  // [datavector_newton_raphson_root_find]
 
   const DataVector correct{sqrt(2.), 2., -sqrt(2.), -2.};
 

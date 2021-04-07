@@ -16,7 +16,6 @@
 #include "Utilities/Math.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
-/// \cond
 namespace NewtonianEuler::AnalyticData {
 template <size_t Dim>
 SodExplosion<Dim>::SodExplosion(const double initial_radius,
@@ -155,4 +154,3 @@ template bool operator!=(const SodExplosion<2>& lhs,
 template bool operator!=(const SodExplosion<3>& lhs,
                          const SodExplosion<3>& rhs) noexcept;
 }  // namespace NewtonianEuler::AnalyticData
-/// \endcond

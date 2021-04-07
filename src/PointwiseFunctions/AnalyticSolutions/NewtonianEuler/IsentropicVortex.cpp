@@ -21,7 +21,6 @@
 
 // IWYU pragma: no_include <complex>
 
-/// \cond
 namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
@@ -215,4 +214,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
 #undef INSTANTIATE_VELOCITY
 
 }  // namespace NewtonianEuler::Solutions
-/// \endcond

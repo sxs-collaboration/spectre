@@ -12,7 +12,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace domain::creators::time_dependence {
-/// \cond
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -28,5 +27,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 
-/// \endcond
 }  // namespace domain::creators::time_dependence

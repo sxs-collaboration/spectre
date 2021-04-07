@@ -10,7 +10,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace gr {
 template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::a<DataType, VolumeDim, Frame> interface_null_normal(
@@ -129,4 +128,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

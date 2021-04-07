@@ -13,7 +13,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_deriv_of_lapse(
@@ -78,4 +77,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

@@ -50,7 +50,5 @@ std::complex<double> CubicSpanInterpolator::interpolate(
   return interpolate_impl(source_points, values, target_point);
 }
 
-/// \cond
 PUP::able::PUP_ID intrp::CubicSpanInterpolator::my_PUP_ID = 0;
-/// \endcond
 }  // namespace intrp

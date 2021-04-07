@@ -6,7 +6,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-/// [assertion_test_example]
+// [assertion_test_example]
 // [[OutputRegex, Testing assert]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.Assert",
                                "[Unit][ErrorHandling]") {
@@ -16,13 +16,13 @@
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
-/// [assertion_test_example]
+// [assertion_test_example]
 
-/// [error_test_example]
+// [error_test_example]
 // [[OutputRegex, Testing error]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.Error",
                                "[Unit][ErrorHandling]") {
   ERROR_TEST();
   ERROR("Testing error");
 }
-/// [error_test_example]
+// [error_test_example]

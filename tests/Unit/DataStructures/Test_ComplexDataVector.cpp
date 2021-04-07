@@ -51,14 +51,14 @@ void test_complex_data_vector_math() noexcept {
   TestHelpers::VectorImpl::test_functions_with_vector_arguments<
       TestHelpers::VectorImpl::TestKind::Normal, ComplexDataVector>(unary_ops);
 
-  /// [test_vector_math_usage]
+  // [test_vector_math_usage]
   const auto real_unary_ops = std::make_tuple(
       std::make_tuple(funcl::Real<>{}, std::make_tuple(generic)),
       std::make_tuple(funcl::Imag<>{}, std::make_tuple(generic)));
 
   TestHelpers::VectorImpl::test_functions_with_vector_arguments<
       TestHelpers::VectorImpl::TestKind::Normal, DataVector>(real_unary_ops);
-  /// [test_vector_math_usage]
+  // [test_vector_math_usage]
 
   // Note that the binary operations have been moved to
   // `Test_ComplexDataVectorBinaryOperations.cpp` in an effort to better

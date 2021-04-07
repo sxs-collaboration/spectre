@@ -23,10 +23,8 @@
 // IWYU pragma: no_include "DataStructures/Index.hpp"
 
 namespace {
-/*!
- * Given a vector of contiguous data and an array giving the dimensions of the
- * matrix returns a `vector<vector<T>>` representing the matrix.
- */
+// Given a vector of contiguous data and an array giving the dimensions of the
+// matrix returns a `vector<vector<T>>` representing the matrix.
 Matrix vector_to_matrix(const std::vector<double>& raw_data,
                         const std::array<hsize_t, 2>& size) {
   Matrix temp(size[0], size[1]);
@@ -40,7 +38,6 @@ Matrix vector_to_matrix(const std::vector<double>& raw_data,
 }  // namespace
 
 namespace h5 {
-/// \cond HIDDEN_SYMBOLS
 Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
          const std::string& name, std::vector<std::string> legend,
          const uint32_t version)
@@ -105,7 +102,6 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
 }
 
 Dat::~Dat() { CHECK_H5(H5Dclose(dataset_id_), "Failed to close dataset"); }
-/// \endcond HIDDEN_SYMBOLS
 
 void Dat::append_impl(const hsize_t number_of_rows,
                       const std::vector<double>& data) {

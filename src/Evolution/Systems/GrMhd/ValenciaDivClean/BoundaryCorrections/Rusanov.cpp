@@ -15,7 +15,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
 Rusanov::Rusanov(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -201,4 +200,3 @@ void Rusanov::dg_boundary_terms(
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov::my_PUP_ID = 0;
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections
-/// \endcond

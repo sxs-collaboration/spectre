@@ -9,7 +9,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace EquationsOfState {
 template <bool IsRelativistic>
 IdealFluid<IsRelativistic>::IdealFluid(const double adiabatic_index) noexcept
@@ -110,4 +109,3 @@ Scalar<DataType> IdealFluid<IsRelativistic>::
 
 template class EquationsOfState::IdealFluid<true>;
 template class EquationsOfState::IdealFluid<false>;
-/// \endcond

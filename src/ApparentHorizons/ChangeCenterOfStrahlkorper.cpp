@@ -141,7 +141,6 @@ void change_expansion_center_of_strahlkorper_to_physical(
   }
   ERROR("Too many iterations in change_expansion_center_of_strahlkorper");
 }
-/// \cond
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                         \
@@ -155,4 +154,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Inertial))
 
 #undef INSTANTIATE
 #undef FRAME
-/// \endcond

@@ -14,7 +14,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace evolution::dg::subcell::fd {
 namespace detail {
 template <size_t Dim>
@@ -73,4 +72,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace evolution::dg::subcell::fd
-/// \endcond

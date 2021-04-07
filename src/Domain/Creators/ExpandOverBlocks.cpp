@@ -95,7 +95,6 @@ std::vector<std::array<T, Dim>> ExpandOverBlocks<T, Dim>::operator()(
   return result;
 }
 
-/// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data) \
@@ -106,6 +105,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (size_t), (1, 2, 3))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace domain

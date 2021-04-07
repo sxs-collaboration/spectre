@@ -53,7 +53,7 @@ struct Increment {
   }
 };
 
-/// [component]
+// [component]
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
@@ -80,18 +80,18 @@ struct Component {
                              Metavariables::Phase::TestRepeatUntil,
                              repeat_until_phase_action_list>>;
 };
-/// [component]
+// [component]
 
-/// [metavariables]
+// [metavariables]
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
   enum class Phase { Initialization, TestGoto, TestRepeatUntil, Exit };
 };
-/// [metavariables]
+// [metavariables]
 }  // namespace
 
-/// [test case]
+// [test case]
 SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
@@ -132,4 +132,4 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   // condition is already fulfilled at the start.
   CHECK(ActionTesting::get_databox_tag<component, Counter>(runner, 0) == 2);
 }
-/// [test case]
+// [test case]

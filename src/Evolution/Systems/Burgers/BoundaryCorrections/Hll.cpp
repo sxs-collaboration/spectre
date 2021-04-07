@@ -15,7 +15,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Burgers::BoundaryCorrections {
 Hll::Hll(CkMigrateMessage* msg) noexcept : BoundaryCorrection(msg) {}
 
@@ -76,4 +75,3 @@ void Hll::dg_boundary_terms(
 
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Burgers::BoundaryCorrections::Hll::my_PUP_ID = 0;
-/// \endcond

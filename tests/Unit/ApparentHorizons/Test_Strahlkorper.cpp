@@ -21,11 +21,9 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-/// \endcond
 
 namespace {
 

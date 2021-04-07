@@ -7,7 +7,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Burgers {
 void TimeDerivativeTerms::apply(
     const gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_vars*/,
@@ -16,4 +15,3 @@ void TimeDerivativeTerms::apply(
   get<0>(*flux_u) = 0.5 * square(get(u));
 }
 }  // namespace Burgers
-/// \endcond

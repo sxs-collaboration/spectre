@@ -42,7 +42,7 @@ struct SquareVectorCompute : SquareVectorTag, db::ComputeTag {
   using base = SquareVectorTag;
 };
 
-/// [initialization_action]
+// [initialization_action]
 struct InitializationAction {
   using simple_tags = tmpl::list<CounterTag, VectorTag>;
   using compute_tags = tmpl::list<SquareVectorCompute>;
@@ -60,7 +60,7 @@ struct InitializationAction {
     return {std::move(box)};
   }
 };
-/// [initialization_action]
+// [initialization_action]
 
 struct MutateAction {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,

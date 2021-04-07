@@ -42,7 +42,6 @@ tnsr::I<DataType, 3> compute_piecewise_vector(
 }
 }  // namespace
 
-/// \cond
 namespace grmhd::Solutions {
 
 KomissarovShock::KomissarovShock(
@@ -215,4 +214,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 }  // namespace grmhd::Solutions
-/// \endcond

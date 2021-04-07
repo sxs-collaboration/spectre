@@ -38,12 +38,10 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace Tags {
 template <typename Tag, typename Dim, typename Frame, typename>
 struct deriv;
 }  // namespace Tags
-/// \endcond
 
 namespace {
 template <size_t Dim, typename DataType>

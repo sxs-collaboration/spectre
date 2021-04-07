@@ -20,7 +20,7 @@
 
 namespace {
 namespace TestTags {
-/// [vector_base_definitions]
+// [vector_base_definitions]
 template <int I>
 struct VectorBase : db::BaseTag {};
 
@@ -28,9 +28,9 @@ template <int I>
 struct Vector : db::SimpleTag, VectorBase<I> {
   using type = std::vector<double>;
 };
-/// [vector_base_definitions]
+// [vector_base_definitions]
 
-/// [array_base_definitions]
+// [array_base_definitions]
 template <int I>
 struct ArrayBase : db::BaseTag {};
 
@@ -38,9 +38,9 @@ template <int I, size_t Size = 3>
 struct Array : db::SimpleTag, ArrayBase<I> {
   using type = std::array<int, Size>;
 };
-/// [array_base_definitions]
+// [array_base_definitions]
 
-/// [compute_template_base_tags]
+// [compute_template_base_tags]
 template <int I, int VectorBaseIndex = 0, int... VectorBaseExtraIndices>
 struct ArrayCompute : Array<I, sizeof...(VectorBaseExtraIndices) == 0
                                    ? 3
@@ -68,7 +68,7 @@ struct ArrayCompute : Array<I, sizeof...(VectorBaseExtraIndices) == 0
   using argument_tags = tmpl::list<VectorBase<VectorBaseIndex>,
                                    VectorBase<VectorBaseExtraIndices>...>;
 };
-/// [compute_template_base_tags]
+// [compute_template_base_tags]
 }  // namespace TestTags
 
 void test_non_subitems() {
@@ -78,7 +78,7 @@ void test_non_subitems() {
   // - using a base tag as the argument in a compute item
   // - `get`ing a compute item by base tag
   // - `get`ing a compute item by its simple tag
-  /// [base_simple_and_compute_mutate]
+  // [base_simple_and_compute_mutate]
   auto box = db::create<db::AddSimpleTags<TestTags::Vector<0>>,
                         db::AddComputeTags<TestTags::ArrayCompute<0>>>(
       std::vector<double>{-10.0, 10.0});
@@ -106,7 +106,7 @@ void test_non_subitems() {
   CHECK(db::get<TestTags::Array<0>>(box) == std::array<int, 3>{{2, 101, -8}});
   CHECK(db::get<TestTags::ArrayCompute<0>>(box) ==
         std::array<int, 3>{{2, 101, -8}});
-  /// [base_simple_and_compute_mutate]
+  // [base_simple_and_compute_mutate]
 
   // - adding compute item that uses a base tag as its argument
   auto box2 = db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
@@ -156,7 +156,7 @@ void test_non_subitems() {
         std::vector<double>{408.8, -73.2});
 
   // - removing a compute item and its dependencies by the base tags
-  /// [remove_using_base]
+  // [remove_using_base]
   const auto& box6 = db::create_from<
       db::RemoveTags<TestTags::VectorBase<1>, TestTags::VectorBase<2>,
                      TestTags::ArrayBase<1>>>(
@@ -168,7 +168,7 @@ void test_non_subitems() {
                      db::AddComputeTags<TestTags::ArrayCompute<0>>>(
               std::vector<double>{101.8, 10.0}),
           std::vector<double>{-7.1, 8.9}, std::vector<double>{408.8, -73.2}));
-  /// [remove_using_base]
+  // [remove_using_base]
   CHECK(db::get<TestTags::VectorBase<0>>(box6) ==
         std::vector<double>{101.8, 10.0});
   CHECK(db::get<TestTags::ArrayBase<0>>(box6) ==

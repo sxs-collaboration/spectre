@@ -17,7 +17,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace grmhd::ValenciaDivClean {
 namespace detail {
 void fluxes_impl(
@@ -208,4 +207,3 @@ void TimeDerivativeTerms::apply(
       constraint_damping_parameter);
 }
 }  // namespace grmhd::ValenciaDivClean
-/// \endcond

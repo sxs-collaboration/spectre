@@ -15,7 +15,6 @@
 // linked is non-trivial since Charm++ generally wants you to use their `charmc`
 // script, but we want to avoid that.
 
-/// \cond
 
 __attribute__ ((format (printf, 1, 2)))
 // NOLINTNEXTLINE(cert-dcl50-cpp)
@@ -172,4 +171,3 @@ void pup_bytes(pup_er /*p*/, void* /*ptr*/, size_t /*nBytes*/) {
 
 #pragma GCC diagnostic pop
 
-/// \endcond

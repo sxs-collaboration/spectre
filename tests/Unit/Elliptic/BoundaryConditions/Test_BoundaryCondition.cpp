@@ -75,12 +75,12 @@ class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
       tmpl::list<ArgumentTag, VolumeArgumentTag, NonlinearArgumentTag>;
   using volume_tags = tmpl::list<VolumeArgumentTag>;
 
-  /// [example_poisson_fields]
+  // [example_poisson_fields]
   static void apply(const gsl::not_null<Scalar<DataVector>*> field,
                     const gsl::not_null<Scalar<DataVector>*> n_dot_flux,
                     const int arg_on_face, const bool arg_from_volume,
                     const int arg_nonlinear) noexcept {
-    /// [example_poisson_fields]
+    // [example_poisson_fields]
     CHECK(arg_on_face == 1);
     CHECK(arg_from_volume);
     CHECK(arg_nonlinear == 2);

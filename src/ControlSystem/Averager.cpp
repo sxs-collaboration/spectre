@@ -194,6 +194,4 @@ std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs() const
 }
 
 // explicit instantiations
-/// \cond
 template class Averager<2>;
-/// \endcond

@@ -8,8 +8,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace TestHelpers {
-namespace ControlErrors {
+namespace TestHelpers::ControlErrors {
 
 template <size_t DerivOrder>
 Translation<DerivOrder>::Translation(DataVector target_coords) noexcept
@@ -23,9 +22,6 @@ void Translation<DerivOrder>::operator()(
   const DataVector q = coords - target_coords_ - f_of_t.func(time)[0];
   updater->measure(time, q);
 }
-}  // namespace ControlErrors
-}  // namespace TestHelpers
+}  // namespace TestHelpers::ControlErrors
 
-/// \cond
 template class TestHelpers::ControlErrors::Translation<2>;
-/// \endcond

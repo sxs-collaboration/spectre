@@ -12,9 +12,9 @@
 
 namespace {
 
-/// [named_protocol]
+// [named_protocol]
 namespace protocols {
-/*!
+/*
  * \brief Has a name.
  *
  * Requires the class has these member functions:
@@ -31,9 +31,9 @@ struct Named {
   };
 };
 }  // namespace protocols
-/// [named_protocol]
+// [named_protocol]
 
-/// [named_conformance]
+// [named_conformance]
 class Person : public tt::ConformsTo<protocols::Named> {
  public:
   // Function required to conform to the protocol
@@ -48,9 +48,9 @@ class Person : public tt::ConformsTo<protocols::Named> {
   Person(std::string first_name, std::string last_name)
       : first_name_(std::move(first_name)), last_name_(std::move(last_name)) {}
 };
-/// [named_conformance]
+// [named_conformance]
 
-/// [using_named_protocol]
+// [using_named_protocol]
 template <typename NamedThing>
 std::string greet(const NamedThing& named_thing) {
   // Make sure the template parameter conforms to the protocol
@@ -58,9 +58,9 @@ std::string greet(const NamedThing& named_thing) {
   // Now we can rely on the interface that the protocol defines
   return "Hello, " + named_thing.name() + "!";
 }
-/// [using_named_protocol]
+// [using_named_protocol]
 
-/// [protocol_sfinae]
+// [protocol_sfinae]
 template <typename Thing,
           Requires<not tt::conforms_to_v<Thing, protocols::Named>> = nullptr>
 std::string greet_anything(const Thing& /*anything*/) {
@@ -71,7 +71,7 @@ template <typename NamedThing,
 std::string greet_anything(const NamedThing& named_thing) {
   return greet(named_thing);
 }
-/// [protocol_sfinae]
+// [protocol_sfinae]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.ProtocolHelpers", "[Utilities][Unit]") {
@@ -82,13 +82,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.ProtocolHelpers", "[Utilities][Unit]") {
 }
 
 // Test tt::conforms_to metafunction
-/// [conforms_to]
+// [conforms_to]
 // SFINAE-friendly version:
 constexpr bool person_class_is_named =
     tt::conforms_to_v<Person, protocols::Named>;
 // Assert-friendly version with more diagnostics:
 static_assert(tt::assert_conforms_to<Person, protocols::Named>);
-/// [conforms_to]
+// [conforms_to]
 static_assert(person_class_is_named,
               "The 'Person' class does not conform to the 'Named' protocol.");
 
@@ -108,7 +108,7 @@ static_assert(tt::conforms_to_v<DerivedConformingClass, protocols::Named>,
 // Give examples about protocol antipatterns
 namespace {
 namespace protocols {
-/// [named_antipattern]
+// [named_antipattern]
 // Don't do this. Protocols should not have template parameters.
 template <typename NameType>
 struct NamedAntipattern {
@@ -120,8 +120,8 @@ struct NamedAntipattern {
                   "The 'name' function must return a 'NameType'.");
   };
 };
-/// [named_antipattern]
-/// [named_with_type]
+// [named_antipattern]
+// [named_with_type]
 // Instead, do this.
 struct NamedWithType {
   template <typename ConformingType>
@@ -134,24 +134,24 @@ struct NamedWithType {
                   "The 'name' function must return a 'NameType'.");
   };
 };
-/// [named_with_type]
+// [named_with_type]
 }  // namespace protocols
-/// [person_with_name_type]
+// [person_with_name_type]
 struct PersonWithNameType : tt::ConformsTo<protocols::NamedWithType> {
   using NameType = std::string;
   std::string name() const;
 };
-/// [person_with_name_type]
-/// [example_check_name_type]
+// [person_with_name_type]
+// [example_check_name_type]
 static_assert(
     tt::assert_conforms_to<PersonWithNameType, protocols::NamedWithType>);
 static_assert(
     std::is_same_v<typename PersonWithNameType::NameType, std::string>,
     "The `NameType` isn't a `std::string`!");
-/// [example_check_name_type]
+// [example_check_name_type]
 }  // namespace
 
 // Give an example how protocol consumers should test protocol conformance
-/// [test_protocol_conformance]
+// [test_protocol_conformance]
 static_assert(tt::assert_conforms_to<Person, protocols::Named>);
-/// [test_protocol_conformance]
+// [test_protocol_conformance]

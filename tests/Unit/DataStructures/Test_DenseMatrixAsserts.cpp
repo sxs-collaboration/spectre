@@ -1,9 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// These error tests are in a separate file so `Test_DenseMatrix.cpp` can be
-/// compiled into `TestArchitectureVectorization`
+// These error tests are in a separate file so `Test_DenseMatrix.cpp` can be
+// compiled into `TestArchitectureVectorization`
 
 #include "Framework/TestingFramework.hpp"
 

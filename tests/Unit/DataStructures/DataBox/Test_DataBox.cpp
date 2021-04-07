@@ -58,11 +58,11 @@ void append_word(const gsl::not_null<std::string*> result,
 }
 
 namespace test_databox_tags {
-/// [databox_tag_example]
+// [databox_tag_example]
 struct Tag0 : db::SimpleTag {
   using type = double;
 };
-/// [databox_tag_example]
+// [databox_tag_example]
 struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
 };
@@ -110,7 +110,7 @@ struct Tag6Compute : Tag6, db::ComputeTag {
   using argument_tags = tmpl::list<Tag2Base>;
 };
 
-/// [compute_item_tag_function]
+// [compute_item_tag_function]
 struct Lambda0 : db::SimpleTag {
   using type = double;
 };
@@ -124,13 +124,13 @@ struct Lambda0Compute : Lambda0, db::ComputeTag {
   }
   using argument_tags = tmpl::list<Tag0>;
 };
-/// [compute_item_tag_function]
+// [compute_item_tag_function]
 
 struct Lambda1 : db::SimpleTag {
   using type = double;
 };
 
-/// [compute_item_tag_no_tags]
+// [compute_item_tag_no_tags]
 struct Lambda1Compute : Lambda1, db::ComputeTag {
   using base = Lambda1;
   using return_type = double;
@@ -139,9 +139,9 @@ struct Lambda1Compute : Lambda1, db::ComputeTag {
   }
   using argument_tags = tmpl::list<>;
 };
-/// [compute_item_tag_no_tags]
+// [compute_item_tag_no_tags]
 
-/// [databox_prefix_tag_example]
+// [databox_prefix_tag_example]
 template <typename Tag>
 struct TagPrefix : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
@@ -150,7 +150,7 @@ struct TagPrefix : db::PrefixTag, db::SimpleTag {
     return "TagPrefix(" + db::tag_name<Tag>() + ")";
   }
 };
-/// [databox_prefix_tag_example]
+// [databox_prefix_tag_example]
 
 struct PointerBase : db::BaseTag {};
 
@@ -229,7 +229,7 @@ static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
 void test_databox() noexcept {
   INFO("test databox");
   const auto create_original_box = []() {
-    /// [create_databox]
+    // [create_databox]
     auto original_box = db::create<
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                           test_databox_tags::Tag2>,
@@ -238,7 +238,7 @@ void test_databox() noexcept {
                            test_databox_tags::Lambda0Compute,
                            test_databox_tags::Lambda1Compute>>(
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    /// [create_databox]
+    // [create_databox]
     return original_box;
   };
   {
@@ -255,9 +255,9 @@ void test_databox() noexcept {
                            test_databox_tags::Lambda1Compute>>>>>::value,
         "Failed to create original_box");
 
-    /// [using_db_get]
+    // [using_db_get]
     const auto& tag0 = db::get<test_databox_tags::Tag0>(original_box);
-    /// [using_db_get]
+    // [using_db_get]
     CHECK(tag0 == 3.14);
     // Check retrieving chained compute item result
     CHECK(db::get<test_databox_tags::Tag5>(original_box) ==
@@ -275,23 +275,23 @@ void test_databox() noexcept {
     CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
   }
   {
-    /// [create_from_remove]
+    // [create_from_remove]
     auto original_box = create_original_box();
     const auto& box = db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(
         std::move(original_box));
-    /// [create_from_remove]
+    // [create_from_remove]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
     CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
   }
   {
-    /// [create_from_add_item]
+    // [create_from_add_item]
     auto original_box = create_original_box();
     const auto& box =
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<test_databox_tags::Tag3>>(
             std::move(original_box), "Yet another test string"s);
-    /// [create_from_add_item]
+    // [create_from_add_item]
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
@@ -299,7 +299,7 @@ void test_databox() noexcept {
     CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
   }
   {
-    /// [create_from_add_compute_item]
+    // [create_from_add_compute_item]
     auto simple_box = db::create<
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                           test_databox_tags::Tag2>>(
@@ -308,7 +308,7 @@ void test_databox() noexcept {
         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
                         db::AddComputeTags<test_databox_tags::Tag4Compute>>(
             std::move(simple_box));
-    /// [create_from_add_compute_item]
+    // [create_from_add_compute_item]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
     CHECK(db::get<test_databox_tags::Tag4>(box) == 6.28);
@@ -454,13 +454,13 @@ void test_get_databox() noexcept {
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
-  /// [databox_self_tag_example]
+  // [databox_self_tag_example]
   auto check_result_no_args = [](const auto& box) {
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
   };
   db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
-  /// [databox_self_tag_example]
+  // [databox_self_tag_example]
 }
 }  // namespace
 
@@ -497,7 +497,7 @@ void test_mutate() noexcept {
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
       std::make_unique<int>(3));
   CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 3.14 * 2.0);
-  /// [databox_mutate_example]
+  // [databox_mutate_example]
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       make_not_null(&original_box),
       [](const gsl::not_null<double*> tag0,
@@ -510,7 +510,7 @@ void test_mutate() noexcept {
       db::get<test_databox_tags::Tag4>(original_box));
   CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
   CHECK(837.2 == db::get<test_databox_tags::Tag1>(original_box)[0]);
-  /// [databox_mutate_example]
+  // [databox_mutate_example]
   CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 10.32 * 2.0);
 
   auto result = db::mutate<test_databox_tags::Tag0>(
@@ -630,7 +630,7 @@ void test_apply() noexcept {
   db::apply<tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::Tag5>>(
       check_result_no_args, original_box);
 
-  /// [apply_example]
+  // [apply_example]
   auto check_result_args = [](const std::string& sample_string,
                               const auto& computed_string, const auto& vector) {
     CHECK(sample_string == "My Sample String"s);
@@ -640,11 +640,11 @@ void test_apply() noexcept {
   db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       check_result_args, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
-  /// [apply_example]
+  // [apply_example]
 
   db::apply<tmpl::list<>>(NonCopyableFunctor{}, original_box);
 
-  /// [apply_struct_example]
+  // [apply_struct_example]
   struct ApplyCallable {
     static void apply(const std::string& sample_string,
                       const std::string& computed_string,
@@ -657,11 +657,11 @@ void test_apply() noexcept {
   db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
-  /// [apply_struct_example]
+  // [apply_struct_example]
   db::apply<tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::Tag5>>(
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
-  /// [apply_stateless_struct_example]
+  // [apply_stateless_struct_example]
   struct StatelessApplyCallable {
     using argument_tags =
         tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>;
@@ -675,7 +675,7 @@ void test_apply() noexcept {
   };
   db::apply<StatelessApplyCallable>(
       original_box, db::get<test_databox_tags::Tag1>(original_box));
-  /// [apply_stateless_struct_example]
+  // [apply_stateless_struct_example]
   db::apply(StatelessApplyCallable{}, original_box,
             db::get<test_databox_tags::Tag1>(original_box));
 
@@ -1235,7 +1235,7 @@ void test_variables_extra_reset() noexcept {
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
 }
 
-/// [mutate_apply_struct_definition_example]
+// [mutate_apply_struct_definition_example]
 struct TestDataboxMutateApply {
   // delete copy semantics just to make sure it works. Not necessary in general.
   TestDataboxMutateApply() = default;
@@ -1261,7 +1261,7 @@ struct TestDataboxMutateApply {
     CHECK(tag2 == "My Sample String"s);
   }
 };
-/// [mutate_apply_struct_definition_example]
+// [mutate_apply_struct_definition_example]
 
 struct TestDataboxMutateApplyBase {
   using return_tags = tmpl::list<test_databox_tags::ScalarTag>;
@@ -1326,9 +1326,9 @@ void test_mutate_apply() noexcept {
 
   {
     INFO("Apply function or lambda");
-    /// [mutate_apply_struct_example_stateful]
+    // [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
-    /// [mutate_apply_struct_example_stateful]
+    // [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
 
     CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
@@ -1341,7 +1341,7 @@ void test_mutate_apply() noexcept {
           Scalar<DataVector>(DataVector(2, 12.)));
     CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-    /// [mutate_apply_lambda_example]
+    // [mutate_apply_lambda_example]
     db::mutate_apply<
         tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
         tmpl::list<test_databox_tags::Tag2>>(
@@ -1355,7 +1355,7 @@ void test_mutate_apply() noexcept {
           CHECK(tag2 == "My Sample String"s);
         },
         make_not_null(&box));
-    /// [mutate_apply_lambda_example]
+    // [mutate_apply_lambda_example]
     db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
                      tmpl::list<test_databox_tags::Tag2Base>>(
         [](const gsl::not_null<Scalar<DataVector>*> scalar,
@@ -1417,9 +1417,9 @@ void test_mutate_apply() noexcept {
 
   {
     INFO("Stateless struct with tags lists");
-    /// [mutate_apply_struct_example_stateless]
+    // [mutate_apply_struct_example_stateless]
     db::mutate_apply<TestDataboxMutateApply>(make_not_null(&box));
-    /// [mutate_apply_struct_example_stateless]
+    // [mutate_apply_struct_example_stateless]
     CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 48.)));
@@ -1505,7 +1505,7 @@ void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
   }
 }
 
-/// [databox_mutating_compute_item_function]
+// [databox_mutating_compute_item_function]
 void mutate_variables(
     const gsl::not_null<Variables<tmpl::list<test_databox_tags::ScalarTag,
                                              test_databox_tags::VectorTag>>*>
@@ -1523,7 +1523,7 @@ void mutate_variables(
     p = 3.0 * value;
   }
 }
-/// [databox_mutating_compute_item_function]
+// [databox_mutating_compute_item_function]
 
 namespace test_databox_tags {
 struct MutateTag0 : db::SimpleTag {
@@ -1542,7 +1542,7 @@ struct MutateVariables : db::SimpleTag {
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
 };
 
-/// [databox_mutating_compute_item_tag]
+// [databox_mutating_compute_item_tag]
 struct MutateVariablesCompute : MutateVariables, db::ComputeTag {
   using base = MutateVariables;
   static constexpr auto function = mutate_variables;
@@ -1550,7 +1550,7 @@ struct MutateVariablesCompute : MutateVariables, db::ComputeTag {
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
   using argument_tags = tmpl::list<Tag0>;
 };
-/// [databox_mutating_compute_item_tag]
+// [databox_mutating_compute_item_tag]
 }  // namespace test_databox_tags
 
 void test_mutating_compute_item() noexcept {
@@ -1710,10 +1710,10 @@ void test_data_on_slice_single() noexcept {
     }
   }
   CHECK(
-      /// [data_on_slice]
+      // [data_on_slice]
       db::data_on_slice(box, extents, 0, x_offset,
                         tmpl::list<DataBoxTest_detail::vector>{})
-      /// [data_on_slice]
+      // [data_on_slice]
       == expected_vars_sliced_in_x);
   CHECK(db::data_on_slice(box, extents, 1, y_offset,
                           tmpl::list<DataBoxTest_detail::vector>{}) ==
@@ -2008,7 +2008,7 @@ struct OverloadType : db::SimpleTag {
   using type = double;
 };
 
-/// [overload_compute_tag_type]
+// [overload_compute_tag_type]
 template <typename ArgumentTag>
 struct OverloadTypeCompute : OverloadType<ArgumentTag>, db::ComputeTag {
   using base = OverloadType<ArgumentTag>;
@@ -2024,14 +2024,14 @@ struct OverloadTypeCompute : OverloadType<ArgumentTag>, db::ComputeTag {
   }
   using argument_tags = tmpl::list<ArgumentTag>;
 };
-/// [overload_compute_tag_type]
+// [overload_compute_tag_type]
 
 template <typename ArgumentTag0, typename ArgumentTag1 = void>
 struct OverloadNumberOfArgs : db::SimpleTag {
   using type = double;
 };
 
-/// [overload_compute_tag_number_of_args]
+// [overload_compute_tag_number_of_args]
 template <typename ArgumentTag0, typename ArgumentTag1 = void>
 struct OverloadNumberOfArgsCompute
     : OverloadNumberOfArgs<ArgumentTag0, ArgumentTag1>,
@@ -2054,14 +2054,14 @@ struct OverloadNumberOfArgsCompute
                           tmpl::list<ArgumentTag0>,
                           tmpl::list<ArgumentTag0, ArgumentTag1>>;
 };
-/// [overload_compute_tag_number_of_args]
+// [overload_compute_tag_number_of_args]
 
 template <typename ArgumentTag>
 struct Template : db::SimpleTag {
   using type = typename ArgumentTag::type;
 };
 
-/// [overload_compute_tag_template]
+// [overload_compute_tag_template]
 template <typename ArgumentTag>
 struct TemplateCompute : Template<ArgumentTag>, db::ComputeTag {
   using base = Template<ArgumentTag>;
@@ -2075,7 +2075,7 @@ struct TemplateCompute : Template<ArgumentTag>, db::ComputeTag {
 
   using argument_tags = tmpl::list<ArgumentTag>;
 };
-/// [overload_compute_tag_template]
+// [overload_compute_tag_template]
 }  // namespace test_databox_tags
 
 void test_overload_compute_tags() noexcept {
@@ -2630,7 +2630,7 @@ void serialization_of_pointers() noexcept {
 }
 
 namespace test_databox_tags {
-/// [databox_reference_tag_example]
+// [databox_reference_tag_example]
 template <typename... Tags>
 struct TaggedTuple : db::SimpleTag {
   using type = tuples::TaggedTuple<Tags...>;
@@ -2647,7 +2647,7 @@ struct FromTaggedTuple : Tag, db::ReferenceTag {
 
   using argument_tags = tmpl::list<parent_tag>;
 };
-/// [databox_reference_tag_example]
+// [databox_reference_tag_example]
 }  // namespace test_databox_tags
 
 void test_reference_item() noexcept {

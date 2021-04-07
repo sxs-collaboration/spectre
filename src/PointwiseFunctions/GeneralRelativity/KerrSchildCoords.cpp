@@ -18,7 +18,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace gr {
 
 KerrSchildCoords::KerrSchildCoords(const double bh_mass,
@@ -147,4 +146,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 
 }  // namespace gr
-/// \endcond

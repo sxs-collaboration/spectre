@@ -61,7 +61,6 @@ void lorentz_boost_matrix(
 }  // namespace sr
 
 // Explicit Instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                \
@@ -79,4 +78,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

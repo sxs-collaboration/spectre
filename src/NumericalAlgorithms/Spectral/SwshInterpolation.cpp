@@ -25,7 +25,6 @@
 #include "Utilities/StaticCache.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 
 namespace Spectral::Swsh {
 
@@ -299,7 +298,7 @@ struct ClenshawRecurrenceConstants {
     }
   }
 
-  /// Serialization for Charm++.
+  // Serialization for Charm++.
   void pup(PUP::er& p) noexcept {  // NOLINT
     p | alpha_prefactor;
     p | alpha_constant;
@@ -671,4 +670,3 @@ GENERATE_INSTANTIATIONS(INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef GET_SPIN
 
 }  // namespace Spectral::Swsh
-/// \endcond

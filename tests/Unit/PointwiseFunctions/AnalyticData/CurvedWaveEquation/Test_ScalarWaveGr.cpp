@@ -370,7 +370,7 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
   }
 }
 
-/// Check restrictions on input options below
+// Check restrictions on input options below
 
 // [[OutputRegex, Mass must be non-negative]]
 SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrMass",

@@ -33,7 +33,5 @@ double BarycentricRationalSpanInterpolator::interpolate(
   return interpolant(target_point);
 }
 
-/// \cond
 PUP::able::PUP_ID intrp::BarycentricRationalSpanInterpolator::my_PUP_ID = 0;
-/// \endcond
 }  // namespace intrp

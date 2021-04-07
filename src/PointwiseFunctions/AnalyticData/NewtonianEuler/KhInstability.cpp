@@ -17,7 +17,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace NewtonianEuler::AnalyticData {
 
 template <size_t Dim>
@@ -204,4 +203,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
 #undef DTYPE
 #undef DIM
 }  // namespace NewtonianEuler::AnalyticData
-/// \endcond

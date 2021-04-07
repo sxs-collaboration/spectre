@@ -95,7 +95,6 @@ void add_curved_auxiliary_sources(
   }
 }
 
-/// \cond
 template <size_t Dim>
 void Fluxes<Dim>::apply(
     const gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
@@ -128,7 +127,6 @@ template <size_t Dim>
 void Sources<Dim>::apply(
     const gsl::not_null<tnsr::ii<DataVector, Dim>*> /*equation_for_strain*/,
     const tnsr::I<DataVector, Dim>& /*displacement*/) noexcept {}
-/// \endcond
 
 }  // namespace Elasticity
 

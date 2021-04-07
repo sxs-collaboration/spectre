@@ -13,7 +13,6 @@
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 
-/// \cond
 
 namespace Cce {
 
@@ -694,4 +693,3 @@ void InitializeGauge::apply(
 
 }  // namespace Cce
 
-/// \endcond

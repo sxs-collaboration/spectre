@@ -47,11 +47,9 @@ class SomeEvent : public Event<EventRegistrars> {
   explicit SomeEvent(std::string subfile_path) noexcept
       : subfile_path_(std::move(subfile_path)) {}
 
-  /// \cond
   explicit SomeEvent(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SomeEvent);  // NOLINT
-  /// \endcond
 
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>

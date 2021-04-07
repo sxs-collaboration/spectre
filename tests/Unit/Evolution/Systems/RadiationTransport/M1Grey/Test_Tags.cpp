@@ -11,7 +11,7 @@
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
-/// Test tags used in M1Grey code
+// Test tags used in M1Grey code
 SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.Tags",
                   "[Unit][M1Grey]") {
   // (1) Tags for neutrino species

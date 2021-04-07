@@ -9,7 +9,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 void ricci_tensor(
@@ -83,4 +82,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef FRAME
 #undef INDEXTYPE
 #undef INSTANTIATE
-/// \endcond

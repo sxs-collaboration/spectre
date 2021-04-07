@@ -14,9 +14,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 OrszagTangVortex::OrszagTangVortex() = default;
 
@@ -150,6 +148,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 
-}  // namespace AnalyticData
-}  // namespace grmhd
-/// \endcond
+}  // namespace grmhd::AnalyticData

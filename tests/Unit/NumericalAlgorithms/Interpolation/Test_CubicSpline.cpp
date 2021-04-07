@@ -19,7 +19,8 @@ void test_cubic_spline(const F& function, const double lower_bound,
                        const double tolerance_interior) noexcept {
   // Construct random points between lower and upper bound to interpolate
   // through. Always include the bounds in the x-values.
-  std::vector<double> x_values(size), y_values(size);
+  std::vector<double> x_values(size);
+  std::vector<double> y_values(size);
   const double delta_x = (upper_bound - lower_bound) / size;
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(0., delta_x);
@@ -37,13 +38,13 @@ void test_cubic_spline(const F& function, const double lower_bound,
       Approx::custom().epsilon(tolerance_interior).scale(1.);
 
   // Construct the interpolant and give an example
-  /// [interpolate_example]
+  // [interpolate_example]
   intrp::CubicSpline interpolant{x_values, y_values};
   const double x_to_interpolate_to =
       lower_bound + (upper_bound - lower_bound) / 2.;
   CHECK(interpolant(x_to_interpolate_to) ==
         custom_approx_interior(function(x_to_interpolate_to)));
-  /// [interpolate_example]
+  // [interpolate_example]
 
   // Check that the interpolation is exact at the datapoints
   for (const auto& x_value : x_values) {
@@ -76,8 +77,8 @@ void test_cubic_spline(const F& function, const double lower_bound,
     // Since this is a cubic spline interpolation, boundary effects should be
     // confined to the outer three interpolation points.
     const double boundary_fraction = 0.3;
-    if (i > 10 * size * boundary_fraction and
-        i < 10 * size * (1. - boundary_fraction)) {
+    if (i > 10. * size * boundary_fraction and
+        i < 10. * size * (1. - boundary_fraction)) {
       CHECK(interpolated_y_value == custom_approx_interior(y_value));
       if (error >= max_error_interior) {
         max_error_interior = error;

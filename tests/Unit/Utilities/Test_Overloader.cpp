@@ -7,7 +7,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace {
-/// [overloader_example]
+// [overloader_example]
 struct my_type1 {
   int func(int a) { return 2 * a; }
 };
@@ -45,7 +45,7 @@ void caller() {
   func(my_type1{});
   func(my_type2{});
 }
-/// [overloader_example]
+// [overloader_example]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.Overloader", "[Unit][Utilities]") {

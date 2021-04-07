@@ -22,12 +22,10 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/MakeArray.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;  // IWYU pragma: keep
 struct Logical;   // IWYU pragma: keep
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 Sphere::Sphere(typename InnerRadius::type inner_radius,

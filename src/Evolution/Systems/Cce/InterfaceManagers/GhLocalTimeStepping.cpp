@@ -202,7 +202,5 @@ void GhLocalTimeStepping::pup(PUP::er& p) noexcept {
   p | time_stepper_;
 }
 
-/// \cond
 PUP::able::PUP_ID GhLocalTimeStepping::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::InterfaceManagers

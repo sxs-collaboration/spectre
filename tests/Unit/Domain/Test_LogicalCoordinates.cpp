@@ -34,7 +34,7 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   const Mesh<2> mesh_2d{
       {{2, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
-  /// [logical_coordinates_example]
+  // [logical_coordinates_example]
   const Mesh<3> mesh_3d{{{5, 3, 2}},
                         Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -47,7 +47,7 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
       Affine3d{x_map, y_map, z_map});
 
   const auto x_3d = map_3d(logical_coordinates(mesh_3d));
-  /// [logical_coordinates_example]
+  // [logical_coordinates_example]
 
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::Affine{x_map});
@@ -263,13 +263,13 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_ub_eta[2][7] == 74.0);
   CHECK(x_3d_ub_eta[2][9] == 74.0);
 
-  /// [interface_logical_coordinates_example]
+  // [interface_logical_coordinates_example]
   const Mesh<2> mesh_3d_zbdry{
       {{5, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
   const auto x_3d_lb_zeta = map_3d(
       interface_logical_coordinates(mesh_3d_zbdry, Direction<3>::lower_zeta()));
-  /// [interface_logical_coordinates_example]
+  // [interface_logical_coordinates_example]
 
   CHECK(x_3d_lb_zeta[0][0] == -3.0);
   CHECK(x_3d_lb_zeta[0][2] == 2.0);

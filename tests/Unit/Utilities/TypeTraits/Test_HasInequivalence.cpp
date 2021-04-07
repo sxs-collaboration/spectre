@@ -3,7 +3,6 @@
 
 #include "Utilities/TypeTraits/HasInequivalence.hpp"
 
-/// \cond
 namespace {
 class A {};
 }  // namespace
@@ -13,9 +12,8 @@ class C {};
 
 bool operator!=(const C&, const C&);
 }  // namespace TestHelpers
-/// \endcond
 
-/// [has_inequivalence_example]
+// [has_inequivalence_example]
 static_assert(not tt::has_inequivalence<A>::value,
               "Failed testing type trait has_inequivalence");
 static_assert(tt::has_inequivalence<TestHelpers::C>::value,
@@ -24,4 +22,4 @@ static_assert(tt::has_inequivalence_t<TestHelpers::C>::value,
               "Failed testing type trait has_inequivalence");
 static_assert(tt::has_inequivalence_v<TestHelpers::C>,
               "Failed testing type trait has_inequivalence");
-/// [has_inequivalence_example]
+// [has_inequivalence_example]

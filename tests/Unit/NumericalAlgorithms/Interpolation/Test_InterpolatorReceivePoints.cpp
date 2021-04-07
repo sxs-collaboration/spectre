@@ -43,7 +43,6 @@
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
 
-/// \cond
 namespace intrp::Actions {
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars;
@@ -66,7 +65,6 @@ namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
-/// \endcond
 
 namespace {
 

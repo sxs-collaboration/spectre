@@ -14,7 +14,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 template <typename DataType>
 tnsr::I<DataType, 1> random_unit_normal(
     const gsl::not_null<std::mt19937*> generator,
@@ -81,4 +80,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector), (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 #undef DTYPE
-/// \endcond

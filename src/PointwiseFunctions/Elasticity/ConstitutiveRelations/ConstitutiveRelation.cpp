@@ -10,7 +10,6 @@
 
 namespace Elasticity::ConstitutiveRelations {
 
-/// \cond
 template <size_t Dim>
 void ConstitutiveRelation<Dim>::stress(
     const gsl::not_null<tnsr::IJ<DataVector, Dim>*> stress,
@@ -33,6 +32,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace Elasticity::ConstitutiveRelations

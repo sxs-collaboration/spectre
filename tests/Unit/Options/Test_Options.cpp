@@ -181,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.Options.NamedSimple.invalid", "[Unit][Options]") {
 }
 
 namespace {
-/// [options_example_group]
+// [options_example_group]
 struct Group {
   static constexpr Options::String help = {"Group halp"};
 };
@@ -191,7 +191,7 @@ struct GroupedTag {
   static constexpr Options::String help = {"Tag halp"};
   using group = Group;
 };
-/// [options_example_group]
+// [options_example_group]
 
 struct OuterGroup {
   static constexpr Options::String help = {"Outer group halp"};
@@ -261,7 +261,7 @@ SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_inner_group",
   opts.get<InnerGroupedTag>();
 }
 
-/// [options_example_scalar_struct]
+// [options_example_scalar_struct]
 struct Bounded {
   using type = int;
   static constexpr Options::String help = {
@@ -271,7 +271,7 @@ struct Bounded {
   static type lower_bound() noexcept { return 2; }
   static type upper_bound() noexcept { return 10; }
 };
-/// [options_example_scalar_struct]
+// [options_example_scalar_struct]
 
 void test_options_suggested_followed() {
   Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
@@ -280,11 +280,11 @@ void test_options_suggested_followed() {
 }
 
 void test_options_suggested_not_followed() {
-  /// [options_example_scalar_parse]
+  // [options_example_scalar_parse]
   Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
   opts.parse("Bounded: 3");
   CHECK(opts.get<Bounded>() == 3);
-  /// [options_example_scalar_parse]
+  // [options_example_scalar_parse]
 }
 
 // [[OutputRegex, In string:.*While parsing option Bounded:.At line 1 column
@@ -357,7 +357,7 @@ SPECTRE_TEST_CASE("Unit.Options.NamedBadSuggestion", "[Unit][Options]") {
   opts.get<NamedBadSuggestion>();
 }
 
-/// [options_example_vector_struct]
+// [options_example_vector_struct]
 struct VectorOption {
   using type = std::vector<int>;
   static constexpr Options::String help = {"A vector with length limits"};
@@ -368,7 +368,7 @@ struct VectorOption {
   static size_t lower_bound_on_size() { return 2; }
   static size_t upper_bound_on_size() { return 5; }
 };
-/// [options_example_vector_struct]
+// [options_example_vector_struct]
 
 // [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
 // 9:.Value must have at least 2 entries, but 1 were given.]]
@@ -996,7 +996,7 @@ struct Alternatives {
   static constexpr Options::String help = "halp";
   Alternatives() = default;
 
-/// [alternatives]
+  // [alternatives]
   using options = tmpl::list<
       A, Options::Alternatives<tmpl::list<B>, tmpl::list<C>, tmpl::list<D, E>>,
       F>;
@@ -1006,7 +1006,7 @@ struct Alternatives {
       : a_(a), c_(c), f_(std::move(f)) {}
   Alternatives(double a, std::vector<int> d, bool e, std::string f)
       : a_(a), d_(std::move(d)), e_(e), f_(std::move(f)) {}
-/// [alternatives]
+  // [alternatives]
 
   double a_{-1.0};
   int b_{-1};

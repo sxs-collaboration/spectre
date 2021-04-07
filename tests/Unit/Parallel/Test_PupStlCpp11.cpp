@@ -56,7 +56,7 @@ struct DerivedInPupStlCpp11 : public Base {
 }  // namespace Test_Classes
 
 SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
-  /// [example_serialize_comparable]
+  // [example_serialize_comparable]
   {
     INFO("tuple");
     std::unordered_map<std::string, double> um;
@@ -67,15 +67,15 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
                                           2, 0.57, "blah", std::move(um));
     test_serialization(test_tuple);
   }
-  /// [example_serialize_comparable]
-  /// [example_serialize_derived]
+  // [example_serialize_comparable]
+  // [example_serialize_derived]
   {
     INFO("unique_ptr.abstract_base");
     test_serialization_via_base<Test_Classes::Base,
                                 Test_Classes::DerivedInPupStlCpp11>(
                                     std::vector<double>{-1, 12.3, -7, 8});
   }
-  /// [example_serialize_derived]
+  // [example_serialize_derived]
   {
     // note the `serialize_and_deserialize` utilities don't work here because
     // atomic specifically has no copy constructor -- it must be serialized
@@ -101,8 +101,6 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
   }
 }
 
-/// \cond
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Test_Classes::DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
-/// \endcond

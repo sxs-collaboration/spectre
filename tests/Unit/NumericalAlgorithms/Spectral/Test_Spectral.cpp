@@ -455,14 +455,14 @@ void test_spectral_quantities_for_mesh_impl(const Mesh<1>& slice) {
 }
 
 void test_spectral_quantities_for_mesh() {
-  /// [get_points_for_mesh]
+  // [get_points_for_mesh]
   const Mesh<2> mesh2d{
       {{3, 4}},
       {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
       {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}};
   const auto collocation_points_in_first_dim =
       Spectral::collocation_points(mesh2d.slice_through(0));
-  /// [get_points_for_mesh]
+  // [get_points_for_mesh]
   test_spectral_quantities_for_mesh_impl<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::Gauss>(
       mesh2d.slice_through(0));

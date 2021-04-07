@@ -28,14 +28,12 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// \cond
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 class DataVector;
 template <size_t VolumeDim>
 class ElementId;
 namespace intrp {
 }  // namespace intrp
-/// \endcond
 
 namespace {
 

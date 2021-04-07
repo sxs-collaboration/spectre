@@ -10,8 +10,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 SettleToConstant::SettleToConstant(
     const std::array<DataVector, 3>& initial_func_and_derivs,
     const double match_time, const double decay_time) noexcept
@@ -78,7 +77,6 @@ bool operator!=(const SettleToConstant& lhs,
   return not(lhs == rhs);
 }
 
-/// \cond
 PUP::able::PUP_ID SettleToConstant::my_PUP_ID = 0;  // NOLINT
 
 #define DERIV(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -91,6 +89,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
 
 #undef DERIV
 #undef INSTANTIATE
-/// \endcond
-}  // namespace FunctionsOfTime
-}  // namespace domain
+}  // namespace domain::FunctionsOfTime

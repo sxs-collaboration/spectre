@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream& os, const TestEnum& t) noexcept {
 
 }  // namespace
 
-/// [output_test_example]
+// [output_test_example]
 // [[OutputRegex, -100 3000000000 1.0000000000000000000e\+00 \(0,4,8,-7\) test 1
 // 2 3 abf a o e u Value 2]]
 SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
@@ -61,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   // clang-tidy doesn't want delete on anything without gsl::owner<>.
   delete[] c_string1; // NOLINT
 }
-/// [output_test_example]
+// [output_test_example]
 
 SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel]") {
   CHECK(1 == sys::number_of_procs());

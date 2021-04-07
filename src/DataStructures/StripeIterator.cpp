@@ -20,8 +20,6 @@ StripeIterator::StripeIterator(const Index<Dim>& extents,
       stride_count_(0),
       jump_((extents[stripe_dim] - 1) * stride_) {}
 
-/// \cond HIDDEN_SYMBOLS
 template StripeIterator::StripeIterator(const Index<1>&, const size_t);
 template StripeIterator::StripeIterator(const Index<2>&, const size_t);
 template StripeIterator::StripeIterator(const Index<3>&, const size_t);
-/// \endcond

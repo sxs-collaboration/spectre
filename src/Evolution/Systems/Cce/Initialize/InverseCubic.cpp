@@ -77,7 +77,5 @@ void InverseCubic::operator()(
 
 void InverseCubic::pup(PUP::er& /*p*/) noexcept {}
 
-/// \cond
 PUP::able::PUP_ID InverseCubic::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::InitializeJ

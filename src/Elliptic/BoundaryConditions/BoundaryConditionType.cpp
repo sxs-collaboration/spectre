@@ -10,7 +10,6 @@
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-/// \cond
 namespace elliptic {
 std::ostream& operator<<(
     std::ostream& os,
@@ -42,4 +41,3 @@ Options::create_from_yaml<elliptic::BoundaryConditionType>::create<void>(
                   << "\" to elliptic::BoundaryConditionType. Must be "
                      "either 'Dirichlet' or 'Neumann'.");
 }
-/// \endcond

@@ -11,7 +11,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace hydro {
 template <typename DataType>
 void lorentz_factor(const gsl::not_null<Scalar<DataType>*> result,
@@ -82,4 +81,3 @@ template Scalar<double> lorentz_factor(
 #undef FRAME
 #undef INSTANTIATE
 }  // namespace hydro
-/// \endcond

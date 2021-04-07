@@ -43,7 +43,7 @@ RunTests::RunTests(CkArgMsg* msg) {
   sys::abort("A catch test has failed.");
 }
 
-#include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep
+#include "tests/Unit/RunTests.def.h"
 
 // Needed for tests that use the GlobalCache since it registers itself with
 // Charm++. However, since Parallel/CharmMain.tpp isn't included in the RunTests
@@ -51,9 +51,7 @@ RunTests::RunTests(CkArgMsg* msg) {
 // queued for registration.
 namespace Parallel::charmxx {
 class RegistrationHelper;
-/// \cond
 std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
 size_t charm_register_list_capacity = 0;
 size_t charm_register_list_size = 0;
-/// \endcond
 }  // namespace Parallel::charmxx

@@ -16,12 +16,10 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 struct Logical;
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 Shell::Shell(typename InnerRadius::type inner_radius,

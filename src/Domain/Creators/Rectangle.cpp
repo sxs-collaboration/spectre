@@ -23,12 +23,10 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Assert.hpp"
 
-/// \cond
 namespace Frame {
 struct Inertial;
 struct Logical;
 }  // namespace Frame
-/// \endcond
 
 namespace domain::creators {
 Rectangle::Rectangle(

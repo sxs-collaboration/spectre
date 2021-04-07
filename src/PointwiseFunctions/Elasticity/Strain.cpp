@@ -79,7 +79,6 @@ void strain(const gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
   Elasticity::strain(strain, displacement_gradient);
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -108,6 +107,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), (double, DataVector))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace Elasticity

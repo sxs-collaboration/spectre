@@ -8,7 +8,6 @@
 #include "Helpers.hpp"
 
 namespace h5 {
-/// \cond HIDDEN_SYMOLS
 Version::Version(bool exists, detail::OpenGroup&& group, hid_t location,
                  std::string name, const uint32_t version)
     : version_([&exists, &location, &version, &name]() {
@@ -32,5 +31,4 @@ Version::Version(bool exists, detail::OpenGroup&& group, hid_t location,
       }()),
       group_(std::move(group)) {}
 
-/// \endcond
 }  // namespace h5

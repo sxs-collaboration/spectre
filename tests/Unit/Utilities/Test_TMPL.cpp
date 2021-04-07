@@ -11,7 +11,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace {
-/// [expand_pack_example]
+// [expand_pack_example]
 template <typename... Elements, size_t... Is>
 void transform(const std::tuple<Elements...>& tupull,
                std::tuple<Elements...>& out_tupull,
@@ -31,7 +31,7 @@ void test_expand_pack() noexcept {
   CHECK(std::get<1>(my_tupull_output) == 5.4);
   CHECK(std::get<2>(my_tupull_output) == 16.4f);
 }
-/// [expand_pack_example]
+// [expand_pack_example]
 
 template <typename>
 struct Templated {};
@@ -77,7 +77,7 @@ void test_get_first_argument() noexcept {
   CHECK('7' == get_first_argument(a3, a1, a2, a0));
 }
 
-/// [expand_pack_left_to_right]
+// [expand_pack_left_to_right]
 template <typename... Ts>
 void test_expand_pack_left_to_right(const size_t expected,
                                     tmpl::list<Ts...> /*meta*/) {
@@ -86,7 +86,7 @@ void test_expand_pack_left_to_right(const size_t expected,
   EXPAND_PACK_LEFT_TO_RIGHT(lambda(Ts{}));
   CHECK(sum == expected);
 }
-/// [expand_pack_left_to_right]
+// [expand_pack_left_to_right]
 
 static_assert(tmpl::as_pack<tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>,
                                        tmpl::size_t<3>>>([](auto... args) {
@@ -94,13 +94,13 @@ static_assert(tmpl::as_pack<tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>,
               }) == 6);
 
 void test_as_pack() noexcept {
-  /// [as_pack]
+  // [as_pack]
   using List = tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>, tmpl::size_t<3>>;
   const size_t result = tmpl::as_pack<List>([](auto... args) {
     return (... + tmpl::type_from<decltype(args)>::value);
   });
   CHECK(result == 6);
-  /// [as_pack]
+  // [as_pack]
 }
 }  // namespace
 

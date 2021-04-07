@@ -39,7 +39,6 @@
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
 
-/// \cond
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -64,7 +63,6 @@ struct TemporalIds;
 template <typename TemporalId>
 struct CompletedTemporalIds;
 }  // namespace intrp::Tags
-/// \endcond
 
 namespace {
 

@@ -74,6 +74,4 @@ DataVector Controller<DerivOrder>::operator()(
 }
 
 // explicit instantiations
-/// \cond
 template class Controller<2>;
-/// \endcond

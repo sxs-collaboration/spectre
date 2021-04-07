@@ -5,13 +5,11 @@
 
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 
-/// \cond
 namespace {
 class D;
 }  // namespace
-/// \endcond
 
-/// [is_std_array_of_size_example]
+// [is_std_array_of_size_example]
 static_assert(tt::is_std_array_of_size<3, std::array<double, 3>>::value,
               "Failed testing type trait is_std_array_of_size");
 static_assert(tt::is_std_array_of_size_t<3, std::array<double, 3>>::value,
@@ -24,4 +22,4 @@ static_assert(not tt::is_std_array_of_size<2, std::array<double, 3>>::value,
               "Failed testing type trait is_std_array_of_size");
 static_assert(tt::is_std_array_of_size<10, std::array<D, 10>>::value,
               "Failed testing type trait is_std_array_of_size");
-/// [is_std_array_of_size_example]
+// [is_std_array_of_size_example]

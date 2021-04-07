@@ -85,7 +85,7 @@ static_assert(not Parallel::is_node_group_proxy<group_proxy>::value,
 static_assert(Parallel::is_node_group_proxy<nodegroup_proxy>::value,
               "Failed testing type trait is_node_group_proxy");
 
-/// [has_pup_member_example]
+// [has_pup_member_example]
 static_assert(Parallel::has_pup_member<PupableClass>::value,
               "Failed testing type trait has_pup_member");
 static_assert(Parallel::has_pup_member_t<PupableClass>::value,
@@ -94,9 +94,9 @@ static_assert(Parallel::has_pup_member_v<PupableClass>,
               "Failed testing type trait has_pup_member");
 static_assert(not Parallel::has_pup_member<NonpupableClass>::value,
               "Failed testing type trait has_pup_member");
-/// [has_pup_member_example]
+// [has_pup_member_example]
 
-/// [is_pupable_example]
+// [is_pupable_example]
 static_assert(Parallel::is_pupable<PupableClass>::value,
               "Failed testing type trait is_pupable");
 static_assert(Parallel::is_pupable_t<PupableClass>::value,
@@ -105,4 +105,4 @@ static_assert(Parallel::is_pupable_v<PupableClass>,
               "Failed testing type trait is_pupable");
 static_assert(not Parallel::is_pupable<NonpupableClass>::value,
               "Failed testing type trait is_pupable");
-/// [is_pupable_example]
+// [is_pupable_example]

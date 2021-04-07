@@ -83,7 +83,6 @@ Variables<char_field_tags<Dim>> weight_char_fields(
 }
 }  // namespace CurvedScalarWave_detail
 
-/// \cond
 template <size_t Dim>
 void UpwindPenaltyCorrection<Dim>::package_data(
     const gsl::not_null<Scalar<DataVector>*> packaged_pi,
@@ -173,7 +172,6 @@ void UpwindPenaltyCorrection<Dim>::operator()(
   *pi_normal_dot_numerical_flux = get<Pi>(weighted_evolved_fields);
   *phi_normal_dot_numerical_flux = get<Phi<Dim>>(weighted_evolved_fields);
 }
-/// \endcond
 }  // namespace CurvedScalarWave
 
 // Generate explicit instantiations

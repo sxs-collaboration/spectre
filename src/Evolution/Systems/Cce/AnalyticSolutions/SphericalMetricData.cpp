@@ -26,7 +26,6 @@
 
 namespace Cce::Solutions {
 
-/// \cond
 
 void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
@@ -389,5 +388,4 @@ void SphericalMetricData::dr_jacobian(
 
 void SphericalMetricData::pup(PUP::er& p) noexcept { WorldtubeData::pup(p); }
 
-/// \endcond
 }  // namespace Cce::Solutions

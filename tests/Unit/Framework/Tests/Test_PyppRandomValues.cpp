@@ -360,12 +360,12 @@ void test_free(const T& value) {
       &check_double_not_null1<T>, "PyppPyTests",
       {"check_double_not_null1_result0", "check_double_not_null1_result1"},
       {{{-10.0, 10.0}}}, value);
-  /// [cxx_two_not_null]
+  // [cxx_two_not_null]
   pypp::check_with_random_values<2>(
       &check_double_not_null2<T>, "PyppPyTests",
       {"check_double_not_null2_result0", "check_double_not_null2_result1"},
       {{{0.0, 10.0}, {-10.0, 0.0}}}, value);
-  /// [cxx_two_not_null]
+  // [cxx_two_not_null]
 
   pypp::check_with_random_values<1>(&check_by_value0<T>, "PyppPyTests",
                                     "check_by_value0", {{{-10.0, 10.0}}},

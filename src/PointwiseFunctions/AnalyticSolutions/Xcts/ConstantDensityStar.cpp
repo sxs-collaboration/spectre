@@ -66,7 +66,6 @@ Scalar<DataVector> compute_piecewise(const Scalar<DataVector>& r,
 
 }  // namespace
 
-/// \cond
 namespace Xcts::Solutions {
 
 ConstantDensityStar::ConstantDensityStar(const double density,
@@ -203,4 +202,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 
 }  // namespace Xcts::Solutions
-/// \endcond

@@ -10,7 +10,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Xcts::BoundaryConditions::detail {
 
 void FlatnessImpl::apply(
@@ -92,4 +91,3 @@ bool operator!=(const FlatnessImpl& lhs, const FlatnessImpl& rhs) noexcept {
 }
 
 }  // namespace Xcts::BoundaryConditions::detail
-/// \endcond

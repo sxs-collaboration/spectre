@@ -165,7 +165,6 @@ void add_overlap_data_impl(double* volume_data, const double* overlap_data,
 
 }  // namespace detail
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(r, data)                                                  \
   template size_t overlap_num_points(const Index<DIM(data)>&, size_t,         \
@@ -183,6 +182,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace LinearSolver::Schwarz

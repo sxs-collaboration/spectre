@@ -61,7 +61,6 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
   }
 }
 
-/// \cond
 template <AccessType Access_t>
 H5File<Access_t>::H5File(H5File&& rhs) noexcept {
   file_name_ = std::move(rhs.file_name_);
@@ -100,7 +99,6 @@ void H5File<AccessType::ReadWrite>::insert_source_archive() noexcept {
 }
 template <>
 void H5File<AccessType::ReadOnly>::insert_source_archive() noexcept {}
-/// \endcond
 }  // namespace h5
 
 template class h5::H5File<h5::AccessType::ReadOnly>;

@@ -21,7 +21,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"  // IWYU pragma: keep
 
-/// \cond
 namespace evolution::dg::subcell::fd {
 template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints1d,
           size_t Dim>
@@ -361,4 +360,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 }  // namespace evolution::dg::subcell::fd
-/// \endcond

@@ -34,7 +34,8 @@ void one_index_constraint(
   }
   // Declare iterators for d_psi and phi outside the for loop,
   // because they are const but constraint is not
-  auto d_psi_it = d_psi.cbegin(), phi_it = phi.cbegin();
+  auto d_psi_it = d_psi.cbegin();
+  auto phi_it = phi.cbegin();
 
   for (auto constraint_it = (*constraint).begin();
        constraint_it != (*constraint).end();
@@ -72,7 +73,6 @@ void two_index_constraint(
 }  // namespace CurvedScalarWave
 
 // Explicit Instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
@@ -95,4 +95,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond

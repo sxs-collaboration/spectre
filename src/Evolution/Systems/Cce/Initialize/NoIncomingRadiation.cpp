@@ -23,8 +23,7 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace InitializeJ {
+namespace Cce::InitializeJ {
 namespace detail {
 
 void radial_evolve_psi0_condition(
@@ -170,8 +169,5 @@ void NoIncomingRadiation::pup(PUP::er& p) noexcept {
   p | max_iterations_;
 }
 
-/// \cond
 PUP::able::PUP_ID NoIncomingRadiation::my_PUP_ID = 0;
-/// \endcond
-}  // namespace InitializeJ
-}  // namespace Cce
+}  // namespace Cce::InitializeJ

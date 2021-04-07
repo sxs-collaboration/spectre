@@ -27,34 +27,34 @@ struct TensorTag : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
                   "[Unit][DataStructures]") {
-  /// [dt_name]
+  // [dt_name]
   TestHelpers::db::test_prefix_tag<Tags::dt<Tag>>("dt(Tag)");
-  /// [dt_name]
+  // [dt_name]
   using Dim = tmpl::size_t<2>;
   using Frame = Frame::Inertial;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
-  /// [flux_name]
+  // [flux_name]
   TestHelpers::db::test_prefix_tag<Tags::Flux<TensorTag, Dim, Frame>>(
       "Flux(TensorTag)");
   TestHelpers::db::test_prefix_tag<Tags::Flux<VariablesTag, Dim, Frame>>(
       "Flux(Variables(TensorTag))");
-  /// [flux_name]
-  /// [source_name]
+  // [flux_name]
+  // [source_name]
   TestHelpers::db::test_prefix_tag<Tags::Source<Tag>>("Source(Tag)");
-  /// [source_name]
+  // [source_name]
   TestHelpers::db::test_prefix_tag<Tags::FixedSource<Tag>>("FixedSource(Tag)");
-  /// [initial_name]
+  // [initial_name]
   TestHelpers::db::test_prefix_tag<Tags::Initial<Tag>>("Initial(Tag)");
-  /// [initial_name]
-  /// [normal_dot_flux_name]
+  // [initial_name]
+  // [normal_dot_flux_name]
   TestHelpers::db::test_prefix_tag<Tags::NormalDotFlux<Tag>>(
       "NormalDotFlux(Tag)");
-  /// [normal_dot_flux_name]
-  /// [normal_dot_numerical_flux_name]
+  // [normal_dot_flux_name]
+  // [normal_dot_numerical_flux_name]
   TestHelpers::db::test_prefix_tag<Tags::NormalDotNumericalFlux<Tag>>(
       "NormalDotNumericalFlux(Tag)");
-  /// [normal_dot_numerical_flux_name]
-  /// [next_name]
+  // [normal_dot_numerical_flux_name]
+  // [next_name]
   TestHelpers::db::test_prefix_tag<Tags::Next<Tag>>("Next(Tag)");
-  /// [next_name]
+  // [next_name]
 }

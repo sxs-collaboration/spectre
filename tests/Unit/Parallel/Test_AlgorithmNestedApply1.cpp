@@ -26,12 +26,12 @@ struct error_call_single_action_from_action {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
-    /// [bad_recursive_call]
+    // [bad_recursive_call]
     auto& local_parallel_component =
         *Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal();
     Parallel::simple_action<error_call_single_action_from_action>(
         local_parallel_component);
-    /// [bad_recursive_call]
+    // [bad_recursive_call]
   }
 };
 

@@ -36,7 +36,6 @@
 // "DataStructures/DataBox/Prefixes.hpp", IWYU tells me to remove it.
 // If I remove it, IWYU tells me to include it.
 
-/// \cond
 class DataVector;
 namespace Parallel {
 template <typename Metavariables>
@@ -49,7 +48,6 @@ class DataBox;
 namespace intrp::Actions {
 struct InterpolatorReceiveVolumeData;
 }  // namespace intrp::Actions
-/// \endcond
 
 namespace {
 

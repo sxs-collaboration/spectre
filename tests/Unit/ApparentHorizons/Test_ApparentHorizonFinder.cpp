@@ -66,7 +66,6 @@
 #include "Utilities/TaggedTuple.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
-/// \cond
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
@@ -87,7 +86,6 @@ namespace db {
 template <typename TagsList>
 class DataBox;
 }  // namespace db
-/// \endcond
 
 namespace {
 

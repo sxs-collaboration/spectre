@@ -25,7 +25,6 @@
 
 namespace Cce {
 // suppresses doxygen problems with these functions
-/// \cond
 
 void ComputeBondiIntegrand<Tags::Integrand<Tags::BondiBeta>>::apply_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> integrand_for_beta,
@@ -270,5 +269,4 @@ void ComputeBondiIntegrand<Tags::LinearFactorForConjugate<Tags::BondiH>>::
                    j * (conj(j) * dy_j + j * conj(dy_j)) / (1.0 + j * conj(j)));
   *linear_factor_for_conjugate_h = j * (*script_djbar);
 }
-/// \endcond
 }  // namespace Cce

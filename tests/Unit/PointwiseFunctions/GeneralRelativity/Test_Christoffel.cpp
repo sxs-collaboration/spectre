@@ -30,14 +30,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 namespace Tags {
 template <typename Tag, typename Dim, typename Frame, typename>
 struct deriv;
 }  // namespace Tags
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
-/// \endcond
 
 namespace {
 template <size_t Dim, IndexType Index, typename DataType>

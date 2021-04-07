@@ -45,8 +45,6 @@ std::optional<std::string> Outflow::dg_outflow(
   return std::nullopt;
 }
 
-/// \cond
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Outflow::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Burgers::BoundaryConditions

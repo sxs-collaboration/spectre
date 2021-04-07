@@ -22,7 +22,7 @@ class TestWithArg;
 class TestWithArg2;
 struct TestWithMetavars;
 
-/// [factory_example]
+// [factory_example]
 struct OptionType {
   using type = std::unique_ptr<OptionTest>;
   static constexpr Options::String help = {"The type of OptionTest"};
@@ -51,7 +51,7 @@ class Test1 : public OptionTest {
 
   std::string name() const override { return "Test1"; }
 };
-/// [factory_example]
+// [factory_example]
 
 class Test2 : public OptionTest {
  public:

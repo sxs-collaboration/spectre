@@ -182,7 +182,6 @@ DataVector YlmSpherepack::spec_to_phys_all_offsets(
   return result;
 }
 
-/// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::gradient(
     const std::array<double*, 2>& df,
     const gsl::not_null<const double*> collocation_values,
@@ -194,9 +193,7 @@ void YlmSpherepack::gradient(
                            physical_offset, false);
   memory_pool_.free(f_k);
 }
-/// \endcond
 
-/// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::gradient_all_offsets(
     const std::array<double*, 2>& df,
     const gsl::not_null<const double*> collocation_values,
@@ -208,7 +205,6 @@ void YlmSpherepack::gradient_all_offsets(
   gradient_from_coefs_impl(df, f_k.data(), spectral_stride, 0, stride, 0, true);
   memory_pool_.free(f_k);
 }
-/// \endcond
 
 void YlmSpherepack::gradient_from_coefs_impl(
     const std::array<double*, 2>& df,
@@ -306,7 +302,6 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs_all_offsets(
   return result;
 }
 
-/// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::scalar_laplacian(
     const gsl::not_null<double*> scalar_laplacian,
     const gsl::not_null<const double*> collocation_values,
@@ -318,9 +313,7 @@ void YlmSpherepack::scalar_laplacian(
                               physical_stride, physical_offset);
   memory_pool_.free(f_k);
 }
-/// \endcond
 
-/// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::scalar_laplacian_from_coefs(
     const gsl::not_null<double*> scalar_laplacian,
     const gsl::not_null<const double*> spectral_coefs,
@@ -347,7 +340,6 @@ void YlmSpherepack::scalar_laplacian_from_coefs(
   }
   memory_pool_.free(work);
 }
-/// \endcond
 
 DataVector YlmSpherepack::scalar_laplacian(const DataVector& collocation_values,
                                            const size_t physical_stride,
@@ -672,7 +664,6 @@ YlmSpherepack::InterpolationInfo YlmSpherepack::set_up_interpolation_info(
   return interpolation_info;
 }
 
-/// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::interpolate(
     const gsl::not_null<std::vector<double>*> result,
     const gsl::not_null<const double*> collocation_values,
@@ -687,7 +678,6 @@ void YlmSpherepack::interpolate(
   interpolate_from_coefs(result, f_k, interpolation_info);
   memory_pool_.free(f_k);
 }
-/// \endcond
 
 template <typename T>
 void YlmSpherepack::interpolate_from_coefs(

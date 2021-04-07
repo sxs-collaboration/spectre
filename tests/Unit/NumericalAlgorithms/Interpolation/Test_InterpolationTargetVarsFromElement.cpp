@@ -24,12 +24,10 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Rational.hpp"
 
-/// \cond
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-/// \endcond
 
 namespace {
 

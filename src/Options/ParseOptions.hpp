@@ -922,6 +922,7 @@ struct create_from_yaml<std::variant<T...>> {
 };
 }  // namespace Options
 
+/// \cond
 template <typename T, typename Metavariables>
 struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
   static bool decode(
@@ -936,5 +937,6 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
     return true;
   }
 };
+/// \endcond
 
 #include "Options/Factory.hpp"

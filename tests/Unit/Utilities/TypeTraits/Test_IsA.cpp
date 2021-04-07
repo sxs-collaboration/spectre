@@ -17,15 +17,13 @@
 
 #include "Utilities/TypeTraits/IsA.hpp"
 
-/// \cond
 namespace {
 class A;
 class C;
 class D;
 } // namespace
-/// \endcond
 
-/// [is_a_example]
+// [is_a_example]
 static_assert(tt::is_a<std::vector, std::vector<double>>::value,
               "Failed testing type trait is_a<vector>");
 static_assert(not tt::is_a_t<std::vector, double>::value,
@@ -184,4 +182,4 @@ static_assert(tt::is_a<std::shared_future,
               "Failed testing type trait is_a<shared_future>");
 static_assert(not tt::is_a<std::shared_future, std::future<double>>::value,
               "Failed testing type trait is_a<shared_future>");
-/// [is_a_example]
+// [is_a_example]

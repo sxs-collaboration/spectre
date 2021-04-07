@@ -3,7 +3,6 @@
 
 #include "Utilities/TypeTraits/IsCallable.hpp"
 
-/// \cond
 namespace {
 class A {
  public:
@@ -17,9 +16,8 @@ class B {
   }
 };
 }  // namespace
-/// \endcond
 
-/// [is_callable_example]
+// [is_callable_example]
 static_assert(not tt::is_callable<A, int, double>::value,
               "Failed testing type trait is_callable");
 static_assert(not tt::is_callable<A, int>::value,
@@ -34,4 +32,4 @@ static_assert(tt::is_callable_v<B, int, double>,
               "Failed testing type trait is_callable");
 static_assert(not tt::is_callable<B>::value,
               "Failed testing type trait is_callable");
-/// [is_callable_example]
+// [is_callable_example]

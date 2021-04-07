@@ -50,10 +50,8 @@ void EvenlySpaced<T>::pup(PUP::er& p) noexcept {
   p | offset_;
 }
 
-/// \cond
 template <typename T>
 PUP::able::PUP_ID EvenlySpaced<T>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 
 template <typename T>
 Specified<T>::Specified(std::vector<T> values) noexcept
@@ -90,10 +88,8 @@ void Specified<T>::pup(PUP::er& p) noexcept {
   p | values_;
 }
 
-/// \cond
 template <typename T>
 PUP::able::PUP_ID Specified<T>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 
 // For time values
 template class EvenlySpaced<double>;

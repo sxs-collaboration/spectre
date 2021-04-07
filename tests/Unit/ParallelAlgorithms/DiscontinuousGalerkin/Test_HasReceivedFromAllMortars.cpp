@@ -17,12 +17,12 @@
 
 namespace {
 
-/// [inbox_example]
+// [inbox_example]
 template <size_t Dim>
 struct InboxTag {
   using type = std::unordered_map<int, dg::MortarMap<Dim, double>>;
 };
-/// [inbox_example]
+// [inbox_example]
 
 template <size_t Dim>
 using InboxType = tmpl::type_from<InboxTag<Dim>>;

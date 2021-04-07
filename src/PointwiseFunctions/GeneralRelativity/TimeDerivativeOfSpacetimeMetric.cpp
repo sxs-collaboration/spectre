@@ -12,7 +12,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void time_derivative_of_spacetime_metric(
@@ -97,4 +96,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond

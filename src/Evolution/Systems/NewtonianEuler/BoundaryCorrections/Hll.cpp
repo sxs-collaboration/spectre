@@ -19,7 +19,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
 Hll<Dim>::Hll(CkMigrateMessage* msg) noexcept : BoundaryCorrection<Dim>(msg) {}
@@ -264,4 +263,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef THERMODIM
 #undef DIM
 }  // namespace NewtonianEuler::BoundaryCorrections
-/// \endcond

@@ -46,13 +46,13 @@ struct Count {
 template <typename DataType>
 struct Computer;
 
-/// [alias]
+// [alias]
 template <typename DataType>
 using Cache =
     CachedTempBuffer<Computer<DataType>, Tags::Scalar1<DataType>,
                      Tags::Scalar2<DataType>, Tags::Vector1<DataType>,
                      Tags::Vector2<DataType>>;
-/// [alias]
+// [alias]
 
 template <typename DataType>
 using Counter = tuples::TaggedTuple<
@@ -72,11 +72,11 @@ class Computer {
     get(*scalar1) = 7.0;
   }
 
-  /// [compute_func]
+  // [compute_func]
   void operator()(const gsl::not_null<Scalar<DataType>*> scalar2,
                   const gsl::not_null<Cache<DataType>*> cache,
                   Tags::Scalar2<DataType> /*meta*/) const noexcept {
-    /// [compute_func]
+    // [compute_func]
     ++get<Tags::Count<Tags::Scalar2<DataType>>>(*counter_);
     const auto& vector1 = cache->get_var(Tags::Vector1<DataType>{});
 

@@ -10,7 +10,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace hydro {
 
 template <typename DataType, size_t Dim, typename Frame>
@@ -71,4 +70,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef FRAME
 #undef INSTANTIATE
 }  // namespace hydro
-/// \endcond

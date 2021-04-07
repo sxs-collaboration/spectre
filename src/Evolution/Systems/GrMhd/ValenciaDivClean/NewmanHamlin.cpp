@@ -16,7 +16,6 @@
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
-/// \cond
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
 template <size_t ThermodynamicDim>
@@ -189,4 +188,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
 #undef INSTANTIATION
 #undef THERMODIM
-/// \endcond

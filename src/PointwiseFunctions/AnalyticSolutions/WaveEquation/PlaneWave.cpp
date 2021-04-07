@@ -134,7 +134,6 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const noexcept {
 
 }  // namespace ScalarWave::Solutions
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -174,4 +173,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 template class ScalarWave::Solutions::PlaneWave<1>;
 template class ScalarWave::Solutions::PlaneWave<2>;
 template class ScalarWave::Solutions::PlaneWave<3>;
-/// \endcond

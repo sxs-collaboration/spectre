@@ -8,7 +8,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
@@ -182,4 +181,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
 #undef INDEXTYPE0
 #undef INDEX0
 #undef INSTANTIATE2
-/// \endcond

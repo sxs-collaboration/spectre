@@ -9,7 +9,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace NewtonianEuler {
 template <typename DataType, size_t Dim, typename Fr>
 void kinetic_energy_density(
@@ -47,4 +46,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3))
 #undef DIM
 #undef DTYPE
 }  // namespace NewtonianEuler
-/// \endcond

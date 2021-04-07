@@ -449,8 +449,6 @@ void BondiWorldtubeDataManager::pup(PUP::er& p) noexcept {
   }
 }
 
-/// \cond
 PUP::able::PUP_ID MetricWorldtubeDataManager::my_PUP_ID = 0;
 PUP::able::PUP_ID BondiWorldtubeDataManager::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce

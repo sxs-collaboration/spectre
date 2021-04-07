@@ -47,7 +47,7 @@ struct RedundantName : db::SimpleTag {
 };
 }  // namespace
 
-/// [[OutputRegex, Do not define name for Tag]]
+// [[OutputRegex, Do not define name for Tag]]
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TestHelpers.redundant_name",
                   "[Unit][DataStructures]") {
   ERROR_TEST();

@@ -62,7 +62,6 @@ OpenGroup::OpenGroup(hid_t file_id, const std::string& group_name,
   group_id_ = group_id;
 }
 
-/// \cond HIDDEN_SYMBOLS
 OpenGroup::OpenGroup(OpenGroup&& rhs) noexcept {
   group_path_ = std::move(rhs.group_path_);
   // clang-tidy: moving trivial type has no effect: might change in future
@@ -96,5 +95,4 @@ OpenGroup::~OpenGroup() {
     group_id_ = -1;
   }
 }
-/// \endcond
 }  // namespace h5::detail

@@ -8,7 +8,7 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
-/// [get_fundamental_type]
+// [get_fundamental_type]
 static_assert(
     std::is_same_v<
         typename tt::get_fundamental_type<std::array<double, 2>>::type, double>,
@@ -20,4 +20,4 @@ static_assert(
     "Failed testing get_fundamental_type");
 static_assert(std::is_same_v<typename tt::get_fundamental_type_t<int>, int>,
               "Failed testing get_fundamental_type");
-/// [get_fundamental_type]
+// [get_fundamental_type]

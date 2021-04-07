@@ -83,12 +83,10 @@ struct ComponentBeta;
 template <typename TriggerRegistrars =
               tmpl::list<Registrars::TempPhaseATrigger>>
 struct TempPhaseATrigger : public Trigger<TriggerRegistrars> {
-  /// \cond
   TempPhaseATrigger() = default;
   explicit TempPhaseATrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TempPhaseATrigger);  // NOLINT
-  /// \endcond
 
   static constexpr Options::String help{
     "Trigger for going to TempPhaseA."};
@@ -104,12 +102,10 @@ struct TempPhaseATrigger : public Trigger<TriggerRegistrars> {
 template <typename TriggerRegistrars =
               tmpl::list<Registrars::TempPhaseBTrigger>>
 struct TempPhaseBTrigger : public Trigger<TriggerRegistrars> {
-  /// \cond
   TempPhaseBTrigger() = default;
   explicit TempPhaseBTrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TempPhaseBTrigger);  // NOLINT
-  /// \endcond
 
   static constexpr Options::String help{"Trigger for going to TempPhaseB."};
   using options = tmpl::list<>;
@@ -520,7 +516,7 @@ struct TestMetavariables {
   }
 };
 
-/// [charm_init_funcs_example]
+// [charm_init_funcs_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &Parallel::register_derived_classes_with_charm<
@@ -529,10 +525,10 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         Trigger<TestMetavariables::phase_changes>>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
-/// [charm_init_funcs_example]
+// [charm_init_funcs_example]
 
-/// [charm_main_example]
+// [charm_main_example]
 using charmxx_main_component = Parallel::Main<TestMetavariables>;
-/// [charm_main_example]
+// [charm_main_example]
 
 #include "Parallel/CharmMain.tpp"  // IWYU pragma: keep

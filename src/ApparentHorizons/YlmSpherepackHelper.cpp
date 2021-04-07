@@ -37,7 +37,6 @@ void MemoryPool::free(const std::vector<double>& to_be_freed) noexcept {
   ERROR("Attempt to free temp that was never allocated.");
 }
 
-/// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void MemoryPool::free(const gsl::not_null<double*> to_be_freed) noexcept {
   for (auto& elem : memory_pool_) {
     if (elem.storage.data() == to_be_freed) {
@@ -47,6 +46,5 @@ void MemoryPool::free(const gsl::not_null<double*> to_be_freed) noexcept {
   }
   ERROR("Attempt to free temp that was never allocated.");
 }
-/// \endcond
 
 }  // namespace YlmSpherepack_detail

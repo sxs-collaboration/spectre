@@ -3,7 +3,6 @@
 
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/RegularSphericalWave3DKerrSchild.hpp"
 
-/// \cond
 namespace CurvedScalarWave ::AnalyticData {
 template class ScalarWaveGr<ScalarWave::Solutions::RegularSphericalWave,
                             gr::Solutions::KerrSchild>;
@@ -18,4 +17,3 @@ template bool operator!=(
     const ScalarWaveGr<ScalarWave::Solutions::RegularSphericalWave,
                        gr::Solutions::KerrSchild>& rhs) noexcept;
 }  // namespace CurvedScalarWave::AnalyticData
-/// \endcond

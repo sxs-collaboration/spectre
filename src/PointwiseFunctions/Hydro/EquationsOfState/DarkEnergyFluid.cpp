@@ -10,7 +10,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace EquationsOfState {
 template <bool IsRelativistic>
 DarkEnergyFluid<IsRelativistic>::DarkEnergyFluid(
@@ -98,4 +97,3 @@ Scalar<DataType> DarkEnergyFluid<IsRelativistic>::
 }  // namespace EquationsOfState
 
 template class EquationsOfState::DarkEnergyFluid<true>;
-/// \endcond

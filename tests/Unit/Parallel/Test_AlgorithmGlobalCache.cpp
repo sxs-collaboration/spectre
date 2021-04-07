@@ -55,7 +55,7 @@ struct VectorOfDoubles : db::SimpleTag {
 }  // namespace Tags
 
 // Functions to be passed into GlobalCache::mutate
-/// [mutate_global_cache_item_mutator]
+// [mutate_global_cache_item_mutator]
 namespace MutationFunctions {
 struct add_stored_double {
   static void apply(const gsl::not_null<std::vector<double>*> data,
@@ -64,7 +64,7 @@ struct add_stored_double {
   }
 };
 }  // namespace MutationFunctions
-/// [mutate_global_cache_item_mutator]
+// [mutate_global_cache_item_mutator]
 
 namespace Actions {
 struct initialize {
@@ -89,11 +89,11 @@ struct add_new_stored_double {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
-    /// [mutate_global_cache_item]
+    // [mutate_global_cache_item]
     Parallel::mutate<Tags::VectorOfDoubles,
                      MutationFunctions::add_stored_double>(cache.thisProxy,
                                                            42.0);
-    /// [mutate_global_cache_item]
+    // [mutate_global_cache_item]
   }
 };
 
@@ -165,14 +165,14 @@ struct use_stored_double {
                     const ParallelComponent* const /*meta*/) noexcept {
     ++number_of_calls_to_use_stored_double_apply;
     const std::vector<double> expected_result{42.0};
-    /// [retrieve_mutable_cache_item]
+    // [retrieve_mutable_cache_item]
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<Tags::VectorOfDoubles>(cache) ==
                              expected_result);
-    /// [retrieve_mutable_cache_item]
+    // [retrieve_mutable_cache_item]
     return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), true);
   }
 
-  /// [check_mutable_cache_item_is_ready]
+  // [check_mutable_cache_item_is_ready]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex>
   static bool is_ready(const db::DataBox<DbTags>& /*box*/,
@@ -192,7 +192,7 @@ struct use_stored_double {
                      : std::unique_ptr<Parallel::Callback>{};
         });
   }
-  /// [check_mutable_cache_item_is_ready]
+  // [check_mutable_cache_item_is_ready]
 };
 }  // namespace Actions
 

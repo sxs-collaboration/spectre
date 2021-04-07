@@ -446,8 +446,6 @@ void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   }
 }
 
-/// \cond
 PUP::able::PUP_ID MetricWorldtubeH5BufferUpdater::my_PUP_ID = 0;
 PUP::able::PUP_ID BondiWorldtubeH5BufferUpdater::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce

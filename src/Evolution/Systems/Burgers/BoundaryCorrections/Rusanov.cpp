@@ -13,7 +13,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace Burgers::BoundaryCorrections {
 Rusanov::Rusanov(CkMigrateMessage* msg) noexcept : BoundaryCorrection(msg) {}
 
@@ -70,4 +69,3 @@ void Rusanov::dg_boundary_terms(
 
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Burgers::BoundaryCorrections::Rusanov::my_PUP_ID = 0;
-/// \endcond

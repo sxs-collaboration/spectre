@@ -23,7 +23,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.SpherepackIterator",
                                           50,  55,  60,  65,  70, 95, 110,
                                           115, 125, 130, 140, 145};
 
-  /// [spherepack_iterator_example]
+  // [spherepack_iterator_example]
   const size_t l_max = 4;
   const size_t m_max = 2;
   const size_t stride = 5;
@@ -43,7 +43,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.SpherepackIterator",
     CHECK(iter.m() == test_m[i]);
     CHECK(iter() == test_index[i]);
   }
-  /// [spherepack_iterator_example]
+  // [spherepack_iterator_example]
   CHECK(iter.l_max() == 4);
   CHECK(iter.m_max() == 2);
   CHECK(iter.n_th() == 5);

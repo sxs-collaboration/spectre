@@ -255,7 +255,6 @@ bool operator!=(const FlatSide& lhs, const FlatSide& rhs) noexcept {
   return not(lhs == rhs);
 }
 // Explicit instantiations
-/// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
@@ -301,5 +300,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 
 #undef INSTANTIATE
 #undef DTYPE
-/// \endcond
 }  // namespace domain::CoordinateMaps::FocallyLiftedInnerMaps

@@ -46,7 +46,7 @@ using TestDerivativeTagList =
                Tags::Derivative<TestTag<1, -1>, Tags::EthEthbar>,
                Tags::Derivative<TestTag<0, 2>, Tags::EthbarEthbar>>;
 
-/// [make_transform_list]
+// [make_transform_list]
 using ExpectedInverseTransforms = tmpl::list<
     SwshTransform<tmpl::list<Tags::Derivative<TestTag<0, -1>, Tags::EthEthbar>,
                              Tags::Derivative<TestTag<1, -1>, Tags::EthEthbar>>,
@@ -61,9 +61,9 @@ static_assert(
                                        TestDerivativeTagList>,
                    ExpectedInverseTransforms>,
     "failed testing make_transform_list");
-/// [make_transform_list]
+// [make_transform_list]
 
-/// [make_transform_from_derivative_tags]
+// [make_transform_from_derivative_tags]
 using ExpectedTransforms =
     tmpl::list<SwshTransform<tmpl::list<TestTag<0, -1>, TestTag<1, -1>>,
                              ComplexRepresentation::Interleaved>,
@@ -75,7 +75,7 @@ static_assert(std::is_same_v<make_transform_list_from_derivative_tags<
                                  TestDerivativeTagList>,
                              ExpectedTransforms>,
               "failed testing make_transform_list_from_derivative_tags");
-/// [make_transform_from_derivative_tags]
+// [make_transform_from_derivative_tags]
 
 template <ComplexRepresentation Representation, int S>
 void test_transform_and_inverse_transform() noexcept {

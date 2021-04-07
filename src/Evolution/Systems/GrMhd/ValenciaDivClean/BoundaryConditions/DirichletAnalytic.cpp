@@ -9,7 +9,6 @@
 
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
     : BoundaryCondition(msg) {}
@@ -24,4 +23,3 @@ void DirichletAnalytic::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions
-/// \endcond

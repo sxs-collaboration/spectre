@@ -17,10 +17,8 @@
 // IWYU pragma: no_forward_declare SpinWeighted
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 class ComplexDataVector;
 class ComplexModalVector;
-/// \endcond
 
 namespace Spectral::Swsh::Tags {
 namespace {
@@ -59,7 +57,7 @@ static_assert(
         Derivative<Spin2TestTag, EthEthbar>>,
     "failed testing SwshTransform");
 
-/// [get_tags_with_spin]
+// [get_tags_with_spin]
 using TestVarTagList = tmpl::list<SpinMinus1TestTag, SpinMinus1TestTag,
                                   AnotherSpinMinus1TestTag, Spin2TestTag>;
 
@@ -79,9 +77,9 @@ static_assert(
                    tmpl::list<Derivative<AnotherSpinMinus1TestTag, EthEth>,
                               Derivative<Spin2TestTag, Ethbar>>>,
     "failed testing get_tags_with_spin");
-/// [get_tags_with_spin]
+// [get_tags_with_spin]
 
-/// [get_prefix_tags_that_wrap_tags_with_spin]
+// [get_prefix_tags_that_wrap_tags_with_spin]
 using WrappedTagList = tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
                                   Derivative<SpinMinus1TestTag, EthEthbar>,
                                   Derivative<AnotherSpinMinus1TestTag, EthEth>,
@@ -92,7 +90,7 @@ static_assert(
                               Derivative<SpinMinus1TestTag, EthEthbar>,
                               Derivative<AnotherSpinMinus1TestTag, EthEth>>>,
     "failed testing get_wrapped_tags_with_spin_from_prefix_tag_list");
-/// [get_prefix_tags_that_wrap_tags_with_spin]
+// [get_prefix_tags_that_wrap_tags_with_spin]
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Tags",
                   "[Unit][NumericalAlgorithms]") {

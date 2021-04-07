@@ -23,7 +23,6 @@
 
 // IWYU pragma: no_include <complex>
 
-/// \cond
 namespace grmhd::AnalyticData {
 
 MagneticFieldLoop::MagneticFieldLoop(
@@ -220,4 +219,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 }  // namespace grmhd::AnalyticData
-/// \endcond

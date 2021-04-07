@@ -51,7 +51,5 @@ auto GhLockstep::retrieve_and_remove_first_ready_gh_data() noexcept
 
 void GhLockstep::pup(PUP::er& p) noexcept { p | provided_data_; }
 
-/// \cond
 PUP::able::PUP_ID GhLockstep::my_PUP_ID = 0;
-/// \endcond
 }  // namespace Cce::InterfaceManagers

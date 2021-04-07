@@ -1374,7 +1374,6 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& height_partitioning) noexcept;
 // Explicit instantiations
-/// \cond
 using Affine2d =
     domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,
                                            domain::CoordinateMaps::Affine>;
@@ -1471,4 +1470,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1_st, 2_st, 3_st))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond

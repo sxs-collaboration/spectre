@@ -19,7 +19,6 @@
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace RadiationTransport::M1Grey::Solutions {
 
 ConstantM1::ConstantM1(const std::array<double, 3>& mean_velocity,
@@ -195,4 +194,3 @@ GENERATE_INSTANTIATIONS(
 #undef GENERATE_LIST
 
 }  // namespace RadiationTransport::M1Grey::Solutions
-/// \endcond

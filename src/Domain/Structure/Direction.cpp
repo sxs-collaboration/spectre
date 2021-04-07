@@ -10,7 +10,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 template <size_t VolumeDim>
 void Direction<VolumeDim>::pup(PUP::er& p) noexcept {
   p | axis_;
@@ -76,4 +75,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef GET_DIM
 #undef INSTANTIATION
-/// \endcond

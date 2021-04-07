@@ -66,7 +66,7 @@ struct Component {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      /// [action_list_example]
+      // [action_list_example]
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::conditional_t<
@@ -78,7 +78,7 @@ struct Component {
               tmpl::list<dg::Actions::Filter<
                   Filters::Exponential<0>,
                   tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
-  /// [action_list_example]
+  // [action_list_example]
 };
 
 template <size_t Dim, bool FilterIndividually>

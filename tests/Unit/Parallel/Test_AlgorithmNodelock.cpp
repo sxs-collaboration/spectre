@@ -217,9 +217,9 @@ struct reduce_to_nodegroup {
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
-    /// [simple_action_with_args]
+    // [simple_action_with_args]
     Parallel::simple_action<nodegroup_receive>(local_nodegroup, array_index);
-    /// [simple_action_with_args]
+    // [simple_action_with_args]
   }
 };
 

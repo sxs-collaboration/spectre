@@ -14,7 +14,6 @@
 #include "Options/ParseOptions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-/// \cond
 namespace ScalarWave::BoundaryConditions {
 namespace detail {
 ConstraintPreservingSphericalRadiationType
@@ -175,4 +174,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace ScalarWave::BoundaryConditions
-/// \endcond

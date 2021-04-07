@@ -21,7 +21,6 @@
 
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
 
-/// \cond
 namespace grmhd::Solutions {
 
 AlfvenWave::AlfvenWave(
@@ -252,4 +251,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 }  // namespace grmhd::Solutions
-/// \endcond

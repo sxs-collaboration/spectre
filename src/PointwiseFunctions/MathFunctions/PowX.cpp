@@ -86,7 +86,6 @@ void PowX<1, Fr>::pup(PUP::er& p) {
   p | power_;
 }
 
-/// \cond
 template MathFunctions::PowX<1, Frame::Grid>::PowX(const int power) noexcept;
 template MathFunctions::PowX<1, Frame::Inertial>::PowX(
     const int power) noexcept;
@@ -125,5 +124,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial),
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-/// \endcond
 }  // namespace MathFunctions

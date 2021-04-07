@@ -11,7 +11,6 @@
 #include "IO/H5/Helpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-/// \cond
 namespace h5 {
 StellarCollapseEos::StellarCollapseEos(bool exists, detail::OpenGroup&& group,
                                        const hid_t /*location*/,
@@ -49,4 +48,3 @@ template int StellarCollapseEos::get_scalar_dataset(
     const std::string& dataset_name) const noexcept;
 
 }  // namespace h5
-/// \endcond

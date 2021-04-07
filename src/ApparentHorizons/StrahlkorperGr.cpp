@@ -31,7 +31,6 @@
 // IWYU pragma: no_forward_declare Strahlkorper
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 // Functions used by StrahlkorperGr::dimensionful_spin_magnitude
 namespace {
 // Find the 2D surface metric by inserting the tangents \f$\partial_\theta\f$
@@ -956,4 +955,3 @@ template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::Inertial>(
     const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function, const YlmSpherepack& ylm) noexcept;
-/// \endcond

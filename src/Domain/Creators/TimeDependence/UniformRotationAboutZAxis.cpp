@@ -82,7 +82,6 @@ UniformRotationAboutZAxis<MeshDim>::functions_of_time() const noexcept {
   return result;
 }
 
-/// \cond
 template <>
 auto UniformRotationAboutZAxis<2>::map_for_composition() const noexcept
     -> MapForComposition {
@@ -132,7 +131,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 
 #undef GET_DIM
 #undef INSTANTIATION
-/// \endcond
 }  // namespace creators::time_dependence
 
 using Identity = CoordinateMaps::Identity<1>;

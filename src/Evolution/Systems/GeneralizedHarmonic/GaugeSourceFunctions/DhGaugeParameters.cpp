@@ -7,7 +7,6 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-/// \cond
 GeneralizedHarmonic::gauges::DhGaugeParameters<true>::DhGaugeParameters(
     const double start, const double window, const double width,
     const std::array<double, 3>& amps, const std::array<int, 3>& exps)
@@ -39,4 +38,3 @@ void GeneralizedHarmonic::gauges::DhGaugeParameters<false>::pup(
   p | amplitudes;
   p | exponents;
 }
-/// \endcond

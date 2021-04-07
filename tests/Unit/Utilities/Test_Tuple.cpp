@@ -11,7 +11,7 @@
 #include "Utilities/Tuple.hpp"
 
 namespace {
-/// [tuple_fold_struct_defn]
+// [tuple_fold_struct_defn]
 template <typename T>
 struct tuple_fold_plus {
   T value = 0.0;
@@ -20,21 +20,21 @@ struct tuple_fold_plus {
     value += element;
   }
 };
-/// [tuple_fold_struct_defn]
+// [tuple_fold_struct_defn]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.tuple_fold", "[Utilities][Unit]") {
   {
-    /// [tuple_fold_lambda]
+    // [tuple_fold_lambda]
     const auto my_tupull = std::make_tuple(2, 7, -3.8, 20.9);
     double sum_value = 0.0;
     tuple_fold(my_tupull,
                [](const auto& element, double& state) { state += element; },
                sum_value);
     CHECK(sum_value == approx(26.1));
-    /// [tuple_fold_lambda]
+    // [tuple_fold_lambda]
 
-    /// [tuple_counted_fold_lambda]
+    // [tuple_counted_fold_lambda]
     sum_value = 0.0;
     tuple_counted_fold(my_tupull,
                        [](const auto& element, size_t index, double& state) {
@@ -44,15 +44,15 @@ SPECTRE_TEST_CASE("Unit.Utilities.tuple_fold", "[Utilities][Unit]") {
                        },
                        sum_value);
     CHECK(sum_value == approx(19.1));
-    /// [tuple_counted_fold_lambda]
+    // [tuple_counted_fold_lambda]
   }
   {
-    /// [tuple_fold_struct]
+    // [tuple_fold_struct]
     const auto my_tupull = std::make_tuple(2, 7, -3.8, 20.9);
     tuple_fold_plus<double> sum_value{};
     tuple_fold(my_tupull, sum_value);
     CHECK(sum_value.value == approx(26.1));
-    /// [tuple_fold_struct]
+    // [tuple_fold_struct]
   }
   {
     // Check passing rvalue to tuple_fold and tuple_counted_fold works
@@ -177,7 +177,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.tuple_fold", "[Utilities][Unit]") {
 }
 
 namespace {
-/// [tuple_transform_negate]
+// [tuple_transform_negate]
 struct negate {
   template <typename T, typename Index, typename S>
   void operator()(const T& element, Index /*index*/,
@@ -185,7 +185,7 @@ struct negate {
     std::get<Index::value>(second_tuple_element) = -element;
   }
 };
-/// [tuple_transform_negate]
+// [tuple_transform_negate]
 struct negate_if_sum_less {
   template <typename T, typename Index, typename S>
   void operator()(const T& element, Index /*index*/, S& second_tuple_element,
@@ -205,7 +205,7 @@ struct negate_if_sum_less {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.tuple_transform", "[Utilities][Unit]") {
-  /// [tuple_transform]
+  // [tuple_transform]
   const auto my_tupull = std::make_tuple(2, 7, -3.8, 20.9);
   std::decay_t<decltype(my_tupull)> out_tupull;
   tuple_transform(my_tupull,
@@ -219,7 +219,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.tuple_transform", "[Utilities][Unit]") {
   CHECK(std::get<1>(out_tupull) == -7);
   CHECK(std::get<2>(out_tupull) == 3.8);
   CHECK(std::get<3>(out_tupull) == -20.9);
-  /// [tuple_transform]
+  // [tuple_transform]
 
   // Check iterating left-to-right and right-to-left, and also passing in rvalue
   // and const lvalue references

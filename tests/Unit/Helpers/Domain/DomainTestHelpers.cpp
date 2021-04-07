@@ -531,7 +531,6 @@ tnsr::i<DataType, SpatialDim> unit_basis_form(
   return basis_form;
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                          \
@@ -597,4 +596,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_BASIS_VECTOR, (1, 2, 3),
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE_BASIS_VECTOR
-/// \endcond

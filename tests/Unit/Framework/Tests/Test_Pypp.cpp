@@ -31,7 +31,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-/// [convert_arbitrary_a]
+// [convert_arbitrary_a]
 struct ClassForConversionTest {
   double a_;
   double b_;
@@ -57,9 +57,9 @@ struct ConvertClassForConservionTestA {
     return 1;
   }
 };
-/// [convert_arbitrary_a]
+// [convert_arbitrary_a]
 
-/// [convert_arbitrary_b]
+// [convert_arbitrary_b]
 struct ConvertClassForConservionTestB {
   using unpacked_container = double;
   using packed_container = ClassForConversionTest;
@@ -80,7 +80,7 @@ struct ConvertClassForConservionTestB {
     return 1;
   }
 };
-/// [convert_arbitrary_b]
+// [convert_arbitrary_b]
 
 void test_none() {
   pypp::call<pypp::None>("PyppPyTests", "test_none");
@@ -99,10 +99,10 @@ void test_std_string() {
 }
 
 void test_int() {
-  /// [pypp_int_test]
+  // [pypp_int_test]
   const auto ret = pypp::call<long>("PyppPyTests", "test_numeric", 3, 4);
   CHECK(ret == 3 * 4);
-  /// [pypp_int_test]
+  // [pypp_int_test]
   CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3, 4));
   CHECK_THROWS(pypp::call<void*>("PyppPyTests", "test_numeric", 3, 4));
   CHECK_THROWS(pypp::call<long>("PyppPyTests", "test_none"));
@@ -133,13 +133,13 @@ void test_double() {
 }
 
 void test_std_vector() {
-  /// [pypp_vector_test]
+  // [pypp_vector_test]
   const auto ret = pypp::call<std::vector<double>>(
       "PyppPyTests", "test_vector", std::vector<double>{1.3, 4.9},
       std::vector<double>{4.2, 6.8});
   CHECK(approx(ret[0]) == 1.3 * 4.2);
   CHECK(approx(ret[1]) == 4.9 * 6.8);
-  /// [pypp_vector_test]
+  // [pypp_vector_test]
   CHECK_THROWS(pypp::call<std::string>("PyppPyTests", "test_vector",
                                        std::vector<double>{1.3, 4.9},
                                        std::vector<double>{4.2, 6.8}));
@@ -441,10 +441,10 @@ void test_einsum(const T& used_for_size) {
     }
     return tnsr;
   }();
-  /// [einsum_example]
+  // [einsum_example]
   const auto tensor_from_python = pypp::call<tnsr::i<T, 3>>(
       "PyppPyTests", "test_einsum", scalar, vector, tnsr_ia, tnsr_AA, tnsr_iaa);
-  /// [einsum_example]
+  // [einsum_example]
   CHECK_ITERABLE_CUSTOM_APPROX(expected, tensor_from_python,
                                approx.epsilon(2.0e-13));
 }
@@ -496,12 +496,12 @@ void test_optional() {
 void test_custom_conversion() {
   const Scalar<DataVector> t{DataVector{5, 2.5}};
   {
-    /// [convert_arbitrary_a_call]
+    // [convert_arbitrary_a_call]
     const auto result = pypp::call<Scalar<DataVector>,
                                    tmpl::list<ConvertClassForConservionTestA>>(
         "PyppPyTests", "custom_conversion", t,
         ClassForConversionTest{2.0, 3.0});
-    /// [convert_arbitrary_a_call]
+    // [convert_arbitrary_a_call]
     CHECK(DataVector{5, 5.0} == get(result));
   }
   {

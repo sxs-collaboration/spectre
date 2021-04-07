@@ -37,7 +37,7 @@ struct SomePrefix : db::PrefixTag {
 SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
                   "[Unit][NumericalAlgorithms][LinearSolver]") {
   {
-    /// [gmres_example]
+    // [gmres_example]
     INFO("Solve a symmetric 2x2 matrix");
     DenseMatrix<double> matrix(2, 2);
     matrix(0, 0) = 4.;
@@ -73,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     for (size_t i = 1; i < has_converged.num_iterations(); ++i) {
       CHECK(recorded_residuals[i] <= recorded_residuals[i - 1]);
     }
-    /// [gmres_example]
+    // [gmres_example]
     {
       INFO("Check that a solved system terminates early");
       const auto second_has_converged =

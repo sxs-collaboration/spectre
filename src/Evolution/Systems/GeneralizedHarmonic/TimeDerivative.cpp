@@ -23,7 +23,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t Dim>
 void TimeDerivative<Dim>::apply(
@@ -355,4 +354,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-/// \endcond

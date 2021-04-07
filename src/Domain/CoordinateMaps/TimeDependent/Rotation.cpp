@@ -169,7 +169,6 @@ bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -213,6 +212,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2),
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace domain::CoordinateMaps::TimeDependent

@@ -73,12 +73,10 @@ bool contributed = false;
 template <typename PhaseChangeRegistrars =
               tmpl::list<Registrars::TestPhaseChange>>
 struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
-  /// \cond
   TestPhaseChange() = default;
   explicit TestPhaseChange(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestPhaseChange);  // NOLINT
-  /// \endcond
 
   struct Factor {
     using type = int;

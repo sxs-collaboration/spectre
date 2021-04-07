@@ -9,7 +9,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace EquationsOfState {
 template <bool IsRelativistic>
 PolytropicFluid<IsRelativistic>::PolytropicFluid(
@@ -112,4 +111,3 @@ Scalar<DataType> PolytropicFluid<IsRelativistic>::
 
 template class EquationsOfState::PolytropicFluid<true>;
 template class EquationsOfState::PolytropicFluid<false>;
-/// \endcond

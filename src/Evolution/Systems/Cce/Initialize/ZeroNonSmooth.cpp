@@ -16,8 +16,7 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace InitializeJ {
+namespace Cce::InitializeJ {
 
 ZeroNonSmooth::ZeroNonSmooth(const double angular_coordinate_tolerance,
                              const size_t max_iterations,
@@ -83,8 +82,5 @@ void ZeroNonSmooth::pup(PUP::er& p) noexcept {
   p | max_iterations_;
 }
 
-/// \cond
 PUP::able::PUP_ID ZeroNonSmooth::my_PUP_ID = 0;
-/// \endcond
-}  // namespace InitializeJ
-}  // namespace Cce
+}  // namespace Cce::InitializeJ

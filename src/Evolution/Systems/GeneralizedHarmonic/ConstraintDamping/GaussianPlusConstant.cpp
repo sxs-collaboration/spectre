@@ -19,19 +19,15 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace domain::FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
-/// \endcond
 
 namespace GeneralizedHarmonic::ConstraintDamping {
-/// \cond
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
     CkMigrateMessage* msg) noexcept
     : DampingFunction<VolumeDim, Fr>(msg) {}
-/// \endcond
 
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
@@ -92,7 +88,6 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const noexcept
 }
 }  // namespace GeneralizedHarmonic::ConstraintDamping
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                                  \
@@ -137,4 +132,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
 #undef DTYPE
 #undef INSTANTIATE
 
-/// \endcond

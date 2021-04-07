@@ -11,7 +11,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-/// [registrar_structure]
+// [registrar_structure]
 template <typename Registrars>
 class Base {
  public:
@@ -40,9 +40,9 @@ class Derived1 : public Base<Registrars> {
   using options = tmpl::list<>;
   int func() const noexcept override { return 1; }
 };
-/// [registrar_structure]
+// [registrar_structure]
 
-/// [registrar]
+// [registrar]
 template <typename SomeArg, typename Registrars>
 class Derived2;
 
@@ -59,9 +59,9 @@ class Derived2 : public Base<Registrars> {
   using options = tmpl::list<>;
   int func() const noexcept override { return 2; }
 };
-/// [registrar]
+// [registrar]
 
-/// [custom_registrar]
+// [custom_registrar]
 template <int N, typename Registrars>
 class Derived3;
 
@@ -80,15 +80,15 @@ class Derived3 : public Base<Registrars> {
   using options = tmpl::list<>;
   int func() const noexcept override { return N; }
 };
-/// [custom_registrar]
+// [custom_registrar]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.Registration", "[Unit][Utilities]") {
-  /// [registrar_use]
+  // [registrar_use]
   using ConcreteBase =
       Base<tmpl::list<Registrars::Derived1, Registrars::Derived2<double>,
                       Registrars::Derived3<4>>>;
-  /// [registrar_use]
+  // [registrar_use]
   CHECK(TestHelpers::test_factory_creation<ConcreteBase>("Derived1")->func() ==
         1);
   CHECK(TestHelpers::test_factory_creation<ConcreteBase>("Derived2")->func() ==

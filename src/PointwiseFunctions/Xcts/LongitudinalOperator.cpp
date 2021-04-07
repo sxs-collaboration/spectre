@@ -13,7 +13,6 @@
 
 namespace Xcts {
 
-/// \cond
 template <typename DataType>
 void longitudinal_operator(const gsl::not_null<tnsr::II<DataType, 3>*> result,
                            const tnsr::ii<DataType, 3>& strain,
@@ -82,6 +81,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE
-/// \endcond
 
 }  // namespace Xcts

@@ -263,7 +263,6 @@ void Gaussian<VolumeDim, Fr>::pup(PUP::er& p) {
 }
 }  // namespace MathFunctions
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                          \
@@ -347,4 +346,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial),
 #undef FRAME
 #undef INSTANTIATE
 
-/// \endcond

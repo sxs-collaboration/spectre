@@ -16,7 +16,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeVector", "[Unit][Utilities]") {
           double>::value,
       "Unit Test Failure: Incorrect type from make_vector.");
 
-  /// [make_vector_example]
+  // [make_vector_example]
   auto vector = make_vector(3.2, 4.3, 5.4, 6.5, 7.8);
   CHECK(vector == (std::vector<double>{{3.2, 4.3, 5.4, 6.5, 7.8}}));
 
@@ -31,5 +31,5 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeVector", "[Unit][Utilities]") {
 
   auto vector_explicit_type = make_vector<double>(1, 2, 3);
   CHECK(vector_explicit_type == (std::vector<double>{1.,2.,3.}));
-  /// [make_vector_example]
+  // [make_vector_example]
 }

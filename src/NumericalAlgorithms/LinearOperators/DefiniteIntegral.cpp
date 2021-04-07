@@ -12,7 +12,6 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
-/// \cond
 // The 2D and 3D definite integrals have been optimized and are up to 2x faster
 // than the previous implementation. The main differences are
 //
@@ -118,4 +117,3 @@ double definite_integral<3>(const DataVector& integrand,
   }
   return result;
 }
-/// \endcond

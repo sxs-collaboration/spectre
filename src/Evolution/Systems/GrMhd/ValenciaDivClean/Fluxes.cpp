@@ -21,7 +21,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace grmhd::ValenciaDivClean {
 namespace detail {
 void fluxes_impl(
@@ -150,4 +149,3 @@ void ComputeFluxes::apply(
                       shift, inv_spatial_metric, spatial_velocity);
 }
 }  // namespace grmhd::ValenciaDivClean
-/// \endcond

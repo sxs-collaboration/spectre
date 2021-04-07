@@ -11,7 +11,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-/// [class_creation_example]
+// [class_creation_example]
 class CreateFromOptions {
  public:
   struct CfoOption {
@@ -45,9 +45,9 @@ const char* const input_file_text = R"(
 Cfo:
   CfoOption: foo
 )";
-/// [class_creation_example]
+// [class_creation_example]
 
-/// [class_creation_example_with_metavariables]
+// [class_creation_example_with_metavariables]
 class CreateFromOptionsWithMetavariables {
  public:
   template <typename Metavariables>
@@ -87,7 +87,7 @@ const char* const input_file_text_with_metavariables = R"(
 CfoWithMetavariables:
   MetaName: MetaString
 )";
-/// [class_creation_example_with_metavariables]
+// [class_creation_example_with_metavariables]
 
 struct CreateFromOptionsAggregate {
   struct CfoOption {
@@ -153,7 +153,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.custom_error", "[Unit][Options]") {
   opts.get<Cfo>();
 }
 
-/// [enum_creation_example]
+// [enum_creation_example]
 namespace {
 enum class CreateFromOptionsAnimal { Cat, Dog };
 
@@ -178,7 +178,7 @@ struct Options::create_from_yaml<CreateFromOptionsAnimal> {
                 "CreateFromOptionsAnimal must be 'Cat' or 'Dog'");
   }
 };
-/// [enum_creation_example]
+// [enum_creation_example]
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized", "[Unit][Options]") {
   Options::Parser<tmpl::list<CfoAnimal>> opts("");
@@ -186,7 +186,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized", "[Unit][Options]") {
   CHECK(opts.get<CfoAnimal>() == CreateFromOptionsAnimal::Cat);
 }
 
-/// [enum_void_creation_header_example]
+// [enum_void_creation_header_example]
 namespace {
 enum class CreateFromOptionsExoticAnimal { MexicanWalkingFish, Platypus };
 
@@ -207,9 +207,9 @@ template <>
 CreateFromOptionsExoticAnimal
 Options::create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
     const Options::Option& options);
-/// [enum_void_creation_header_example]
+// [enum_void_creation_header_example]
 
-/// [enum_void_creation_cpp_example]
+// [enum_void_creation_cpp_example]
 template <>
 CreateFromOptionsExoticAnimal
 Options::create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
@@ -225,7 +225,7 @@ Options::create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
               "CreateFromOptionsExoticAnimal must be 'MexicanWalkingFish' or "
               "'Platypus'");
 }
-/// [enum_void_creation_cpp_example]
+// [enum_void_creation_cpp_example]
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized_void",
                   "[Unit][Options]") {

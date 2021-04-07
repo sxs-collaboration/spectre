@@ -26,9 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 class DataVector;
-/// \endcond
 
 namespace {
 

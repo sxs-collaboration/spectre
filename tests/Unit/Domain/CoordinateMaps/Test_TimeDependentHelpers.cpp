@@ -13,15 +13,11 @@
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
-/// \cond
 class DataVector;
 
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-}  // namespace domain
-/// \endcond
+}  // namespace domain::FunctionsOfTime
 
 namespace {
 template <size_t Dim>

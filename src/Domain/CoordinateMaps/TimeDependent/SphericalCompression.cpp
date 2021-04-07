@@ -292,7 +292,6 @@ void SphericalCompression<InteriorMap>::pup(PUP::er& p) noexcept {
   p | center_;
 }
 
-/// \cond
 #define INTERIOR_MAP(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -351,6 +350,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false))
 #undef INTERIOR_MAP
 #undef INSTANTIATE
 
-/// \endcond
 
 }  // namespace domain::CoordinateMaps::TimeDependent

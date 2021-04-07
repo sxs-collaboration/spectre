@@ -16,7 +16,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
 namespace {
 // compute gauge wave H
 template <typename DataType, size_t Dim>
@@ -37,8 +36,7 @@ DataType gauge_wave_deriv_h(const tnsr::I<DataType, Dim>& x, const double t,
 }
 }  // namespace
 
-namespace gr {
-namespace Solutions {
+namespace gr::Solutions {
 template <size_t Dim>
 GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
                           const Options::Context& context)
@@ -359,6 +357,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 #undef DTYPE
 #undef DIM
-}  // namespace Solutions
-}  // namespace gr
-/// \endcond
+}  // namespace gr::Solutions

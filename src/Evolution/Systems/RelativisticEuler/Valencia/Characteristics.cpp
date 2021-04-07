@@ -18,7 +18,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace RelativisticEuler::Valencia {
 
 template <size_t Dim>
@@ -385,4 +384,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-/// \endcond

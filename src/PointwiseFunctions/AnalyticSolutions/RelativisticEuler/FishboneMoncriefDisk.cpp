@@ -25,9 +25,7 @@
 // functions
 // IWYU pragma: no_include <complex>
 
-/// \cond
-namespace RelativisticEuler {
-namespace Solutions {
+namespace RelativisticEuler::Solutions {
 
 FishboneMoncriefDisk::FishboneMoncriefDisk(
     const double bh_mass, const double bh_dimless_spin,
@@ -407,6 +405,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef DTYPE
 #undef NEED_SPACETIME
 #undef INSTANTIATE
-}  // namespace Solutions
-}  // namespace RelativisticEuler
-/// \endcond
+}  // namespace RelativisticEuler::Solutions

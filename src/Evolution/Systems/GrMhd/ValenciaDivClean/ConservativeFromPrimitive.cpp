@@ -20,7 +20,6 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-/// \cond
 namespace grmhd::ValenciaDivClean {
 
 void ConservativeFromPrimitive::apply(
@@ -102,4 +101,3 @@ void ConservativeFromPrimitive::apply(
 }
 
 }  // namespace grmhd::ValenciaDivClean
-/// \endcond

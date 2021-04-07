@@ -21,7 +21,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-/// \cond
 namespace NewtonianEuler::NumericalFluxes {
 
 template <size_t Dim, typename Frame>
@@ -218,4 +217,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial))
 #undef FRAME
 #undef INSTANTIATE
 }  // namespace NewtonianEuler::NumericalFluxes
-/// \endcond

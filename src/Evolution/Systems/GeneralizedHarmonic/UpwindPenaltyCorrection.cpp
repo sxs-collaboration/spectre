@@ -14,7 +14,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// \cond
 namespace GeneralizedHarmonic {
 template <size_t Dim>
 void UpwindPenaltyCorrection<Dim>::package_data(
@@ -207,4 +206,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 #undef DIM
 }  // namespace GeneralizedHarmonic
-/// \endcond
