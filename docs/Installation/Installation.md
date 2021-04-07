@@ -327,7 +327,7 @@ Follow these steps:
   * In `CHARM_DIR`, run
     `git checkout v6.10.2` to switch to a supported, stable release of Charm++.
   * Charm++ is compiled by running
-    `./build charm++ ARCH OPTIONS`.
+    `./build LIBS ARCH OPTIONS`.
     To figure out the correct target architecture and options, you can simply
     run `./build`; the script will then ask you questions to guide you towards
     the correct settings (see notes below for additional details).
