@@ -265,18 +265,6 @@ namespace intrp {
 /// `temporal_id`.  For the sequential case, it needs to start
 /// interpolating for the next `temporal_id`.  The logic is, in pseudocode:
 ///
-/// ###### Current logic:
-///
-///```
-/// if (sequential) {
-///   if (TemporalIds is not empty) {
-///     call block_logical_coordinates and interpolate for next temporal_id
-///   }
-/// }
-///```
-///
-/// ###### New logic:
-///
 ///```
 /// if (sequential) {
 ///   if (TemporalIds is not empty) {
