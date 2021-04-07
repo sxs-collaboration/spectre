@@ -15,6 +15,10 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace PUP {
+class er;
+}  // namespace PUP
+
 namespace helpers = LinearSolverAlgorithmTestHelpers;
 namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
@@ -44,6 +48,9 @@ struct Metavariables {
   static constexpr bool ignore_unrecognized_command_line_options = false;
   static constexpr auto determine_next_phase =
       helpers::determine_next_phase<Metavariables>;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 }  // namespace

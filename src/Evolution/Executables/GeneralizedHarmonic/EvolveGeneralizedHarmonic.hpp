@@ -129,6 +129,9 @@ namespace Frame {
 // IWYU pragma: no_forward_declare MathFunction
 struct Inertial;
 }  // namespace Frame
+namespace PUP {
+class er;
+}  // namespace PUP
 namespace Parallel {
 template <typename Metavariables>
 class CProxy_GlobalCache;
@@ -468,6 +471,9 @@ struct EvolutionMetavars {
             "value?");
     }
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

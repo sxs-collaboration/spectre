@@ -12,6 +12,10 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace PUP {
+class er;
+}  // namespace PUP
+
 namespace helpers = LinearSolverAlgorithmTestHelpers;
 
 namespace {
@@ -37,6 +41,9 @@ struct Metavariables {
   using Phase = helpers::Phase;
   static constexpr auto determine_next_phase =
       helpers::determine_next_phase<Metavariables>;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 }  // namespace
