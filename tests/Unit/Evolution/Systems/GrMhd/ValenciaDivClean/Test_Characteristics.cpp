@@ -94,7 +94,7 @@ void test_with_normal_along_coordinate_axes(
 
     const auto& eos_base =
         static_cast<const EquationsOfState::EquationOfState<true, 1>&>(eos);
-    Approx custom_approx = Approx::custom().epsilon(4.0e-12);
+    Approx custom_approx = Approx::custom().epsilon(1.0e-10);
     CHECK_ITERABLE_CUSTOM_APPROX(
         grmhd::ValenciaDivClean::characteristic_speeds(
             rest_mass_density, specific_internal_energy, specific_enthalpy,
