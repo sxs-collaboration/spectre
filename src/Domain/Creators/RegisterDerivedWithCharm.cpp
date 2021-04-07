@@ -16,8 +16,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"
@@ -34,8 +33,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 namespace {
 template <typename Creator>
 struct get_maps {
@@ -68,5 +66,4 @@ void register_derived_with_charm() {
 
   Parallel::register_classes_in_list<maps_to_register>();
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

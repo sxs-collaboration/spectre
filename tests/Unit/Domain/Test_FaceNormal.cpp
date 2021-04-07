@@ -26,7 +26,7 @@
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -436,8 +436,8 @@ void test_compute_item() {
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-              CoordinateMaps::Wedge2D(1., 2., 0., 1., OrientationMap<2>{},
-                                      false))));
+              CoordinateMaps::Wedge<2>(1., 2., 0., 1., OrientationMap<2>{},
+                                       false))));
 
   auto invert = [](std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>>
                        map_of_vectors) noexcept {

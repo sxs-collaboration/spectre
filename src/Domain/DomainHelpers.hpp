@@ -125,9 +125,9 @@ enum class ShellWedges {
 };
 
 /// \ingroup ComputationalDomainGroup
-/// These are the CoordinateMaps of the Wedge3Ds used in the Sphere, Shell, and
+/// These are the CoordinateMaps of the Wedge<3>s used in the Sphere, Shell, and
 /// binary compact object DomainCreators. This function can also be used to
-/// wrap the Sphere or Shell in a cube made of six Wedge3Ds.
+/// wrap the Sphere or Shell in a cube made of six Wedge<3>s.
 /// The argument `x_coord_of_shell_center` specifies a translation of the Shell
 /// in the x-direction in the TargetFrame. For example, the BBH DomainCreator
 /// uses this to set the position of each BH.

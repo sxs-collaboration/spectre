@@ -19,7 +19,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -95,7 +95,7 @@ template <>
 auto make_map<2>() noexcept {
   return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine2D{{-1.0, 1.0, -1.0, -0.9}, {-1.0, 1.0, -1.0, -0.9}},
-      domain::CoordinateMaps::Wedge2D{1.0, 2.0, 0.0, 1.0, {}, false});
+      domain::CoordinateMaps::Wedge<2>{1.0, 2.0, 0.0, 1.0, {}, false});
 }
 
 template <>
@@ -104,7 +104,7 @@ auto make_map<3>() noexcept {
       Affine3D{{-1.0, 1.0, -1.0, -0.9},
                {-1.0, 1.0, -1.0, -0.9},
                {-1.0, 1.0, -1.0, 1.0}},
-      domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge2D,
+      domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge<2>,
                                              Affine>{
           {1.0, 2.0, 0.0, 1.0, {}, false}, {0.0, 1.0, 0.0, 1.0}});
 }

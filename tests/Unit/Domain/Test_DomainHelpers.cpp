@@ -23,7 +23,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -136,7 +136,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                           double x_coord_of_shell_center = 0.0,
                           bool use_half_wedges = false,
                           double aspect_ratio = 1.0) {
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Identity2D = CoordinateMaps::Identity<2>;
   using Affine = CoordinateMaps::Affine;
   const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
@@ -149,124 +149,126 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
     using Halves = Wedge3DMap::WedgeHalves;
     return make_vector(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
-                       inner_sphericity, outer_sphericity, use_equiangular_map,
-                       Halves::LowerOnly},
+            Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                       outer_sphericity, OrientationMap<3>{},
+                       use_equiangular_map, Halves::LowerOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
-                       inner_sphericity, outer_sphericity, use_equiangular_map,
-                       Halves::UpperOnly},
+            Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                       outer_sphericity, OrientationMap<3>{},
+                       use_equiangular_map, Halves::UpperOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius,
+            Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                       outer_sphericity,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
-                       inner_sphericity, outer_sphericity, use_equiangular_map,
-                       Halves::LowerOnly},
+                       use_equiangular_map, Halves::LowerOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius,
+            Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                       outer_sphericity,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
-                       inner_sphericity, outer_sphericity, use_equiangular_map,
-                       Halves::UpperOnly},
+                       use_equiangular_map, Halves::UpperOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
-                inner_radius, outer_radius,
+                inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                      Direction<3>::lower_eta()}}},
-                inner_sphericity, outer_sphericity, use_equiangular_map,
-                Halves::LowerOnly},
+                use_equiangular_map, Halves::LowerOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
-                inner_radius, outer_radius,
+                inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                      Direction<3>::lower_eta()}}},
-                inner_sphericity, outer_sphericity, use_equiangular_map,
-                Halves::UpperOnly},
+                use_equiangular_map, Halves::UpperOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
-                inner_radius, outer_radius,
+                inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                      Direction<3>::upper_eta()}}},
-                inner_sphericity, outer_sphericity, use_equiangular_map,
-                Halves::LowerOnly},
+                use_equiangular_map, Halves::LowerOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
-                inner_radius, outer_radius,
+                inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                      Direction<3>::upper_eta()}}},
-                inner_sphericity, outer_sphericity, use_equiangular_map,
-                Halves::UpperOnly},
+                use_equiangular_map, Halves::UpperOnly},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
-                inner_radius, outer_radius,
+                inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                      Direction<3>::upper_eta()}}},
-                inner_sphericity, outer_sphericity, use_equiangular_map},
+                use_equiangular_map},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
-                inner_radius, outer_radius,
+                inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                      Direction<3>::upper_eta()}}},
-                inner_sphericity, outer_sphericity, use_equiangular_map},
+                use_equiangular_map},
             compression, translation));
   }
 
   return make_vector(
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
-                     inner_sphericity, outer_sphericity, use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                     outer_sphericity, OrientationMap<3>{},
+                     use_equiangular_map},
           compression, translation),
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius,
+          Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                     outer_sphericity,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                           Direction<3>::lower_zeta()}}},
-                     inner_sphericity, outer_sphericity, use_equiangular_map},
+                     use_equiangular_map},
           compression, translation),
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius,
+          Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                     outer_sphericity,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                           Direction<3>::lower_eta()}}},
-                     inner_sphericity, outer_sphericity, use_equiangular_map},
+                     use_equiangular_map},
           compression, translation),
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius,
+          Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                     outer_sphericity,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                           Direction<3>::upper_eta()}}},
-                     inner_sphericity, outer_sphericity, use_equiangular_map},
+                     use_equiangular_map},
           compression, translation),
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius,
+          Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                     outer_sphericity,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                           Direction<3>::upper_eta()}}},
-                     inner_sphericity, outer_sphericity, use_equiangular_map},
+                     use_equiangular_map},
           compression, translation),
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius,
+          Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                     outer_sphericity,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                           Direction<3>::upper_eta()}}},
-                     inner_sphericity, outer_sphericity, use_equiangular_map},
+                     use_equiangular_map},
           compression, translation));
 }
 

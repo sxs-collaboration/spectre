@@ -19,7 +19,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
@@ -88,7 +88,7 @@ void test_disk_construction(
   CHECK(disk.initial_extents() == expected_extents);
   CHECK(disk.initial_refinement_levels() == expected_refinement_level);
   using TargetFrame = Frame::Inertial;
-  using Wedge2DMap = CoordinateMaps::Wedge2D;
+  using Wedge2DMap = CoordinateMaps::Wedge<2>;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;

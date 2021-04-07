@@ -24,8 +24,7 @@
 #include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -558,7 +557,7 @@ void set_identified_boundaries(
 // A Block or Blocks can be wrapped in an outer layer of Blocks surrounding
 // the original Block(s). In the BBH Domain, this occurs several times, using
 // both Wedges and Frustums. The simplest example in which wrapping is used is
-// Sphere, where the central Block is wrapped with six Wedge3Ds.
+// Sphere, where the central Block is wrapped with six Wedge<3>s.
 std::array<OrientationMap<3>, 6> orientations_for_wrappings() noexcept {
   return {{
       // Upper Z
@@ -623,7 +622,7 @@ sph_wedge_coordinate_maps(const double inner_radius, const double outer_radius,
 
   const auto wedge_orientations = orientations_for_wrappings();
 
-  using Wedge3DMap = domain::CoordinateMaps::Wedge3D;
+  using Wedge3DMap = domain::CoordinateMaps::Wedge<3>;
   using Halves = Wedge3DMap::WedgeHalves;
   std::vector<Wedge3DMap> wedges_for_all_layers{};
 
@@ -651,30 +650,29 @@ sph_wedge_coordinate_maps(const double inner_radius, const double outer_radius,
       for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
            face_j++) {
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i,
-            gsl::at(wedge_orientations, face_j), inner_sphericity,
-            outer_sphericity, use_equiangular_map, Halves::Both,
-            use_logarithmic_map);
+            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, face_j),
+            use_equiangular_map, Halves::Both, use_logarithmic_map);
       }
     } else {
       for (size_t i = 0; i < 4; i++) {
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i,
-            gsl::at(wedge_orientations, i), inner_sphericity, outer_sphericity,
+            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::LowerOnly, use_logarithmic_map);
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i,
-            gsl::at(wedge_orientations, i), inner_sphericity, outer_sphericity,
+            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, i),
             use_equiangular_map, Halves::UpperOnly, use_logarithmic_map);
       }
       wedges_for_this_layer.emplace_back(
-          inner_radius_layer_i, outer_radius_layer_i,
-          gsl::at(wedge_orientations, 4), inner_sphericity, outer_sphericity,
-          use_equiangular_map, Halves::Both, use_logarithmic_map);
+          inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+          outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
+          Halves::Both, use_logarithmic_map);
       wedges_for_this_layer.emplace_back(
-          inner_radius_layer_i, outer_radius_layer_i,
-          gsl::at(wedge_orientations, 5), inner_sphericity, outer_sphericity,
-          use_equiangular_map, Halves::Both, use_logarithmic_map);
+          inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+          outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
+          Halves::Both, use_logarithmic_map);
     }
     for (const auto& wedge : wedges_for_this_layer) {
       wedges_for_all_layers.push_back(wedge);
@@ -946,7 +944,7 @@ cyl_wedge_coordinate_maps(
   using Equiangular = domain::CoordinateMaps::Equiangular;
   using Equiangular3DPrism =
       domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = domain::CoordinateMaps::Wedge2D;
+  using Wedge2D = domain::CoordinateMaps::Wedge<2>;
   using Wedge3DPrism = domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
@@ -1404,7 +1402,7 @@ template class domain::CoordinateMaps::ProductOf2Maps<
     domain::CoordinateMaps::Affine, domain::CoordinateMaps::Identity<2>>;
 
 INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
-                            (domain::CoordinateMaps::Wedge3D,
+                            (domain::CoordinateMaps::Wedge<3>,
                              domain::CoordinateMaps::EquatorialCompression,
                              AffineIdentity)),
                            (Frame::Logical), (Frame::Grid, Frame::Inertial),

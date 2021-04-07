@@ -46,9 +46,9 @@ namespace CoordinateMaps {
  * \Xi &:= \mathrm{tan}\left(\frac{\pi\xi_{logical}}{4}\right) \in [-1, 1]
  * \f}
  *
- * This map is intended to be used with `Wedge2D` and `Wedge3D` when equiangular
+ * This map is intended to be used with the `Wedge` map when equiangular
  * coordinates are chosen for those maps. For more information on this choice
- * of coordinates, see the documentation for Wedge3D.
+ * of coordinates, see the documentation for `Wedge`.
  */
 class Equiangular {
  public:

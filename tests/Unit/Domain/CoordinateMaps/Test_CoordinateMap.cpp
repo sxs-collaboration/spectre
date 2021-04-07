@@ -32,8 +32,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -670,7 +669,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
 void test_coordinate_map_with_rotation_wedge() {
   INFO("Coordinate map with rotation wedge");
   using Rotate = CoordinateMaps::Rotation<2>;
-  using Wedge2D = CoordinateMaps::Wedge2D;
+  using Wedge2D = CoordinateMaps::Wedge<2>;
 
   const auto first_map = Rotate(2.0);
   const auto second_map =
@@ -729,7 +728,7 @@ void test_make_vector_coordinate_map_base() {
   CHECK(affine1d == *(vector_of_affine1d[0]));
   CHECK(*(vector_of_affine1d[0]) == affine1d);
 
-  using Wedge2DMap = CoordinateMaps::Wedge2D;
+  using Wedge2DMap = CoordinateMaps::Wedge<2>;
   const auto upper_xi_wedge =
       Wedge2DMap{1.0,
                  2.0,
@@ -940,11 +939,11 @@ void test_coordinate_maps_are_identity() {
   CHECK_FALSE(giant_identity_map_base->jacobian_is_time_dependent());
 
   const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
+      CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true));
   const auto wedge_composed_with_giant_identity =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
-                                  true),
+          CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{},
+                                   true),
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
           CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},

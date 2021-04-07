@@ -33,7 +33,8 @@ template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
-class Wedge3D;
+template <size_t Dim>
+class Wedge;
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -59,7 +60,7 @@ class Sphere : public DomainCreator<3> {
                                          CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial, CoordinateMaps::Wedge3D,
+          Frame::Logical, Frame::Inertial, CoordinateMaps::Wedge<3>,
           CoordinateMaps::EquatorialCompression,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Identity<2>>>>;

@@ -33,7 +33,8 @@ template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
-class Wedge3D;
+template <size_t Dim>
+class Wedge;
 template <size_t VolumeDim>
 class DiscreteRotation;
 class Frustum;
@@ -124,11 +125,11 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Equiangular,
-                                CoordinateMaps::Equiangular,
-                                CoordinateMaps::Equiangular>>,
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
+                                         CoordinateMaps::Equiangular,
+                                         CoordinateMaps::Equiangular>>,
       domain::CoordinateMap<
           Frame::Logical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
@@ -139,7 +140,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       domain::CoordinateMap<Frame::Logical, Frame::Inertial,
                             CoordinateMaps::Frustum>,
       domain::CoordinateMap<Frame::Logical, Frame::Inertial,
-                            CoordinateMaps::Wedge3D>>;
+                            CoordinateMaps::Wedge<3>>>;
 
   /// Options for an excision region in the domain
   struct Excision {

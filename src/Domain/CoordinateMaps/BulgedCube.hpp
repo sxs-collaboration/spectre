@@ -27,7 +27,7 @@ namespace CoordinateMaps {
  *
  *  \brief Three dimensional map from the cube to a bulged cube.
  *  The cube is shaped such that the surface is compatible
- *  with the inner surface of Wedge3D.
+ *  with the inner surface of Wedge<3>.
  *  The shape of the object can be chosen to be cubical,
  *  if the sphericity is set to 0, or to a sphere, if
  *  the sphericity is set to 1. The sphericity can

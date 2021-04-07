@@ -23,7 +23,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
@@ -169,7 +169,7 @@ void test_sphere_construction(
 
   CHECK(sphere.initial_extents() == expected_extents);
   CHECK(sphere.initial_refinement_levels() == expected_refinement_level);
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
@@ -178,33 +178,33 @@ void test_sphere_construction(
 
   auto coord_maps =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 0.0, 1.0,
+          Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0, OrientationMap<3>{},
                      use_equiangular_map},
-          Wedge3DMap{inner_radius, outer_radius,
+          Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                           Direction<3>::lower_zeta()}}},
-                     0.0, 1.0, use_equiangular_map},
-          Wedge3DMap{inner_radius, outer_radius,
+                     use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                           Direction<3>::lower_eta()}}},
-                     0.0, 1.0, use_equiangular_map},
-          Wedge3DMap{inner_radius, outer_radius,
+                     use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                           Direction<3>::upper_eta()}}},
-                     0.0, 1.0, use_equiangular_map},
-          Wedge3DMap{inner_radius, outer_radius,
+                     use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                           Direction<3>::upper_eta()}}},
-                     0.0, 1.0, use_equiangular_map},
-          Wedge3DMap{inner_radius, outer_radius,
+                     use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                           Direction<3>::upper_eta()}}},
-                     0.0, 1.0, use_equiangular_map});
+                     use_equiangular_map});
   if (use_equiangular_map) {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Equiangular3D{
