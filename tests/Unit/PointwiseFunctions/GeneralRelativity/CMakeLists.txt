@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_ProjectionOperators.cpp
   Test_Ricci.cpp
   Test_Tags.cpp
+  Test_Transform.cpp
   Test_WeylElectric.cpp
   Test_WeylPropagating.cpp
   )
