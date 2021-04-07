@@ -23,6 +23,13 @@ module Main {
     entry void execute_next_phase();
   }
 
-  }
+  namespace detail {
+  template <typename Metavariables>
+  array [1D] AtSyncIndicator {
+    entry AtSyncIndicator(CProxy_Main<Metavariables> main_proxy);
 
+    entry void IndicateAtSync();
+  }
+  }  // namespace detail
+  }  // namespace Parallel
 }

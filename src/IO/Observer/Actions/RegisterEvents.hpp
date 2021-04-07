@@ -107,7 +107,8 @@ struct RegisterEventsWithObservers {
   template <typename ParallelComponent, typename RegisterOrDeregisterAction,
             typename DbTagList, typename Metavariables, typename ArrayIndex>
   static void register_or_deregister_impl(
-      db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const db::DataBox<DbTagList>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index) noexcept {
     auto& observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
@@ -116,36 +117,43 @@ struct RegisterEventsWithObservers {
     std::vector<
         std::pair<observers::TypeOfObservation, observers::ObservationKey>>
         type_of_observation_and_observation_key_pairs;
-
-    const auto& triggers_and_events =
-        db::get<::Tags::EventsAndTriggersBase>(box);
-    for (const auto& trigger_and_events :
-         triggers_and_events.events_and_triggers()) {
-      for (const auto& event : trigger_and_events.second) {
-        if (auto obs_type_and_obs_key =
-                get_registration_observation_type_and_key(*event, box);
-            obs_type_and_obs_key.has_value()) {
-          type_of_observation_and_observation_key_pairs.push_back(
-              *obs_type_and_obs_key);
+    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggersBase,
+                                           db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events =
+          db::get<::Tags::EventsAndTriggersBase>(box);
+      for (const auto& trigger_and_events :
+           triggers_and_events.events_and_triggers()) {
+        for (const auto& event : trigger_and_events.second) {
+          if (auto obs_type_and_obs_key =
+                  get_registration_observation_type_and_key(*event, box);
+              obs_type_and_obs_key.has_value()) {
+            type_of_observation_and_observation_key_pairs.push_back(
+                *obs_type_and_obs_key);
+          }
         }
       }
-    }
 
-    for (const auto& [type_of_observation, observation_key] :
-         type_of_observation_and_observation_key_pairs) {
-      Parallel::simple_action<RegisterOrDeregisterAction>(
-          observer, observation_key,
-          observers::ArrayComponentId(
-              std::add_pointer_t<ParallelComponent>{nullptr},
-              Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
-          type_of_observation);
+      for (const auto& [type_of_observation, observation_key] :
+           type_of_observation_and_observation_key_pairs) {
+        Parallel::simple_action<RegisterOrDeregisterAction>(
+            observer, observation_key,
+            observers::ArrayComponentId(
+                std::add_pointer_t<ParallelComponent>{nullptr},
+                Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
+            type_of_observation);
+      }
+    } else {
+      ERROR(
+          "Cannot perform registration of events, "
+          "`::Tags::EventsAndTriggersBase` is not retrievable from the "
+          "DataBox");
     }
   }
 
  public:
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
-  static void perform_registration(db::DataBox<DbTagList>& box,
+  static void perform_registration(const db::DataBox<DbTagList>& box,
                                    Parallel::GlobalCache<Metavariables>& cache,
                                    const ArrayIndex& array_index) noexcept {
     register_or_deregister_impl<ParallelComponent,
@@ -156,7 +164,8 @@ struct RegisterEventsWithObservers {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void perform_deregistration(
-      db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const db::DataBox<DbTagList>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index) noexcept {
     register_or_deregister_impl<ParallelComponent,
                                 DeregisterContributorWithObserver>(box, cache,

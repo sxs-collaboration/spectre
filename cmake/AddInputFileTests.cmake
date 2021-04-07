@@ -7,7 +7,8 @@ option(SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR
 
 find_package(Python REQUIRED)
 
-function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
+function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
+                                    CHECK_TYPE TIMEOUT)
   # Extract just the name of the input file
   get_filename_component(INPUT_FILE_NAME "${INPUT_FILE}" NAME)
 
@@ -47,7 +48,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
       NAME "${CTEST_NAME}"
       # This script is written below, and only once
       COMMAND sh ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
-      ${EXECUTABLE} ${INPUT_FILE}
+      ${EXECUTABLE} ${INPUT_FILE} ${COMMAND_LINE_ARGS}
       # Make sure we run the test in the build directory for cleaning its output
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )
@@ -56,7 +57,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
       NAME "${CTEST_NAME}"
       # This script is written below, and only once
       COMMAND sh ${PROJECT_BINARY_DIR}/tmp/ExecuteCheckOutputFilesAndClean.sh
-      ${EXECUTABLE} ${INPUT_FILE} ${RUN_DIRECTORY}
+      ${EXECUTABLE} ${INPUT_FILE} ${RUN_DIRECTORY} "${COMMAND_LINE_ARGS}"
       # Make sure we run the test in the build directory for cleaning its output
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )
@@ -115,6 +116,12 @@ function(add_input_file_tests INPUT_FILE_DIR)
       INPUT_FILE_EXECUTABLE "${INPUT_FILE_EXECUTABLE}")
     string(STRIP "${INPUT_FILE_EXECUTABLE}" INPUT_FILE_EXECUTABLE)
 
+    string(REGEX MATCH "#[ ]*CommandLineArgs:[^\n]+"
+      COMMAND_LINE_ARGS "${INPUT_FILE_CONTENTS}")
+    string(REGEX REPLACE "#[ ]*CommandLineArgs:[ ]*" ""
+      COMMAND_LINE_ARGS "${COMMAND_LINE_ARGS}")
+    string(STRIP "${COMMAND_LINE_ARGS}" COMMAND_LINE_ARGS)
+
     # Read what tests to do. Currently "execute" and "parse" are available.
     string(REGEX MATCH "#[ ]*Check:[^\n]+"
       INPUT_FILE_CHECKS "${INPUT_FILE_CONTENTS}")
@@ -158,6 +165,7 @@ function(add_input_file_tests INPUT_FILE_DIR)
       add_single_input_file_test(
         ${INPUT_FILE}
         ${INPUT_FILE_EXECUTABLE}
+        "${COMMAND_LINE_ARGS}"
         ${CHECK_TYPE}
         ${INPUT_FILE_TIMEOUT}
         )
@@ -178,7 +186,7 @@ file(
 #!/bin/sh\n\
 ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}
-${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 && \
+${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 \${3} && \
 ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
 )
@@ -188,6 +196,6 @@ ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
 configure_file(
   ${CMAKE_SOURCE_DIR}/cmake/ExecuteCheckOutputFilesAndClean.sh
   ${PROJECT_BINARY_DIR}/tmp/ExecuteCheckOutputFilesAndClean.sh
-  )
+  @ONLY)
 
 add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")

@@ -2,6 +2,8 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveBurgersStep
+# CommandLineArgs: +balancer RandCentLB +p2
+# Timeout: 5
 # Check: parse;execute
 
 AnalyticSolution:
@@ -16,6 +18,13 @@ Evolution:
   TimeStepper:
     AdamsBashforthN:
       Order: 3
+
+PhaseChangeAndTriggers:
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    - - VisitAndReturn(LoadBalancing)
 
 DomainCreator:
   Interval:

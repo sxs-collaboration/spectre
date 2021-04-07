@@ -421,7 +421,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
               [this, &box](auto registration_v) noexcept {
                 using registration = typename decltype(registration_v)::type;
                 registration::template perform_deregistration<
-                    ParallelComponent>(box, *global_cache_, array_index_);
+                    ParallelComponent>(boost::get<ThisVariant>(box),
+                                       *global_cache_, array_index_);
               });
         }
         if (p.isUnpacking()) {
@@ -429,7 +430,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
               [this, &box](auto registration_v) noexcept {
                 using registration = typename decltype(registration_v)::type;
                 registration::template perform_registration<ParallelComponent>(
-                    box, *global_cache_, array_index_);
+                    boost::get<ThisVariant>(box), *global_cache_, array_index_);
               });
         }
         *already_visited = true;
@@ -626,6 +627,19 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                       initialization_items) noexcept
     : AlgorithmImpl() {
   (void)initialization_items;  // avoid potential compiler warnings if unused
+  // When we are using the LoadBalancing phase, we want the Main component to
+  // handle the synchronization, so the components do not participate in the
+  // charm++ `AtSync` barrier.
+  // The array parallel components are migratable so they get balanced
+  // appropriately when load balancing is triggered by the LoadBalancing phase
+  // in Main
+  if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
+                               Parallel::Algorithms::Array> and
+                Algorithm_detail::has_LoadBalancing_v<
+                    typename metavariables::Phase>) {
+    this->usesAtSync = false;
+    this->setMigratable(true);
+  }
   global_cache_ = global_cache_proxy.ckLocalBranch();
   box_ = db::create<
       db::AddSimpleTags<tmpl::flatten<
