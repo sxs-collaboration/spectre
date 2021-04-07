@@ -540,5 +540,21 @@ struct AnalyticBoundaryDataManager : db::SimpleTag {
                                               worldtube_data->get_clone());
   }
 };
+
+/// Represents whether the news should be provided at noninertial times.
+///
+/// \details Currently, this is only useful for analytic solutions for which the
+/// inertial-time news is difficult to compute.
+struct OutputNoninertialNews : db::SimpleTag {
+  using type = bool;
+  using option_tags =
+      tmpl::list<OptionTags::AnalyticSolution>;
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options(
+      const std::unique_ptr<Cce::Solutions::WorldtubeData>&
+          worldtube_data) noexcept {
+    return worldtube_data->use_noninertial_news();
+  }
+};
 }  // namespace Tags
 }  // namespace Cce
