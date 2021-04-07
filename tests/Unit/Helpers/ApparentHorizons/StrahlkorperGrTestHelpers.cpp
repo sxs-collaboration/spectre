@@ -123,7 +123,7 @@ Scalar<DataType> horizon_ricci_scalar(
 
   // Get the ricci scalar for a Kerr black hole with spin in the +z direction
   // but same mass and spin magnitude
-  const auto ricci_scalar_with_spin_on_z_axis = horizon_ricci_scalar(
+  auto ricci_scalar_with_spin_on_z_axis = horizon_ricci_scalar(
       horizon_radius_with_spin_on_z_axis, mass, spin_magnitude);
 
   // Is the spin aligned? If so, just return the aligned-spin scalar curvature

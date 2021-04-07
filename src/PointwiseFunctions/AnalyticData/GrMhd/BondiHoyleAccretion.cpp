@@ -15,8 +15,7 @@
 
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 BondiHoyleAccretion::BondiHoyleAccretion(
     const double bh_mass, const double bh_dimless_spin,
@@ -238,5 +237,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData

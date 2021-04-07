@@ -15,11 +15,9 @@
 
 class DataVector;
 
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-}  // namespace domain
+}  // namespace domain::FunctionsOfTime
 
 namespace {
 template <size_t Dim>

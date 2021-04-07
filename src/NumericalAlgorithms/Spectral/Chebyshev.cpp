@@ -90,7 +90,7 @@ compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
   DataVector x(num_points);
   DataVector w(num_points, M_PI / num_points);
   for (size_t j = 0; j < num_points; j++) {
-    x[j] = -cos(M_PI_2 * (2 * j + 1) / (poly_degree + 1));
+    x[j] = -cos(M_PI_2 * (2. * j + 1.) / (poly_degree + 1.));
   }
   return std::make_pair(std::move(x), std::move(w));
 }
@@ -129,7 +129,8 @@ Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
   }
   if (LIKELY(num_points > 2)) {
     indef_int(1, 2) = -0.5;
-    indef_int(num_points - 1, num_points - 2) = 1.0 / (2.0 * (num_points - 1));
+    indef_int(num_points - 1, num_points - 2) =
+        1.0 / (2.0 * (num_points - 1.0));
   }
   for (size_t i = 2; i < num_points - 1; ++i) {
     indef_int(i, i - 1) = 1.0 / (2.0 * i);

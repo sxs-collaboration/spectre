@@ -11,8 +11,7 @@
 
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
-namespace gr {
-namespace Solutions {
+namespace gr::Solutions {
 
 template <size_t Dim>
 template <typename DataType>
@@ -161,8 +160,7 @@ Minkowski<Dim>::variables(
     const noexcept {
   return {make_with_value<Scalar<DataType>>(x, 0.)};
 }
-}  // namespace Solutions
-}  // namespace gr
+}  // namespace gr::Solutions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)

@@ -175,16 +175,18 @@ EvaluateQandL::EvaluateQandL(const size_t poly_degree,
   double L_prime_n_minus_1 = 1.;
   double L_n = std::numeric_limits<double>::signaling_NaN();
   for (size_t k = 2; k <= poly_degree; k++) {
-    L_n = ((2 * k - 1) * x * L_n_minus_1 - (k - 1) * L_n_minus_2) / k;
-    const double L_prime_n = L_prime_n_minus_2 + (2 * k - 1) * L_n_minus_1;
+    L_n = ((2. * k - 1.) * x * L_n_minus_1 - (k - 1.) * L_n_minus_2) / k;
+    const double L_prime_n = L_prime_n_minus_2 + (2. * k - 1.) * L_n_minus_1;
     L_n_minus_2 = L_n_minus_1;
     L_n_minus_1 = L_n;
     L_prime_n_minus_2 = L_prime_n_minus_1;
     L_prime_n_minus_1 = L_prime_n;
   }
   const size_t k = poly_degree + 1;
-  const double L_n_plus_1 = ((2 * k - 1) * x * L_n - (k - 1) * L_n_minus_2) / k;
-  const double L_prime_n_plus_1 = L_prime_n_minus_2 + (2 * k - 1) * L_n_minus_1;
+  const double L_n_plus_1 =
+      ((2. * k - 1.) * x * L_n - (k - 1.) * L_n_minus_2) / k;
+  const double L_prime_n_plus_1 =
+      L_prime_n_minus_2 + (2. * k - 1.) * L_n_minus_1;
   q = L_n_plus_1 - L_n_minus_2;
   q_prime = L_prime_n_plus_1 - L_prime_n_minus_2;
   L = L_n;
@@ -212,7 +214,7 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     default:
       x[0] = -1.;
       x[poly_degree] = 1.;
-      w[0] = w[poly_degree] = 2. / (poly_degree * (poly_degree + 1));
+      w[0] = w[poly_degree] = 2. / (poly_degree * (poly_degree + 1.));
       auto newton_raphson_step = [poly_degree](double logical_coord) noexcept {
         const EvaluateQandL q_and_L(poly_degree, logical_coord);
         return std::make_pair(q_and_L.q, q_and_L.q_prime);
@@ -229,13 +231,13 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
         x[j] = logical_coord;
         x[poly_degree - j] = -logical_coord;
         w[j] = w[poly_degree - j] =
-            2. / (poly_degree * (poly_degree + 1) * square(q_and_L.L));
+            2. / (poly_degree * (poly_degree + 1.) * square(q_and_L.L));
       }
       if (poly_degree % 2 == 0) {
         const EvaluateQandL q_and_L(poly_degree, 0.);
         x[poly_degree / 2] = 0.;
         w[poly_degree / 2] =
-            2. / (poly_degree * (poly_degree + 1) * square(q_and_L.L));
+            2. / (poly_degree * (poly_degree + 1.) * square(q_and_L.L));
       }
       break;
   }
@@ -256,7 +258,7 @@ Matrix spectral_indefinite_integral_matrix<Basis::Legendre>(
   }
   if (LIKELY(num_points > 1)) {
     indef_int(num_points - 1, num_points - 2) =
-        1.0 / (2.0 * (num_points - 1) - 1.0);
+        1.0 / (2.0 * (num_points - 1.0) - 1.0);
   }
 
   // Matrix that ensures that BC at left of interval is 0.0

@@ -17,8 +17,8 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
-namespace grmhd {
-namespace Solutions {
+
+namespace grmhd::Solutions {
 
 BondiMichel::BondiMichel(const double mass, const double sonic_radius,
                          const double sonic_density,
@@ -370,5 +370,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE
-}  // namespace Solutions
-}  // namespace grmhd
+}  // namespace grmhd::Solutions

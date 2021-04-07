@@ -18,9 +18,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace Cce {
-namespace Solutions {
-
+namespace Cce::Solutions {
 
 BouncingBlackHole::BouncingBlackHole(const double amplitude,
                                      const double extraction_radius,
@@ -315,5 +313,4 @@ void BouncingBlackHole::pup(PUP::er& p) noexcept {
 }
 
 PUP::able::PUP_ID BouncingBlackHole::my_PUP_ID = 0;
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

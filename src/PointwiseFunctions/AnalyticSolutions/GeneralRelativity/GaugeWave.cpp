@@ -36,8 +36,7 @@ DataType gauge_wave_deriv_h(const tnsr::I<DataType, Dim>& x, const double t,
 }
 }  // namespace
 
-namespace gr {
-namespace Solutions {
+namespace gr::Solutions {
 template <size_t Dim>
 GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
                           const Options::Context& context)
@@ -358,5 +357,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 #undef DTYPE
 #undef DIM
-}  // namespace Solutions
-}  // namespace gr
+}  // namespace gr::Solutions

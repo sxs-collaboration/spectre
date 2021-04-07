@@ -10,8 +10,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 SettleToConstant::SettleToConstant(
     const std::array<DataVector, 3>& initial_func_and_derivs,
     const double match_time, const double decay_time) noexcept
@@ -90,5 +89,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
 
 #undef DERIV
 #undef INSTANTIATE
-}  // namespace FunctionsOfTime
-}  // namespace domain
+}  // namespace domain::FunctionsOfTime

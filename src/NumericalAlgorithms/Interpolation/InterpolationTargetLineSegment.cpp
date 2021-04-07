@@ -5,8 +5,7 @@
 
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace intrp {
-namespace OptionHolders {
+namespace intrp::OptionHolders {
 
 template <size_t VolumeDim>
 LineSegment<VolumeDim>::LineSegment(std::array<double, VolumeDim> begin_in,
@@ -51,5 +50,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace OptionHolders
-}  // namespace intrp
+}  // namespace intrp::OptionHolders
