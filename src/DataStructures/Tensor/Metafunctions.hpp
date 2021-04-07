@@ -119,4 +119,24 @@ using remove_first_index =
 template <typename NewType, typename Tensor>
 using swap_type =
     ::Tensor<NewType, typename Tensor::symmetry, typename Tensor::index_list>;
+
+namespace detail {
+template <typename T, typename Frame>
+using frame_is_the_same = std::is_same<typename T::Frame, Frame>;
+}  // namespace detail
+
+/// \ingroup TensorGroup
+/// \brief Return tmpl::true_type if any indices of the Tensor are in the
+/// frame Frame.
+template <typename Tensor, typename Frame>
+using any_index_in_frame =
+    tmpl::any<typename Tensor::index_list,
+              tmpl::bind<detail::frame_is_the_same, tmpl::_1, Frame>>;
+
+/// \ingroup TensorGroup
+/// \brief Return true if any indices of the Tensor are in the
+/// frame Frame.
+template <typename Tensor, typename Frame>
+constexpr bool any_index_in_frame_v = any_index_in_frame<Tensor, Frame>::value;
+
 }  // namespace TensorMetafunctions
