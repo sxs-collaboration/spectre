@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 /// \cond
@@ -19,6 +20,8 @@ struct PrefixTag;
 namespace db {
 
 namespace detail {
+CREATE_HAS_TYPE_ALIAS(base)
+CREATE_HAS_TYPE_ALIAS_V(base)
 CREATE_IS_CALLABLE(name)
 CREATE_IS_CALLABLE_V(name)
 }  // namespace detail
@@ -38,7 +41,7 @@ template <typename Tag>
 std::string tag_name() noexcept {
   if constexpr (detail::is_name_callable_v<Tag>) {
     return Tag::name();
-  } else if constexpr (db::is_immutable_item_tag_v<Tag>) {
+  } else if constexpr (detail::has_base_v<Tag>) {
     return tag_name<typename Tag::base>();
   } else if constexpr (std::is_base_of_v<db::PrefixTag, Tag>) {
     return pretty_type::short_name<Tag>() + "(" +
