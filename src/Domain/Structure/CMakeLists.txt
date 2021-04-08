@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   BlockNeighbor.cpp
+  ChildSize.cpp
   CreateInitialMesh.cpp
   Direction.cpp
   Element.cpp
@@ -28,6 +29,7 @@ spectre_target_headers(
   HEADERS
   BlockId.hpp
   BlockNeighbor.hpp
+  ChildSize.hpp
   CreateInitialMesh.hpp
   Direction.hpp
   DirectionMap.hpp
