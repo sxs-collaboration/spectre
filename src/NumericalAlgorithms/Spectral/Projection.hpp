@@ -4,10 +4,10 @@
 #pragma once
 
 #include <cstddef>
-
-#include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
+#include <ostream>
 
 /// \cond
+class Matrix;
 template <size_t Dim>
 class Mesh;
 /// \endcond
