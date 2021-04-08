@@ -35,12 +35,9 @@ void test_mortar_size() {
   CHECK(get_output(Spectral::MortarSize::UpperHalf) == "UpperHalf");
   CHECK(get_output(Spectral::MortarSize::LowerHalf) == "LowerHalf");
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.mortar_to_element",
-                  "[NumericalAlgorithms][Spectral][Unit]") {
-  test_mortar_size();
-
+void test_p_mortar_to_element() {
+  INFO("p - mortar to element");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
@@ -93,8 +90,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.mortar_to_element",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.element_to_mortar",
-                  "[NumericalAlgorithms][Spectral][Unit]") {
+void test_p_element_to_mortar() {
+  INFO("p - element to mortar");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
@@ -131,7 +128,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.element_to_mortar",
   }
 }
 
-namespace {
 DataVector to_upper_half(const DataVector& p) noexcept {
   return 0.5 * (p + 1.);
 }
@@ -228,10 +224,9 @@ void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
     }
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.mortar_to_element",
-                  "[NumericalAlgorithms][Spectral][Unit]") {
+void test_h_mortar_to_element() {
+  INFO("h - mortar to element");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          // We need one extra point to do the quadrature later.
@@ -262,8 +257,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.mortar_to_element",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.element_to_mortar",
-                  "[NumericalAlgorithms][Spectral][Unit]") {
+void test_h_element_to_mortar() {
+  INFO("h - element to mortar");
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
@@ -310,4 +305,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.element_to_mortar",
       }
     }
   }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  test_mortar_size();
+  test_p_mortar_to_element();
+  test_p_element_to_mortar();
+  test_h_mortar_to_element();
+  test_h_element_to_mortar();
 }
