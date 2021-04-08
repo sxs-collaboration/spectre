@@ -24,6 +24,15 @@ using MortarSize = ChildSize;
 
 std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept;
 
+/// Determine whether data needs to be projected between a child mesh and its
+/// parent mesh. If no projection is necessary the data may be used as-is.
+/// Projection is necessary if the child is either p-refined or h-refined
+/// relative to its parent, or both. This operation is symmetric, i.e. it is
+/// irrelevant in which order the child and the parent mesh are passed in.
+template <size_t Dim>
+bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
+                      const std::array<ChildSize, Dim>& child_sizes) noexcept;
+
 /*!
  * \brief The projection matrix from a child mesh to its parent.
  *

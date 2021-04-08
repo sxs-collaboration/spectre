@@ -16,6 +16,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace Spectral {
 namespace {
 constexpr auto quadratures = {Spectral::Quadrature::Gauss,
                               Spectral::Quadrature::GaussLobatto};
@@ -35,6 +36,39 @@ void test_mortar_size() {
   CHECK(get_output(Spectral::MortarSize::Full) == "Full");
   CHECK(get_output(Spectral::MortarSize::UpperHalf) == "UpperHalf");
   CHECK(get_output(Spectral::MortarSize::LowerHalf) == "LowerHalf");
+}
+
+void test_needs_projection() {
+  INFO("Needs projection");
+  CHECK_FALSE(needs_projection<0>({}, {}, {}));
+  CHECK_FALSE(
+      needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                          {3, Basis::Legendre, Quadrature::GaussLobatto},
+                          make_array<1>(ChildSize::Full)));
+  CHECK_FALSE(
+      needs_projection<2>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                          {3, Basis::Legendre, Quadrature::GaussLobatto},
+                          make_array<2>(ChildSize::Full)));
+  CHECK_FALSE(
+      needs_projection<3>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                          {3, Basis::Legendre, Quadrature::GaussLobatto},
+                          make_array<3>(ChildSize::Full)));
+  CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                            {4, Basis::Legendre, Quadrature::GaussLobatto},
+                            make_array<1>(ChildSize::Full)));
+  CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                            {3, Basis::Legendre, Quadrature::Gauss},
+                            make_array<1>(ChildSize::Full)));
+  CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                            {3, Basis::Legendre, Quadrature::GaussLobatto},
+                            {{ChildSize::LowerHalf}}));
+  CHECK(needs_projection<2>({3, Basis::Legendre, Quadrature::GaussLobatto},
+                            {3, Basis::Legendre, Quadrature::GaussLobatto},
+                            {{ChildSize::Full, ChildSize::LowerHalf}}));
+  CHECK(needs_projection<3>(
+      {3, Basis::Legendre, Quadrature::GaussLobatto},
+      {3, Basis::Legendre, Quadrature::GaussLobatto},
+      {{ChildSize::Full, ChildSize::Full, ChildSize::UpperHalf}}));
 }
 
 void test_p_mortar_to_element() {
@@ -364,6 +398,7 @@ void test_higher_dimensions() {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test_mortar_size();
+  test_needs_projection();
   test_p_mortar_to_element();
   test_p_element_to_mortar();
   test_h_mortar_to_element();
@@ -372,3 +407,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_higher_dimensions<2>();
   test_higher_dimensions<3>();
 }
+
+}  // namespace Spectral

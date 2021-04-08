@@ -14,6 +14,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -36,6 +37,16 @@ std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept {
           "Invalid ChildSize. Expected one of: 'Full', 'UpperHalf', "
           "'LowerHalf'");
   }
+}
+
+template <size_t Dim>
+bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
+                      const std::array<ChildSize, Dim>& child_sizes) noexcept {
+  return mesh1 != mesh2 or
+         alg::any_of(child_sizes,
+                     [](const Spectral::MortarSize child_size) noexcept {
+                       return child_size != Spectral::ChildSize::Full;
+                     });
 }
 
 const Matrix& projection_matrix_child_to_parent(
@@ -354,6 +365,9 @@ projection_matrix_parent_to_child(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(r, data)                                                 \
+  template bool needs_projection(                                            \
+      const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,            \
+      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;         \
   template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
   projection_matrix_child_to_parent(                                         \
       const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh, \
