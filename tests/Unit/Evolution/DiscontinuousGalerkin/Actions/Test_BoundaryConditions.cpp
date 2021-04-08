@@ -2063,7 +2063,7 @@ struct System
   static constexpr size_t volume_dim = Dim;
   static constexpr bool has_inverse_spatial_metric = HasInverseSpatialMetric;
 
-  using boundary_correction =
+  using boundary_correction_base =
       BoundaryCorrection<Dim, HasPrimitiveVariables, SysType,
                          HasInverseSpatialMetric>;
   using boundary_conditions_base = BoundaryCondition<System>;

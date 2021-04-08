@@ -9,8 +9,8 @@
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 namespace evolution::dg::Actions::detail {
-CREATE_HAS_TYPE_ALIAS(boundary_correction)
-CREATE_HAS_TYPE_ALIAS_V(boundary_correction)
+CREATE_HAS_TYPE_ALIAS(boundary_correction_base)
+CREATE_HAS_TYPE_ALIAS_V(boundary_correction_base)
 
 CREATE_HAS_TYPE_ALIAS(boundary_conditions_base)
 CREATE_HAS_TYPE_ALIAS_V(boundary_conditions_base)
