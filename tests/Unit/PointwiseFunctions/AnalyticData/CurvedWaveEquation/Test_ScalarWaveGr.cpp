@@ -7,6 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
