@@ -9,6 +9,8 @@ Evolution:
   InitialTimeStep: 0.01
   TimeStepper: RungeKutta3
 
+PhaseChangeAndTriggers:
+
 DomainCreator:
   Brick:
     LowerBound: [-6.0, -6.0, -6.0]
