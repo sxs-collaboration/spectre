@@ -32,6 +32,7 @@
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -250,7 +251,7 @@ void internal_mortar_data_impl(
         // in-place when projecting, because in that case the face may
         // touch two mortars so we need to keep the data around.
         auto boundary_data_on_mortar =
-            ::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)
+            Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
                 // NOLINTNEXTLINE(bugprone-use-after-move)
                 ? ::dg::project_to_mortar(packaged_data, face_mesh, mortar_mesh,
                                           mortar_size)

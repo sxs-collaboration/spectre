@@ -30,6 +30,7 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -815,7 +816,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         [&dt_boundary_correction_on_mortar,
          &dt_boundary_correction_projected_onto_face, &face_mesh, &mortar_mesh,
          &mortar_size]() noexcept -> Variables<dt_variables_tags>& {
-      if (::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+      if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         dt_boundary_correction_projected_onto_face =
             ::dg::project_from_mortar(dt_boundary_correction_on_mortar,
                                       face_mesh, mortar_mesh, mortar_size);

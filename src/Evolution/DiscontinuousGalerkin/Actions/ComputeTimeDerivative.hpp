@@ -595,7 +595,7 @@ void ComputeTimeDerivative<Metavariables>::
       // projecting, because in that case the face may touch more than one
       // mortar so we need to keep the data around.
       auto boundary_data_on_mortar =
-          ::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)
+          Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
               ? boundary_data_on_interfaces.at(direction).project_to_mortar(
                     face_mesh, mortar_mesh, mortar_size)
               : std::move(boundary_data_on_interfaces.at(direction));
