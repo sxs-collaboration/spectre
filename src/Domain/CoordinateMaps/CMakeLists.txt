@@ -15,6 +15,7 @@ spectre_target_sources(
   CylindricalFlatSide.cpp
   CylindricalSide.cpp
   DiscreteRotation.cpp
+  Distribution.cpp
   EquatorialCompression.cpp
   Equiangular.cpp
   FocallyLiftedEndcap.cpp
@@ -44,6 +45,7 @@ spectre_target_headers(
   CylindricalFlatSide.hpp
   CylindricalSide.hpp
   DiscreteRotation.hpp
+  Distribution.hpp
   EquatorialCompression.hpp
   Equiangular.hpp
   FocallyLiftedEndcap.hpp
