@@ -247,6 +247,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
       cyl_wedge_coord_map_surrounding_blocks(
           cylinder_inner_radius, cylinder_outer_radius, cylinder_lower_bound_z,
           cylinder_upper_bound_z, false, 0.0, {}, {},
+          {domain::CoordinateMaps::Distribution::Linear},
           CylindricalDomainParityFlip::z_direction);
 
   enum class AddBoundaryCondition { none, inner, outer };
@@ -386,7 +387,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
       cyl_wedge_coord_map_surrounding_blocks(
           cylindrical_shell_inner_radius, cylindrical_shell_outer_radius,
           cylindrical_shell_lower_bound_z, cylindrical_shell_upper_bound_z,
-          false, 1.0, {}, {}, CylindricalDomainParityFlip::z_direction);
+          false, 1.0, {}, {}, {domain::CoordinateMaps::Distribution::Linear},
+          CylindricalDomainParityFlip::z_direction);
 
   // Lambda that takes a CylindricalSide map and a DiscreteRotation
   // map, composes it with the logical-to-cylinder maps, and adds it
