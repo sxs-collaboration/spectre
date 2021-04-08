@@ -214,6 +214,7 @@ if ! find . \
      ! -name '*.patch' \
      ! -name '*.pyc' \
      ! -path '*/__pycache__/*' \
+     ! -path './tools/charm_module_patchs/*' \
      ! -name '*~' \
      ! -name deploy_key.enc \
      -print0 \

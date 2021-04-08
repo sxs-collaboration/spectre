@@ -7,25 +7,11 @@
 #include <type_traits>
 #include <utility>
 
+#include "Parallel/MaxInlineMethodsReached.hpp"
 #include "Parallel/TypeTraits.hpp"
-#include "Utilities/Requires.hpp"
 
 namespace Parallel {
 namespace detail {
-// Allow 64 inline entry method calls before we fall back to Charm++. This is
-// done to avoid blowing the stack.
-inline bool max_inline_entry_methods_reached() noexcept {
-  thread_local size_t approx_stack_depth = 0;
-#ifndef SPECTRE_PROFILING
-  approx_stack_depth++;
-  if (approx_stack_depth < 64) {
-    return false;
-  }
-  approx_stack_depth = 0;
-#endif
-  return true;
-}
-
 template <typename T, typename = std::void_t<>>
 struct has_ckLocal_method : std::false_type {};
 
@@ -34,7 +20,6 @@ struct has_ckLocal_method<T, std::void_t<decltype(std::declval<T>().ckLocal())>>
     : std::true_type {};
 }  // namespace detail
 
-// @{
 /*!
  * \ingroup ParallelGroup
  * \brief Send the data `args...` to the algorithm running on `proxy`, and tag
@@ -43,17 +28,12 @@ struct has_ckLocal_method<T, std::void_t<decltype(std::declval<T>().ckLocal())>>
  * If the algorithm was previously disabled, set `enable_if_disabled` to true to
  * enable the algorithm on the parallel component.
  */
-template <
-    typename ReceiveTag, typename Proxy, typename ReceiveDataType,
-    Requires<detail::has_ckLocal_method<std::decay_t<Proxy>>::value> = nullptr>
+template <typename ReceiveTag, typename Proxy, typename ReceiveDataType>
 void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
                   ReceiveDataType&& receive_data,
                   const bool enable_if_disabled = false) noexcept {
-  auto* obj = proxy.ckLocal();
-  // Only elide the Charm++ RTS if the object is local and if we won't blow the
-  // stack by having too many recursive function calls.
-  if (obj != nullptr and not detail::max_inline_entry_methods_reached()) {
-    obj->template receive_data<ReceiveTag>(
+  if constexpr (detail::has_ckLocal_method<std::decay_t<Proxy>>::value) {
+    proxy.template receive_data<ReceiveTag, std::decay_t<ReceiveDataType>>(
         std::move(temporal_id), std::forward<ReceiveDataType>(receive_data),
         enable_if_disabled);
   } else {
@@ -62,18 +42,6 @@ void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
         enable_if_disabled);
   }
 }
-
-template <typename ReceiveTag, typename Proxy, typename ReceiveDataType,
-          Requires<not detail::has_ckLocal_method<std::decay_t<Proxy>>::value> =
-              nullptr>
-void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
-                  ReceiveDataType&& receive_data,
-                  const bool enable_if_disabled = false) noexcept {
-  proxy.template receive_data<ReceiveTag>(
-      std::move(temporal_id), std::forward<ReceiveDataType>(receive_data),
-      enable_if_disabled);
-}
-// @}
 
 // @{
 /*!

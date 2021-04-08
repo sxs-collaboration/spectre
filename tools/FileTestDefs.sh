@@ -194,6 +194,7 @@ long_lines() {
               '.html$' \
               '.json$' \
               '.min.js$' \
+              '.patch' \
               '.travis.yml$' \
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
@@ -279,7 +280,7 @@ standard_checks+=(boost_none)
 
 # Check for files containing tabs
 tabs() {
-    whitelist "$1" '.h5' '.png' &&
+    whitelist "$1" '.h5' '.png' '.patch' &&
     staged_grep -q -F $'\t' "$1"
 }
 tabs_report() {

@@ -16,6 +16,7 @@ function(add_charm_module MODULE)
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}.ci
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}.ci ${MODULE}.ci
     COMMAND ${CHARM_COMPILER} -no-charmrun ${MODULE}.ci
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/patch_charm_modules.sh ${MODULE} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} `pwd`
     )
   add_custom_target(
     module_${MODULE}

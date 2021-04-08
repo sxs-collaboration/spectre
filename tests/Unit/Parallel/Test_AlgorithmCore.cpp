@@ -515,7 +515,7 @@ struct finalize {
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              TestAlgorithmArrayInstance{4});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
-    SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 5);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 10);
   }
 };
 }  // namespace receive_data_test
