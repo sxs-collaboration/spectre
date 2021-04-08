@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <functional>
 #include <ostream>
 
 /// \cond
@@ -55,11 +57,26 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                                 const Mesh<1>& parent_mesh,
                                                 ChildSize size) noexcept;
 
+/// The projection matrix from a child mesh to its parent, in `Dim` dimensions.
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim>
+projection_matrix_child_to_parent(
+    const Mesh<Dim>& child_mesh, const Mesh<Dim>& parent_mesh,
+    const std::array<ChildSize, Dim>& child_sizes) noexcept;
+
 /// The projection matrix from a parent mesh to one of its children.
 ///
 /// \see projection_matrix_child_to_parent()
 const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
                                                 const Mesh<1>& child_mesh,
                                                 ChildSize size) noexcept;
+
+/// The projection matrix from a parent mesh to one of its children, in `Dim`
+/// dimensions
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim>
+projection_matrix_parent_to_child(
+    const Mesh<Dim>& parent_mesh, const Mesh<Dim>& child_mesh,
+    const std::array<ChildSize, Dim>& child_sizes) noexcept;
 
 }  // namespace Spectral

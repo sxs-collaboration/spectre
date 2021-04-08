@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace {
 constexpr auto quadratures = {Spectral::Quadrature::Gauss,
@@ -307,6 +308,57 @@ void test_h_element_to_mortar() {
   }
 }
 
+template <size_t Dim>
+void test_higher_dimensions() {
+  INFO("Higher-dimensional operators");
+  CAPTURE(Dim);
+  // Higher-dimensional operators are just Cartesian products of the 1D
+  // matrices, we only test here if they are constructed correctly.
+  // The particular basis and quadrature don't matter for this test.
+  const auto basis = Spectral::Basis::Legendre;
+  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  {
+    INFO("Identity");
+    const auto restriction_identity =
+        Spectral::projection_matrix_child_to_parent(
+            {3, basis, quadrature}, {3, basis, quadrature},
+            make_array<Dim>(Spectral::ChildSize::Full));
+    const auto prolongation_identity =
+        Spectral::projection_matrix_parent_to_child(
+            {3, basis, quadrature}, {3, basis, quadrature},
+            make_array<Dim>(Spectral::ChildSize::Full));
+    for (size_t d = 0; d < Dim;++d) {
+      CHECK(gsl::at(restriction_identity, d).get() == Matrix{});
+      CHECK(gsl::at(prolongation_identity, d).get() == Matrix{});
+    }
+  }
+  {
+    const size_t parent_extents = 3;
+    std::array<size_t, Dim> child_extents{};
+    std::iota(child_extents.begin(), child_extents.end(), size_t{3});
+    auto child_sizes = make_array<Dim>(Spectral::ChildSize::Full);
+    if constexpr (Dim > 1) {
+      child_sizes[1] = Spectral::ChildSize::UpperHalf;
+    }
+    const auto projection_matrix = Spectral::projection_matrix_child_to_parent(
+        {child_extents, basis, quadrature}, {parent_extents, basis, quadrature},
+        child_sizes);
+    CHECK(projection_matrix[0].get() == Matrix{});
+    if constexpr (Dim > 1) {
+      CHECK(&projection_matrix[1].get() ==
+            &Spectral::projection_matrix_child_to_parent(
+                {4, basis, quadrature}, {3, basis, quadrature},
+                Spectral::ChildSize::UpperHalf));
+    }
+    if constexpr (Dim > 2) {
+      CHECK(&projection_matrix[2].get() ==
+            &Spectral::projection_matrix_child_to_parent(
+                {5, basis, quadrature}, {3, basis, quadrature},
+                Spectral::ChildSize::Full));
+    }
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
@@ -316,4 +368,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_p_element_to_mortar();
   test_h_mortar_to_element();
   test_h_element_to_mortar();
+  test_higher_dimensions<1>();
+  test_higher_dimensions<2>();
+  test_higher_dimensions<3>();
 }
