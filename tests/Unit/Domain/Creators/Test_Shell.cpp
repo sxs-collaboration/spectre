@@ -200,36 +200,39 @@ void test_shell_construction(
   CHECK(shell.initial_refinement_levels() == expected_refinement_level);
   using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Halves = Wedge3DMap::WedgeHalves;
+  const auto radial_distribution =
+      use_logarithmic_map ? domain::CoordinateMaps::Distribution::Logarithmic
+                          : domain::CoordinateMaps::Distribution::Linear;
   if (aspect_ratio == 1.0) {
     auto vector_of_maps = make_vector_coordinate_map_base<Frame::Logical,
                                                           Frame::Inertial>(
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0, OrientationMap<3>{},
-                   use_equiangular_map, Halves::Both, use_logarithmic_map},
+                   use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                         Direction<3>::lower_zeta()}}},
-                   use_equiangular_map, Halves::Both, use_logarithmic_map},
+                   use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                         Direction<3>::lower_eta()}}},
-                   use_equiangular_map, Halves::Both, use_logarithmic_map},
+                   use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                         Direction<3>::upper_eta()}}},
-                   use_equiangular_map, Halves::Both, use_logarithmic_map},
+                   use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                         Direction<3>::upper_eta()}}},
-                   use_equiangular_map, Halves::Both, use_logarithmic_map},
+                   use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
-                   use_equiangular_map, Halves::Both, use_logarithmic_map});
+                   use_equiangular_map, Halves::Both, radial_distribution});
     if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 2);
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {
@@ -269,14 +272,14 @@ void test_shell_construction(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{}, use_equiangular_map, Halves::Both,
-                       use_logarithmic_map},
+                       radial_distribution},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
-                       use_equiangular_map, Halves::Both, use_logarithmic_map},
+                       use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
@@ -284,7 +287,7 @@ void test_shell_construction(
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                      Direction<3>::lower_eta()}}},
-                use_equiangular_map, Halves::Both, use_logarithmic_map},
+                use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
@@ -292,7 +295,7 @@ void test_shell_construction(
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                      Direction<3>::upper_eta()}}},
-                use_equiangular_map, Halves::Both, use_logarithmic_map},
+                use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
@@ -300,7 +303,7 @@ void test_shell_construction(
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                      Direction<3>::upper_eta()}}},
-                use_equiangular_map, Halves::Both, use_logarithmic_map},
+                use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
@@ -308,7 +311,7 @@ void test_shell_construction(
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                      Direction<3>::upper_eta()}}},
-                use_equiangular_map, Halves::Both, use_logarithmic_map},
+                use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation));
     if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 2);

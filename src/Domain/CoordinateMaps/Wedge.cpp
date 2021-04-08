@@ -25,7 +25,7 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
                   OrientationMap<Dim> orientation_of_wedge,
                   const bool with_equiangular_map,
                   const WedgeHalves halves_to_use,
-                  const bool with_logarithmic_map) noexcept
+                  const Distribution radial_distribution) noexcept
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       sphericity_inner_(sphericity_inner),
@@ -33,7 +33,7 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
       orientation_of_wedge_(std::move(orientation_of_wedge)),
       with_equiangular_map_(with_equiangular_map),
       halves_to_use_(halves_to_use),
-      with_logarithmic_map_(with_logarithmic_map) {
+      radial_distribution_(radial_distribution) {
   const double sqrt_dim = sqrt(double{Dim});
   ASSERT(radius_inner > 0.0,
          "The radius of the inner surface must be greater than zero.");
@@ -51,21 +51,16 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
          "The arguments passed into the constructor for Wedge result in an "
          "object where the "
          "outer surface is pierced by the inner surface.");
-  ASSERT(not with_logarithmic_map_ or
-             (with_logarithmic_map_ and sphericity_inner_ == 1.0 and
-              sphericity_outer_ == 1.0),
-         "The logarithmic map is only supported for spherical wedges.");
+  ASSERT(radial_distribution_ == Distribution::Linear or
+             (sphericity_inner_ == 1.0 and sphericity_outer_ == 1.0),
+         "Only the 'Linear' radial distribution is supported for non-spherical "
+         "wedges.");
   ASSERT(
       get(determinant(discrete_rotation_jacobian(orientation_of_wedge_))) > 0.0,
       "Wedge rotations must be done in such a manner that the sign of "
       "the determinant of the discrete rotation is positive. This is to "
       "preserve handedness of the coordinates.");
-  if (with_logarithmic_map_) {
-    scaled_frustum_zero_ = 0.0;
-    sphere_zero_ = 0.5 * (log(radius_outer * radius_inner));
-    scaled_frustum_rate_ = 0.0;
-    sphere_rate_ = 0.5 * (log(radius_outer / radius_inner));
-  } else {
+  if (radial_distribution_ == Distribution::Linear) {
     scaled_frustum_zero_ = 0.5 / sqrt_dim *
                            ((1.0 - sphericity_outer_) * radius_outer +
                             (1.0 - sphericity_inner) * radius_inner);
@@ -76,6 +71,20 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
                             (1.0 - sphericity_inner) * radius_inner);
     sphere_rate_ = 0.5 * (sphericity_outer_ * radius_outer -
                           sphericity_inner * radius_inner);
+  } else if (radial_distribution_ == Distribution::Logarithmic) {
+    scaled_frustum_zero_ = 0.0;
+    sphere_zero_ = 0.5 * (log(radius_outer * radius_inner));
+    scaled_frustum_rate_ = 0.0;
+    sphere_rate_ = 0.5 * (log(radius_outer / radius_inner));
+  } else if (radial_distribution_ == Distribution::Inverse) {
+    scaled_frustum_zero_ = 0.0;
+    sphere_zero_ =
+        0.5 * (radius_inner + radius_outer) / radius_inner / radius_outer;
+    scaled_frustum_rate_ = 0.0;
+    sphere_rate_ =
+        0.5 * (radius_inner - radius_outer) / radius_inner / radius_outer;
+  } else {
+    ERROR("Unsupported radial distribution: " << radial_distribution_);
   }
 }
 
@@ -83,15 +92,17 @@ template <size_t Dim>
 template <typename T>
 tt::remove_cvref_wrap_t<T> Wedge<Dim>::default_physical_z(
     const T& zeta, const T& one_over_rho) const noexcept {
-  if (with_logarithmic_map_) {
+  if (radial_distribution_ == Distribution::Linear) {
+    // Using auto keeps this as a blaze expression.
+    const auto zeta_coefficient =
+        (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
+    const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
+    return z_zero + zeta_coefficient * zeta;
+  } else if (radial_distribution_ == Distribution::Logarithmic) {
     return exp(sphere_zero_ + sphere_rate_ * zeta) * one_over_rho;
+  } else {
+    return one_over_rho / (sphere_zero_ + sphere_rate_ * zeta);
   }
-
-  // Using auto keeps this as a blaze expression.
-  const auto zeta_coefficient =
-      (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
-  const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
-  return z_zero + zeta_coefficient * zeta;
 }
 
 template <size_t Dim>
@@ -172,11 +183,16 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
   }
   const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
   // Radial coordinate
-  const double zeta =
-      with_logarithmic_map_
-          ? (log(physical_coords[radial_coord] / one_over_rho) - sphere_zero_) /
-                sphere_rate_
-          : (physical_coords[radial_coord] - z_zero) / zeta_coefficient;
+  const double zeta = [this, physical_z = physical_coords[radial_coord],
+                       &one_over_rho, &z_zero, &zeta_coefficient]() noexcept {
+    if (radial_distribution_ == Distribution::Linear) {
+      return (physical_z - z_zero) / zeta_coefficient;
+    } else if (radial_distribution_ == Distribution::Logarithmic) {
+      return (log(physical_z / one_over_rho) - sphere_zero_) / sphere_rate_;
+    } else {
+      return (one_over_rho / physical_z - sphere_zero_) / sphere_rate_;
+    }
+  }();
   // Polar angle
   double xi = with_equiangular_map_ ? atan(cap[0]) / M_PI_4 : cap[0];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
@@ -232,10 +248,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
 
   const ReturnType one_over_rho_cubed = pow<3>(one_over_rho);
   const ReturnType physical_z = default_physical_z(zeta, one_over_rho);
-  const ReturnType s_factor =
-      with_logarithmic_map_
-          ? ReturnType{exp(sphere_zero_ + sphere_rate_ * zeta)}
-          : ReturnType{sphere_zero_ + sphere_rate_ * zeta};
+  const ReturnType s_factor = [this, &zeta]() noexcept -> ReturnType {
+    if (radial_distribution_ == Distribution::Linear) {
+      return sphere_zero_ + sphere_rate_ * zeta;
+    } else if (radial_distribution_ == Distribution::Logarithmic) {
+      return exp(sphere_zero_ + sphere_rate_ * zeta);
+    } else {
+      return 1. / (sphere_zero_ + sphere_rate_ * zeta);
+    }
+  }();
 
   auto jacobian_matrix =
       make_with_value<tnsr::Ij<ReturnType, Dim, Frame::NoFrame>>(xi, 0.0);
@@ -280,11 +301,13 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
 
   // Derivative by radial coordinate
   std::array<ReturnType, Dim> dxyz_dzeta{};
-  if (with_logarithmic_map_) {
-    dxyz_dzeta[radial_coord] = s_factor * sphere_rate_ * one_over_rho;
-  } else {
+  if (radial_distribution_ == Distribution::Linear) {
     dxyz_dzeta[radial_coord] =
         scaled_frustum_rate_ + sphere_rate_ * one_over_rho;
+  } else if (radial_distribution_ == Distribution::Logarithmic) {
+    dxyz_dzeta[radial_coord] = s_factor * sphere_rate_ * one_over_rho;
+  } else {
+    dxyz_dzeta[radial_coord] = -square(s_factor) * sphere_rate_ * one_over_rho;
   }
   dxyz_dzeta[polar_coord] = cap[0] * dxyz_dzeta[radial_coord];
   if constexpr (Dim == 3) {
@@ -340,17 +363,27 @@ Wedge<Dim>::inv_jacobian(
   const ReturnType scaled_z_frustum =
       scaled_frustum_zero_ + scaled_frustum_rate_ * zeta;
   const ReturnType s_factor_over_rho_cubed =
-      with_logarithmic_map_
-          ? ReturnType{exp(sphere_zero_ + sphere_rate_ * zeta) *
-                       one_over_rho_cubed}
-          : ReturnType{(sphere_zero_ + sphere_rate_ * zeta) *
-                       one_over_rho_cubed};
+      [this, &zeta, &one_over_rho_cubed]() noexcept -> ReturnType {
+    if (radial_distribution_ == Distribution::Linear) {
+      return (sphere_zero_ + sphere_rate_ * zeta) * one_over_rho_cubed;
+    } else if (radial_distribution_ == Distribution::Logarithmic) {
+      return exp(sphere_zero_ + sphere_rate_ * zeta) * one_over_rho_cubed;
+    } else {
+      return one_over_rho_cubed / (sphere_zero_ + sphere_rate_ * zeta);
+    }
+  }();
   const ReturnType one_over_dz_dzeta =
-      with_logarithmic_map_
-          ? ReturnType{1.0 / (exp(sphere_zero_ + sphere_rate_ * zeta) *
-                              sphere_rate_ * one_over_rho)}
-          : ReturnType{1.0 /
-                       (scaled_frustum_rate_ + sphere_rate_ * one_over_rho)};
+      [this, &zeta, &one_over_rho]() noexcept -> ReturnType {
+    if (radial_distribution_ == Distribution::Linear) {
+      return 1.0 / (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
+    } else if (radial_distribution_ == Distribution::Logarithmic) {
+      return 1.0 / (exp(sphere_zero_ + sphere_rate_ * zeta) * sphere_rate_ *
+                    one_over_rho);
+    } else {
+      return -square(sphere_zero_ + sphere_rate_ * zeta) / sphere_rate_ /
+             one_over_rho;
+    }
+  }();
   const ReturnType dzeta_factor = one_over_physical_z * one_over_dz_dzeta;
 
   auto inv_jacobian_matrix =
@@ -414,7 +447,7 @@ void Wedge<Dim>::pup(PUP::er& p) noexcept {
   p | orientation_of_wedge_;
   p | with_equiangular_map_;
   p | halves_to_use_;
-  p | with_logarithmic_map_;
+  p | radial_distribution_;
   p | scaled_frustum_zero_;
   p | sphere_zero_;
   p | scaled_frustum_rate_;
@@ -428,7 +461,7 @@ bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
          lhs.orientation_of_wedge_ == rhs.orientation_of_wedge_ and
          lhs.with_equiangular_map_ == rhs.with_equiangular_map_ and
          lhs.halves_to_use_ == rhs.halves_to_use_ and
-         lhs.with_logarithmic_map_ == rhs.with_logarithmic_map_ and
+         lhs.radial_distribution_ == rhs.radial_distribution_ and
          lhs.sphericity_inner_ == rhs.sphericity_inner_ and
          lhs.sphericity_outer_ == rhs.sphericity_outer_ and
          lhs.scaled_frustum_zero_ == rhs.scaled_frustum_zero_ and

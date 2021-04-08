@@ -8,6 +8,7 @@
 #include <optional>
 #include <random>
 
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -45,13 +46,20 @@ void test_wedge3d_all_directions() {
       CAPTURE(orientation);
       for (const auto& with_equiangular_map : {true, false}) {
         CAPTURE(with_equiangular_map);
-        for (const auto& with_logarithmic_map : {true, false}) {
-          CAPTURE(with_logarithmic_map);
-          const Wedge3D wedge_map(inner_radius, outer_radius,
-                                  with_logarithmic_map ? 1.0 : inner_sphericity,
-                                  with_logarithmic_map ? 1.0 : outer_sphericity,
-                                  orientation, with_equiangular_map, halves,
-                                  with_logarithmic_map);
+        for (const auto radial_distribution :
+             {CoordinateMaps::Distribution::Linear,
+              CoordinateMaps::Distribution::Logarithmic,
+              CoordinateMaps::Distribution::Inverse}) {
+          CAPTURE(radial_distribution);
+          const Wedge3D wedge_map(
+              inner_radius, outer_radius,
+              radial_distribution == CoordinateMaps::Distribution::Linear
+                  ? inner_sphericity
+                  : 1.0,
+              radial_distribution == CoordinateMaps::Distribution::Linear
+                  ? outer_sphericity
+                  : 1.0,
+              orientation, with_equiangular_map, halves, radial_distribution);
           test_suite_for_map_on_unit_cube(wedge_map);
         }
       }
@@ -72,33 +80,38 @@ void test_wedge3d_alignment() {
 
   for (const auto& with_equiangular_map : {true, false}) {
     CAPTURE(with_equiangular_map);
-    for (const auto& with_logarithmic_map : {true, false}) {
-      CAPTURE(with_logarithmic_map);
-      const double inner_sphericity = with_logarithmic_map ? 1.0 : 0.0;
+    for (const auto radial_distribution :
+         {CoordinateMaps::Distribution::Linear,
+          CoordinateMaps::Distribution::Logarithmic,
+          CoordinateMaps::Distribution::Inverse}) {
+      CAPTURE(radial_distribution);
+      const double inner_sphericity =
+          radial_distribution == CoordinateMaps::Distribution::Linear ? 0.0
+                                                                      : 1.0;
       const Wedge3D map_upper_zeta(inner_r, outer_r, inner_sphericity, 1.0,
                                    wedge_directions[0], with_equiangular_map,
                                    WedgeHalves::Both,
-                                   with_logarithmic_map);  // Upper Z wedge
+                                   radial_distribution);  // Upper Z wedge
       const Wedge3D map_upper_eta(inner_r, outer_r, inner_sphericity, 1.0,
                                   wedge_directions[2], with_equiangular_map,
                                   WedgeHalves::Both,
-                                  with_logarithmic_map);  // Upper Y wedge
+                                  radial_distribution);  // Upper Y wedge
       const Wedge3D map_upper_xi(inner_r, outer_r, inner_sphericity, 1.0,
                                  wedge_directions[4], with_equiangular_map,
                                  WedgeHalves::Both,
-                                 with_logarithmic_map);  // Upper X Wedge
+                                 radial_distribution);  // Upper X Wedge
       const Wedge3D map_lower_zeta(inner_r, outer_r, inner_sphericity, 1.0,
                                    wedge_directions[1], with_equiangular_map,
                                    WedgeHalves::Both,
-                                   with_logarithmic_map);  // Lower Z wedge
+                                   radial_distribution);  // Lower Z wedge
       const Wedge3D map_lower_eta(inner_r, outer_r, inner_sphericity, 1.0,
                                   wedge_directions[3], with_equiangular_map,
                                   WedgeHalves::Both,
-                                  with_logarithmic_map);  // Lower Y wedge
+                                  radial_distribution);  // Lower Y wedge
       const Wedge3D map_lower_xi(inner_r, outer_r, inner_sphericity, 1.0,
                                  wedge_directions[5], with_equiangular_map,
                                  WedgeHalves::Both,
-                                 with_logarithmic_map);  // Lower X wedge
+                                 radial_distribution);  // Lower X wedge
       const std::array<double, 3> lowest_corner{{-1.0, -1.0, -1.0}};
       const std::array<double, 3> along_xi{{1.0, -1.0, -1.0}};
       const std::array<double, 3> along_eta{{-1.0, 1.0, -1.0}};
@@ -204,33 +217,38 @@ void test_wedge3d_random_radii() {
   const auto wedge_directions = all_wedge_directions();
   for (const auto& with_equiangular_map : {true, false}) {
     CAPTURE(with_equiangular_map);
-    for (const auto& with_logarithmic_map : {true, false}) {
-      CAPTURE(with_logarithmic_map);
-      const double inner_sphericity = with_logarithmic_map ? 1.0 : 0.0;
+    for (const auto radial_distribution :
+         {CoordinateMaps::Distribution::Linear,
+          CoordinateMaps::Distribution::Logarithmic,
+          CoordinateMaps::Distribution::Inverse}) {
+      CAPTURE(radial_distribution);
+      const double inner_sphericity =
+          radial_distribution == CoordinateMaps::Distribution::Linear ? 0.0
+                                                                      : 1.0;
       const Wedge3D map_lower_xi(random_inner_radius_lower_xi,
                                  random_outer_radius_lower_xi, inner_sphericity,
                                  1.0, wedge_directions[5], with_equiangular_map,
-                                 WedgeHalves::Both, with_logarithmic_map);
+                                 WedgeHalves::Both, radial_distribution);
       const Wedge3D map_lower_eta(
           random_inner_radius_lower_eta, random_outer_radius_lower_eta,
           inner_sphericity, 1.0, wedge_directions[3], with_equiangular_map,
-          WedgeHalves::Both, with_logarithmic_map);
+          WedgeHalves::Both, radial_distribution);
       const Wedge3D map_lower_zeta(
           random_inner_radius_lower_zeta, random_outer_radius_lower_zeta,
           inner_sphericity, 1.0, wedge_directions[1], with_equiangular_map,
-          WedgeHalves::Both, with_logarithmic_map);
+          WedgeHalves::Both, radial_distribution);
       const Wedge3D map_upper_xi(random_inner_radius_upper_xi,
                                  random_outer_radius_upper_xi, inner_sphericity,
                                  1.0, wedge_directions[4], with_equiangular_map,
-                                 WedgeHalves::Both, with_logarithmic_map);
+                                 WedgeHalves::Both, radial_distribution);
       const Wedge3D map_upper_eta(
           random_inner_radius_upper_eta, random_outer_radius_upper_eta,
           inner_sphericity, 1.0, wedge_directions[2], with_equiangular_map,
-          WedgeHalves::Both, with_logarithmic_map);
+          WedgeHalves::Both, radial_distribution);
       const Wedge3D map_upper_zeta(
           random_inner_radius_upper_zeta, random_outer_radius_upper_zeta,
           inner_sphericity, 1.0, wedge_directions[0], with_equiangular_map,
-          WedgeHalves::Both, with_logarithmic_map);
+          WedgeHalves::Both, radial_distribution);
       CHECK(map_lower_xi(outer_corner)[0] ==
             approx(-random_outer_radius_lower_xi / sqrt(3.0)));
       CHECK(map_lower_eta(outer_corner)[1] ==
@@ -253,7 +271,7 @@ void test_wedge3d_random_radii() {
       CAPTURE(random_outer_face);
       CAPTURE(random_inner_face);
 
-      if (not with_logarithmic_map) {
+      if (radial_distribution == CoordinateMaps::Distribution::Linear) {
         CHECK(map_lower_xi(random_inner_face)[0] ==
               approx(-random_inner_radius_lower_xi / sqrt(3.0)));
         CHECK(map_lower_eta(random_inner_face)[1] ==
@@ -379,13 +397,15 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
 #endif
 }
 
-// [[OutputRegex, The logarithmic map is only supported for spherical wedges.]]
+// [[OutputRegex, Only the 'Linear' radial distribution is supported for
+// non-spherical wedges.]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.LogarithmicMap",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, true,
-                                Wedge3D::WedgeHalves::Both, true);
+  auto failed_wedge3d = Wedge3D(
+      0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, true, Wedge3D::WedgeHalves::Both,
+      domain::CoordinateMaps::Distribution::Logarithmic);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
