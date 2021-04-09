@@ -356,7 +356,7 @@ struct SetLocalMortarData {
 template <size_t Dim, TestHelpers::SystemType SystemType>
 struct System {
   static constexpr size_t volume_dim = Dim;
-  using boundary_correction = BoundaryCorrection<Dim>;
+  using boundary_correction_base = BoundaryCorrection<Dim>;
 
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
   using flux_variables = tmpl::conditional_t<

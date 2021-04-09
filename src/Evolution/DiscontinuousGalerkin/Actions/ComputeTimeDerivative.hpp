@@ -177,9 +177,10 @@ namespace evolution::dg::Actions {
  *
  * ### Internal Boundary Terms
  *
- * Internal boundary terms are computed from the `System::boundary_correction`
- * type alias. This type alias must point to a base class with
- * `creatable_classes`. Each concrete boundary correction must specify:
+ * Internal boundary terms are computed from the
+ * `System::boundary_correction_base` type alias. This type alias must point to
+ * a base class with `creatable_classes`. Each concrete boundary correction must
+ * specify:
  *
  * - type alias template `dg_package_field_tags`. These are what will be
  *   returned by `gsl::not_null` from the `dg_package_data` member function.
@@ -267,7 +268,7 @@ namespace evolution::dg::Actions {
  *   - `Metavariables::system::variables_tag`
  *   - `Metavariables::system::flux_variables`
  *   - `Metavariables::system::primitive_tags` if exists
- *   - `Metavariables::system::boundary_correction::dg_package_data_volume_tags`
+ *   - `system::boundary_correction_base::dg_package_data_volume_tags`
  *
  * DataBox changes:
  * - Adds: nothing
@@ -296,12 +297,12 @@ struct ComputeTimeDerivative {
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           Metavariables::volume_dim>>>;
   using const_global_cache_tags = tmpl::append<
-      tmpl::conditional_t<
-          detail::has_boundary_correction_v<typename Metavariables::system>,
-          tmpl::list<::dg::Tags::Formulation,
-                     evolution::Tags::BoundaryCorrection<
-                         typename Metavariables::system>>,
-          tmpl::list<::dg::Tags::Formulation>>,
+      tmpl::conditional_t<detail::has_boundary_correction_base_v<
+                              typename Metavariables::system>,
+                          tmpl::list<::dg::Tags::Formulation,
+                                     evolution::Tags::BoundaryCorrection<
+                                         typename Metavariables::system>>,
+                          tmpl::list<::dg::Tags::Formulation>>,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
           tmpl::list<
@@ -437,7 +438,7 @@ ComputeTimeDerivative<Metavariables>::apply(
       },
       make_not_null(&box));
 
-  if constexpr (detail::has_boundary_correction_v<system>) {
+  if constexpr (detail::has_boundary_correction_base_v<system>) {
     const auto& boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<system>>(box);
     using derived_boundary_corrections =
@@ -625,7 +626,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
 
-  if constexpr (detail::has_boundary_correction_v<system>) {
+  if constexpr (detail::has_boundary_correction_base_v<system>) {
     const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
     const auto& all_mortar_data =
         db::get<evolution::dg::Tags::MortarData<volume_dim>>(*box);

@@ -8,8 +8,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
@@ -37,6 +38,9 @@ namespace ScalarWave {
 
 template <size_t Dim>
 struct System {
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
+
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
@@ -46,19 +50,13 @@ struct System {
   using gradient_variables = tmpl::list<Pi, Phi<Dim>, Psi>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
-  using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed;
 
-  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
-  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
-
-  // Remove gradients_tags once GH is converted over to the new
-  // dg::ComputeTimeDerivative action.
+  // Remove gradients_tags once ScalarWave and GH are converted over to the new
+  // dg::ComputeTimeDerivative action. We will need to remove the use of
+  // gradients_tags from Evolution/Initialization/Evolution.hpp
   using gradients_tags = gradient_variables;
 };
 }  // namespace ScalarWave

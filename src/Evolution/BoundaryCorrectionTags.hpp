@@ -19,7 +19,7 @@ namespace OptionTags {
 /// flux that is modified, but the integrand of the boundary integral.
 template <typename System>
 struct BoundaryCorrection {
-  using type = std::unique_ptr<typename System::boundary_correction>;
+  using type = std::unique_ptr<typename System::boundary_correction_base>;
   using group = SpatialDiscretization::OptionTags::SpatialDiscretizationGroup;
   static constexpr Options::String help = "The boundary correction to use.";
 };
@@ -35,7 +35,7 @@ namespace Tags {
 /// flux that is modified, but the integrand of the boundary integral.
 template <typename System>
 struct BoundaryCorrection : db::SimpleTag {
-  using type = std::unique_ptr<typename System::boundary_correction>;
+  using type = std::unique_ptr<typename System::boundary_correction_base>;
 
   using option_tags = tmpl::list<OptionTags::BoundaryCorrection<System>>;
   static constexpr bool pass_metavariables = false;

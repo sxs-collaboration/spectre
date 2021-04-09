@@ -16,12 +16,16 @@ DomainCreator:
   Interval:
     LowerBound: [-0.25]
     UpperBound: [0.75]
-    IsPeriodicIn: [false]
     InitialRefinement: [1]
     InitialGridPoints: [2]
     TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary: DirichletAnalytic
+      UpperBoundary: DirichletAnalytic
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    Hll:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -37,9 +41,6 @@ AnalyticSolution:
     RightVelocity: [0.0]
     RightPressure: 0.1
     PressureStarTol: 1e-9
-
-NumericalFlux:
-  Hll:
 
 Limiter:
   Minmod:

@@ -748,7 +748,7 @@ size_t Outflow<Dim>::number_of_times_called = 0;
 struct NoBoundaryCorrection {};
 template <size_t Dim, bool HasPrims>
 struct HaveBoundaryCorrection {
-  using boundary_correction = BoundaryCorrection<Dim, HasPrims>;
+  using boundary_correction_base = BoundaryCorrection<Dim, HasPrims>;
 };
 
 template <size_t Dim, SystemType system_type,

@@ -35,12 +35,14 @@ DomainCreator:
   Rectangle:
     LowerBound: [0.0, 0.0]
     UpperBound: [6.283185307179586, 6.283185307179586]
-    IsPeriodicIn: [true, true]
     InitialRefinement: [2, 2]
     InitialGridPoints: [4, 4]
     TimeDependence: None
+    BoundaryCondition: Periodic
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -51,9 +53,6 @@ Filtering:
     Alpha: 12
     HalfPower: 32
     DisableForDebugging: false
-
-NumericalFlux:
-  UpwindPenalty:
 
 EventsAndTriggers:
   ? Slabs:

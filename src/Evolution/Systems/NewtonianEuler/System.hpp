@@ -5,8 +5,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
@@ -28,6 +29,9 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
+
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag = ::Tags::Variables<tmpl::list<
       Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity>>;
@@ -53,13 +57,8 @@ struct System {
   using primitive_from_conservative =
       PrimitiveFromConservative<Dim, thermodynamic_dim>;
 
-  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
-  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed<Dim>;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
 };
 
 }  // namespace NewtonianEuler

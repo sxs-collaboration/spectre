@@ -46,7 +46,7 @@ struct BoundaryCorrection : public BoundaryCorrectionBase {
 };
 
 struct System {
-  using boundary_correction = BoundaryCorrectionBase;
+  using boundary_correction_base = BoundaryCorrectionBase;
 };
 }  // namespace
 
