@@ -30,19 +30,9 @@ struct MinimumGridSpacing;
 /// \endcond
 
 namespace StepChoosers {
-template <typename Frame, typename System, typename StepChooserRegistrars>
-class Cfl;
-
-namespace Registrars {
-template <typename Frame, typename System>
-using Cfl = Registration::Registrar<StepChoosers::Cfl, Frame, System>;
-}  // namespace Registrars
-
 /// Suggests a step size based on the CFL stability criterion.
-template <typename Frame, typename System,
-          typename StepChooserRegistrars =
-              tmpl::list<Registrars::Cfl<Frame, System>>>
-class Cfl : public StepChooser<StepChooserRegistrars> {
+template <typename StepChooserUse, typename Frame, typename System>
+class Cfl : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   Cfl() = default;
@@ -63,8 +53,6 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
 
   explicit Cfl(const double safety_factor) noexcept
       : safety_factor_(safety_factor) {}
-
-  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
 
   using argument_tags =
       tmpl::list<domain::Tags::MinimumGridSpacing<System::volume_dim, Frame>,
@@ -99,8 +87,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
 };
 
 /// \cond
-template <typename Frame, typename System, typename StepChooserRegistrars>
-PUP::able::PUP_ID Cfl<Frame, System, StepChooserRegistrars>::my_PUP_ID =
-    0;  // NOLINT
+template <typename StepChooserUse, typename Frame, typename System>
+PUP::able::PUP_ID Cfl<StepChooserUse, Frame, System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

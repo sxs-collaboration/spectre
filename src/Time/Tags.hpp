@@ -147,10 +147,10 @@ struct TimeStepper {
 
 /// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
-template <typename Registrars>
 struct StepChoosers {
   static constexpr Options::String help{"Limits on LTS step size"};
-  using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
+  using type =
+      std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
   static size_t lower_bound_on_size() noexcept { return 1; }
   using group = evolution::OptionTags::Group;
 };
@@ -225,10 +225,10 @@ struct TimeStepper : TimeStepper<>, db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for a vector of ::StepChooser%s
-template <typename Registrars>
 struct StepChoosers : db::SimpleTag {
-  using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
-  using option_tags = tmpl::list<::OptionTags::StepChoosers<Registrars>>;
+  using type =
+      std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
+  using option_tags = tmpl::list<::OptionTags::StepChoosers>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& step_choosers) noexcept {
@@ -249,9 +249,4 @@ struct StepController : db::SimpleTag {
     return deserialize<type>(serialize<type>(step_controller).data());
   }
 };
-
-/// \ingroup TimeGroup
-/// \brief A tag that is true if the `ErrorControl` step chooser is one of the
-/// option-created `Event`s.
-struct IsUsingTimeSteppingErrorControlBase : db::BaseTag {};
 }  // namespace Tags

@@ -31,21 +31,9 @@ struct Element;
 /// \endcond
 
 namespace StepChoosers {
-template <size_t Dim, typename StepChooserRegistrars>
-class ByBlock;
-
-namespace Registrars {
-template <size_t Dim>
-struct ByBlock {
-  template <typename StepChooserRegistrars>
-  using f = StepChoosers::ByBlock<Dim, StepChooserRegistrars>;
-};
-}  // namespace Registrars
-
 /// Suggests specified step sizes in each block
-template <size_t Dim,
-          typename StepChooserRegistrars = tmpl::list<Registrars::ByBlock<Dim>>>
-class ByBlock : public StepChooser<StepChooserRegistrars> {
+template <typename StepChooserUse, size_t Dim>
+class ByBlock : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   ByBlock() = default;
@@ -66,8 +54,6 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
 
   explicit ByBlock(std::vector<double> sizes) noexcept
       : sizes_(std::move(sizes)) {}
-
-  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
 
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
   using return_tags = tmpl::list<>;
@@ -92,7 +78,7 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
 };
 
 /// \cond
-template <size_t Dim, typename StepChooserRegistrars>
-PUP::able::PUP_ID ByBlock<Dim, StepChooserRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename StepChooserUse, size_t Dim>
+PUP::able::PUP_ID ByBlock<StepChooserUse, Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

@@ -75,12 +75,8 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
-#include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/Increase.hpp"
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"
+#include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -149,23 +145,6 @@ struct EvolutionMetavars {
                       NewtonianEuler::Tags::MomentumDensity<Dim>,
                       NewtonianEuler::Tags::EnergyDensity>>>;
 
-  using step_choosers_common = tmpl::list<
-      StepChoosers::Registrars::Cfl<Frame::Inertial, system>,
-      StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
-  using step_choosers_for_step_only =
-      tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
-  using step_choosers_for_slab_only =
-      tmpl::list<StepChoosers::Registrars::StepToTimes>;
-  using step_choosers = tmpl::conditional_t<
-      local_time_stepping,
-      tmpl::append<step_choosers_common, step_choosers_for_step_only>,
-      tmpl::list<>>;
-  using slab_choosers = tmpl::conditional_t<
-      local_time_stepping,
-      tmpl::append<step_choosers_common, step_choosers_for_slab_only>,
-      tmpl::append<step_choosers_common, step_choosers_for_step_only,
-                   step_choosers_for_slab_only>>;
-
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
@@ -181,7 +160,7 @@ struct EvolutionMetavars {
           tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                               analytic_variables_tags, tmpl::list<>>>,
       Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
-      Events::Registrars::ChangeSlabSize<slab_choosers>>>;
+      Events::Registrars::ChangeSlabSize>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
@@ -189,6 +168,11 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   StepChoosers::standard_step_choosers<system>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   StepChoosers::standard_slab_choosers<system,
+                                                        local_time_stepping>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
@@ -353,10 +337,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &NewtonianEuler::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
-    &Parallel::register_derived_classes_with_charm<
-        StepChooser<metavariables::slab_choosers>>,
-    &Parallel::register_derived_classes_with_charm<
-        StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,

@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
@@ -26,6 +27,7 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <pup.h>
@@ -34,9 +36,6 @@
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
-using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
-using change_step_size = Actions::ChangeStepSize<step_choosers>;
-
 struct Var : db::SimpleTag {
   using type = double;
 };
@@ -62,7 +61,7 @@ struct Component {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<change_step_size,
+          tmpl::list<Actions::ChangeStepSize,
                      /*UpdateU action is required to satisfy internal checks of
                         `ChangeStepSize`. It is not used in the test.*/
                      Actions::UpdateU<>>>>;
@@ -71,7 +70,14 @@ struct Component {
 struct Metavariables {
   using system = System;
   static constexpr bool local_time_stepping = true;
-  using const_global_cache_tags = change_step_size::const_global_cache_tags;
+  using const_global_cache_tags =
+      Actions::ChangeStepSize::const_global_cache_tags;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        StepChooser<StepChooserUse::LtsStep>,
+        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
+  };
   using component_list = tmpl::list<Component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -87,13 +93,12 @@ void check(const bool time_runs_forward,
 
   using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using Constant = StepChoosers::Constant<StepChooserUse::LtsStep>;
   MockRuntimeSystem runner{
-      {make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
-           std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
-                                                                   request),
-           std::make_unique<StepChoosers::Constant<step_choosers>>(request),
-           std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
-                                                                   request)),
+      {make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+           std::make_unique<Constant>(2. * request),
+           std::make_unique<Constant>(request),
+           std::make_unique<Constant>(2. * request)),
        std::make_unique<StepControllers::BinaryFraction>(),
        std::move(time_stepper)}};
 
@@ -120,8 +125,8 @@ void check(const bool time_runs_forward,
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
   Parallel::register_derived_classes_with_charm<TimeStepper>();
-  Parallel::register_derived_classes_with_charm<StepChooser<step_choosers>>();
   Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
   check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),

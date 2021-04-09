@@ -17,6 +17,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Constant.hpp"
@@ -28,6 +29,7 @@
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -48,10 +50,24 @@ struct ErrorControlSelecter {
   }
 };
 
-using StepChooserType = StepChooser<
-    tmpl::list<StepChoosers::Registrars::ErrorControl<EvolvedVariablesTag>>>;
-
+template <bool WithErrorControl>
 struct Metavariables {
+  using step_choosers_without_error_control =
+      tmpl::list<StepChoosers::Increase<StepChooserUse::LtsStep>,
+                 StepChoosers::Constant<StepChooserUse::LtsStep>,
+                 StepChoosers::PreventRapidIncrease<StepChooserUse::LtsStep>>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        StepChooser<StepChooserUse::LtsStep>,
+        tmpl::conditional_t<
+            WithErrorControl,
+            tmpl::push_back<step_choosers_without_error_control,
+                            StepChoosers::ErrorControl<EvolvedVariablesTag>>,
+            step_choosers_without_error_control>>>;
+  };
+
   using component_list = tmpl::list<>;
 };
 
@@ -62,7 +78,7 @@ std::pair<double, bool> get_suggestion(
     const Variables<EvolvedTags>& step_values,
     const Variables<ErrorTags>& error, const double previous_step,
     const size_t stepper_order) noexcept {
-  const Parallel::GlobalCache<Metavariables> cache{};
+  const Parallel::GlobalCache<Metavariables<true>> cache{};
   TimeSteppers::History<
       Variables<EvolvedTags>,
       typename db::add_tag_prefix<::Tags::dt, EvolvedVariablesTag>::type>
@@ -71,20 +87,22 @@ std::pair<double, bool> get_suggestion(
                  0.1 * step_values);
   auto box = db::create<
       db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
           Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
           db::add_tag_prefix<Tags::StepperError, EvolvedVariablesTag>,
           Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>,
           StepChoosers::Tags::PreviousStepError>,
       db::AddComputeTags<>>(
-      std::move(history), error, false,
+      Metavariables<true>{}, std::move(history), error, false,
       std::unique_ptr<TimeStepper>{
           std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)},
       *previous_step_error);
 
   const auto& time_stepper = get<Tags::TimeStepper<>>(box);
-  const std::unique_ptr<StepChooserType> error_control_base =
-      std::make_unique<StepChoosers::ErrorControl<EvolvedVariablesTag>>(
-          error_control);
+  const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
+      error_control_base =
+          std::make_unique<StepChoosers::ErrorControl<EvolvedVariablesTag>>(
+              error_control);
 
   // check that when the error is not declared updated, the step is accepted and
   // the step is infinity.
@@ -131,7 +149,7 @@ std::pair<double, bool> get_suggestion(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepChooserType>();
+  Parallel::register_factory_classes_with_charm<Metavariables<true>>();
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> step_dist{1.0, 2.0};
@@ -248,16 +266,18 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
     }
   }
   // test option creation
-  TestHelpers::test_creation<
-      std::unique_ptr<StepChoosers::ErrorControl<EvolvedVariablesTag>>>(
+  TestHelpers::test_factory_creation<
+      StepChooser<StepChooserUse::LtsStep>,
+      StepChoosers::ErrorControl<EvolvedVariablesTag>>(
       "ErrorControl:\n"
       "  SafetyFactor: 0.95\n"
       "  AbsoluteTolerance: 1.0e-5\n"
       "  RelativeTolerance: 1.0e-4\n"
       "  MaxFactor: 2.1\n"
       "  MinFactor: 0.5");
-  TestHelpers::test_creation<std::unique_ptr<
-      StepChoosers::ErrorControl<EvolvedVariablesTag, ErrorControlSelecter>>>(
+  TestHelpers::test_factory_creation<
+      StepChooser<StepChooserUse::LtsStep>,
+      StepChoosers::ErrorControl<EvolvedVariablesTag, ErrorControlSelecter>>(
       "ErrorControl(SelectorLabel):\n"
       "  SafetyFactor: 0.95\n"
       "  AbsoluteTolerance: 1.0e-5\n"
@@ -268,50 +288,39 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
   // Test `IsUsingTimeSteppingErrorControl` tag:
   {
     INFO("IsUsingTimeSteppingErrorControl tag test");
-    using step_choosers_with_error_control =
-        tmpl::list<StepChoosers::Registrars::Increase,
-                   StepChoosers::Registrars::Constant,
-                   StepChoosers::Registrars::ErrorControl<EvolvedVariablesTag>,
-                   StepChoosers::Registrars::PreventRapidIncrease>;
-    using step_choosers_without_error_control =
-        tmpl::list<StepChoosers::Registrars::Increase,
-                   StepChoosers::Registrars::Constant,
-                   StepChoosers::Registrars::PreventRapidIncrease>;
-    const auto step_choosers_collection_0 = TestHelpers::test_creation<
-        typename Tags::StepChoosers<step_choosers_with_error_control>::type>(
-        "- ErrorControl:\n"
-        "    SafetyFactor: 0.95\n"
-        "    AbsoluteTolerance: 1.0e-5\n"
-        "    RelativeTolerance: 1.0e-4\n"
-        "    MaxFactor: 2.1\n"
-        "    MinFactor: 0.5\n"
-        "- Increase:\n"
-        "    Factor: 2\n"
-        "- Constant: 0.5");
-    const auto step_choosers_collection_1 = TestHelpers::test_creation<
-        typename Tags::StepChoosers<step_choosers_with_error_control>::type>(
-        "- PreventRapidIncrease:\n"
-        "- Increase:\n"
-        "    Factor: 2\n"
-        "- Constant: 0.5");
-    const auto step_choosers_collection_2 = TestHelpers::test_creation<
-        typename Tags::StepChoosers<step_choosers_without_error_control>::type>(
-        "- PreventRapidIncrease:\n"
-        "- Increase:\n"
-        "    Factor: 2\n"
-        "- Constant: 0.5");
-    CHECK(Tags::IsUsingTimeSteppingErrorControl<
-          step_choosers_with_error_control>::
-              create_from_options<Metavariables>(step_choosers_collection_0));
-    CHECK_FALSE(
-        Tags::IsUsingTimeSteppingErrorControl<
-            step_choosers_with_error_control>::
-            create_from_options<Metavariables>(step_choosers_collection_1));
-    CHECK_FALSE(
-        Tags::IsUsingTimeSteppingErrorControl<
-            step_choosers_without_error_control>::
-            create_from_options<Metavariables>(step_choosers_collection_2));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<
-                tmpl::list<>>::create_from_options());
+    const auto step_choosers_collection_0 =
+        TestHelpers::test_creation<typename Tags::StepChoosers::type,
+                                   Metavariables<true>>(
+            "- ErrorControl:\n"
+            "    SafetyFactor: 0.95\n"
+            "    AbsoluteTolerance: 1.0e-5\n"
+            "    RelativeTolerance: 1.0e-4\n"
+            "    MaxFactor: 2.1\n"
+            "    MinFactor: 0.5\n"
+            "- Increase:\n"
+            "    Factor: 2\n"
+            "- Constant: 0.5");
+    const auto step_choosers_collection_1 =
+        TestHelpers::test_creation<typename Tags::StepChoosers::type,
+                                   Metavariables<true>>(
+            "- PreventRapidIncrease:\n"
+            "- Increase:\n"
+            "    Factor: 2\n"
+            "- Constant: 0.5");
+    const auto step_choosers_collection_2 =
+        TestHelpers::test_creation<typename Tags::StepChoosers::type,
+                                   Metavariables<false>>(
+            "- PreventRapidIncrease:\n"
+            "- Increase:\n"
+            "    Factor: 2\n"
+            "- Constant: 0.5");
+    CHECK(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+          Metavariables<true>>(step_choosers_collection_0));
+    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+                Metavariables<true>>(step_choosers_collection_1));
+    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+                Metavariables<false>>(step_choosers_collection_2));
+    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl::create_from_options<
+                Metavariables<true>>({}));
   }
 }

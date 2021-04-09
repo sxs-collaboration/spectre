@@ -19,6 +19,9 @@
 /// \cond
 class TimeDelta;
 class TimeStepId;
+namespace StepChooserUse {
+struct LtsStep;
+}  // namespace StepChooserUse
 namespace Tags {
 template <typename Tag>
 struct Next;
@@ -33,17 +36,13 @@ struct Next;
 /// This free function alternative permits the inclusion of the time step
 /// procedure in the middle of another action. When used as a free function, the
 /// calling action is responsible for specifying the const global cache tags
-/// needed by this function (`Tags::StepChoosers<StepChooserRegistrars>`,
-/// `Tags::StepController`).
-template <typename StepChooserRegistrars, typename DbTags,
-          typename Metavariables>
+/// needed by this function (`Tags::StepChoosers`, `Tags::StepController`).
+template <typename DbTags, typename Metavariables>
 bool change_step_size(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  using step_choosers_tag = Tags::StepChoosers<StepChooserRegistrars>;
-
   const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(*box);
-  const auto& step_choosers = db::get<step_choosers_tag>(*box);
+  const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
   const auto& step_controller = db::get<Tags::StepController>(*box);
 
   const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
@@ -126,11 +125,9 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
-template <typename StepChooserRegistrars>
 struct ChangeStepSize {
-  using step_choosers_tag = Tags::StepChoosers<StepChooserRegistrars>;
   using const_global_cache_tags =
-      tmpl::list<step_choosers_tag, Tags::StepController>;
+      tmpl::list<Tags::StepChoosers, Tags::StepController>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -150,8 +147,7 @@ struct ChangeStepSize {
         "an action that is not UpdateU, consider using the take_step function "
         "to handle both stepping and step-choosing instead of the "
         "ChangeStepSize action.");
-    const bool step_successful =
-        change_step_size<StepChooserRegistrars>(make_not_null(&box), cache);
+    const bool step_successful = change_step_size(make_not_null(&box), cache);
     if (step_successful) {
       return {std::move(box), false,
               tmpl::index_of<ActionList, ChangeStepSize>::value};

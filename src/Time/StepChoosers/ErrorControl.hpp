@@ -26,16 +26,6 @@ class GlobalCache;
 /// \endcond
 
 namespace StepChoosers {
-template <typename EvolvedType, typename ErrorControlSelector,
-          typename StepChooserRegistrars>
-class ErrorControl;
-
-namespace Registrars {
-template <typename EvolvedType, typename ErrorControlSelector = NoSuchType>
-using ErrorControl = Registration::Registrar<StepChoosers::ErrorControl,
-                                             EvolvedType, ErrorControlSelector>;
-}  // namespace Registrars
-
 namespace Tags {
 struct PreviousStepError : db::SimpleTag {
   using type = std::optional<double>;
@@ -102,11 +92,9 @@ struct PreviousStepError : db::SimpleTag {
  * in the same executable. The name used for the input file includes
  * `ErrorControlSelector::name()` if it is provided.
  */
-template <
-    typename EvolvedVariableTag, typename ErrorControlSelector = NoSuchType,
-    typename StepChooserRegistrars = tmpl::list<
-        Registrars::ErrorControl<EvolvedVariableTag, ErrorControlSelector>>>
-class ErrorControl : public StepChooser<StepChooserRegistrars> {
+template <typename EvolvedVariableTag,
+          typename ErrorControlSelector = NoSuchType>
+class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
  public:
   using evolved_variable_type = typename EvolvedVariableTag::type;
   using error_variable_type =
@@ -176,8 +164,6 @@ class ErrorControl : public StepChooser<StepChooserRegistrars> {
         max_factor_{max_factor},
         min_factor_{min_factor},
         safety_factor_{safety_factor} {}
-
-  static constexpr UsableFor usable_for = UsableFor::OnlyLtsStepChoice;
 
   using argument_tags =
       tmpl::list<::Tags::HistoryEvolvedVariables<EvolvedVariableTag>,
@@ -284,36 +270,34 @@ class ErrorControl : public StepChooser<StepChooserRegistrars> {
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 /// \cond
-template <typename EvolvedVariableTag, typename ErrorControlSelector,
-          typename StepChooserRegistrars>
-PUP::able::PUP_ID ErrorControl<EvolvedVariableTag, ErrorControlSelector,
-                               StepChooserRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename EvolvedVariableTag, typename ErrorControlSelector>
+PUP::able::PUP_ID
+    ErrorControl<EvolvedVariableTag, ErrorControlSelector>::my_PUP_ID =
+        0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers
 
 namespace Tags {
-/// Determines at runtime whether the `ErrorControl` step chooser has been
-/// selected.
-template <typename StepChooserRegistrars>
-struct IsUsingTimeSteppingErrorControl : IsUsingTimeSteppingErrorControlBase,
-                                         db::SimpleTag {
+/// \ingroup TimeGroup
+/// \brief A tag that is true if the `ErrorControl` step chooser is one of the
+/// option-created `Event`s.
+struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
   using type = bool;
   template <typename Metavariables>
-  using option_tags = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<(tmpl::size<StepChooserRegistrars>::value > 0),
-                          ::OptionTags::StepChoosers<StepChooserRegistrars>,
-                          tmpl::list<>>>>;
+  using option_tags = tmpl::list<::OptionTags::StepChoosers>;
 
   static constexpr bool pass_metavariables = true;
   template <typename Metavariables>
   static bool create_from_options(
-      const std::vector<std::unique_ptr<::StepChooser<StepChooserRegistrars>>>&
+      const std::vector<
+          std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
           step_choosers) noexcept {
     bool is_using_error_control = false;
     // unwraps the factory-created classes to determine whether any of the
     // step choosers are the ErrorControl step chooser.
     tmpl::for_each<
-        typename StepChooser<StepChooserRegistrars>::creatable_classes>(
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 StepChooser<StepChooserUse::LtsStep>>>(
         [&is_using_error_control,
          &step_choosers](auto step_chooser_type_v) noexcept {
           if (is_using_error_control) {
@@ -334,14 +318,5 @@ struct IsUsingTimeSteppingErrorControl : IsUsingTimeSteppingErrorControlBase,
         });
     return is_using_error_control;
   }
-};
-
-template <>
-struct IsUsingTimeSteppingErrorControl<tmpl::list<>>
-    : db::SimpleTag, ::Tags::IsUsingTimeSteppingErrorControlBase {
-  using type = bool;
-  using option_tags = tmpl::list<>;
-  static constexpr bool pass_metavariables = false;
-  static bool create_from_options() noexcept { return false; }
 };
 }  // namespace Tags

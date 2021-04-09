@@ -313,9 +313,8 @@ struct ComputeTimeDerivative {
                           tmpl::list<::dg::Tags::Formulation>>,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<
-              ::Tags::StepChoosers<typename Metavariables::step_choosers>,
-              ::Tags::StepController, ::Tags::TimeStepper<LtsTimeStepper>>,
+          tmpl::list<::Tags::StepChoosers, ::Tags::StepController,
+                     ::Tags::TimeStepper<LtsTimeStepper>>,
           tmpl::list<>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -521,8 +520,7 @@ ComputeTimeDerivative<Metavariables>::apply(
   }
 
   if constexpr (Metavariables::local_time_stepping) {
-    take_step<typename Metavariables::step_choosers>(make_not_null(&box),
-                                                     cache);
+    take_step(make_not_null(&box), cache);
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),

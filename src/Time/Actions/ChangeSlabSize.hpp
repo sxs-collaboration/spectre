@@ -25,6 +25,7 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -38,8 +39,6 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-template <typename StepChooserRegistrars>
-class StepChooser;
 namespace Tags {
 struct DataBox;
 template <typename Tag>
@@ -213,13 +212,11 @@ struct ChangeSlabSize {
 }  // namespace Actions
 
 namespace Events {
-template <typename StepChooserRegistrars, typename EventRegistrars>
+template <typename EventRegistrars>
 class ChangeSlabSize;
 
 namespace Registrars {
-template <typename StepChooserRegistrars>
-using ChangeSlabSize =
-    Registration::Registrar<Events::ChangeSlabSize, StepChooserRegistrars>;
+using ChangeSlabSize = Registration::Registrar<Events::ChangeSlabSize>;
 }  // namespace Registrars
 
 /// \ingroup TimeGroup
@@ -236,9 +233,7 @@ using ChangeSlabSize =
 /// integration.  With local time-stepping this controls the interval
 /// between times when the sequences of steps on all elements are
 /// forced to align.
-template <typename StepChooserRegistrars,
-          typename EventRegistrars =
-              tmpl::list<Registrars::ChangeSlabSize<StepChooserRegistrars>>>
+template <typename EventRegistrars = tmpl::list<Registrars::ChangeSlabSize>>
 class ChangeSlabSize : public Event<EventRegistrars> {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<int64_t, funcl::AssertEqual<>>,
@@ -254,7 +249,7 @@ class ChangeSlabSize : public Event<EventRegistrars> {
   struct StepChoosers {
     static constexpr Options::String help = "Limits on slab size";
     using type =
-        std::vector<std::unique_ptr<StepChooser<StepChooserRegistrars>>>;
+        std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>;
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
@@ -271,7 +266,7 @@ class ChangeSlabSize : public Event<EventRegistrars> {
 
   ChangeSlabSize() = default;
   ChangeSlabSize(
-      std::vector<std::unique_ptr<StepChooser<StepChooserRegistrars>>>
+      std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>
           step_choosers,
       const uint64_t delay_change) noexcept
       : step_choosers_(std::move(step_choosers)), delay_change_(delay_change) {}
@@ -329,15 +324,13 @@ class ChangeSlabSize : public Event<EventRegistrars> {
   }
 
  private:
-  std::vector<std::unique_ptr<StepChooser<StepChooserRegistrars>>>
+  std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>
       step_choosers_;
   uint64_t delay_change_ = std::numeric_limits<uint64_t>::max();
 };
 
 /// \cond
-template <typename StepChooserRegistrars, typename EventRegistrars>
-PUP::able::PUP_ID
-    ChangeSlabSize<StepChooserRegistrars, EventRegistrars>::my_PUP_ID =
-        0;  // NOLINT
+template <typename EventRegistrars>
+PUP::able::PUP_ID ChangeSlabSize<EventRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

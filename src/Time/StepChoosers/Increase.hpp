@@ -12,7 +12,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -23,16 +22,9 @@ class GlobalCache;
 /// \endcond
 
 namespace StepChoosers {
-template <typename StepChooserRegistrars>
-class Increase;
-
-namespace Registrars {
-using Increase = Registration::Registrar<StepChoosers::Increase>;
-}  // namespace Registrars
-
 /// Suggests increasing the step size by a constant ratio.
-template <typename StepChooserRegistrars = tmpl::list<Registrars::Increase>>
-class Increase : public StepChooser<StepChooserRegistrars> {
+template <typename StepChooserUse>
+class Increase : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   Increase() = default;
@@ -52,8 +44,6 @@ class Increase : public StepChooser<StepChooserRegistrars> {
 
   explicit Increase(const double factor) noexcept : factor_(factor) {}
 
-  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
-
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<>;
 
@@ -72,7 +62,7 @@ class Increase : public StepChooser<StepChooserRegistrars> {
 };
 
 /// \cond
-template <typename StepChooserRegistrars>
-PUP::able::PUP_ID Increase<StepChooserRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename StepChooserUse>
+PUP::able::PUP_ID Increase<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

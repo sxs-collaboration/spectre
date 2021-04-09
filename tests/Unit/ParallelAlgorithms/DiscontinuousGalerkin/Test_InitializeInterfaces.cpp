@@ -28,6 +28,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
@@ -37,6 +38,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -133,6 +135,10 @@ struct Metavariables {
   static constexpr bool use_moving_mesh = UseMovingMesh;
   static constexpr bool local_time_stepping = false;
   using system = System<Dim>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<>;
+  };
   using element_array = ElementArray<Dim, Metavariables>;
   using component_list = tmpl::list<element_array>;
   enum class Phase { Initialization, Testing, Exit };

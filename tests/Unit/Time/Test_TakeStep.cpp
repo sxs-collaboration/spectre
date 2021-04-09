@@ -15,8 +15,11 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TakeStep.hpp"
@@ -24,6 +27,7 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 struct EvolvedVariable : db::SimpleTag {
@@ -51,26 +55,34 @@ struct Metavariables {
     };
   };
   using time_stepper_tag = Tags::TimeStepper<LtsTimeStepper>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::list<StepChoosers::Increase<StepChooserUse::LtsStep>,
+                              StepChoosers::Cfl<
+                                  StepChooserUse::LtsStep, Frame::Inertial,
+                                  typename Metavariables::system>>>>;
+  };
+
   using component_list = tmpl::list<>;
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
-  using step_chooser_list =
-      tmpl::list<StepChoosers::Registrars::Increase,
-                 StepChoosers::Registrars::Cfl<Frame::Inertial,
-                                               typename Metavariables::system>>;
   const Slab slab{0.0, 1.00};
   const TimeDelta time_step = slab.duration() / 4;
 
   const Parallel::GlobalCache<Metavariables> cache{};
-  std::vector<std::unique_ptr<StepChooser<step_chooser_list>>> step_choosers;
+  std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
+      step_choosers;
   step_choosers.emplace_back(
-      std::make_unique<StepChoosers::Increase<step_chooser_list>>(2.0));
+      std::make_unique<StepChoosers::Increase<StepChooserUse::LtsStep>>(2.0));
   step_choosers.emplace_back(
       std::make_unique<
-          StepChoosers::Cfl<Frame::Inertial, typename Metavariables::system,
-                            step_chooser_list>>(1.0));
+          StepChoosers::Cfl<StepChooserUse::LtsStep, Frame::Inertial,
+                            typename Metavariables::system>>(1.0));
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist{-1.0, 1.0};
@@ -95,17 +107,17 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
       time_step, 4);
 
   auto box = db::create<
-      db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                         Tags::TimeStep, Tags::Next<Tags::TimeStep>,
                         EvolvedVariable, Tags::dt<EvolvedVariable>,
                         Tags::HistoryEvolvedVariables<EvolvedVariable>,
-                        Tags::TimeStepper<LtsTimeStepper>,
-                        Tags::StepChoosers<step_chooser_list>,
+                        Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
                         domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
                         Tags::StepController>,
       db::AddComputeTags<typename Metavariables::system::
                              compute_largest_characteristic_speed>>(
-      TimeStepId{true, 0_st, slab.start()},
+      Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
@@ -118,7 +130,7 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
                                          db::get<EvolvedVariable>(box));
-  take_step<step_chooser_list>(make_not_null(&box), cache);
+  take_step(make_not_null(&box), cache);
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == 0.0);
   CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time().value() ==
@@ -156,7 +168,7 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
       make_not_null(&box), [](const gsl::not_null<double*> grid_spacing) {
         *grid_spacing = 0.15 / TimeSteppers::AdamsBashforthN{5}.stable_step();
       });
-  take_step<step_chooser_list>(make_not_null(&box), cache);
+  take_step(make_not_null(&box), cache);
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == approx(0.25));
   CHECK(db::get<Tags::TimeStep>(box) == TimeDelta{slab, {1, 8}});
