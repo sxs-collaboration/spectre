@@ -58,6 +58,12 @@ class Event : public PUP::able {
           db::apply(*event, box, cache, array_index, ComponentPointer{});
         });
   }
+
+  /// Whether the event uses anything depending on the
+  /// evolved_variables.  If this returns false, anything depending on
+  /// the evolved variables may have an incorrect value when the event
+  /// is run.
+  virtual bool needs_evolved_variables() const noexcept = 0;
 };
 
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"

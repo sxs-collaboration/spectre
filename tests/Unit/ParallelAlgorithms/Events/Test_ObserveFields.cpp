@@ -426,6 +426,8 @@ void test_observe(
         });
   }
   CHECK(results.in_received_tensor_data.size() == num_components_observed);
+
+  CHECK(observe->needs_evolved_variables());
 }
 
 template <typename System, bool AlwaysHasAnalyticSolutions = true>

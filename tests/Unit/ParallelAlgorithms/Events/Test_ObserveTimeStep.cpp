@@ -238,6 +238,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
   for (const bool print_to_terminal : {true, false}) {
     const Events::ObserveTimeStep<Metavariables> observer("time_step_subfile",
                                                           print_to_terminal);
+    CHECK(not observer.needs_evolved_variables());
     test_observe(observer, false);
     test_observe(observer, true);
     test_observe(serialize_and_deserialize(observer), false);

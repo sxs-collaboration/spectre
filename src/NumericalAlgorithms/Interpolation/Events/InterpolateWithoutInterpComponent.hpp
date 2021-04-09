@@ -177,6 +177,8 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
         time_id);
   }
+
+  bool needs_evolved_variables() const noexcept override { return true; }
 };
 
 /// \cond

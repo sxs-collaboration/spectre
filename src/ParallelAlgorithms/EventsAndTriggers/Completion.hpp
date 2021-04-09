@@ -40,6 +40,8 @@ class Completion : public Event<EventRegistrars> {
             .ckLocal();
     al_gore->set_terminate(true);
   }
+
+  bool needs_evolved_variables() const noexcept override { return false; }
 };
 
 /// \cond

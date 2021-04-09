@@ -25,6 +25,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -56,6 +57,10 @@ class SomeEvent : public Event<EventRegistrars> {
   get_observation_type_and_key_for_registration() const noexcept {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey(subfile_path_ + ".dat")};
+  }
+
+  bool needs_evolved_variables() const noexcept override {
+    ERROR("Should not be called");
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

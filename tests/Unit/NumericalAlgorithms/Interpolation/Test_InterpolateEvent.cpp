@@ -215,6 +215,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                              metavars::InterpolatorTargetA,
                              metavars::interpolator_source_vars> event{};
 
+  CHECK(event.needs_evolved_variables());
   event.run(box, ActionTesting::cache<elem_component>(runner, array_index),
             array_index, std::add_pointer_t<elem_component>{});
 
