@@ -6,7 +6,10 @@
 #include <array>
 #include <charm++.h>
 #include <execinfo.h>
+// link.h is not available on all platforms
+#if __has_include(<link.h>)
 #include <link.h>
+#endif
 #include <memory>
 #include <sstream>
 
@@ -17,6 +20,7 @@
 namespace {
 struct FillBacktrace {};
 
+#if __has_include(<link.h>)
 // Convert the address to the virtual memory address inside the
 // library/executable. This is the address that addr2line and llvm-addr2line
 // expect.
@@ -30,6 +34,7 @@ void* convert_to_virtual_memory_address(const void* addr) {
   return reinterpret_cast<void*>(reinterpret_cast<size_t>(addr) -
                                  link_map->l_addr);
 }
+#endif  // __has_include(<link.h>)
 
 std::ostream& operator<<(std::ostream& os, const FillBacktrace& /*unused*/) {
   // 3 for the stream operator and abort_with_error_message, 10 for the
@@ -41,6 +46,7 @@ std::ostream& operator<<(std::ostream& os, const FillBacktrace& /*unused*/) {
       backtrace_symbols(trace_elems.data(), trace_elem_count), free};
   // Start at 3 to ignore stream operator and abort_with_error_message
   for (int i = 3; i < trace_elem_count; ++i) {
+#if __has_include(<link.h>)
     Dl_info info;
     const auto i_st = static_cast<size_t>(i);
     // clang-tidy wants us to use gsl::at, but it would be nice not to make
@@ -53,6 +59,9 @@ std::ostream& operator<<(std::ostream& os, const FillBacktrace& /*unused*/) {
     } else {
       os << stack_syms.get()[i] << "\n";
     }
+#else  // __has_include(<link.h>)
+    os << stack_syms.get()[i] << "\n";
+#endif  // __has_include(<link.h>)
   }
   return os;
 }
