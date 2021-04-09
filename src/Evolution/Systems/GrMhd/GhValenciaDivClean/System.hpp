@@ -47,13 +47,20 @@ struct System {
   using gradient_variables =
       tmpl::append<typename gh_system::gradient_variables,
                    typename grmhd_system::gradient_variables>;
-  using gradient_tags = gradient_variables;
+  using gradients_tags = gradient_variables;
   using sourced_variables = typename grmhd_system::sourced_variables;
+  static constexpr bool is_in_flux_conservative_form = false;
 
   using primitive_variables_tag =
       typename grmhd_system::primitive_variables_tag;
-  using spacetime_variables_tag =
-      typename grmhd_system::spacetime_variables_tag;
+  using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
   using volume_fluxes = typename grmhd_system::volume_fluxes;

@@ -1,0 +1,141 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhValenciaDivCleanTovStar
+# Check: parse;execute
+# ExpectedOutput:
+#   GhMhdTovStarVolume0.h5
+#   GhMhdTovStarReductions.h5
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0001
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+
+PhaseChangeAndTriggers:
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1000
+          Offset: 5
+    - - VisitAndReturn(LoadBalancing)
+
+# Note: this domain is chosen so that we only need to simulate the interior
+# of the star
+DomainCreator:
+  Brick:
+    LowerBound: [-5.0, -5.0, -5.0]
+    UpperBound: [5.0, 5.0, 5.0]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [3, 3, 3]
+    TimeDependence: None
+    BoundaryCondition:
+      ProductDirichletAnalyticAndDirichletAnalytic:
+        GeneralizedHarmonicDirichletAnalytic:
+        ValenciaDirichletAnalytic:
+
+AnalyticSolution:
+  TovStar:
+    CentralDensity: 1.28e-3
+    PolytropicConstant: 100.0
+    PolytropicExponent: 2.0
+
+VariableFixing:
+  FixConservatives:
+    CutoffD: 1.0e-12
+    MinimumValueOfD: 1.0e-12
+    SafetyFactorForB: 1.0e-12
+    SafetyFactorForS: 1.0e-12
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-12
+    DensityCutoff: 1.0e-12
+    TransitionDensityCutoff: 1.0e-11
+    MaxVelocityMagnitude: 1.0e-4
+
+Limiter:
+  Minmod:
+    Type: Muscl
+    TvbConstant: 50.0
+    DisableForDebugging: false
+
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
+  GeneralizedHarmonic:
+    DhGaugeParameters:
+      RollOnStartTime: 100000.0
+      RollOnTimeWindow: 100.0
+      SpatialDecayWidth: 50.0
+      Amplitudes: [1.0, 1.0, 1.0]
+      Exponents: [4, 4, 4]
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0, 0.0, 0.0]
+
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+  BoundaryCorrection:
+    ProductUpwindPenaltyAndRusanov:
+      UpwindPenalty:
+      Rusanov:
+
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ChangeSlabSize:
+        DelayChange: 5
+        StepChoosers:
+          - Cfl:
+              SafetyFactor: 0.6
+          - Increase:
+              Factor: 1.5
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 1
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: Errors
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - SpacetimeMetric
+          - RestMassDensity
+          - Pressure
+          - MagneticField
+          - PointwiseL2Norm(ThreeIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double, Double, Double, Double, Double]
+  ? Slabs:
+      Specified:
+        Values: [3]
+  : - Completion
+
+Observers:
+  VolumeFileName: "GhMhdTovStarVolume"
+  ReductionFileName: "GhMhdTovStarReductions"
