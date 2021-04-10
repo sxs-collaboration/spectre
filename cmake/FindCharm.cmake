@@ -53,18 +53,19 @@ find_library(CHARM_LIBCK
     PATH_SUFFIXES lib
     HINTS ${CHARM_ROOT} ENV CHARM_ROOT
 )
-find_library(CHARM_EVERYLB
-    NAMES libmoduleEveryLB.a
-    PATH_SUFFIXES lib64 lib
-    HINTS ${CHARM_ROOT} ENV CHARM_ROOT
-)
-
-if("${CHARM_EVERYLB}" STREQUAL "CHARM_EVERYLB-NOTFOUND")
-  message(SEND_ERROR "Could not find charm module EveryLB."
-    "Make sure you have built the LIBS target when building charm++")
-endif()
 
 get_filename_component(CHARM_LIBRARIES ${CHARM_LIBCK} DIRECTORY)
+
+find_library(CHARM_EVERYLB
+  NAMES moduleEveryLB
+  HINTS ${CHARM_LIBRARIES}
+  NO_DEFAULT_PATH
+  )
+
+if("${CHARM_EVERYLB}" STREQUAL "CHARM_EVERYLB-NOTFOUND")
+  message(SEND_ERROR "Could not find charm module EveryLB. "
+    "Make sure you have built the LIBS target when building charm++")
+endif()
 
 find_program(CHARM_COMPILER
   NAMES charmc
