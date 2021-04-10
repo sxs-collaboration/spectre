@@ -34,6 +34,7 @@ spectre_target_headers(
   Info.hpp
   InitializationFunctions.hpp
   Invoke.hpp
+  Local.hpp
   Main.hpp
   MaxInlineMethodsReached.hpp
   NodeLock.hpp
