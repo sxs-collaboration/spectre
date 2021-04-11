@@ -21,8 +21,8 @@ template <size_t VolumeDim>
 class ElementId;
 /// \endcond
 
-namespace amr {
-/// \ingroup ComputationalDomainGroup
+namespace domain::amr {
+/// \ingroup AmrGroup
 /// \brief Updates the AMR decisions `my_current_amr_flags` of the Element
 /// `element` based on the AMR decisions `neighbor_amr_flags` of a neighbor
 /// Element with ElementId `neighbor_id`.
@@ -46,4 +46,4 @@ bool update_amr_decision(
     gsl::not_null<std::array<amr::Flag, VolumeDim>*> my_current_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept;
-}  // namespace amr
+}  // namespace domain::amr
