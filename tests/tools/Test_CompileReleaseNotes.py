@@ -85,39 +85,46 @@ class TestCompileReleaseNotes(unittest.TestCase):
         self.assertEqual(
             compile_release_notes([]),
             textwrap.dedent("""\
-                ## Merged pull-requests
+                ## Merged pull-requests (0)
 
                 _None_
                 """))
-        pr1 = PullRequest(id=1, title="Add this")
+        pr1 = PullRequest(id=1, title="Add this", author="author1")
         pr2 = PullRequest(id=2,
                           title="Also add this new feature",
+                          author="author2",
                           url="https://github.com/2")
         self.assertEqual(
             compile_release_notes([pr1, pr2]),
             textwrap.dedent("""\
-                ## Merged pull-requests
+                ## Merged pull-requests (2)
 
-                **General changes:**
+                **General changes (2):**
 
                 - Add this (#1)
                 - Also add this new feature ([#2](https://github.com/2))
+
+                Contributors (2): @author1, @author2
                 """))
         major_pr1 = PullRequest(id=3,
                                 title="This is big",
+                                author="author2",
                                 group='major new feature',
                                 upgrade_instructions="- Do this.\n- And that.")
         major_pr2 = PullRequest(id=4,
                                 title="Another feature",
+                                author="author3",
                                 group='major new feature')
         bugfix_pr1 = PullRequest(
             id=5,
             title="Fixed this bug",
+            author="author3",
             url='https://github.com/5',
             group='bugfix',
             upgrade_instructions="You'll have to rerun your simulation.")
         bugfix_pr2 = PullRequest(id=6,
                                  title="Fixed another bug",
+                                 author="author1",
                                  group='bugfix')
         self.assertEqual(
             compile_release_notes(
@@ -134,22 +141,24 @@ class TestCompileReleaseNotes(unittest.TestCase):
 
                 You'll have to rerun your simulation.
 
-                ## Merged pull-requests
+                ## Merged pull-requests (6)
 
-                **Major new features:**
+                **Major new features (2):**
 
                 - This is big (#3)
                 - Another feature (#4)
 
-                **General changes:**
+                **General changes (2):**
 
                 - Add this (#1)
                 - Also add this new feature ([#2](https://github.com/2))
 
-                **Bugfixes:**
+                **Bugfixes (2):**
 
                 - Fixed this bug ([#5](https://github.com/5))
                 - Fixed another bug (#6)
+
+                Contributors (3): @author1, @author2, @author3
                 """))
 
 
