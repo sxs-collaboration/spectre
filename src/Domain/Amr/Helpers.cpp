@@ -11,20 +11,19 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace amr {
+namespace amr::domain {
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels(
-    const ElementId<VolumeDim>& id,
-    const std::array<amr::Flag, VolumeDim>& flags) {
+    const ElementId<VolumeDim>& id, const std::array<Flag, VolumeDim>& flags) {
   std::array<size_t, VolumeDim> result{};
 
   for (size_t d = 0; d < VolumeDim; ++d) {
-    ASSERT(amr::Flag::Undefined != gsl::at(flags, d),
-           "Undefined amr::Flag in dimension " << d);
+    ASSERT(Flag::Undefined != gsl::at(flags, d),
+           "Undefined Flag in dimension " << d);
     gsl::at(result, d) = id.segment_id(d).refinement_level();
-    if (amr::Flag::Join == gsl::at(flags, d)) {
+    if (Flag::Join == gsl::at(flags, d)) {
       --gsl::at(result, d);
-    } else if (amr::Flag::Split == gsl::at(flags, d)) {
+    } else if (Flag::Split == gsl::at(flags, d)) {
       ++gsl::at(result, d);
     }
   }
@@ -34,20 +33,20 @@ std::array<size_t, VolumeDim> desired_refinement_levels(
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
     const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_flags,
+    const std::array<Flag, VolumeDim>& neighbor_flags,
     const OrientationMap<VolumeDim>& orientation) {
   if (orientation.is_aligned()) {
     return desired_refinement_levels(neighbor_id, neighbor_flags);
   }
   std::array<size_t, VolumeDim> result{};
   for (size_t d = 0; d < VolumeDim; ++d) {
-    ASSERT(amr::Flag::Undefined != gsl::at(neighbor_flags, d),
-           "Undefined amr::Flag in dimension " << d);
+    ASSERT(Flag::Undefined != gsl::at(neighbor_flags, d),
+           "Undefined Flag in dimension " << d);
     const size_t mapped_dim = orientation(d);
     gsl::at(result, d) = neighbor_id.segment_id(mapped_dim).refinement_level();
-    if (amr::Flag::Join == gsl::at(neighbor_flags, mapped_dim)) {
+    if (Flag::Join == gsl::at(neighbor_flags, mapped_dim)) {
       --gsl::at(result, d);
-    } else if (amr::Flag::Split == gsl::at(neighbor_flags, mapped_dim)) {
+    } else if (Flag::Split == gsl::at(neighbor_flags, mapped_dim)) {
       ++gsl::at(result, d);
     }
   }
@@ -65,10 +64,12 @@ bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
 
 #define INSTANTIATE(_, data)                                                   \
   template std::array<size_t, DIM(data)> desired_refinement_levels<DIM(data)>( \
-      const ElementId<DIM(data)>&, const std::array<amr::Flag, DIM(data)>&);   \
+      const ElementId<DIM(data)>&,                                             \
+      const std::array<Flag, DIM(data)>&);                                     \
   template std::array<size_t, DIM(data)>                                       \
   desired_refinement_levels_of_neighbor<DIM(data)>(                            \
-      const ElementId<DIM(data)>&, const std::array<amr::Flag, DIM(data)>&,    \
+      const ElementId<DIM(data)>&,                                             \
+      const std::array<Flag, DIM(data)>&,                                      \
       const OrientationMap<DIM(data)>&);                                       \
   template bool has_potential_sibling(const ElementId<DIM(data)>& element_id,  \
                                       const Direction<DIM(data)>& direction);
@@ -77,4 +78,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-}  // namespace amr
+}  // namespace amr::domain

@@ -18,6 +18,11 @@
  */
 
 /*!
+ * \defgroup AmrGroup Adaptive Mesh Refinement
+ * \brief Functions and classes specific to hp-adaptive mesh refinement.
+ */
+
+/*!
  * \defgroup AnalyticDataGroup Analytic Data
  * \brief Analytic data used to specify (for example) initial data to the
  * equations implemented in \ref EvolutionSystemsGroup.

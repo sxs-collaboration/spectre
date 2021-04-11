@@ -8,11 +8,9 @@
 
 #include <iosfwd>
 
-/// \ingroup ComputationalDomainGroup
-/// Items for adaptive mesh refinement
-namespace amr {
+namespace amr::domain {
 
-/// \ingroup ComputationalDomainGroup
+/// \ingroup AmrGroup
 /// \brief Flags that represent decisions about mesh refinement
 ///
 /// In order to support anisotropic mesh refinement, a flag is specified for
@@ -28,4 +26,4 @@ enum class Flag {
 
 /// Output operator for a Flag.
 std::ostream& operator<<(std::ostream& os, const Flag& flag);
-}  // namespace amr
+}  // namespace amr::domain

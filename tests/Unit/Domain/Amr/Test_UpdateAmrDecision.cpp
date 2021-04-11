@@ -28,41 +28,45 @@ namespace {
 
 template <size_t VolumeDim>
 void check_amr_decision_is_unchanged(
-    std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
+    std::array<amr::domain::Flag, VolumeDim> my_initial_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) {
+    const std::array<amr::domain::Flag, VolumeDim>&
+        neighbor_amr_flags) {
   const auto expected_updated_flags = my_initial_amr_flags;
   std::stringstream os;
   os << neighbor_amr_flags;
   INFO(os.str());
-  CHECK_FALSE(amr::update_amr_decision(make_not_null(&my_initial_amr_flags),
-                                       element, neighbor_id,
-                                       neighbor_amr_flags));
+  CHECK_FALSE(amr::domain::update_amr_decision(
+      make_not_null(&my_initial_amr_flags), element, neighbor_id,
+      neighbor_amr_flags));
   CHECK(expected_updated_flags == my_initial_amr_flags);
 }
 
 template <size_t VolumeDim>
 void check_amr_decision_is_changed(
-    std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
+    std::array<amr::domain::Flag, VolumeDim> my_initial_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags,
-    const std::array<amr::Flag, VolumeDim>& expected_updated_flags) {
+    const std::array<amr::domain::Flag, VolumeDim>& neighbor_amr_flags,
+    const std::array<amr::domain::Flag, VolumeDim>&
+        expected_updated_flags) {
   std::stringstream os;
   os << my_initial_amr_flags << " " << neighbor_amr_flags;
   INFO(os.str());
-  CHECK(amr::update_amr_decision(make_not_null(&my_initial_amr_flags), element,
-                                 neighbor_id, neighbor_amr_flags));
+  CHECK(amr::domain::update_amr_decision(make_not_null(&my_initial_amr_flags),
+                                         element, neighbor_id,
+                                         neighbor_amr_flags));
   CHECK(expected_updated_flags == my_initial_amr_flags);
 }
 
 template <size_t VolumeDim>
-using changed_flags_t = std::map<std::pair<std::array<amr::Flag, VolumeDim>,
-                                           std::array<amr::Flag, VolumeDim>>,
-                                 std::array<amr::Flag, VolumeDim>>;
+using changed_flags_t =
+    std::map<std::pair<std::array<amr::domain::Flag, VolumeDim>,
+                       std::array<amr::domain::Flag, VolumeDim>>,
+             std::array<amr::domain::Flag, VolumeDim>>;
 template <size_t VolumeDim>
 void check_update_amr_decision(
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::vector<std::array<amr::Flag, VolumeDim>>& all_flags,
+    const std::vector<std::array<amr::domain::Flag, VolumeDim>>& all_flags,
     const changed_flags_t<VolumeDim>& changed_flags) {
   for (const auto& my_flags : all_flags) {
     for (const auto& neighbor_flags : all_flags) {
@@ -122,10 +126,11 @@ Element<2> make_element(
 }
 
 void test_update_amr_decision_1d() {
-  const std::array<amr::Flag, 1> split{{amr::Flag::Split}};
-  const std::array<amr::Flag, 1> join{{amr::Flag::Join}};
-  const std::array<amr::Flag, 1> stay{{amr::Flag::DoNothing}};
-  const std::vector<std::array<amr::Flag, 1>> all_flags{split, join, stay};
+  const std::array<amr::domain::Flag, 1> split{{amr::domain::Flag::Split}};
+  const std::array<amr::domain::Flag, 1> join{{amr::domain::Flag::Join}};
+  const std::array<amr::domain::Flag, 1> stay{{amr::domain::Flag::DoNothing}};
+  const std::vector<std::array<amr::domain::Flag, 1>> all_flags{split, join,
+                                                                stay};
 
   const SegmentId x_segment{3, 5};
   const SegmentId x_cousin{3, 6};
@@ -164,25 +169,26 @@ void test_update_amr_decision_1d() {
 }
 
 void test_update_amr_decision_2d() {
-  const std::array<amr::Flag, 2> split_split{
-      {amr::Flag::Split, amr::Flag::Split}};
-  const std::array<amr::Flag, 2> join_split{
-      {amr::Flag::Join, amr::Flag::Split}};
-  const std::array<amr::Flag, 2> stay_split{
-      {amr::Flag::DoNothing, amr::Flag::Split}};
-  const std::array<amr::Flag, 2> split_stay{
-      {amr::Flag::Split, amr::Flag::DoNothing}};
-  const std::array<amr::Flag, 2> join_stay{
-      {amr::Flag::Join, amr::Flag::DoNothing}};
-  const std::array<amr::Flag, 2> stay_stay{
-      {amr::Flag::DoNothing, amr::Flag::DoNothing}};
-  const std::array<amr::Flag, 2> split_join{
-      {amr::Flag::Split, amr::Flag::Join}};
-  const std::array<amr::Flag, 2> join_join{{amr::Flag::Join, amr::Flag::Join}};
-  const std::array<amr::Flag, 2> stay_join{
-      {amr::Flag::DoNothing, amr::Flag::Join}};
+  const std::array<amr::domain::Flag, 2> split_split{
+      {amr::domain::Flag::Split, amr::domain::Flag::Split}};
+  const std::array<amr::domain::Flag, 2> join_split{
+      {amr::domain::Flag::Join, amr::domain::Flag::Split}};
+  const std::array<amr::domain::Flag, 2> stay_split{
+      {amr::domain::Flag::DoNothing, amr::domain::Flag::Split}};
+  const std::array<amr::domain::Flag, 2> split_stay{
+      {amr::domain::Flag::Split, amr::domain::Flag::DoNothing}};
+  const std::array<amr::domain::Flag, 2> join_stay{
+      {amr::domain::Flag::Join, amr::domain::Flag::DoNothing}};
+  const std::array<amr::domain::Flag, 2> stay_stay{
+      {amr::domain::Flag::DoNothing, amr::domain::Flag::DoNothing}};
+  const std::array<amr::domain::Flag, 2> split_join{
+      {amr::domain::Flag::Split, amr::domain::Flag::Join}};
+  const std::array<amr::domain::Flag, 2> join_join{
+      {amr::domain::Flag::Join, amr::domain::Flag::Join}};
+  const std::array<amr::domain::Flag, 2> stay_join{
+      {amr::domain::Flag::DoNothing, amr::domain::Flag::Join}};
 
-  const std::vector<std::array<amr::Flag, 2>> all_flags{
+  const std::vector<std::array<amr::domain::Flag, 2>> all_flags{
       split_split, join_split, stay_split, split_stay, join_stay,
       stay_stay,   split_join, join_join,  stay_join};
 
