@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 
+#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
