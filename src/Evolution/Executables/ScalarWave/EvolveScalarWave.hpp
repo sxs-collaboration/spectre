@@ -306,7 +306,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         StepChooser<metavariables::slab_choosers>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
-    &ScalarWave::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
