@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "Options/Options.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel {
 template <typename Metavariables>
@@ -21,7 +23,8 @@ struct Metavariables {
 
   template <typename... Tags>
   static Phase determine_next_phase(
-      const gsl::not_null<TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& /*current_phase*/,
       const Parallel::CProxy_GlobalCache<
           Metavariables>& /*cache_proxy*/) noexcept {
