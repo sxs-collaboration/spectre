@@ -6,6 +6,7 @@ set(LIBRARY "Test_Amr")
 set(LIBRARY_SOURCES
   Test_Flag.cpp
   Test_Helpers.cpp
+  Test_Tags.cpp
   Test_UpdateAmrDecision.cpp
   )
 
