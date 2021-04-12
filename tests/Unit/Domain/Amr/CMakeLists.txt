@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "Domain/Amr"
   "${LIBRARY_SOURCES}"
-  "Amr;Utilities"
+  "Amr;DomainStructure;Utilities"
   )
