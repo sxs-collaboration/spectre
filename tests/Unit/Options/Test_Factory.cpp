@@ -81,15 +81,16 @@ class TestWithArg : public OptionTest {
   std::string arg_;
 };
 
-// Same as TestWithArg, except there is an TestWithArg2::Arg::name() that
-// returns something other than "Arg" to test that Arg is named in the
-// input file using Options::name rather than pretty_type::short_name
+// Same as TestWithArg, except there is an TestWithArg2::name() that
+// returns something other than "TestWithArg2Arg" to test that class
+// is named in the input file using Options::name rather than
+// pretty_type::short_name
 class TestWithArg2 : public OptionTest {
  public:
+  static std::string name() noexcept { return "ThisIsArg"; }
   struct Arg {
     using type = std::string;
     static constexpr Options::String help = {"halp"};
-    static std::string name() noexcept { return "ThisIsArg"; }
   };
   using options = tmpl::list<Arg>;
   static constexpr Options::String help = {""};
@@ -177,8 +178,8 @@ void test_factory_with_name_function() {
   Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse(
       "OptionType:\n"
-      "  TestWithArg2:\n"
-      "    ThisIsArg: stuff");
+      "  ThisIsArg:\n"
+      "    Arg: stuff");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
   CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
