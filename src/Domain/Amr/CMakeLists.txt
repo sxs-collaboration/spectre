@@ -32,4 +32,5 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Tags)
