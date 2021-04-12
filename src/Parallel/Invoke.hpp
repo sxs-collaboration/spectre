@@ -32,6 +32,16 @@ template <typename ReceiveTag, typename Proxy, typename ReceiveDataType>
 void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
                   ReceiveDataType&& receive_data,
                   const bool enable_if_disabled = false) noexcept {
+  // Both branches of this if statement call into the charm proxy system, but
+  // because we specify [inline] for array chares, we must specify the
+  // `ReceiveDataType` explicitly in the template arguments when dispatching to
+  // array chares.
+  // This is required because of inconsistent overloads in the generated charm++
+  // files when [inline] is specified vs when it is not. The [inline] version
+  // generates a function signature with template parameters associated with
+  // each function argument, ensuring a redundant template parameter for the
+  // `ReceiveDataType`. Then, that template parameter cannot be inferred so must
+  // be explicitly specified.
   if constexpr (detail::has_ckLocal_method<std::decay_t<Proxy>>::value) {
     proxy.template receive_data<ReceiveTag, std::decay_t<ReceiveDataType>>(
         std::move(temporal_id), std::forward<ReceiveDataType>(receive_data),
