@@ -40,7 +40,7 @@ class OptionTest {
   OptionTest& operator=(OptionTest&&) = default;
   virtual ~OptionTest() = default;
 
-  virtual std::string name() const = 0;
+  virtual std::string derived_name() const = 0;
 };
 
 class Test1 : public OptionTest {
@@ -49,7 +49,7 @@ class Test1 : public OptionTest {
   static constexpr Options::String help = {"A derived class"};
   Test1() = default;
 
-  std::string name() const override { return "Test1"; }
+  std::string derived_name() const override { return "Test1"; }
 };
 // [factory_example]
 
@@ -59,7 +59,7 @@ class Test2 : public OptionTest {
   static constexpr Options::String help = {""};
   Test2() = default;
 
-  std::string name() const override { return "Test2"; }
+  std::string derived_name() const override { return "Test2"; }
 };
 
 class TestWithArg : public OptionTest {
@@ -73,7 +73,9 @@ class TestWithArg : public OptionTest {
   TestWithArg() = default;
   explicit TestWithArg(std::string arg) : arg_(std::move(arg)) {}
 
-  std::string name() const override { return "TestWithArg(" + arg_ + ")"; }
+  std::string derived_name() const override {
+    return "TestWithArg(" + arg_ + ")";
+  }
 
  private:
   std::string arg_;
@@ -94,7 +96,9 @@ class TestWithArg2 : public OptionTest {
   TestWithArg2() = default;
   explicit TestWithArg2(std::string arg) : arg_(std::move(arg)) {}
 
-  std::string name() const override { return "TestWithArg2(" + arg_ + ")"; }
+  std::string derived_name() const override {
+    return "TestWithArg2(" + arg_ + ")";
+  }
 
  private:
   std::string arg_;
@@ -129,7 +133,7 @@ struct TestWithMetavars : OptionTest {
                             Metavariables /*meta*/)
       : arg_(std::move(arg)), valid_(Metavariables::valid) {}
 
-  std::string name() const override {
+  std::string derived_name() const override {
     return "TestWithArg(" + arg_ + ")" +
            (valid_ ? std::string{"yes"} : std::string{"no"});
   }
@@ -144,7 +148,7 @@ void test_factory() {
   opts.parse("OptionType: Test2");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<true>>()->name() == "Test2");
+  CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() == "Test2");
 }
 
 void test_factory_with_colon() {
@@ -154,7 +158,7 @@ void test_factory_with_colon() {
       "  Test2:");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<true>>()->name() == "Test2");
+  CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() == "Test2");
 }
 
 void test_factory_with_arg() {
@@ -165,7 +169,8 @@ void test_factory_with_arg() {
       "    Arg: stuff");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<true>>()->name() == "TestWithArg(stuff)");
+  CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
+        "TestWithArg(stuff)");
 }
 
 void test_factory_with_name_function() {
@@ -176,7 +181,7 @@ void test_factory_with_name_function() {
       "    ThisIsArg: stuff");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<true>>()->name() ==
+  CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
         "TestWithArg2(stuff)");
 }
 
@@ -188,18 +193,18 @@ void test_factory_with_metavars() {
       "    Arg: stuff");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<true>>()->name() ==
+  CHECK(opts.get<OptionType, Metavars<true>>()->derived_name() ==
         "TestWithArg(stuff)yes");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
-  CHECK(opts.get<OptionType, Metavars<false>>()->name() ==
+  CHECK(opts.get<OptionType, Metavars<false>>()->derived_name() ==
         "TestWithArg(stuff)no");
   auto result_true = opts.apply<tmpl::list<OptionType>, Metavars<true>>(
       [&](auto arg) { return arg; });
-  CHECK(result_true->name() == "TestWithArg(stuff)yes");
+  CHECK(result_true->derived_name() == "TestWithArg(stuff)yes");
   auto result_false = opts.apply<tmpl::list<OptionType>, Metavars<false>>(
       [&](auto arg) { return arg; });
-  CHECK(result_false->name() == "TestWithArg(stuff)no");
+  CHECK(result_false->derived_name() == "TestWithArg(stuff)no");
 }
 
 void test_factory_object_vector() {
@@ -209,9 +214,9 @@ void test_factory_object_vector() {
   // `creatable_classes`
   const auto& arg = opts.get<Vector, Metavars<true>>();
   CHECK(arg.size() == 3);
-  CHECK(arg[0]->name() == "Test1");
-  CHECK(arg[1]->name() == "Test2");
-  CHECK(arg[2]->name() == "Test1");
+  CHECK(arg[0]->derived_name() == "Test1");
+  CHECK(arg[1]->derived_name() == "Test2");
+  CHECK(arg[2]->derived_name() == "Test1");
 }
 
 void test_factory_object_map() {
@@ -225,9 +230,9 @@ void test_factory_object_map() {
   // `creatable_classes`
   const auto& arg = opts.get<Map, Metavars<true>>();
   CHECK(arg.size() == 3);
-  CHECK(arg.at("A")->name() == "Test1");
-  CHECK(arg.at("B")->name() == "Test2");
-  CHECK(arg.at("C")->name() == "Test1");
+  CHECK(arg.at("A")->derived_name() == "Test1");
+  CHECK(arg.at("B")->derived_name() == "Test2");
+  CHECK(arg.at("C")->derived_name() == "Test1");
 }
 }  // namespace
 
@@ -285,5 +290,5 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
   Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType:\n"
              "  TestWithArg:");
-  CHECK(opts.get<OptionType, Metavars<true>>()->name() == "TestWithArg(stuff)");
+  opts.get<OptionType, Metavars<true>>();
 }
