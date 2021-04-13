@@ -13,6 +13,13 @@
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
+/// \cond
+namespace db {
+template <typename TypeList>
+class DataBox;
+}  // namespace db
+/// \endcond
+
 namespace Parallel {
 /// \cond
 template <typename Metavariables>
