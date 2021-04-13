@@ -465,6 +465,11 @@
  */
 
 /*!
+ * \defgroup FiniteDifferenceGroup Finite Difference
+ * \brief Functions needed for (conservative) finite difference methods.
+ */
+
+/*!
  * \defgroup GeneralRelativityGroup General Relativity
  * \brief Contains functions used in General Relativistic simulations
  */
