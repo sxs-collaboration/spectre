@@ -134,7 +134,8 @@ jobs:
             --github-token ${{ secrets.GITHUB_TOKEN }}
           python3 .github/scripts/Release.py publish -vv --check-only \
             --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
-            --github-token ${{ secrets.GITHUB_TOKEN }}
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --auto-publish
       - name: Check release notes
         run: |
           python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
@@ -614,16 +615,14 @@ jobs:
           release_name: Release ${{ env.RELEASE_VERSION }}
           body_path: >-
             ${{ steps.release-notes.outputs.download-path }}/release_notes.md
-      # This action currently doesn't publish the Zenodo record automatically.
-      # Instead it prints a link to the website where we can go and hit the
-      # "Publish" button when everything looks correct. Once we're convinced the
-      # automation works well enough we can add the `--auto-publish` flag to
-      # the command below.
+      # Publish the Zenodo record. Once published, the record can't be deleted
+      # anymore and editing is limited.
       - name: Publish to Zenodo
         run: |
           python3 .github/scripts/Release.py publish -vv \
             --zenodo-token ${{ secrets.ZENODO_PUBLISH_TOKEN }} \
-            --github-token ${{ secrets.GITHUB_TOKEN }}
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --auto-publish
 
   arch_datastructures_tests:
     name: Archs
