@@ -4,6 +4,8 @@
 set(LIBRARY "Test_M1Grey")
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_DirichletAnalytic.cpp
+  BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Actions.cpp
   Test_Fluxes.cpp

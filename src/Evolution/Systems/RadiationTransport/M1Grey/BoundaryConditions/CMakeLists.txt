@@ -1,17 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-spectre_target_sources(
-  ${LIBRARY}
-  PRIVATE
-  Rusanov.cpp
-  )
-
 spectre_target_headers(
-  ${LIBRARY}
+  M1Grey
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BoundaryCorrection.hpp
+  BoundaryCondition.hpp
+  DirichletAnalytic.hpp
   Factory.hpp
-  Rusanov.hpp
   )
