@@ -5,6 +5,7 @@ set(LIBRARY "Test_FiniteDifference")
 
 set(LIBRARY_SOURCES
   Test_Minmod.cpp
+  Test_MonotisedCentral.cpp
   )
 
 add_test_library(

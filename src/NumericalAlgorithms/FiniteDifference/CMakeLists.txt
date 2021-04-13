@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Minmod.cpp
+  MonotisedCentral.cpp
   )
 
 spectre_target_headers(
@@ -17,6 +18,7 @@ spectre_target_headers(
   HEADERS
   FiniteDifference.hpp
   Minmod.hpp
+  MonotisedCentral.hpp
   Reconstruct.hpp
   Reconstruct.tpp
   )
