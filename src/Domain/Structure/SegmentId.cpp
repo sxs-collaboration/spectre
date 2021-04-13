@@ -65,3 +65,10 @@ size_t hash_value(const SegmentId& segment_id) noexcept {
   return hash;
 }
 // LCOV_EXCL_STOP
+
+// NOLINTNEXTLINE(cert-dcl58-cpp)
+namespace std {
+size_t hash<SegmentId>::operator()(const SegmentId& segment_id) const noexcept {
+  return hash_value(segment_id);
+}
+}  // namespace std
