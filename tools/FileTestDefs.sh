@@ -603,6 +603,48 @@ prevent_cpp_doxygen_test() {
 }
 standard_checks+=(prevent_cpp_doxygen)
 
+# Check for CMakeLists.txt hardcoding library names
+cmakelists_hardcoded_libraries_command_list() {
+    printf '%s' add_dependencies
+    printf '|%s' add_test_library spectre_python_add_dependencies \
+           spectre_python_link_libraries spectre_target_headers \
+           spectre_target_sources target_link_libraries target_link_options
+}
+cmakelists_hardcoded_libraries() {
+    local CHECKED_COMMANDS=$(cmakelists_hardcoded_libraries_command_list)
+    [[ $1 =~ CMakeLists\.txt$ ]] && \
+        whitelist "$1" \
+                  "tests/Unit/Parallel/CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/Schwarz/\
+CMakeLists.txt$" && \
+        staged_grep -E -A1 "(${CHECKED_COMMANDS})\(\$" "$1" | \
+            grep -Ev -- "--|${CHECKED_COMMANDS}" | \
+            grep -qvF '${'
+}
+cmakelists_hardcoded_libraries_report() {
+    local CHECKED_COMMANDS=$(cmakelists_hardcoded_libraries_command_list)
+    echo "Found CMakeLists.txt files using hardcoded library names."
+    echo "Use a CMake variable to ensure the library name is consistent" \
+         "within the file."
+    pretty_grep -E -A1 "(${CHECKED_COMMANDS})\(\$" "$@" | \
+        grep -Ev -- "--|${CHECKED_COMMANDS}" | \
+        grep -vF '${'
+}
+cmakelists_hardcoded_libraries_test() {
+    test_check pass foo.hpp 'add_dependencies('$'\n''  Name'$'\n'
+    test_check fail CMakeLists.txt 'add_dependencies('$'\n''  Name'$'\n'
+    test_check pass CMakeLists.txt 'add_dependencies('$'\n''  ${LIBRARY}'$'\n'
+    test_check pass foo.hpp 'spectre_target_sources('$'\n''  Name'$'\n'
+    test_check fail CMakeLists.txt 'spectre_target_sources('$'\n''  Name'$'\n'
+    test_check pass CMakeLists.txt \
+               'spectre_target_sources('$'\n''  ${LIBRARY}'$'\n'
+    test_check pass foo.hpp 'target_link_options('$'\n''  Name'$'\n'
+    test_check fail CMakeLists.txt 'target_link_options('$'\n''  Name'$'\n'
+    test_check pass CMakeLists.txt \
+               'target_link_options('$'\n''  ${LIBRARY}'$'\n'
+}
+standard_checks+=(cmakelists_hardcoded_libraries)
+
 # Prevent editing RunSingleTest files. We may need to occasionally update these
 # files, but it's at least less than once a year.
 #

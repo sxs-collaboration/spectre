@@ -2,13 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  Elliptic
+  ${LIBRARY}
   PRIVATE
   BoundaryConditionType.cpp
   )
 
 spectre_target_headers(
-  Elliptic
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticSolution.hpp

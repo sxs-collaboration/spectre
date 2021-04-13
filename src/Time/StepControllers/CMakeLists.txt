@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  Time
+  ${LIBRARY}
   PRIVATE
   BinaryFraction.cpp
   FullSlab.cpp
@@ -11,7 +11,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  Time
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BinaryFraction.hpp

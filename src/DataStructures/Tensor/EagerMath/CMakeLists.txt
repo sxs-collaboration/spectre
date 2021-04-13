@@ -2,13 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  DataStructures
+  ${LIBRARY}
   PRIVATE
   OrthonormalOneform.cpp
   )
 
 spectre_target_headers(
-  DataStructures
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   CrossProduct.hpp

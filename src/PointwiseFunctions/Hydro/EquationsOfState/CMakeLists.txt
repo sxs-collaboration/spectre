@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  Hydro
+  ${LIBRARY}
   PRIVATE
   DarkEnergyFluid.cpp
   IdealFluid.cpp
@@ -10,7 +10,7 @@ spectre_target_sources(
   )
 
 spectre_target_headers(
-  Hydro
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DarkEnergyFluid.hpp

@@ -2,13 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_target_sources(
-  Cce
+  ${LIBRARY}
   PRIVATE
   ScriObserveInterpolated.cpp
   )
 
 spectre_target_headers(
-  Cce
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BoundaryComputeAndSendToEvolution.hpp

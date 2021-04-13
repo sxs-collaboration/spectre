@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_target_headers(
-  Evolution
+  ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DgElementArray.hpp
@@ -17,7 +17,7 @@ spectre_target_headers(
   )
 
 spectre_target_sources(
-  Evolution
+  ${LIBRARY}
   PRIVATE
   InterpolateFromBoundary.cpp
   LiftFromBoundary.cpp

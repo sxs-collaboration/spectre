@@ -16,7 +16,7 @@ add_test_library(
   )
 
 target_link_libraries(
-  Test_ParallelSchwarzActions
+  ${LIBRARY}
   PRIVATE
   Convergence
   DataStructures
