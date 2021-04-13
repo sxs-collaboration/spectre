@@ -52,6 +52,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -1772,7 +1773,7 @@ void test_impl(const Spectral::Quadrature quadrature,
           const auto& mortar_mesh = mortar_meshes.at(mortar_id);
           const auto& mortar_size = mortar_sizes.at(mortar_id);
           auto boundary_data_on_mortar =
-              ::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)
+              Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
                   ? ::dg::project_to_mortar(packaged_data, face_mesh,
                                             mortar_mesh, mortar_size)
                   : std::move(packaged_data);

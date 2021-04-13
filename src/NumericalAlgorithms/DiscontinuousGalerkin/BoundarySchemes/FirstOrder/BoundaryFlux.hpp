@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/NumericalFluxHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
@@ -80,7 +81,7 @@ Variables<typename NumericalFluxType::variables_tags> boundary_flux(
 
   // Project from the mortar back to the face if needed
   auto projected_fluxes =
-      needs_projection(face_mesh, mortar_mesh, mortar_size)
+      Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
           ? project_from_mortar(normal_dot_numerical_fluxes, face_mesh,
                                 mortar_mesh, mortar_size)
           : std::move(normal_dot_numerical_fluxes);

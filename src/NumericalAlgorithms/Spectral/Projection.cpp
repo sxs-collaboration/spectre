@@ -4,7 +4,9 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <functional>
 #include <initializer_list>
 #include <ostream>
 
@@ -12,8 +14,11 @@
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
@@ -32,6 +37,16 @@ std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept {
           "Invalid ChildSize. Expected one of: 'Full', 'UpperHalf', "
           "'LowerHalf'");
   }
+}
+
+template <size_t Dim>
+bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
+                      const std::array<ChildSize, Dim>& child_sizes) noexcept {
+  return mesh1 != mesh2 or
+         alg::any_of(child_sizes,
+                     [](const Spectral::MortarSize child_size) noexcept {
+                       return child_size != Spectral::ChildSize::Full;
+                     });
 }
 
 const Matrix& projection_matrix_child_to_parent(
@@ -214,6 +229,30 @@ const Matrix& projection_matrix_child_to_parent(
   }
 }
 
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim>
+projection_matrix_child_to_parent(
+    const Mesh<Dim>& child_mesh, const Mesh<Dim>& parent_mesh,
+    const std::array<ChildSize, Dim>& child_sizes) noexcept {
+  static const Matrix identity{};
+  auto projection_matrix = make_array<Dim>(std::cref(identity));
+  const auto child_mesh_slices = child_mesh.slices();
+  const auto parent_mesh_slices = parent_mesh.slices();
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto child_mesh_slice = gsl::at(child_mesh_slices, d);
+    const auto parent_mesh_slice = gsl::at(parent_mesh_slices, d);
+    const auto child_size = gsl::at(child_sizes, d);
+    if (child_size == ChildSize::Full and
+        child_mesh_slice == parent_mesh_slice) {
+      // No projection necessary, keep matrix the identity in this dimension
+      continue;
+    }
+    gsl::at(projection_matrix, d) = projection_matrix_child_to_parent(
+        child_mesh_slice, parent_mesh_slice, child_size);
+  }
+  return projection_matrix;
+}
+
 const Matrix& projection_matrix_parent_to_child(
     const Mesh<1>& parent_mesh, const Mesh<1>& child_mesh,
     const ChildSize size) noexcept {
@@ -299,5 +338,48 @@ const Matrix& projection_matrix_parent_to_child(
       ERROR("Invalid ChildSize");
   }
 }
+
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim>
+projection_matrix_parent_to_child(
+    const Mesh<Dim>& parent_mesh, const Mesh<Dim>& child_mesh,
+    const std::array<ChildSize, Dim>& child_sizes) noexcept {
+  static const Matrix identity{};
+  auto projection_matrix = make_array<Dim>(std::cref(identity));
+  const auto child_mesh_slices = child_mesh.slices();
+  const auto parent_mesh_slices = parent_mesh.slices();
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto child_mesh_slice = gsl::at(child_mesh_slices, d);
+    const auto parent_mesh_slice = gsl::at(parent_mesh_slices, d);
+    const auto child_size = gsl::at(child_sizes, d);
+    if (child_size == ChildSize::Full and
+        child_mesh_slice == parent_mesh_slice) {
+      // No projection necessary, keep matrix the identity in this dimension
+      continue;
+    }
+    gsl::at(projection_matrix, d) = projection_matrix_parent_to_child(
+        parent_mesh_slice, child_mesh_slice, child_size);
+  }
+  return projection_matrix;
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATE(r, data)                                                 \
+  template bool needs_projection(                                            \
+      const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,            \
+      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;         \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
+  projection_matrix_child_to_parent(                                         \
+      const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh, \
+      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;         \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
+  projection_matrix_parent_to_child(                                         \
+      const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh, \
+      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
+
+#undef DIM
+#undef INSTANTIATE
 
 }  // namespace Spectral

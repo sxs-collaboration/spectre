@@ -68,39 +68,14 @@ MortarSize<Dim - 1> mortar_size(
     size_t dimension, const OrientationMap<Dim>& orientation) noexcept;
 
 /// \ingroup DiscontinuousGalerkinGroup
-/// Determine whether data on an element face needs to be projected to a mortar.
-/// If no projection is necessary the data may be used on the mortar as-is.
-template <size_t Dim>
-bool needs_projection(const Mesh<Dim>& face_mesh, const Mesh<Dim>& mortar_mesh,
-                      const MortarSize<Dim>& mortar_size) noexcept {
-  return mortar_mesh != face_mesh or
-      alg::any_of(mortar_size, [](const Spectral::MortarSize& size) noexcept {
-        return size != Spectral::MortarSize::Full;
-      });
-}
-
-/// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.
 template <typename Tags, size_t Dim>
 Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
                                   const Mesh<Dim>& face_mesh,
                                   const Mesh<Dim>& mortar_mesh,
                                   const MortarSize<Dim>& mortar_size) noexcept {
-  const Matrix identity{};
-  auto projection_matrices = make_array<Dim>(std::cref(identity));
-
-  const auto face_slice_meshes = face_mesh.slices();
-  const auto mortar_slice_meshes = mortar_mesh.slices();
-  for (size_t i = 0; i < Dim; ++i) {
-    const auto& face_slice_mesh = gsl::at(face_slice_meshes, i);
-    const auto& mortar_slice_mesh = gsl::at(mortar_slice_meshes, i);
-    const auto& slice_size = gsl::at(mortar_size, i);
-    if (slice_size != Spectral::MortarSize::Full or
-        face_slice_mesh != mortar_slice_mesh) {
-      gsl::at(projection_matrices, i) = projection_matrix_parent_to_child(
-          face_slice_mesh, mortar_slice_mesh, slice_size);
-    }
-  }
+  const auto projection_matrices = Spectral::projection_matrix_parent_to_child(
+      face_mesh, mortar_mesh, mortar_size);
   return apply_matrices(projection_matrices, vars, face_mesh.extents());
 }
 
@@ -110,29 +85,11 @@ template <typename Tags, size_t Dim>
 Variables<Tags> project_from_mortar(
     const Variables<Tags>& vars, const Mesh<Dim>& face_mesh,
     const Mesh<Dim>& mortar_mesh, const MortarSize<Dim>& mortar_size) noexcept {
-  ASSERT(face_mesh != mortar_mesh or
-             alg::any_of(mortar_size,
-                         [](const Spectral::MortarSize& size) noexcept {
-                           return size != Spectral::MortarSize::Full;
-                         }),
+  ASSERT(Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size),
          "project_from_mortar should not be called if the interface mesh and "
          "mortar mesh are identical. Please elide the copy instead.");
-
-  const Matrix identity{};
-  auto projection_matrices = make_array<Dim>(std::cref(identity));
-
-  const auto face_slice_meshes = face_mesh.slices();
-  const auto mortar_slice_meshes = mortar_mesh.slices();
-  for (size_t i = 0; i < Dim; ++i) {
-    const auto& face_slice_mesh = gsl::at(face_slice_meshes, i);
-    const auto& mortar_slice_mesh = gsl::at(mortar_slice_meshes, i);
-    const auto& slice_size = gsl::at(mortar_size, i);
-    if (slice_size != Spectral::MortarSize::Full or
-        face_slice_mesh != mortar_slice_mesh) {
-      gsl::at(projection_matrices, i) = projection_matrix_child_to_parent(
-          mortar_slice_mesh, face_slice_mesh, slice_size);
-    }
-  }
+  const auto projection_matrices = Spectral::projection_matrix_child_to_parent(
+      mortar_mesh, face_mesh, mortar_size);
   return apply_matrices(projection_matrices, vars, mortar_mesh.extents());
 }
 

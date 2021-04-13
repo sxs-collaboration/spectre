@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
-
-#include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
+#include <functional>
+#include <ostream>
 
 /// \cond
+class Matrix;
 template <size_t Dim>
 class Mesh;
 /// \endcond
@@ -21,6 +23,15 @@ enum class ChildSize { Full, UpperHalf, LowerHalf };
 using MortarSize = ChildSize;
 
 std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept;
+
+/// Determine whether data needs to be projected between a child mesh and its
+/// parent mesh. If no projection is necessary the data may be used as-is.
+/// Projection is necessary if the child is either p-refined or h-refined
+/// relative to its parent, or both. This operation is symmetric, i.e. it is
+/// irrelevant in which order the child and the parent mesh are passed in.
+template <size_t Dim>
+bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
+                      const std::array<ChildSize, Dim>& child_sizes) noexcept;
 
 /*!
  * \brief The projection matrix from a child mesh to its parent.
@@ -55,11 +66,26 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                                 const Mesh<1>& parent_mesh,
                                                 ChildSize size) noexcept;
 
+/// The projection matrix from a child mesh to its parent, in `Dim` dimensions.
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim>
+projection_matrix_child_to_parent(
+    const Mesh<Dim>& child_mesh, const Mesh<Dim>& parent_mesh,
+    const std::array<ChildSize, Dim>& child_sizes) noexcept;
+
 /// The projection matrix from a parent mesh to one of its children.
 ///
 /// \see projection_matrix_child_to_parent()
 const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
                                                 const Mesh<1>& child_mesh,
                                                 ChildSize size) noexcept;
+
+/// The projection matrix from a parent mesh to one of its children, in `Dim`
+/// dimensions
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim>
+projection_matrix_parent_to_child(
+    const Mesh<Dim>& parent_mesh, const Mesh<Dim>& child_mesh,
+    const std::array<ChildSize, Dim>& child_sizes) noexcept;
 
 }  // namespace Spectral

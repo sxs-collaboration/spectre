@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Tags.hpp"
@@ -411,7 +412,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                &dt_boundary_correction_projected_onto_face, &face_mesh,
                &mortar_mesh, &mortar_size]() noexcept
               -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>& {
-            if (::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+            if (Spectral::needs_projection(face_mesh, mortar_mesh,
+                                           mortar_size)) {
               dt_boundary_correction_projected_onto_face =
                   ::dg::project_from_mortar(dt_boundary_correction_on_mortar,
                                             face_mesh, mortar_mesh,
