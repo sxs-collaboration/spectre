@@ -139,7 +139,8 @@ void trace(
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial,
-                         Frame::Spherical<Frame::Inertial>),
+                         Frame::Spherical<Frame::Inertial>,
+                         Frame::Spherical<Frame::Grid>),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up),
                         (UpLo::Lo, UpLo::Up))
 

@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -257,17 +258,20 @@ void TangentsCompute<Frame>::function(
 
 }  // namespace StrahlkorperTags
 
-namespace StrahlkorperTags {
-template struct ThetaPhiCompute<Frame::Inertial>;
-template struct RhatCompute<Frame::Inertial>;
-template struct JacobianCompute<Frame::Inertial>;
-template struct InvJacobianCompute<Frame::Inertial>;
-template struct InvHessianCompute<Frame::Inertial>;
-template struct RadiusCompute<Frame::Inertial>;
-template struct CartesianCoordsCompute<Frame::Inertial>;
-template struct DxRadiusCompute<Frame::Inertial>;
-template struct D2xRadiusCompute<Frame::Inertial>;
-template struct LaplacianRadiusCompute<Frame::Inertial>;
-template struct NormalOneFormCompute<Frame::Inertial>;
-template struct TangentsCompute<Frame::Inertial>;
-}  // namespace StrahlkorperTags
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATE(_, data)                                             \
+  template struct StrahlkorperTags::ThetaPhiCompute<FRAME(data)>;        \
+  template struct StrahlkorperTags::RhatCompute<FRAME(data)>;            \
+  template struct StrahlkorperTags::JacobianCompute<FRAME(data)>;        \
+  template struct StrahlkorperTags::InvJacobianCompute<FRAME(data)>;     \
+  template struct StrahlkorperTags::InvHessianCompute<FRAME(data)>;      \
+  template struct StrahlkorperTags::RadiusCompute<FRAME(data)>;          \
+  template struct StrahlkorperTags::CartesianCoordsCompute<FRAME(data)>; \
+  template struct StrahlkorperTags::DxRadiusCompute<FRAME(data)>;        \
+  template struct StrahlkorperTags::D2xRadiusCompute<FRAME(data)>;       \
+  template struct StrahlkorperTags::LaplacianRadiusCompute<FRAME(data)>; \
+  template struct StrahlkorperTags::NormalOneFormCompute<FRAME(data)>;   \
+  template struct StrahlkorperTags::TangentsCompute<FRAME(data)>;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
+#undef INSTANTIATE
+#undef FRAME
