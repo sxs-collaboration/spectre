@@ -26,6 +26,7 @@ struct VMinus;
 
 template <size_t Dim>
 struct CharacteristicSpeeds;
+struct LargestCharacteristicSpeed;
 template <size_t Dim>
 struct CharacteristicFields;
 template <size_t Dim>

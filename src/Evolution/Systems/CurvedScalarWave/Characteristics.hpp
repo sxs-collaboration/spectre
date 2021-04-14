@@ -227,6 +227,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
 };
 // @}
 
+namespace Tags {
 /*!
  * \brief Computes the largest magnitude of the characteristic speeds.
  *
@@ -243,15 +244,20 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
  * N_i},\, \sqrt{N^i N_i}+\vert N\vert) \f$.
  */
 template <size_t SpatialDim>
-struct ComputeLargestCharacteristicSpeed {
+struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
+                                           db::ComputeTag {
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
       gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataVector>>;
-  static double apply(
-      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+  using return_type = double;
+  using base = LargestCharacteristicSpeed;
+  static void function(
+      const gsl::not_null<double*> max_speed, const Scalar<DataVector>& gamma_1,
+      const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
       const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
           spatial_metric) noexcept;
 };
+}  // namespace Tags
 }  // namespace CurvedScalarWave

@@ -151,18 +151,21 @@ evolved_fields_from_characteristic_fields(
   return evolved_fields;
 }
 
+namespace Tags {
 template <size_t SpatialDim>
-double ComputeLargestCharacteristicSpeed<SpatialDim>::apply(
-    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
+    const gsl::not_null<double*> max_speed, const Scalar<DataVector>& gamma_1,
+    const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
         spatial_metric) noexcept {
   const auto shift_magnitude = magnitude(shift, spatial_metric);
-  return std::max(
-      max(abs(1. + get(gamma_1)) * get(shift_magnitude)),  // v(VPsi)
-      max(get(shift_magnitude) +
-          abs(get(lapse))));  // v(VZero), v(VPlus),v(VMinus)
+  *max_speed =
+      std::max(max(abs(1. + get(gamma_1)) * get(shift_magnitude)),  // v(VPsi)
+               max(get(shift_magnitude) +
+                   abs(get(lapse))));  // v(VZero), v(VPlus),v(VMinus)
 }
+}  // namespace Tags
 }  // namespace CurvedScalarWave
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -225,8 +228,8 @@ double ComputeLargestCharacteristicSpeed<SpatialDim>::apply(
           unit_normal_one_form) noexcept;                                     \
   template struct CurvedScalarWave::                                          \
       EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data)>;                \
-  template struct CurvedScalarWave::ComputeLargestCharacteristicSpeed<DIM(    \
-      data)>;
+  template struct CurvedScalarWave::Tags::ComputeLargestCharacteristicSpeed<  \
+      DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
