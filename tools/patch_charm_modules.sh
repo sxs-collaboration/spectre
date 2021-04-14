@@ -1,4 +1,4 @@
-#!/usr/bin/env -S bash -e
+#!/usr/bin/env bash
 
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
@@ -7,6 +7,8 @@
 # their corresponding .def.h and decl.h files in the charm module outputs.
 # This is used to override default charm behavior with custom versions or to
 # patch bugs
+
+set -e
 
 if [ "$#" -ne 4 ]; then
     echo "Usage: patch_charm_modules.sh module_name path_to_current_source_dir\
