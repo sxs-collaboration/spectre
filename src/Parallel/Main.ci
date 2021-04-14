@@ -9,12 +9,12 @@ module Main {
 
   namespace Parallel {
   template <typename Metavariables>
-  mainchare[migratable] Main {
+  mainchare [migratable] Main {
     entry Main(CkArgMsg* msg);
     entry void allocate_array_components_and_execute_initialization_phase();
 
     template <typename InvokeCombine, typename... Tags>
-    entry[reductiontarget] void phase_change_reduction(
+    entry [reductiontarget] void phase_change_reduction(
         Parallel::ReductionData<Parallel::ReductionDatum<
             tuples::TaggedTuple<Tags...>, InvokeCombine, funcl::Identity,
             std::index_sequence<>>>
