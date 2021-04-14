@@ -95,7 +95,6 @@ bool operator!=(const DynamicBuffer<T>& lhs,
   return not(lhs == rhs);
 }
 
-/// \cond HIDDEN_SYMBOLS
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GEN_OP(op, type)                                    \
   template bool operator op(const DynamicBuffer<type>& lhs, \
@@ -110,4 +109,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef DTYPE
 #undef GEN_OP
 #undef INSTANTIATE
-/// \endcond
