@@ -74,7 +74,10 @@ class Main : public CBase_Main<Metavariables> {
   /// \endcond
 
   explicit Main(CkArgMsg* msg) noexcept;
-  explicit Main(CkMigrateMessage* /*msg*/) {}
+  explicit Main(CkMigrateMessage* msg) noexcept;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) noexcept override;
 
   /// Allocate the initial elements of array components, and then execute the
   /// initialization phase on each component
@@ -114,9 +117,9 @@ class Main : public CBase_Main<Metavariables> {
       tmpl::bind<
           tmpl::type_,
           tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
-
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
@@ -467,6 +470,24 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
         make_not_null(&phase_change_decision_data_),
         *global_cache_proxy_.ckLocalBranch());
   }
+}
+
+template <typename Metavariables>
+Main<Metavariables>::Main(CkMigrateMessage* msg) noexcept
+    : CBase_Main<Metavariables>(msg) {}
+
+template <typename Metavariables>
+void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
+  p | current_phase_;
+  p | mutable_global_cache_proxy_;
+  p | global_cache_proxy_;
+  p | at_sync_indicator_proxy_;
+  // Note: we do NOT serialize the options.
+  // This is because options are only used in the initialization phase when
+  // the executable first starts up. Thereafter, the information from the
+  // options will be held in various code objects that will themselves be
+  // serialized.
+  p | phase_change_decision_data_;
 }
 
 template <typename Metavariables>
