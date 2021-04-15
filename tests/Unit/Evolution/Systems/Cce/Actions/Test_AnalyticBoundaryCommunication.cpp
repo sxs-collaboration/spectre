@@ -15,11 +15,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Actions/RequestBoundaryData.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
@@ -152,8 +148,8 @@ struct test_metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.AnalyticBoundaryCommunication",
     "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<
-      Cce::Solutions::WorldtubeData>();
+  Parallel::register_classes_with_charm<
+      Cce::Solutions::RotatingSchwarzschild>();
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component =

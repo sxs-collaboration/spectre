@@ -12,11 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -105,6 +101,7 @@ struct metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
                   "[Unit][Cce]") {
+  Parallel::register_classes_with_charm<Cce::Solutions::LinearizedBondiSachs>();
   // set up the analytic data parameters
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{7, 10};
@@ -154,8 +151,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
                               get<tag>(expected_boundary_variables));
       });
 
-  Parallel::register_derived_classes_with_charm<
-      Cce::Solutions::WorldtubeData>();
   // test writing news
   ActionTesting::MockRuntimeSystem<metavariables> runner{{l_max}};
   runner.set_phase(metavariables::Phase::Initialization);

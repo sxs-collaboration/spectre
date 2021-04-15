@@ -11,11 +11,7 @@
 #include "Evolution/Systems/Cce/Actions/InsertInterpolationScriData.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Actions/RequestBoundaryData.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
@@ -240,10 +236,10 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InsertInterpolationScriData",
     "[Unit][Cce]") {
   Parallel::register_derived_classes_with_charm<TimeStepper>();
-  Parallel::register_derived_classes_with_charm<
-      Cce::Solutions::WorldtubeData>();
-  PUPable_reg2(RotatingSchwarzschildWithNoninertialNews,
-               typeid(RotatingSchwarzschildWithNoninertialNews).name());
+  Parallel::register_classes_with_charm<
+      Cce::Solutions::RotatingSchwarzschild>();
+  Parallel::register_classes_with_charm<
+      RotatingSchwarzschildWithNoninertialNews>();
   using evolution_component = MockCharacteristicEvolution<test_metavariables>;
   using observation_component = MockObserver<test_metavariables>;
   MAKE_GENERATOR(gen);
