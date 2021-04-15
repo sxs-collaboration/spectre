@@ -93,7 +93,8 @@ struct RobinsonTrautman : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(RobinsonTrautman);  // NOLINT
 
-  explicit RobinsonTrautman(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit RobinsonTrautman(CkMigrateMessage* msg) noexcept
+      : SphericalMetricData(msg) {}
 
   RobinsonTrautman() = default;
 

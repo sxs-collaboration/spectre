@@ -100,6 +100,8 @@ struct WorldtubeData : public PUP::able {
   explicit WorldtubeData(const double extraction_radius) noexcept
       : extraction_radius_{extraction_radius} {}
 
+  explicit WorldtubeData(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
+
   virtual std::unique_ptr<WorldtubeData> get_clone() const noexcept = 0;
 
   /*!
