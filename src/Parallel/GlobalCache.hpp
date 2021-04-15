@@ -663,9 +663,27 @@ namespace Tags {
 struct GlobalCache : db::BaseTag {};
 
 template <class Metavariables>
+struct GlobalCacheProxy : db::SimpleTag {
+  using type = CProxy_GlobalCache<Metavariables>;
+};
+
+template <class Metavariables>
 struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
   using type = Parallel::GlobalCache<Metavariables>*;
   static std::string name() noexcept { return "GlobalCache"; }
+};
+
+template <class Metavariables>
+struct GlobalCacheImplCompute : GlobalCacheImpl<Metavariables>, db::ComputeTag {
+  using base = GlobalCacheImpl<Metavariables>;
+  using argument_tags = tmpl::list<GlobalCacheProxy<Metavariables>>;
+  using return_type = Parallel::GlobalCache<Metavariables>*;
+  static void function(
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>**>
+          local_branch_of_global_cache,
+      const CProxy_GlobalCache<Metavariables>& global_cache_proxy) noexcept {
+    *local_branch_of_global_cache = global_cache_proxy.ckLocalBranch();
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -690,30 +708,41 @@ struct FromGlobalCache : CacheTag, db::ReferenceTag {
 }  // namespace Parallel
 
 namespace PUP {
-
-/// \ingroup ParallelGroup
-/// Serialization of a pointer to the global cache for Charm++
-template <typename Metavariables>
-inline void pup(PUP::er& p,  // NOLINT
-                Parallel::GlobalCache<Metavariables>*& t) noexcept {
-  typename Parallel::GlobalCache<Metavariables>::proxy_type
-      local_const_global_cache_proxy;
-  if (p.isUnpacking()) {
-    p | local_const_global_cache_proxy;
-    t = local_const_global_cache_proxy.ckLocalBranch();
-  } else {
-    local_const_global_cache_proxy = t->get_this_proxy();
-    p | local_const_global_cache_proxy;
-  }
-}
-
-/// \ingroup ParallelGroup
-/// Serialization of a pointer to the global cache for Charm++
+/// \cond
+// Warning! This is an invalid and kludgey pupper, because when unpacking it
+// produces a `nullptr` rather than a valid `GlobalCache*`. This function is
+// provided _only_ to enable putting a `GlobalCache*` in the DataBox.
+//
+// SpECTRE parallel components with a `GlobalCache*` in their DataBox should
+// use a compute item that sets the pointer by calling `.ckLocalBranch` on a
+// stored proxy. When deserializing the DataBox, these components should call
+// `db:mutate<GlobalCacheProxy>(box)` to force the DataBox to update the
+// pointer from the new Charm++ proxy.
+//
+// We do not currently anticipate needing to (de)serialize a `GlobalCache*`
+// outside of a DataBox. But if this need arises, it will be necessary to
+// provide a non-kludgey pupper here.
+//
+// Correctly (de)serializing the `GlobalCache` pointer would require obtaining
+// a `CProxy_GlobalCache` item and calling `.ckLocalBranch()` on it --- just as
+// in the workflow described above, but within the pupper vs in the DataBox).
+// But this strategy fails when restarting from a checkpoint file, because
+// calling `.ckLocalBranch()` may not be well-defined in the unpacking pup call
+// when all Charm++ components may not yet be fully restored. This difficulty
+// is why we instead write an invalid pupper here.
+//
+// In future versions of Charm++, the pup function may know whether it is
+// called in the context of checkpointing, load balancing, etc. This knowledge
+// would enable us to write a valid pupper for non-checkpoint contexts, and
+// return a `nullptr` only when restoring from checkpoint.
 template <typename Metavariables>
 inline void operator|(PUP::er& p,  // NOLINT
                       Parallel::GlobalCache<Metavariables>*& t) {
-  pup(p, t);
+  if (p.isUnpacking()) {
+    t = nullptr;
+  }
 }
+/// \endcond
 }  // namespace PUP
 
 #define CK_TEMPLATES_ONLY
