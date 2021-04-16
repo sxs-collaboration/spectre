@@ -518,14 +518,6 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
             p, box, &iter, &already_visited));
   }
 
-  static constexpr bool is_singleton =
-      std::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
-
-  template <class Dummy = int,
-            Requires<(sizeof(Dummy), is_singleton)> = nullptr>
-  constexpr void set_array_index() noexcept {}
-  template <class Dummy = int,
-            Requires<(sizeof(Dummy), not is_singleton)> = nullptr>
   void set_array_index() noexcept {
     // down cast to the algorithm_type, so that the `thisIndex` method can be
     // called, which is defined in the CBase class
