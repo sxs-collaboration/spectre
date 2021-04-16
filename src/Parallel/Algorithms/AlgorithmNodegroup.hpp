@@ -22,7 +22,7 @@
  * https://charm.readthedocs.io/en/latest/charm++/manual.html#nodegroup-objects
  * When comparing against the implementations in the charm++ documentation, this
  * object is the one directly associated to declarations in the corresponding
- * `AlgorithmSingleton.ci` file.
+ * `AlgorithmNodegroup.ci` file.
  *
  * Unlike the techniques described in the charm++ documentation, however, we
  * define `AlgorithmNodegroup` as a strong typedef so that the core
@@ -30,7 +30,7 @@
  * inheritance layer. The documentation suggests the inheritance path `A ->
  * CBase_A`, where we have the inheritance path:
  * ```
- * AlgorithmSingleton -> AlgorithmImpl -> CBase_AlgorithmSingleton
+ * AlgorithmNodegroup -> AlgorithmImpl -> CBase_AlgorithmNodegroup
  * ```
  * That allows us to introduce the template class
  * <code><a href="classParallel_1_1AlgorithmImpl_3_01ParallelComponent_00_01tmpl_1_1list_3_01PhaseDepActionListsPack_8_8_8_01_4_01_4.html">
