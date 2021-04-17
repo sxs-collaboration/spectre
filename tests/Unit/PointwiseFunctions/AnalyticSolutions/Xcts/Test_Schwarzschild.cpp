@@ -10,18 +10,13 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/LogicalCoordinates.hpp"
+#include "Elliptic/Systems/Xcts/Geometry.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -176,32 +171,11 @@ void test_solution(const double mass,
   }
   {
     INFO("Verify the solution solves the XCTS equations");
-    // Once the XCTS equations are implemented we will check here that the
-    // solution numerically solves the equations. That's both a rigorous test
-    // that the solution is correctly implemented, as well as a test of the XCTS
-    // system implementation. Until then we just call into the solution and
-    // probe a few variables.
-    const Mesh<3> mesh{12, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-    const size_t num_points = mesh.number_of_grid_points();
     const double inner_radius = expected_radius_at_horizon;
     const double outer_radius = 3. * expected_radius_at_horizon;
-    using AffineMap = domain::CoordinateMaps::Affine;
-    using AffineMap3D =
-        domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>
-        coord_map{{{-1., 1., inner_radius, outer_radius},
-                   {-1., 1., inner_radius, outer_radius},
-                   {-1., 1., inner_radius, outer_radius}}};
-    const auto logical_coords = logical_coordinates(mesh);
-    const auto inertial_coords = coord_map(logical_coords);
-    const auto inv_jacobian = coord_map.inv_jacobian(logical_coords);
-    const auto vars = solution.variables(
-        inertial_coords, mesh, inv_jacobian,
-        tmpl::list<Tags::ConformalRicciScalar<DataVector>>{});
-    CHECK_ITERABLE_APPROX(
-        get(get<Tags::ConformalRicciScalar<DataVector>>(vars)),
-        DataVector(num_points, 0.));
+    TestHelpers::Xcts::Solutions::verify_solution<Xcts::Geometry::FlatCartesian,
+                                                  0>(
+        solution, {{0., 0., 0.}}, inner_radius, outer_radius, 1.e-5);
   }
 }
 
