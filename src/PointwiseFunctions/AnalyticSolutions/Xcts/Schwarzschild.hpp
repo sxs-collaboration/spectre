@@ -166,13 +166,16 @@ using SchwarzschildVariablesCache = cached_temp_buffer_from_typelist<
             DataType, 3, Frame::Inertial>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
         Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
-        gr::Tags::EnergyDensity<DataType>, gr::Tags::StressTrace<DataType>,
-        gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>>>;
+        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+        Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+                        0>>>;
 
 template <typename DataType>
 struct SchwarzschildVariables
     : CommonVariables<DataType, SchwarzschildVariablesCache<DataType>> {
   static constexpr size_t Dim = 3;
+  static constexpr int ConformalMatterScale = 0;
   using Cache = SchwarzschildVariablesCache<DataType>;
   using CommonVariables<DataType,
                         SchwarzschildVariablesCache<DataType>>::operator();
@@ -247,16 +250,21 @@ struct SchwarzschildVariables
       gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
       gsl::not_null<Cache*> cache,
       Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::EnergyDensity<DataType> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<Scalar<DataType>*> stress_trace,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::StressTrace<DataType> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::MomentumDensity<3, Frame::Inertial,
-                                            DataType> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> energy_density,
+      gsl::not_null<Cache*> cache,
+      Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
+                      ConformalMatterScale> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> stress_trace,
+      gsl::not_null<Cache*> cache,
+      Tags::Conformal<gr::Tags::StressTrace<DataType>,
+                      ConformalMatterScale> /*meta*/) const noexcept;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
+      gsl::not_null<Cache*> cache,
+      Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+                      ConformalMatterScale> /*meta*/) const noexcept;
 };
 
 }  // namespace detail
