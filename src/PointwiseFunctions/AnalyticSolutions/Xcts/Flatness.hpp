@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -72,6 +73,7 @@ class Flatness : public AnalyticSolution<Registrars> {
         Tags::ConformalChristoffelFirstKind<DataType, 3, Frame::Inertial>,
         Tags::ConformalChristoffelSecondKind<DataType, 3, Frame::Inertial>,
         Tags::ConformalChristoffelContracted<DataType, 3, Frame::Inertial>,
+        Tags::ConformalRicciScalar<DataVector>,
         gr::Tags::TraceExtrinsicCurvature<DataType>,
         ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
         ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
@@ -83,8 +85,26 @@ class Flatness : public AnalyticSolution<Registrars> {
         Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
         Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
-        gr::Tags::EnergyDensity<DataType>, gr::Tags::StressTrace<DataType>,
-        gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+        Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+            DataVector, 3, Frame::Inertial>,
+        Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataVector>,
+        Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<
+            DataVector>,
+        ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+            DataVector, 3, Frame::Inertial>>,
+        Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataVector>,
+        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+        Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+                        0>,
+        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 6>,
+        Tags::Conformal<gr::Tags::StressTrace<DataType>, 6>,
+        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+                        6>,
+        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 8>,
+        Tags::Conformal<gr::Tags::StressTrace<DataType>, 8>,
+        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+                        8>,
         ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
         ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
         ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
@@ -117,6 +137,15 @@ class Flatness : public AnalyticSolution<Registrars> {
       }
     };
     return {make_value(RequestedTags{})...};
+  }
+
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataType, 3, Frame::Inertial>& x, const Mesh<3>& /*mesh*/,
+      const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
+      /*inv_jacobian*/,
+      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+    return variables(x, tmpl::list<RequestedTags...>{});
   }
 };
 
