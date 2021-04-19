@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AoWeno.cpp
   Minmod.cpp
   MonotisedCentral.cpp
   )
@@ -16,6 +17,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AoWeno.hpp
   FiniteDifference.hpp
   Minmod.hpp
   MonotisedCentral.hpp
