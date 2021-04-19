@@ -91,6 +91,10 @@ struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 4>;
 };
 
+struct LargestCharacteristicSpeed : db::SimpleTag {
+  using type = double;
+};
+
 template <size_t Dim>
 struct CharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<VPsi, VZero<Dim>, VPlus, VMinus>>;

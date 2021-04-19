@@ -294,9 +294,10 @@ void check_max_char_speed(const DataVector& used_for_size) noexcept {
   std::uniform_real_distribution<> gamma_1_dist(0.0, 5.0);
   const auto gamma_1 = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&gen), make_not_null(&gamma_1_dist), used_for_size);
-  const double max_char_speed =
-      CurvedScalarWave::ComputeLargestCharacteristicSpeed<SpatialDim>::apply(
-          gamma_1, lapse, shift, spatial_metric);
+  double max_char_speed = std::numeric_limits<double>::signaling_NaN();
+  CurvedScalarWave::Tags::ComputeLargestCharacteristicSpeed<
+      SpatialDim>::function(make_not_null(&max_char_speed), gamma_1, lapse,
+                            shift, spatial_metric);
 
   double maximum_observed = -std::numeric_limits<double>::infinity();
   for (size_t i = 0; i < num_trials; ++i) {
@@ -347,13 +348,16 @@ void check_max_char_speed_compute_tag(
           CurvedScalarWave::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
           gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
           gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataVector>>,
-      db::AddComputeTags<>>(gamma_1, lapse, shift, spatial_metric);
+      db::AddComputeTags<CurvedScalarWave::Tags::
+                             ComputeLargestCharacteristicSpeed<SpatialDim>>>(
+      gamma_1, lapse, shift, spatial_metric);
   // Test compute tag for computing max char speed
-  CHECK(db::apply<
-            CurvedScalarWave::ComputeLargestCharacteristicSpeed<SpatialDim>>(
-            box) ==
-        CurvedScalarWave::ComputeLargestCharacteristicSpeed<SpatialDim>::apply(
-            gamma_1, lapse, shift, spatial_metric));
+  double max_char_speed = std::numeric_limits<double>::signaling_NaN();
+  CurvedScalarWave::Tags::ComputeLargestCharacteristicSpeed<
+      SpatialDim>::function(make_not_null(&max_char_speed), gamma_1, lapse,
+                            shift, spatial_metric);
+  CHECK(db::get<CurvedScalarWave::Tags::LargestCharacteristicSpeed>(box) ==
+        max_char_speed);
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.MaxCharSpeed",
