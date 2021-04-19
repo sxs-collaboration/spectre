@@ -6,7 +6,6 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <memory>
 #include <random>
 #include <utility>
 #include <vector>
@@ -14,7 +13,6 @@
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ApparentHorizons/YlmTestFunctions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -64,7 +62,8 @@ void test_loop_over_offset(
   // Fill data vectors
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * physical_stride;
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill analytic solution
   const std::vector<double>& theta = ylm_spherepack.theta_points();
@@ -100,7 +99,9 @@ void test_loop_over_offset(
 
   // Test gradient
   {
-    std::vector<std::vector<double>> duteststor(2), dustor(2), duSpecstor(2);
+    std::vector<std::vector<double>> duteststor(2);
+    std::vector<std::vector<double>> dustor(2);
+    std::vector<std::vector<double>> duSpecstor(2);
     for (size_t i = 0; i < 2; ++i) {
       dustor[i].resize(physical_size);
       duteststor[i].resize(physical_size);
@@ -186,7 +187,8 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -197,7 +199,8 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
 
   // Test whether phys_to_spec and spec_to_phys are inverses.
   {
-    std::vector<double> u_test(physical_size), u_spec_test(spectral_size);
+    std::vector<double> u_test(physical_size);
+    std::vector<double> u_spec_test(spectral_size);
     ylm_spherepack.phys_to_spec(u_spec_test.data(), u.data(), physical_stride,
                                 0, spectral_stride, 0);
     ylm_spherepack.spec_to_phys(u_test.data(), u_spec.data(), spectral_stride,
@@ -230,7 +233,8 @@ void test_gradient(const size_t l_max, const size_t m_max,
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -241,7 +245,9 @@ void test_gradient(const size_t l_max, const size_t m_max,
 
   // Test gradient
   {
-    std::vector<std::vector<double>> duteststor(2), dustor(2), duSpecstor(2);
+    std::vector<std::vector<double>> duteststor(2);
+    std::vector<std::vector<double>> dustor(2);
+    std::vector<std::vector<double>> duSpecstor(2);
     for (size_t i = 0; i < 2; ++i) {
       dustor[i].resize(physical_size);
       duteststor[i].resize(physical_size);
@@ -322,7 +328,8 @@ void test_second_derivative(
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -333,7 +340,8 @@ void test_second_derivative(
 
   // Test second_derivative
   {
-    SecondDeriv ddu(physical_size), ddutest(physical_size);
+    SecondDeriv ddu(physical_size);
+    SecondDeriv ddutest(physical_size);
 
     std::vector<std::vector<double>> dustor(2);
     for (size_t i = 0; i < 2; ++i) {
@@ -388,7 +396,8 @@ void test_scalar_laplacian(
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -399,8 +408,9 @@ void test_scalar_laplacian(
 
   // Test scalar_laplacian
   {
-    DataVector slaptest(physical_size), slap(physical_size),
-        slapSpec(physical_size);
+    DataVector slaptest(physical_size);
+    DataVector slap(physical_size);
+    DataVector slapSpec(physical_size);
 
     // Differentiate
     ylm_spherepack.scalar_laplacian(slap.data(), u.data(), physical_stride, 0);
@@ -442,7 +452,8 @@ void test_interpolation(
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);
@@ -454,51 +465,63 @@ void test_interpolation(
   // Test interpolation
   {
     // Choose random points
-    std::vector<std::array<double, 2>> points;
+    DataVector thetas(50);
+    DataVector phis(50);
     {
       std::uniform_real_distribution<double> ran(0.0, 1.0);
       MAKE_GENERATOR(gen);
-      for (int n = 0; n < 10; ++n) {
+      // Here we generate 10 * 5 different random (theta, phi) pairs. Each
+      // iteration adds five more elements to the vectors of `thetas` and
+      // `phis`, so the index increases by five.
+      for (size_t n = 0; n < 10; ++n) {
         const double th = (2.0 * ran(gen) - 1.0) * M_PI;
         const double ph = 2.0 * ran(gen) * M_PI;
-        points.emplace_back(std::array<double, 2>{{th, ph}});
+
+        thetas.at(n * 5) = th;
+        phis.at(n * 5) = ph;
 
         // For the next point, increase ph by 2pi so it is out of range.
         // Should be equivalent to the first point.
-        points.emplace_back(std::array<double, 2>{{th, ph + 2.0 * M_PI}});
+        thetas.at(n * 5 + 1) = th;
+        phis.at(n * 5 + 1) = ph + 2.0 * M_PI;
 
         // For the next point, decrease ph by 2pi so it is out of range.
         // Should be equivalent to the first point.
-        points.emplace_back(std::array<double, 2>{{th, ph - 2.0 * M_PI}});
+        thetas.at(n * 5 + 2) = th;
+        phis.at(n * 5 + 2) = ph - 2.0 * M_PI;
 
         // For the next point, use negative theta so it is out of range,
         // and also add pi to phi.
         // Should be equivalent to the first point.
-        points.emplace_back(std::array<double, 2>{{-th, ph + M_PI}});
+        thetas.at(n * 5 + 3) = -th;
+        phis.at(n * 5 + 3) = ph + M_PI;
 
         // For the next point, theta -> 2pi - theta so that theta is out of
         // range.  Also add pi to Phi.
         // Should be equivalent to the first point.
-        points.emplace_back(
-            std::array<double, 2>{{2.0 * M_PI - th, ph + M_PI}});
+        thetas.at(n * 5 + 4) = 2.0 * M_PI - th;
+        phis.at(n * 5 + 4) = ph + M_PI;
       }
     }
+
+    std::array<DataVector, 2> points{std::move(thetas), std::move(phis)};
 
     // Get interp info
     auto interpolation_info = ylm_spherepack.set_up_interpolation_info(points);
 
     // Interpolate
-    std::vector<double> uintPhys(interpolation_info.size()),
-        uintSpec(interpolation_info.size());
-    ylm_spherepack.interpolate(&uintPhys, u.data(), interpolation_info,
-                               physical_stride, 0);
-    ylm_spherepack.interpolate_from_coefs(&uintSpec, u_spec, interpolation_info,
-                                          spectral_stride);
+    DataVector uintPhys(interpolation_info.size());
+    DataVector uintSpec(interpolation_info.size());
+
+    ylm_spherepack.interpolate(make_not_null(&uintPhys), u.data(),
+                               interpolation_info, physical_stride, 0);
+    ylm_spherepack.interpolate_from_coefs(make_not_null(&uintSpec), u_spec,
+                                          interpolation_info, spectral_stride);
 
     // Test vs analytic solution
     DataVector uintanal(interpolation_info.size());
     for (size_t s = 0; s < uintanal.size(); ++s) {
-      func.func(&uintanal, 1, s, {points[s][0]}, {points[s][1]});
+      func.func(&uintanal, 1, s, {points[0][s]}, {points[1][s]});
       CHECK(uintanal[s] == approx(uintPhys[s]));
       CHECK(uintanal[s] == approx(uintSpec[s]));
     }
@@ -515,7 +538,8 @@ void test_interpolation(
 
     // Tests default values of stride and offset.
     if (physical_stride == 1 && spectral_stride == 1) {
-      ylm_spherepack.interpolate(&uintPhys, u.data(), interpolation_info);
+      ylm_spherepack.interpolate(make_not_null(&uintPhys), u.data(),
+                                 interpolation_info);
       for (size_t s = 0; s < uintanal.size(); ++s) {
         CHECK(uintanal[s] == approx(uintPhys[s]));
       }
@@ -547,7 +571,8 @@ void test_integral(const size_t l_max, const size_t m_max,
   const auto& theta = ylm_spherepack.theta_points();
   const auto& phi = ylm_spherepack.phi_points();
 
-  DataVector u(physical_size), u_spec(spectral_size);
+  DataVector u(physical_size);
+  DataVector u_spec(spectral_size);
 
   // Fill with analytic function
   func.func(&u, physical_stride, 0, theta, phi);

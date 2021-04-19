@@ -115,9 +115,9 @@ double Strahlkorper<Frame>::average_radius() const noexcept {
 }
 
 template <typename Frame>
-double Strahlkorper<Frame>::radius(const double theta, const double phi) const
-    noexcept {
-  return ylm_.interpolate_from_coefs(strahlkorper_coefs_, {{{theta, phi}}})[0];
+double Strahlkorper<Frame>::radius(const double theta,
+                                   const double phi) const noexcept {
+  return ylm_.interpolate_from_coefs<double>(strahlkorper_coefs_, {theta, phi});
 }
 
 template <typename Frame>

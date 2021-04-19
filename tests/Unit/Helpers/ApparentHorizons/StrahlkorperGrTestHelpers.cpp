@@ -137,48 +137,50 @@ Scalar<DataType> horizon_ricci_scalar(
   // spin is not on the z axis
   const auto theta_phi_points = ylm.theta_phi_points();
 
-  // Loop over collocation points, rotating each point
-  std::vector<std::array<double, 2>> points;
-  for (size_t i = 0; i < get(ricci_scalar_with_spin_on_z_axis).size(); ++i) {
-    // Get (theta,phi) of the collocation point on the actual horizon
-    const double theta = theta_phi_points[0][i];
-    const double phi = theta_phi_points[1][i];
+  // Rotate each point
+  // Get thethas and phis on the actual horizon
+  const DataVector thetas = theta_phi_points[0];
+  const DataVector phis = theta_phi_points[1];
 
-    // Rotate the coordinates on the original Strahlkorper so that a point
-    // on the spin axis gets mapped to a point on the +z axis.
-    // This means the new coordinates are rotated from the old ones by
-    // -spin_phi about the z axis and then by -spin_theta about the y axis.
-    // The unrotated x,y,z coordinates are defined on the unit sphere:
-    // x = sin(theta)*cos(phi), y = sin(theta) * sin(phi), z = cos(theta)
+  // Rotate the coordinates on the original Strahlkorper so that a point
+  // on the spin axis gets mapped to a point on the +z axis.
+  // This means the new coordinates are rotated from the old ones by
+  // -spin_phi about the z axis and then by -spin_theta about the y axis.
+  // The unrotated x,y,z coordinates are defined on the unit sphere:
+  // x = sin(theta)*cos(phi), y = sin(theta) * sin(phi), z = cos(theta)
 
-    const double x_new = cos(spin_theta) * cos(phi - spin_phi) * sin(theta) -
-                         cos(theta) * sin(spin_theta);
-    const double y_new = sin(theta) * sin(phi - spin_phi);
-    const double z_new = cos(theta) * cos(spin_theta) +
-                         cos(phi - spin_phi) * sin(theta) * sin(spin_theta);
+  const DataVector x_new =
+      cos(spin_theta) * cos(phis - spin_phi) * sin(thetas) -
+      cos(thetas) * sin(spin_theta);
+  const DataVector y_new = sin(thetas) * sin(phis - spin_phi);
+  const DataVector z_new = cos(thetas) * cos(spin_theta) +
+                           cos(phis - spin_phi) * sin(thetas) * sin(spin_theta);
 
-    // Since I'm rotating on the unit sphere, the radius of the unrotated and
-    // new points is unity.
-    const double theta_new = atan2(sqrt(square(x_new) + square(y_new)), z_new);
-    double phi_new = (abs(theta_new) > eps and abs(theta_new - M_PI) > eps)
-                         ? atan2(y_new, x_new)
-                         : 0.0;
+  // Since I'm rotating on the unit sphere, the radius of the unrotated and
+  // new points is unity.
+  DataVector thetas_new = atan2(sqrt(square(x_new) + square(y_new)), z_new);
+  DataVector phis_new(thetas_new.size());
+  for (size_t i = 0; i < thetas_new.size(); ++i) {
+    double phi_new =
+        (abs(thetas_new[i]) > eps and abs(thetas_new[i] - M_PI) > eps)
+            ? atan2(y_new[i], x_new[i])
+            : 0.0;
     // Ensure phi_new is between 0 and 2 pi.
     if (phi_new < 0.0) {
       phi_new += 2.0 * M_PI;
     }
-
-    // Add the point to the list of points to interpolate to
-    points.emplace_back(std::array<double, 2>{{theta_new, phi_new}});
+    phis_new[i] = phi_new;
   }
+
+  std::array<DataVector, 2> points{std::move(thetas_new), std::move(phis_new)};
 
   // Interpolate ricci_scalar_with_spin_on_z_axis onto the new points
   auto interpolation_info =
       ylm_with_spin_on_z_axis.set_up_interpolation_info(points);
-  std::vector<double> ricci_scalar_interpolated(interpolation_info.size());
+  DataVector ricci_scalar_interpolated(interpolation_info.size());
   ylm_with_spin_on_z_axis.interpolate(
-      &ricci_scalar_interpolated, get(ricci_scalar_with_spin_on_z_axis).data(),
-      interpolation_info);
+      make_not_null(&ricci_scalar_interpolated),
+      get(ricci_scalar_with_spin_on_z_axis).data(), interpolation_info);
 
   // Load the interpolated values into the DataVector ricci_scalar
   Scalar<DataVector> ricci_scalar =
