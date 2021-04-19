@@ -407,18 +407,34 @@ struct IntReceiveTag
 };
 // [int receive tag insert]
 
-struct add_int0_from_receive {
+struct add_int0_to_box {
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static auto apply(db::DataBox<DbTags>& box,
+                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    return std::make_tuple(
+        db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), 0));
+  }
+};
+
+struct set_int0_from_receive {
   using inbox_tags = tmpl::list<IntReceiveTag>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& inboxes,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, bool> apply(
+      db::DataBox<DbTags>& box,
+      tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
@@ -429,9 +445,12 @@ struct add_int0_from_receive {
         std::move(tuples::get<IntReceiveTag>(inboxes)[db::get<TemporalId>(box)])
             .begin());
     tuples::get<IntReceiveTag>(inboxes).erase(db::get<TemporalId>(box));
-    return std::make_tuple(
-        db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), int0),
-        ++a >= 5);
+    db::mutate<Int0>(
+        make_not_null(&box),
+        [&int0](const gsl::not_null<int*> int0_box) {
+          *int0_box = int0;
+        });
+    return {std::move(box), ++a >= 5};
   }
 
   // [is_ready_example]
@@ -534,7 +553,8 @@ struct ReceiveComponent {
                              tmpl::list<receive_data_test::initialize>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::ReceiveStart,
-          tmpl::list<receive_data_test::add_int0_from_receive,
+          tmpl::list<receive_data_test::add_int0_to_box,
+                     receive_data_test::set_int0_from_receive,
                      add_remove_test::increment_int0,
                      add_remove_test::remove_int0,
                      receive_data_test::update_instance>>>;
