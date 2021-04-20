@@ -19,7 +19,7 @@ spectre_unload_modules() {
     module unload openblas/0.2.18
     module unload papi/5.5.1
     module unload yaml-cpp/master
-    module unload openmpi/2.0.1
+    module unload openmpi/2.0.0
     module unload cmake/3.18.2
     module unload ninja/1.10.0
     module unload doxygen/1.8.13
@@ -42,7 +42,7 @@ spectre_load_modules() {
     module load openblas/0.2.18
     module load papi/5.5.1
     module load yaml-cpp/master
-    module load openmpi/2.0.1
+    module load openmpi/2.0.0
     module load cmake/3.18.2
     module load ninja/1.10.0
     module load doxygen/1.8.13
