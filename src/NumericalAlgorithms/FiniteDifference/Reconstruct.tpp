@@ -7,16 +7,19 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "DataStructures/Transpose.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace fd::reconstruction::detail {
-template <typename Reconstructor, typename... ArgsForReconstructor, size_t Dim>
+namespace fd::reconstruction {
+namespace detail {
+template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
 void reconstruct_impl(
     const gsl::not_null<gsl::span<double>*> recons_upper,
     const gsl::not_null<gsl::span<double>*> recons_lower,
@@ -145,7 +148,7 @@ void reconstruct_impl(
   }  // for slices
 }
 
-template <typename Reconstructor, typename... ArgsForReconstructor, size_t Dim>
+template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
 void reconstruct(
     const gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_upper_side_of_face_vars,
@@ -275,4 +278,324 @@ void reconstruct(
     }
   }
 }
-}  // namespace fd::reconstruction::detail
+}  // namespace detail
+
+template <Side LowerOrUpperSide, typename Reconstructor, size_t Dim,
+          typename... ArgsForReconstructor>
+void reconstruct_neighbor(
+    const gsl::not_null<DataVector*> face_data, const DataVector& volume_data,
+    const DataVector& neighbor_data, const Index<Dim>& volume_extents,
+    const Index<Dim>& ghost_data_extents,
+    const Direction<Dim>& direction_to_reconstruct,
+    const ArgsForReconstructor&... args_for_reconstructor) noexcept {
+  ASSERT(LowerOrUpperSide == direction_to_reconstruct.side(),
+         "The template parameter LowerOrUpperSide ("
+             << LowerOrUpperSide
+             << ") must match the direction to reconstruct, "
+             << direction_to_reconstruct
+             << ". Note that we pass the Side in as a template parameter to "
+                "avoid runtime branches in tight loops.");
+  static_assert(Reconstructor::stencil_width() == 3 or
+                    Reconstructor::stencil_width() == 5,
+                "currently only support stencil widths of 3 and 5.");
+
+  constexpr size_t index_of_pointwise = LowerOrUpperSide == Side::Upper ? 0 : 1;
+  constexpr size_t neighbor_ghost_size =
+      (Reconstructor::stencil_width() + 1) / 2;
+  constexpr size_t offset_into_u_to_reconstruct =
+      (Reconstructor::stencil_width() - 1) / 2;
+  std::array<double, Reconstructor::stencil_width()> u_to_reconstruct{};
+  if constexpr (Dim == 1) {
+    (void)ghost_data_extents;
+    (void)direction_to_reconstruct;
+
+    constexpr bool upper_side = LowerOrUpperSide == Side::Upper;
+    const size_t volume_index = upper_side ? volume_extents[0] - 1 : 0;
+    if constexpr (Reconstructor::stencil_width() == 3) {
+      u_to_reconstruct =
+          std::array{upper_side ? volume_data[volume_index] : neighbor_data[0],
+                     upper_side ? neighbor_data[0] : neighbor_data[1],
+                     upper_side ? neighbor_data[1] : volume_data[volume_index]};
+    } else if constexpr (Reconstructor::stencil_width() == 5) {
+      u_to_reconstruct = std::array{
+          upper_side ? volume_data[volume_index - 1] : neighbor_data[0],
+          upper_side ? volume_data[volume_index] : neighbor_data[1],
+          upper_side ? neighbor_data[0] : neighbor_data[2],
+          upper_side ? neighbor_data[1] : volume_data[volume_index],
+          upper_side ? neighbor_data[2] : volume_data[volume_index + 1]};
+    }
+    (*face_data)[0] = Reconstructor::pointwise(
+        u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+        args_for_reconstructor...)[index_of_pointwise];
+  } else if constexpr (Dim == 2) {
+    (void)ghost_data_extents;
+    if (direction_to_reconstruct == Direction<Dim>::lower_xi()) {
+      for (size_t j = 0; j < volume_extents[1]; ++j) {
+        if constexpr (Reconstructor::stencil_width() == 3) {
+          u_to_reconstruct = std::array{
+              neighbor_data[j * neighbor_ghost_size],
+              neighbor_data[j * neighbor_ghost_size + 1],
+              volume_data[collapsed_index(Index<Dim>(0, j), volume_extents)]};
+        } else if constexpr (Reconstructor::stencil_width() == 5) {
+          u_to_reconstruct = std::array{
+              neighbor_data[j * neighbor_ghost_size],
+              neighbor_data[j * neighbor_ghost_size + 1],
+              neighbor_data[j * neighbor_ghost_size + 2],
+              volume_data[collapsed_index(Index<Dim>(0, j), volume_extents)],
+              volume_data[collapsed_index(Index<Dim>(1, j), volume_extents)]};
+        }
+        (*face_data)[j] = Reconstructor::pointwise(
+            u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+            args_for_reconstructor...)[index_of_pointwise];
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
+      for (size_t j = 0; j < volume_extents[1]; ++j) {
+        if constexpr (Reconstructor::stencil_width() == 3) {
+          u_to_reconstruct = std::array{
+              volume_data[collapsed_index(Index<Dim>(volume_extents[0] - 1, j),
+                                          volume_extents)],
+              neighbor_data[j * neighbor_ghost_size],
+              neighbor_data[j * neighbor_ghost_size + 1]};
+        } else if constexpr (Reconstructor::stencil_width() == 5) {
+          u_to_reconstruct = std::array{
+              volume_data[collapsed_index(Index<Dim>(volume_extents[0] - 2, j),
+                                          volume_extents)],
+              volume_data[collapsed_index(Index<Dim>(volume_extents[0] - 1, j),
+                                          volume_extents)],
+              neighbor_data[j * neighbor_ghost_size],
+              neighbor_data[j * neighbor_ghost_size + 1],
+              neighbor_data[j * neighbor_ghost_size + 2]};
+        }
+        (*face_data)[j] = Reconstructor::pointwise(
+            u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+            args_for_reconstructor...)[index_of_pointwise];
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
+      for (size_t i = 0; i < volume_extents[0]; ++i) {
+        if constexpr (Reconstructor::stencil_width() == 3) {
+          u_to_reconstruct = std::array{
+              neighbor_data[i], neighbor_data[i + volume_extents[0]],
+              volume_data[collapsed_index(Index<Dim>(i, 0), volume_extents)]};
+        } else if constexpr (Reconstructor::stencil_width() == 5) {
+          u_to_reconstruct = std::array{
+              neighbor_data[i], neighbor_data[i + volume_extents[0]],
+              neighbor_data[i + 2 * volume_extents[0]],
+              volume_data[collapsed_index(Index<Dim>(i, 0), volume_extents)],
+              volume_data[collapsed_index(Index<Dim>(i, 1), volume_extents)]};
+        }
+        (*face_data)[i] = Reconstructor::pointwise(
+            u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+            args_for_reconstructor...)[index_of_pointwise];
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::upper_eta()) {
+      for (size_t i = 0; i < volume_extents[0]; ++i) {
+        if constexpr (Reconstructor::stencil_width() == 3) {
+          u_to_reconstruct = std::array{
+              volume_data[collapsed_index(Index<Dim>(i, volume_extents[1] - 1),
+                                          volume_extents)],
+              neighbor_data[i], neighbor_data[i + volume_extents[0]]};
+        } else if constexpr (Reconstructor::stencil_width() == 5) {
+          u_to_reconstruct = std::array{
+              volume_data[collapsed_index(Index<Dim>(i, volume_extents[1] - 2),
+                                          volume_extents)],
+              volume_data[collapsed_index(Index<Dim>(i, volume_extents[1] - 1),
+                                          volume_extents)],
+              neighbor_data[i], neighbor_data[i + volume_extents[0]],
+              neighbor_data[i + 2 * volume_extents[0]]};
+        }
+        (*face_data)[i] = Reconstructor::pointwise(
+            u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+            args_for_reconstructor...)[index_of_pointwise];
+      }
+    }
+  } else {  // if constexpr (Dim == 3) is true
+    if (direction_to_reconstruct == Direction<Dim>::lower_xi()) {
+      const Index<Dim - 1> face_extents = volume_extents.slice_away(0);
+      for (size_t k = 0; k < volume_extents[2]; ++k) {
+        for (size_t j = 0; j < volume_extents[1]; ++j) {
+          if constexpr (Reconstructor::stencil_width() == 3) {
+            u_to_reconstruct =
+                std::array{neighbor_data[collapsed_index(Index<Dim>(0, j, k),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(1, j, k),
+                                                         ghost_data_extents)],
+                           volume_data[collapsed_index(Index<Dim>(0, j, k),
+                                                       volume_extents)]};
+          } else if constexpr (Reconstructor::stencil_width() == 5) {
+            u_to_reconstruct =
+                std::array{neighbor_data[collapsed_index(Index<Dim>(0, j, k),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(1, j, k),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(2, j, k),
+                                                         ghost_data_extents)],
+                           volume_data[collapsed_index(Index<Dim>(0, j, k),
+                                                       volume_extents)],
+                           volume_data[collapsed_index(Index<Dim>(1, j, k),
+                                                       volume_extents)]};
+          }
+          (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
+              Reconstructor::pointwise(
+                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+                  args_for_reconstructor...)[index_of_pointwise];
+        }
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
+      const Index<Dim - 1> face_extents = volume_extents.slice_away(0);
+      for (size_t k = 0; k < volume_extents[2]; ++k) {
+        for (size_t j = 0; j < volume_extents[1]; ++j) {
+          if constexpr (Reconstructor::stencil_width() == 3) {
+            u_to_reconstruct = std::array{
+                volume_data[collapsed_index(
+                    Index<Dim>(volume_extents[0] - 1, j, k), volume_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(0, j, k),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(1, j, k),
+                                              ghost_data_extents)]};
+          } else if constexpr (Reconstructor::stencil_width() == 5) {
+            u_to_reconstruct = std::array{
+                volume_data[collapsed_index(
+                    Index<Dim>(volume_extents[0] - 2, j, k), volume_extents)],
+                volume_data[collapsed_index(
+                    Index<Dim>(volume_extents[0] - 1, j, k), volume_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(0, j, k),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(1, j, k),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(2, j, k),
+                                              ghost_data_extents)]};
+          }
+          (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
+              Reconstructor::pointwise(
+                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+                  args_for_reconstructor...)[index_of_pointwise];
+        }
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
+      const Index<Dim - 1> face_extents = volume_extents.slice_away(1);
+      for (size_t k = 0; k < volume_extents[2]; ++k) {
+        for (size_t i = 0; i < volume_extents[0]; ++i) {
+          if constexpr (Reconstructor::stencil_width() == 3) {
+            u_to_reconstruct =
+                std::array{neighbor_data[collapsed_index(Index<Dim>(i, 0, k),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(i, 1, k),
+                                                         ghost_data_extents)],
+                           volume_data[collapsed_index(Index<Dim>(i, 0, k),
+                                                       volume_extents)]};
+          } else if constexpr (Reconstructor::stencil_width() == 5) {
+            u_to_reconstruct =
+                std::array{neighbor_data[collapsed_index(Index<Dim>(i, 0, k),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(i, 1, k),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(i, 2, k),
+                                                         ghost_data_extents)],
+                           volume_data[collapsed_index(Index<Dim>(i, 0, k),
+                                                       volume_extents)],
+                           volume_data[collapsed_index(Index<Dim>(i, 1, k),
+                                                       volume_extents)]};
+          }
+          (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
+              Reconstructor::pointwise(
+                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+                  args_for_reconstructor...)[index_of_pointwise];
+        }
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::upper_eta()) {
+      const Index<Dim - 1> face_extents = volume_extents.slice_away(1);
+      for (size_t k = 0; k < volume_extents[2]; ++k) {
+        for (size_t i = 0; i < volume_extents[0]; ++i) {
+          if constexpr (Reconstructor::stencil_width() == 3) {
+            u_to_reconstruct = std::array{
+                volume_data[collapsed_index(
+                    Index<Dim>(i, volume_extents[1] - 1, k), volume_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, 0, k),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, 1, k),
+                                              ghost_data_extents)]};
+          } else if constexpr (Reconstructor::stencil_width() == 5) {
+            u_to_reconstruct = std::array{
+                volume_data[collapsed_index(
+                    Index<Dim>(i, volume_extents[1] - 2, k), volume_extents)],
+                volume_data[collapsed_index(
+                    Index<Dim>(i, volume_extents[1] - 1, k), volume_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, 0, k),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, 1, k),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, 2, k),
+                                              ghost_data_extents)]};
+          }
+          (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
+              Reconstructor::pointwise(
+                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+                  args_for_reconstructor...)[index_of_pointwise];
+        }
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::lower_zeta()) {
+      const Index<Dim - 1> face_extents = volume_extents.slice_away(2);
+      for (size_t j = 0; j < volume_extents[1]; ++j) {
+        for (size_t i = 0; i < volume_extents[0]; ++i) {
+          if constexpr (Reconstructor::stencil_width() == 3) {
+            u_to_reconstruct =
+                std::array{neighbor_data[collapsed_index(Index<Dim>(i, j, 0),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(i, j, 1),
+                                                         ghost_data_extents)],
+                           volume_data[collapsed_index(Index<Dim>(i, j, 0),
+                                                       volume_extents)]};
+          } else if constexpr (Reconstructor::stencil_width() == 5) {
+            u_to_reconstruct =
+                std::array{neighbor_data[collapsed_index(Index<Dim>(i, j, 0),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(i, j, 1),
+                                                         ghost_data_extents)],
+                           neighbor_data[collapsed_index(Index<Dim>(i, j, 2),
+                                                         ghost_data_extents)],
+                           volume_data[collapsed_index(Index<Dim>(i, j, 0),
+                                                       volume_extents)],
+                           volume_data[collapsed_index(Index<Dim>(i, j, 1),
+                                                       volume_extents)]};
+          }
+          (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
+              Reconstructor::pointwise(
+                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+                  args_for_reconstructor...)[index_of_pointwise];
+        }
+      }
+    } else if (direction_to_reconstruct == Direction<Dim>::upper_zeta()) {
+      const Index<Dim - 1> face_extents = volume_extents.slice_away(2);
+      for (size_t j = 0; j < volume_extents[1]; ++j) {
+        for (size_t i = 0; i < volume_extents[0]; ++i) {
+          if constexpr (Reconstructor::stencil_width() == 3) {
+            u_to_reconstruct = std::array{
+                volume_data[collapsed_index(
+                    Index<Dim>(i, j, volume_extents[2] - 1), volume_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, j, 0),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, j, 1),
+                                              ghost_data_extents)]};
+          } else if constexpr (Reconstructor::stencil_width() == 5) {
+            u_to_reconstruct = std::array{
+                volume_data[collapsed_index(
+                    Index<Dim>(i, j, volume_extents[2] - 2), volume_extents)],
+                volume_data[collapsed_index(
+                    Index<Dim>(i, j, volume_extents[2] - 1), volume_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, j, 0),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, j, 1),
+                                              ghost_data_extents)],
+                neighbor_data[collapsed_index(Index<Dim>(i, j, 2),
+                                              ghost_data_extents)]};
+          }
+          (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
+              Reconstructor::pointwise(
+                  u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
+                  args_for_reconstructor...)[index_of_pointwise];
+        }
+      }
+    }
+  }
+}
+}  // namespace fd::reconstruction
