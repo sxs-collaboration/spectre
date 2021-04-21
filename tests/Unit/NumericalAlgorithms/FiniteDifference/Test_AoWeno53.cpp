@@ -15,6 +15,32 @@
 #include "NumericalAlgorithms/FiniteDifference/AoWeno.hpp"
 
 namespace {
+template <size_t NonlinearWeightExponent, size_t Dim>
+void test_function_pointers() noexcept {
+  const auto function_ptrs =
+      fd::reconstruction::aoweno_53_function_pointers<Dim>(
+          NonlinearWeightExponent);
+  CHECK(get<0>(function_ptrs) ==
+        &fd::reconstruction::aoweno_53<NonlinearWeightExponent, Dim>);
+  using function_type =
+      void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
+               const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
+               const double&, const double&, const double&) noexcept;
+  CHECK(get<1>(function_ptrs) ==
+        static_cast<function_type>(
+            &fd::reconstruction::reconstruct_neighbor<
+                Side::Lower,
+                ::fd::reconstruction::detail::AoWeno53Reconstructor<
+                    NonlinearWeightExponent>,
+                Dim>));
+  CHECK(get<2>(function_ptrs) ==
+        static_cast<function_type>(
+            &fd::reconstruction::reconstruct_neighbor<
+                Side::Upper,
+                ::fd::reconstruction::detail::AoWeno53Reconstructor<
+                    NonlinearWeightExponent>,
+                Dim>));
+}
 
 template <size_t Dim>
 void test() {
@@ -112,6 +138,13 @@ void test() {
 
   TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
       Dim>(4, 8, 5, recons_5th_order_only, recons_neighbor_data_5th_order_only);
+
+  test_function_pointers<2, Dim>();
+  test_function_pointers<4, Dim>();
+  test_function_pointers<6, Dim>();
+  test_function_pointers<8, Dim>();
+  test_function_pointers<10, Dim>();
+  test_function_pointers<12, Dim>();
 }
 }  // namespace
 

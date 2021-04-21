@@ -336,4 +336,29 @@ void aoweno_53(
       reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,
       volume_extents, number_of_variables, gamma_hi, gamma_lo, epsilon);
 }
+
+/*!
+ * \brief Returns function pointers to the `aoweno_53` function, lower neighbor
+ * reconstruction, and upper neighbor reconstruction.
+ *
+ * This is useful for controlling template parameters like the
+ * `NonlinearWeightExponent` from an input file by setting a function pointer.
+ * Note that the reason the reconstruction functions instead of say the
+ * `pointwise` member function is returned is to avoid function pointers inside
+ * tight loops.
+ */
+template <size_t Dim>
+std::tuple<
+    void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+             gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+             const gsl::span<const double>&,
+             const DirectionMap<Dim, gsl::span<const double>>&,
+             const Index<Dim>&, size_t, double, double, double) noexcept,
+    void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
+             const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
+             const double&, const double&, const double&) noexcept,
+    void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
+             const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
+             const double&, const double&, const double&) noexcept>
+aoweno_53_function_pointers(size_t nonlinear_weight_exponent) noexcept;
 }  // namespace fd::reconstruction
