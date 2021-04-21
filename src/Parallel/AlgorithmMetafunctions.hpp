@@ -28,7 +28,7 @@ class GlobalCache;
 
 /// The possible options for altering the current execution of the algorithm,
 /// used in the return type of iterable actions.
-enum AlgorithmExecution {
+enum class AlgorithmExecution {
   /// Leave the algorithm termination flag in its current state.
   Continue,
   /// Stop the execution of iterable actions, but allow entry methods
