@@ -6,7 +6,6 @@ set(LIBRARY "Test_ParallelDiscontinuousGalerkin")
 set(LIBRARY_SOURCES
   Test_CollectDataForFluxes.cpp
   Test_FluxCommunication.cpp
-  Test_FluxCommunicationLts.cpp
   Test_HasReceivedFromAllMortars.cpp
   Test_InitializeDomain.cpp
   Test_InitializeInterfaces.cpp
