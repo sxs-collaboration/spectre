@@ -11,6 +11,7 @@ spectre_target_headers(
   HEADERS
   ActiveGrid.hpp
   CartesianFluxDivergence.hpp
+  ComputeBoundaryTerms.hpp
   DgSubcell.hpp
   Matrices.hpp
   Mesh.hpp

@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Actions/Test_SelectNumericalMethod.cpp
   Test_ActiveGrid.cpp
   Test_CartesianFluxDivergence.cpp
+  Test_ComputeBoundaryTerms.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_NeighborData.cpp
