@@ -16,6 +16,7 @@ spectre_target_headers(
   Matrices.hpp
   Mesh.hpp
   NeighborData.hpp
+  NeighborReconstructedFaceSolution.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp
   Projection.hpp

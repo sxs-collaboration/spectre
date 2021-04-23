@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_NeighborData.cpp
+  Test_NeighborReconstructedFaceSolution.cpp
   Test_PerssonTci.cpp
   Test_PrepareNeighborData.cpp
   Test_Projection.cpp

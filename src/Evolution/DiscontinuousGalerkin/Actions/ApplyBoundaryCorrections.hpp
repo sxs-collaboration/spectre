@@ -23,6 +23,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -40,6 +41,28 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace evolution::dg::subcell {
+// We use a forward declaration instead of including a header file to avoid
+// coupling to the DG-subcell libraries for executables that don't use subcell.
+template <typename Metavariables, typename DbTagsList>
+void neighbor_reconstructed_face_solution(
+    const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    const gsl::not_null<std::pair<
+        const TimeStepId,
+        FixedHashMap<
+            maximum_number_of_neighbors(Metavariables::volume_dim),
+            std::pair<Direction<Metavariables::volume_dim>,
+                      ElementId<Metavariables::volume_dim>>,
+            std::tuple<Mesh<Metavariables::volume_dim - 1>,
+                       std::optional<std::vector<double>>,
+                       std::optional<std::vector<double>>, ::TimeStepId>,
+            boost::hash<std::pair<Direction<Metavariables::volume_dim>,
+                                  ElementId<Metavariables::volume_dim>>>>>*>
+        received_temporal_id_and_data) noexcept;
+}  // namespace evolution::dg::subcell
+/// \endcond
 
 namespace evolution::dg::Actions {
 namespace detail {
@@ -132,6 +155,11 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
           volume_dim>>(*inboxes);
   const auto& temporal_id = get<::Tags::TimeStepId>(*box);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
+  if constexpr (using_subcell_v<Metavariables>) {
+    evolution::dg::subcell::neighbor_reconstructed_face_solution<Metavariables>(
+        box, make_not_null(&*received_temporal_id_and_data));
+  }
+
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
              evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
       box,
@@ -157,10 +185,16 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
                      << received_temporal_id_and_data->first);
           mortar_next_time_step_id->at(mortar_id) =
               std::get<3>(received_mortar_data.second);
-          mortar_data->at(mortar_id).insert_neighbor_mortar_data(
-              received_temporal_id_and_data->first,
-              std::get<0>(received_mortar_data.second),
-              std::move(*std::get<2>(received_mortar_data.second)));
+          ASSERT(using_subcell_v<Metavariables> or
+                     std::get<2>(received_mortar_data.second).has_value(),
+                 "Must receive number boundary correction data when not using "
+                 "DG-subcell.");
+          if (std::get<2>(received_mortar_data.second).has_value()) {
+            mortar_data->at(mortar_id).insert_neighbor_mortar_data(
+                received_temporal_id_and_data->first,
+                std::get<0>(received_mortar_data.second),
+                std::move(*std::get<2>(received_mortar_data.second)));
+          }
         }
       });
   inbox.erase(received_temporal_id_and_data);
