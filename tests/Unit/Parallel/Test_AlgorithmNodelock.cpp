@@ -153,14 +153,16 @@ struct nodegroup_check_first_result {
 };
 
 struct nodegroup_threaded_receive {
+  // [threaded_action_example]
   template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex, typename NodeLock,
+            typename Metavariables, typename ArrayIndex,
             Requires<sizeof...(DbTags) == 3> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<NodeLock*> node_lock,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const int& id_of_array) {
+    // [threaded_action_example]
     node_lock->lock();
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
         make_not_null(&box),
@@ -217,9 +219,7 @@ struct reduce_to_nodegroup {
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
-    // [simple_action_with_args]
     Parallel::simple_action<nodegroup_receive>(local_nodegroup, array_index);
-    // [simple_action_with_args]
   }
 };
 
