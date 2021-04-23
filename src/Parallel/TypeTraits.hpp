@@ -14,9 +14,16 @@
 namespace Parallel {
 
 /// \ingroup ParallelGroup
-/// Check if `T` is a Charm++ proxy for an array chare
+/// Check if `T` is a Charm++ proxy for an array chare (the entire array)
 template <typename T>
 struct is_array_proxy : std::is_base_of<CProxy_ArrayElement, T>::type {};
+
+/// \ingroup ParallelGroup
+/// Check if `T` is a Charm++ proxy for an array chare element (from indexing
+/// into the array chare)
+template <typename T>
+struct is_array_element_proxy
+    : std::is_base_of<CProxyElement_ArrayElement, T>::type {};
 
 /// \ingroup ParallelGroup
 /// Check if `T` is a Charm++ proxy for a chare
