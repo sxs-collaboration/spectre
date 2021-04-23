@@ -34,6 +34,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -51,6 +52,13 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace evolution::dg::subcell {
+// We use a forward declaration instead of including a header file to avoid
+// coupling to the DG-subcell libraries for executables that don't use subcell.
+template <typename Metavariables, typename DbTagsList>
+DirectionMap<Metavariables::volume_dim, std::vector<double>>
+prepare_neighbor_data(gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+}  // namespace evolution::dg::subcell
 namespace tuples {
 template <typename...>
 class TaggedTuple;
@@ -633,9 +641,25 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const auto& mortar_meshes =
         get<evolution::dg::Tags::MortarMesh<volume_dim>>(*box);
 
+    std::optional<DirectionMap<volume_dim, std::vector<double>>>
+        all_neighbor_data_for_reconstruction = std::nullopt;
+    if constexpr (using_subcell_v<Metavariables>) {
+      all_neighbor_data_for_reconstruction =
+          evolution::dg::subcell::prepare_neighbor_data<Metavariables>(box);
+    }
+
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
       const auto direction_from_neighbor = orientation(direction.opposite());
+
+      std::vector<double> ghost_and_subcell_data{};
+      if constexpr (using_subcell_v<Metavariables>) {
+        ASSERT(all_neighbor_data_for_reconstruction.has_value(),
+               "Trying to do DG-subcell but the ghost and subcell data for the "
+               "neighbor has not been set.");
+        ghost_and_subcell_data =
+            std::move(all_neighbor_data_for_reconstruction.value()[direction]);
+      }
 
       for (const auto& neighbor : neighbors) {
         const std::pair mortar_id{direction, neighbor};
@@ -673,7 +697,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
         std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
                    std::optional<std::vector<double>>, ::TimeStepId>
             data{neighbor_boundary_data_on_mortar.first,
-                 {},
+                 ghost_and_subcell_data,
                  {std::move(neighbor_boundary_data_on_mortar.second)},
                  next_time_step_id};
 
