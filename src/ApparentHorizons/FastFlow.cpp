@@ -23,6 +23,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 // IWYU pragma: no_forward_declare Tensor
@@ -354,13 +355,17 @@ FastFlow::FlowType Options::create_from_yaml<FastFlow::FlowType>::create<void>(
                                         "one of Jacobi, Curvature, Fast.");
 }
 
-template size_t FastFlow::current_l_mesh(
-    const Strahlkorper<Frame::Inertial>& strahlkorper) const noexcept;
-
-template std::pair<FastFlow::Status, FastFlow::IterInfo>
-FastFlow::iterate_horizon_finder<Frame::Inertial>(
-    const gsl::not_null<Strahlkorper<Frame::Inertial>*> current_strahlkorper,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& upper_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const tnsr::Ijj<DataVector, 3, Frame::Inertial>&
-        christoffel_2nd_kind) noexcept;
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATE(_, data)                                                \
+  template size_t FastFlow::current_l_mesh(                                 \
+      const Strahlkorper<FRAME(data)>& strahlkorper) const noexcept;        \
+  template std::pair<FastFlow::Status, FastFlow::IterInfo>                  \
+  FastFlow::iterate_horizon_finder<FRAME(data)>(                            \
+      const gsl::not_null<Strahlkorper<FRAME(data)>*> current_strahlkorper, \
+      const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric,     \
+      const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,      \
+      const tnsr::Ijj<DataVector, 3, FRAME(data)>&                          \
+          christoffel_2nd_kind) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
+#undef INSTANTIATE
+#undef FRAME
