@@ -10,6 +10,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ActiveGrid.hpp
+  CartesianFluxDivergence.hpp
   DgSubcell.hpp
   Matrices.hpp
   Mesh.hpp
