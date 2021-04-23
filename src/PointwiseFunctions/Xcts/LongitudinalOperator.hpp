@@ -30,7 +30,7 @@ namespace Xcts {
  *
  * \f{equation}
  * (L\beta)^{ij} = 2\left(\gamma^{ik}\gamma^{jl} -
- * \frac{1}{3} \gamma^{jk}\gamma^{kl}\right) B_{kl}
+ * \frac{1}{3} \gamma^{ij}\gamma^{kl}\right) B_{kl}
  * \f}
  *
  * Note that the strain can be computed with `Elasticity::strain`.
