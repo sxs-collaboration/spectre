@@ -147,6 +147,7 @@ struct ApparentHorizon {
                               logging::Tags::Verbosity<InterpolationTargetTag>>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::true_type;
+  using frame = Frame;
 
   using simple_tags =
       tmpl::push_back<StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,

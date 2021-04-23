@@ -100,6 +100,7 @@ struct compute_target_points_tags<
 /// - Adds:
 ///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
 ///   - `Tags::IndicesOfInvalidInterpPoints<TemporalId>`
+///   - `Tags::PendingTemporalIds<TemporalId>`
 ///   - `Tags::TemporalIds<TemporalId>`
 ///   - `Tags::CompletedTemporalIds<TemporalId>`
 ///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
@@ -119,7 +120,7 @@ struct InitializeInterpolationTarget {
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints<TemporalId>,
       Tags::IndicesOfInvalidInterpPoints<TemporalId>,
-      Tags::TemporalIds<TemporalId>,
+      Tags::PendingTemporalIds<TemporalId>, Tags::TemporalIds<TemporalId>,
       Tags::CompletedTemporalIds<TemporalId>,
       Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>,
       ::Tags::Variables<

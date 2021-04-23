@@ -14,8 +14,11 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Requires.hpp"
@@ -46,6 +49,8 @@ template <typename InterpolationTargetTag, typename TemporalId>
 struct InterpolatedVars;
 template <typename TemporalId>
 struct CompletedTemporalIds;
+template <typename TemporalId>
+struct PendingTemporalIds;
 template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
@@ -268,6 +273,27 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
   return (invalid_size + filled_size == interp_size);
 }
 
+/// Is domain::Tags::FunctionsOfTime in the mutable global cache?
+/// Result is either std::true_type or std::false_type.
+template <typename Metavariables>
+using cache_contains_functions_of_time =
+    tmpl::found<Parallel::get_mutable_global_cache_tags<Metavariables>,
+                std::is_same<tmpl::_1, domain::Tags::FunctionsOfTime>>;
+
+/// Returns true if at least one Block in the Domain has
+/// time-dependent maps.
+template <typename InterpolationTargetTag, typename DbTags,
+          typename Metavariables>
+bool maps_are_time_dependent(
+    const db::DataBox<DbTags>& box,
+    const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+  const auto& domain =
+      db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+  return alg::any_of(domain.blocks(), [](const auto& block) noexcept {
+    return block.is_time_dependent();
+  });
+}
+
 /// Tells an InterpolationTarget that it should interpolate at
 /// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
 /// accordingly.
@@ -278,8 +304,7 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
 /// flag_temporal_ids_for_interpolation is called by an Action
 /// of InterpolationTarget
 ///
-/// Currently two Actions call flag_temporal_ids_for_interpolation:
-/// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
+/// Currently one Action calls flag_temporal_ids_for_interpolation:
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 std::vector<TemporalId> flag_temporal_ids_for_interpolation(
@@ -310,6 +335,60 @@ std::vector<TemporalId> flag_temporal_ids_for_interpolation(
                   completed_ids.end() and
               std::find(ids->begin(), ids->end(), id) == ids->end()) {
             ids->push_back(id);
+            new_temporal_ids.push_back(id);
+          }
+        }
+      },
+      box);
+
+  return new_temporal_ids;
+}
+
+/// Tells an InterpolationTarget that it should interpolate at
+/// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
+/// accordingly.
+///
+/// Returns the temporal_ids that have actually been newly flagged
+/// (since some of them may have been flagged already).
+///
+/// flag_temporal_ids_as_pending is called by an Action
+/// of InterpolationTarget
+///
+/// Currently one Action calls flag_temporal_ids_as_pending:
+/// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
+template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
+std::vector<TemporalId> flag_temporal_ids_as_pending(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    const std::vector<TemporalId>& temporal_ids) noexcept {
+  // We allow this function to be called multiple times with the same
+  // temporal_ids (e.g. from each element, or from each node of a
+  // NodeGroup ParallelComponent such as Interpolator). If multiple
+  // calls occur, we care only about the first one, and ignore the
+  // others.  The first call will often begin interpolation.  So if
+  // multiple calls occur, it is possible that some of them may arrive
+  // late, even after interpolation has been completed on one or more
+  // of the temporal_ids (and after that id has already been removed
+  // from `ids`).  If this happens, we don't want to add the
+  // temporal_ids again. For that reason we keep track of the
+  // temporal_ids that we have already completed interpolation on.  So
+  // here we do not add any temporal_ids that are already present in
+  // `ids` or `completed_ids`.
+  std::vector<TemporalId> new_temporal_ids{};
+
+  db::mutate_apply<tmpl::list<Tags::PendingTemporalIds<TemporalId>>,
+                   tmpl::list<Tags::TemporalIds<TemporalId>,
+                              Tags::CompletedTemporalIds<TemporalId>>>(
+      [&temporal_ids, &new_temporal_ids](
+          const gsl::not_null<std::deque<TemporalId>*> pending_ids,
+          const std::deque<TemporalId>& ids,
+          const std::deque<TemporalId>& completed_ids) noexcept {
+        for (auto& id : temporal_ids) {
+          if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
+                  completed_ids.end() and
+              std::find(ids.begin(), ids.end(), id) == ids.end() and
+              std::find(pending_ids->begin(), pending_ids->end(), id) ==
+                  pending_ids->end()) {
+            pending_ids->push_back(id);
             new_temporal_ids.push_back(id);
           }
         }
@@ -399,13 +478,52 @@ void add_received_variables(
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
 auto block_logical_coords(const db::DataBox<DbTags>& box,
-                          const tmpl::type_<Metavariables>& meta,
+                          Parallel::GlobalCache<Metavariables>& cache,
                           const TemporalId& temporal_id) noexcept {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+  if constexpr (std::is_same_v<typename InterpolationTargetTag::
+                                   compute_target_points::frame,
+                               ::Frame::Grid>) {
+    // Frame is grid frame, so don't need any FunctionsOfTime,
+    // whether or not the maps are time_dependent.
+    return ::block_logical_coordinates(
+        domain, InterpolationTargetTag::compute_target_points::points(
+                    box, tmpl::type_<Metavariables>{}, temporal_id));
+  }
+
+  if (maps_are_time_dependent<InterpolationTargetTag>(
+          box, tmpl::type_<Metavariables>{})) {
+    if constexpr (cache_contains_functions_of_time<Metavariables>::value) {
+      // Whoever calls block_logical_coords when the maps are
+      // time-dependent is responsible for ensuring
+      // that functions_of_time are up to date at temporal_id.
+      const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+      return ::block_logical_coordinates(
+          domain,
+          InterpolationTargetTag::compute_target_points::points(
+              box, tmpl::type_<Metavariables>{}, temporal_id),
+          temporal_id.step_time().value(), functions_of_time);
+    } else {
+      // We error here because the maps are time-dependent, yet
+      // the cache does not contain FunctionsOfTime.  It would be
+      // nice to make this a compile-time error; however, we want
+      // the code to compile for the completely time-independent
+      // case where there are no FunctionsOfTime in the cache at
+      // all.  Unfortunately, checking whether the maps are
+      // time-dependent is currently not constexpr.
+      ERROR(
+          "There is a time-dependent CoordinateMap in at least one "
+          "of the Blocks, but FunctionsOfTime are not in the "
+          "GlobalCache.  If you intend to use a time-dependent "
+          "CoordinateMap, please add FunctionsOfTime to the GlobalCache.");
+    }
+  }
+
+  // Time-independent case.
   return ::block_logical_coordinates(
       domain, InterpolationTargetTag::compute_target_points::points(
-                  box, meta, temporal_id));
+                  box, tmpl::type_<Metavariables>{}, temporal_id));
 }
 
 /// This is a version of block_logical_coords for when the coords

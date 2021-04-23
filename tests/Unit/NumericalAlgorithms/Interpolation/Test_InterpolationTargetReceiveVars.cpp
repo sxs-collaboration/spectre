@@ -318,6 +318,7 @@ void test_interpolation_target_receive_vars() noexcept {
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
        std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{
            invalid_indices},
+       std::deque<temporal_id_type>{},
        std::deque<temporal_id_type>{first_temporal_id, second_temporal_id},
        std::deque<temporal_id_type>{},
        std::unordered_map<temporal_id_type,

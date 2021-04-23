@@ -16,6 +16,7 @@
 #include "Domain/FunctionsOfTime/ReadSpecThirdOrderPiecewisePolynomial.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
@@ -94,15 +95,13 @@ struct FunctionsOfTime : db::SimpleTag {
         // an element with key==spectre_name; this action only
         // mutates the value associated with that key
         if (functions_of_time.count(spectre_name) == 0) {
-          std::vector<std::string> keys_in_functions_of_time{
-              keys_of(functions_of_time)};
           ERROR("Trying to import data for key "
                 << spectre_name
                 << "in FunctionsOfTime, but FunctionsOfTime does not "
                    "contain that key. This might happen if the option "
                    "FunctionOfTimeNameMap is not specified correctly. Keys "
                    "contained in FunctionsOfTime: "
-                << keys_in_functions_of_time << "\n");
+                << keys_of(functions_of_time) << "\n");
         }
         auto* piecewise_polynomial = dynamic_cast<
             domain::FunctionsOfTime::PiecewisePolynomial<max_deriv>*>(
