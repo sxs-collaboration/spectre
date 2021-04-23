@@ -30,18 +30,17 @@
 
 namespace {
 
-template <typename DataType>
-tnsr::I<DataType, 3, Frame::Inertial> spatial_coords(
+template <typename Frame, typename DataType>
+tnsr::I<DataType, 3, Frame> spatial_coords(
     const DataType& used_for_size) noexcept {
-  auto x = make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(used_for_size,
-                                                                  0.0);
+  auto x = make_with_value<tnsr::I<DataType, 3, Frame>>(used_for_size, 0.0);
   get<0>(x) = 1.32;
   get<1>(x) = 0.82;
   get<2>(x) = 1.24;
   return x;
 }
 
-template <typename DataType>
+template <typename Frame, typename DataType>
 void test_schwarzschild(const DataType& used_for_size) noexcept {
   // Schwarzschild solution is:
   // H        = M/r
@@ -59,30 +58,31 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   const double mass = 1.01;
   const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
-  const auto x = spatial_coords(used_for_size);
+  const auto x = spatial_coords<Frame>(used_for_size);
   const double t = 1.3;
 
   // Evaluate solution
   gr::Solutions::KerrSchild solution(mass, spin, center);
 
-  const auto vars =
-      solution.variables(x, t, gr::Solutions::KerrSchild::tags<DataType>{});
+  const auto vars = solution.variables(
+      x, t, typename gr::Solutions::KerrSchild::tags<DataType, Frame>{});
   const auto& lapse = get<gr::Tags::Lapse<DataType>>(vars);
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
   const auto& d_lapse =
-      get<gr::Solutions::KerrSchild::DerivLapse<DataType>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(vars);
-  const auto& d_shift =
-      get<gr::Solutions::KerrSchild::DerivShift<DataType>>(vars);
-  const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>>(vars);
-  const auto& g =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(vars);
-  const auto& dt_g =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>(
+      get<typename gr::Solutions::KerrSchild::DerivLapse<DataType, Frame>>(
           vars);
-  const auto& d_g =
-      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<3, Frame, DataType>>(vars);
+  const auto& d_shift =
+      get<typename gr::Solutions::KerrSchild::DerivShift<DataType, Frame>>(
+          vars);
+  const auto& dt_shift =
+      get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
+  const auto& g = get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
+  const auto& dt_g =
+      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
+  const auto& d_g = get<
+      typename gr::Solutions::KerrSchild::DerivSpatialMetric<DataType, Frame>>(
+      vars);
 
   // Check those quantities that should be zero.
   const auto zero = make_with_value<DataType>(x, 0.);
@@ -102,24 +102,21 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   get(expected_lapse) = 1.0 / sqrt(1.0 + 2.0 * mass / r);
   CHECK_ITERABLE_APPROX(lapse, expected_lapse);
 
-  auto expected_d_lapse =
-      make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto expected_d_lapse = make_with_value<tnsr::i<DataType, 3, Frame>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     expected_d_lapse.get(i) =
         mass * x.get(i) * one_over_r_cubed * cube(get(lapse));
   }
   CHECK_ITERABLE_APPROX(d_lapse, expected_d_lapse);
 
-  auto expected_shift =
-      make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto expected_shift = make_with_value<tnsr::I<DataType, 3, Frame>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     expected_shift.get(i) =
         2.0 * mass * x.get(i) * one_over_r_squared * square(get(lapse));
   }
   CHECK_ITERABLE_APPROX(shift, expected_shift);
 
-  auto expected_d_shift =
-      make_with_value<tnsr::iJ<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto expected_d_shift = make_with_value<tnsr::iJ<DataType, 3, Frame>>(x, 0.0);
   for (size_t j = 0; j < 3; ++j) {
     expected_d_shift.get(j, j) =
         2.0 * mass * one_over_r_squared * square(get(lapse));
@@ -131,8 +128,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   }
   CHECK_ITERABLE_APPROX(d_shift, expected_d_shift);
 
-  auto expected_g =
-      make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto expected_g = make_with_value<tnsr::ii<DataType, 3, Frame>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
       expected_g.get(i, j) =
@@ -142,8 +138,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   }
   CHECK_ITERABLE_APPROX(g, expected_g);
 
-  auto expected_d_g =
-      make_with_value<tnsr::ijj<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto expected_d_g = make_with_value<tnsr::ijj<DataType, 3, Frame>>(x, 0.0);
   for (size_t k = 0; k < 3; ++k) {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {  // Symmetry
@@ -161,21 +156,23 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(d_g, expected_d_g);
 }
 
-template <typename DataType>
+template <typename Frame, typename DataType>
 void test_tag_retrieval(const DataType& used_for_size) noexcept {
   // Parameters for KerrSchild solution
   const double mass = 1.234;
   const std::array<double, 3> spin{{0.1, -0.2, 0.3}};
   const std::array<double, 3> center{{1.0, 2.0, 3.0}};
-  const auto x = spatial_coords(used_for_size);
+  const auto x = spatial_coords<Frame>(used_for_size);
   const double t = 1.3;
 
   // Evaluate solution
   const gr::Solutions::KerrSchild solution(mass, spin, center);
   TestHelpers::AnalyticSolutions::test_tag_retrieval(
-      solution, x, t, gr::Solutions::KerrSchild::tags<DataType>{});
+      solution, x, t,
+      typename gr::Solutions::KerrSchild::template tags<DataType, Frame>{});
 }
 
+template <typename Frame>
 void test_einstein_solution() noexcept {
   // Parameters
   //   ...for KerrSchild solution
@@ -183,17 +180,21 @@ void test_einstein_solution() noexcept {
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{0.3, 0.2, 0.4}};
   //   ...for grid
-  const size_t grid_size = 8;
   const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
   const double time = -2.8;
 
   gr::Solutions::KerrSchild solution(mass, spin, center);
   TestHelpers::VerifyGrSolution::verify_consistency(
-      solution, time, tnsr::I<double, 3>{lower_bound}, 0.01, 1.0e-10);
-  TestHelpers::VerifyGrSolution::verify_time_independent_einstein_solution(
-      solution, grid_size, lower_bound, upper_bound,
-      std::numeric_limits<double>::epsilon() * 1.e5);
+      solution, time, tnsr::I<double, 3, Frame>{lower_bound}, 0.01, 1.0e-10);
+  if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+    // Don't look at time-independent solution in other than the inertial
+    // frame.
+    const size_t grid_size = 8;
+    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+    TestHelpers::VerifyGrSolution::verify_time_independent_einstein_solution(
+        solution, grid_size, lower_bound, upper_bound,
+        std::numeric_limits<double>::epsilon() * 1.e5);
+  }
 }
 
 void test_serialize() noexcept {
@@ -222,14 +223,21 @@ void test_construct_from_options() {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
                   "[PointwiseFunctions][Unit]") {
-  test_schwarzschild(DataVector(5));
-  test_schwarzschild(0.0);
-  test_tag_retrieval(DataVector(5));
-  test_tag_retrieval(0.0);
-  test_einstein_solution();
   test_copy_and_move();
   test_serialize();
   test_construct_from_options();
+
+  test_schwarzschild<Frame::Inertial>(DataVector(5));
+  test_schwarzschild<Frame::Inertial>(0.0);
+  test_tag_retrieval<Frame::Inertial>(DataVector(5));
+  test_tag_retrieval<Frame::Inertial>(0.0);
+  test_einstein_solution<Frame::Inertial>();
+
+  test_schwarzschild<Frame::Grid>(DataVector(5));
+  test_schwarzschild<Frame::Grid>(0.0);
+  test_tag_retrieval<Frame::Grid>(DataVector(5));
+  test_tag_retrieval<Frame::Grid>(0.0);
+  test_einstein_solution<Frame::Grid>();
 }
 
 // [[OutputRegex, Spin magnitude must be < 1]]

@@ -345,12 +345,13 @@ void verify_time_independent_einstein_solution(
 }
 
 namespace detail {
-template <typename Tag>
-using deriv = Tags::deriv<Tag, tmpl::size_t<3>, Frame::Inertial>;
+template <typename Tag, typename Frame>
+using deriv = Tags::deriv<Tag, tmpl::size_t<3>, Frame>;
 
-template <typename Tag, typename Solution>
-auto time_derivative(const Solution& solution, const tnsr::I<double, 3>& x,
-                     const double time, const double dt) noexcept {
+template <typename Tag, typename Solution, typename Frame>
+auto time_derivative(const Solution& solution,
+                     const tnsr::I<double, 3, Frame>& x, const double time,
+                     const double dt) noexcept {
   typename Tag::type result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
@@ -365,10 +366,11 @@ auto time_derivative(const Solution& solution, const tnsr::I<double, 3>& x,
   return result;
 }
 
-template <typename Tag, typename Solution>
-auto space_derivative(const Solution& solution, const tnsr::I<double, 3>& x,
-                      const double time, const double dx) noexcept {
-  typename deriv<Tag>::type result{};
+template <typename Tag, typename Solution, typename Frame>
+auto space_derivative(const Solution& solution,
+                      const tnsr::I<double, 3, Frame>& x, const double time,
+                      const double dx) noexcept {
+  typename deriv<Tag, Frame>::type result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
     *it = numerical_derivative(
@@ -390,24 +392,24 @@ auto space_derivative(const Solution& solution, const tnsr::I<double, 3>& x,
 /// solution.  This includes checking pointwise relations such as
 /// consistency of the metric and inverse and comparing returned and
 /// numerical derivatives.
-template <typename Solution>
+template <typename Solution, typename Frame>
 void verify_consistency(const Solution& solution, const double time,
-                        const tnsr::I<double, 3>& position,
+                        const tnsr::I<double, 3, Frame>& position,
                         const double derivative_delta,
                         const double derivative_tolerance) noexcept {
   using Lapse = gr::Tags::Lapse<double>;
-  using Shift = gr::Tags::Shift<3, Frame::Inertial, double>;
-  using SpatialMetric = gr::Tags::SpatialMetric<3, Frame::Inertial, double>;
+  using Shift = gr::Tags::Shift<3, Frame, double>;
+  using SpatialMetric = gr::Tags::SpatialMetric<3, Frame, double>;
   using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<double>;
   using InverseSpatialMetric =
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, double>;
+      gr::Tags::InverseSpatialMetric<3, Frame, double>;
   using ExtrinsicCurvature =
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, double>;
+      gr::Tags::ExtrinsicCurvature<3, Frame, double>;
   using tags =
       tmpl::list<SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
-                 ExtrinsicCurvature, Lapse, Shift, detail::deriv<Shift>,
-                 Tags::dt<SpatialMetric>, detail::deriv<SpatialMetric>,
-                 Tags::dt<Lapse>, Tags::dt<Shift>, detail::deriv<Lapse>>;
+                 ExtrinsicCurvature, Lapse, Shift, detail::deriv<Shift, Frame>,
+                 Tags::dt<SpatialMetric>, detail::deriv<SpatialMetric, Frame>,
+                 Tags::dt<Lapse>, Tags::dt<Shift>, detail::deriv<Lapse, Frame>>;
 
   auto derivative_approx = approx.epsilon(derivative_tolerance);
 
@@ -422,10 +424,11 @@ void verify_consistency(const Solution& solution, const double time,
 
   CHECK_ITERABLE_APPROX(
       get<ExtrinsicCurvature>(vars),
-      gr::extrinsic_curvature(
-          get<Lapse>(vars), get<Shift>(vars), get<detail::deriv<Shift>>(vars),
-          get<SpatialMetric>(vars), get<Tags::dt<SpatialMetric>>(vars),
-          get<detail::deriv<SpatialMetric>>(vars)));
+      gr::extrinsic_curvature(get<Lapse>(vars), get<Shift>(vars),
+                              get<detail::deriv<Shift, Frame>>(vars),
+                              get<SpatialMetric>(vars),
+                              get<Tags::dt<SpatialMetric>>(vars),
+                              get<detail::deriv<SpatialMetric, Frame>>(vars)));
 
   CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::dt<Lapse>>(vars),
                                detail::time_derivative<Lapse>(
@@ -440,18 +443,21 @@ void verify_consistency(const Solution& solution, const double time,
                                    solution, position, time, derivative_delta),
                                derivative_approx);
 
-  CHECK_ITERABLE_CUSTOM_APPROX(get<detail::deriv<Lapse>>(vars),
-                               detail::space_derivative<Lapse>(
-                                   solution, position, time, derivative_delta),
-                               derivative_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(get<detail::deriv<Shift>>(vars),
-                               detail::space_derivative<Shift>(
-                                   solution, position, time, derivative_delta),
-                               derivative_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(get<detail::deriv<SpatialMetric>>(vars),
-                               detail::space_derivative<SpatialMetric>(
-                                   solution, position, time, derivative_delta),
-                               derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      SINGLE_ARG(get<detail::deriv<Lapse, Frame>>(vars)),
+      detail::space_derivative<Lapse>(solution, position, time,
+                                      derivative_delta),
+      derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      SINGLE_ARG(get<detail::deriv<Shift, Frame>>(vars)),
+      detail::space_derivative<Shift>(solution, position, time,
+                                      derivative_delta),
+      derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      SINGLE_ARG(get<detail::deriv<SpatialMetric, Frame>>(vars)),
+      detail::space_derivative<SpatialMetric>(solution, position, time,
+                                              derivative_delta),
+      derivative_approx);
 }
 }  // namespace VerifyGrSolution
 }  // namespace TestHelpers
