@@ -16,7 +16,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DgElementArray.hpp
-  DiscontinuousGalerkin.hpp
+  DgOperator.hpp
   ImposeBoundaryConditions.hpp
   ImposeInhomogeneousBoundaryConditionsOnSource.hpp
   InitializeFirstOrderOperator.hpp
@@ -29,18 +29,23 @@ target_link_libraries(
   PUBLIC
   DataStructures
   INTERFACE
+  Boost::boost
   DiscontinuousGalerkin
   Domain
   DomainCreators
   DomainStructure
   Elliptic
+  EllipticSystems
+  ErrorHandling
   Initialization
   LinearOperators
   Options
   Parallel
+  ParallelDg
   Spectral
   SystemUtilities
   Utilities
   )
 
+add_subdirectory(Actions)
 add_subdirectory(NumericalFluxes)
