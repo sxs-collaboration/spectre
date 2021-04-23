@@ -46,6 +46,7 @@ def get_last_release(
 class PullRequest:
     id: int
     title: str
+    author: str
     url: Optional[str] = None
     group: Optional[str] = None
     upgrade_instructions: Optional[str] = None
@@ -67,7 +68,7 @@ def get_merged_pull_requests(repo: git.Repo, from_rev: Revision,
       Merged pull-requests, ordered from least-recently merged to most-recently
       merged.
     """
-    merge_commit_msg_pattern = '^Merge pull request #([0-9]+) from'
+    merge_commit_msg_pattern = '^Merge pull request #([0-9]+) from (.+)/'
     merged_prs = []
     for commit in repo.iter_commits(rev=f'{from_rev}..{to_rev}',
                                     first_parent=True):
@@ -78,7 +79,8 @@ def get_merged_pull_requests(repo: git.Repo, from_rev: Revision,
             continue
         merged_prs.append(
             PullRequest(id=int(merge_commit_match.group(1)),
-                        title=' '.join(commit.message.splitlines(False)[2:])))
+                        title=' '.join(commit.message.splitlines(False)[2:]),
+                        author=merge_commit_match.group(2)))
     return merged_prs[::-1]
 
 
@@ -129,6 +131,10 @@ def compile_release_notes(merged_prs: List[PullRequest]) -> str:
                (PULL_REQUEST_GROUPS.index(pr.group), merged_prs.index(pr))),
         key=lambda pr: pr.group)
 
+    # Get set of distinct PR authors. Maintain the order by using a dict, which
+    # is guaranteed to maintain the insertion order since Py 3.7
+    pr_authors = list(dict.fromkeys([pr.author for pr in merged_prs]))
+
     def format_pr_link(pr):
         return f"#{pr.id}" if pr.url is None else f"[#{pr.id}]({pr.url})"
 
@@ -147,16 +153,24 @@ def compile_release_notes(merged_prs: List[PullRequest]) -> str:
                 pr.upgrade_instructions, ""
             ]
 
-    release_notes_content += ["## Merged pull-requests", ""]
+    release_notes_content += [
+        f"## Merged pull-requests ({len(merged_prs)})", ""
+    ]
     if len(merged_prs) > 0:
-        for group, prs in grouped_prs:
+        for group, prs_iterator in grouped_prs:
             group_header = {
                 'major new feature': "Major new features",
                 'bugfix': "Bugfixes",
                 None: "General changes",
             }[group]
-            release_notes_content += ([f"**{group_header}:**", ""] +
-                                      format_list_of_prs(prs)) + [""]
+            prs = list(prs_iterator)
+            release_notes_content += (
+                [f"**{group_header} ({len(prs)}):**", ""] +
+                format_list_of_prs(prs) + [""])
+        release_notes_content += ([
+            f"Contributors ({len(pr_authors)}): " +
+            ", ".join([f"@{pr_author}" for pr_author in pr_authors])
+        ] + [""])
     else:
         release_notes_content += ["_None_", ""]
 
@@ -260,6 +274,8 @@ if __name__ == "__main__":
             pr_gh = gh_repo.get_pull(pr.id)
             # Update the title (it may have changed since the PR was merged)
             pr.title = pr_gh.title
+            # Update the author (the GitHub username may have changed)
+            pr.author = pr_gh.user.login
             # Add missing metadata to PR
             pr.url = pr_gh.html_url
             # Add group information to PR
