@@ -244,41 +244,40 @@ class KerrSchild : public MarkAsAnalyticSolution {
   KerrSchild& operator=(KerrSchild&& /*rhs*/) noexcept = default;
   ~KerrSchild() = default;
 
-  template <typename DataType>
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
-                                   tmpl::size_t<volume_dim>, Frame::Inertial>;
-  template <typename DataType>
+                                   tmpl::size_t<volume_dim>, Frame>;
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
-                    tmpl::size_t<volume_dim>, Frame::Inertial>;
-  template <typename DataType>
+      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame, DataType>,
+                    tmpl::size_t<volume_dim>, Frame>;
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   using DerivSpatialMetric = ::Tags::deriv<
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
-      tmpl::size_t<volume_dim>, Frame::Inertial>;
-  template <typename DataType>
+      gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
+      tmpl::size_t<volume_dim>, Frame>;
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   using tags = tmpl::list<
       gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>,
-      gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>,
-      DerivShift<DataType>,
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
-      ::Tags::dt<
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
+      DerivLapse<DataType, Frame>, gr::Tags::Shift<volume_dim, Frame, DataType>,
+      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame, DataType>>,
+      DerivShift<DataType, Frame>,
+      gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
+      ::Tags::dt<gr::Tags::SpatialMetric<volume_dim, Frame, DataType>>,
+      DerivSpatialMetric<DataType, Frame>,
+      gr::Tags::SqrtDetSpatialMetric<DataType>,
+      gr::Tags::ExtrinsicCurvature<volume_dim, Frame, DataType>,
+      gr::Tags::InverseSpatialMetric<volume_dim, Frame, DataType>>;
 
-  template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, volume_dim>& x,
-                                         double /*t*/,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+  template <typename DataType, typename Frame, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(
-        tmpl2::flat_all_v<tmpl::list_contains_v<tags<DataType>, Tags>...>,
+        tmpl2::flat_all_v<
+            tmpl::list_contains_v<tags<DataType, Frame>, Tags>...>,
         "At least one of the requested tags is not supported. The requested "
         "tags are listed as template parameters of the `variables` function.");
-    IntermediateVars<DataType> intermediate(*this, x);
+    IntermediateVars<DataType, Frame> intermediate(*this, x);
     return {intermediate.get_var(Tags{})...};
   }
 
@@ -297,8 +296,8 @@ class KerrSchild : public MarkAsAnalyticSolution {
 
  private:
   struct internal_tags {
-    template <typename DataType>
-    using x_minus_center = ::Tags::TempI<0, 3, Frame::Inertial, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using x_minus_center = ::Tags::TempI<0, 3, Frame, DataType>;
     template <typename DataType>
     using a_dot_x = ::Tags::TempScalar<1, DataType>;
     template <typename DataType>
@@ -313,8 +312,8 @@ class KerrSchild : public MarkAsAnalyticSolution {
     using a_dot_x_over_rsquared = ::Tags::TempScalar<6, DataType>;
     template <typename DataType>
     using deriv_log_r_denom = ::Tags::TempScalar<7, DataType>;
-    template <typename DataType>
-    using deriv_log_r = ::Tags::Tempi<8, 3, Frame::Inertial, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using deriv_log_r = ::Tags::Tempi<8, 3, Frame, DataType>;
     template <typename DataType>
     using H_denom = ::Tags::TempScalar<9, DataType>;
     template <typename DataType>
@@ -323,16 +322,16 @@ class KerrSchild : public MarkAsAnalyticSolution {
     using deriv_H_temp1 = ::Tags::TempScalar<11, DataType>;
     template <typename DataType>
     using deriv_H_temp2 = ::Tags::TempScalar<12, DataType>;
-    template <typename DataType>
-    using deriv_H = ::Tags::Tempi<13, 3, Frame::Inertial, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using deriv_H = ::Tags::Tempi<13, 3, Frame, DataType>;
     template <typename DataType>
     using denom = ::Tags::TempScalar<14, DataType>;
     template <typename DataType>
     using a_dot_x_over_r = ::Tags::TempScalar<15, DataType>;
-    template <typename DataType>
-    using null_form = ::Tags::Tempi<16, 3, Frame::Inertial, DataType>;
-    template <typename DataType>
-    using deriv_null_form = ::Tags::Tempij<17, 3, Frame::Inertial, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using null_form = ::Tags::Tempi<16, 3, Frame, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using deriv_null_form = ::Tags::Tempij<17, 3, Frame, DataType>;
     template <typename DataType>
     using lapse_squared = ::Tags::TempScalar<18, DataType>;
     template <typename DataType>
@@ -341,45 +340,48 @@ class KerrSchild : public MarkAsAnalyticSolution {
     using shift_multiplier = ::Tags::TempScalar<20, DataType>;
   };
 
-  template <typename DataType>
+  template <typename DataType, typename Frame>
   class IntermediateComputer;
 
-  template <typename DataType>
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   using CachedBuffer = CachedTempBuffer<
-      IntermediateComputer<DataType>, internal_tags::x_minus_center<DataType>,
+      IntermediateComputer<DataType, Frame>,
+      internal_tags::x_minus_center<DataType, Frame>,
       internal_tags::a_dot_x<DataType>,
       internal_tags::a_dot_x_squared<DataType>,
       internal_tags::half_xsq_minus_asq<DataType>,
       internal_tags::r_squared<DataType>, internal_tags::r<DataType>,
       internal_tags::a_dot_x_over_rsquared<DataType>,
       internal_tags::deriv_log_r_denom<DataType>,
-      internal_tags::deriv_log_r<DataType>, internal_tags::H_denom<DataType>,
-      internal_tags::H<DataType>, internal_tags::deriv_H_temp1<DataType>,
-      internal_tags::deriv_H_temp2<DataType>, internal_tags::deriv_H<DataType>,
-      internal_tags::denom<DataType>, internal_tags::a_dot_x_over_r<DataType>,
-      internal_tags::null_form<DataType>,
-      internal_tags::deriv_null_form<DataType>,
+      internal_tags::deriv_log_r<DataType, Frame>,
+      internal_tags::H_denom<DataType>, internal_tags::H<DataType>,
+      internal_tags::deriv_H_temp1<DataType>,
+      internal_tags::deriv_H_temp2<DataType>,
+      internal_tags::deriv_H<DataType, Frame>, internal_tags::denom<DataType>,
+      internal_tags::a_dot_x_over_r<DataType>,
+      internal_tags::null_form<DataType, Frame>,
+      internal_tags::deriv_null_form<DataType, Frame>,
       internal_tags::lapse_squared<DataType>, gr::Tags::Lapse<DataType>,
       internal_tags::deriv_lapse_multiplier<DataType>,
       internal_tags::shift_multiplier<DataType>,
-      gr::Tags::Shift<3, Frame::Inertial, DataType>, DerivShift<DataType>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      DerivSpatialMetric<DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>;
+      gr::Tags::Shift<3, Frame, DataType>, DerivShift<DataType, Frame>,
+      gr::Tags::SpatialMetric<3, Frame, DataType>,
+      DerivSpatialMetric<DataType, Frame>,
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>;
 
-  template <typename DataType>
+  template <typename DataType, typename Frame = ::Frame::Inertial>
   class IntermediateComputer {
    public:
-    using CachedBuffer = KerrSchild::CachedBuffer<DataType>;
+    using CachedBuffer = KerrSchild::CachedBuffer<DataType, Frame>;
 
     IntermediateComputer(const KerrSchild& solution,
-                         const tnsr::I<DataType, 3>& x,
+                         const tnsr::I<DataType, 3, Frame>& x,
                          double null_vector_0) noexcept;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 3>*> x_minus_center,
-                    gsl::not_null<CachedBuffer*> /*cache*/,
-                    internal_tags::x_minus_center<DataType> /*meta*/) const
-        noexcept;
+    void operator()(
+        gsl::not_null<tnsr::I<DataType, 3, Frame>*> x_minus_center,
+        gsl::not_null<CachedBuffer*> /*cache*/,
+        internal_tags::x_minus_center<DataType, Frame> /*meta*/) const noexcept;
 
     void operator()(gsl::not_null<Scalar<DataType>*> a_dot_x,
                     gsl::not_null<CachedBuffer*> cache,
@@ -413,9 +415,9 @@ class KerrSchild : public MarkAsAnalyticSolution {
                     internal_tags::deriv_log_r_denom<DataType> /*meta*/) const
         noexcept;
 
-    void operator()(gsl::not_null<tnsr::i<DataType, 3>*> deriv_log_r,
+    void operator()(gsl::not_null<tnsr::i<DataType, 3, Frame>*> deriv_log_r,
                     gsl::not_null<CachedBuffer*> cache,
-                    internal_tags::deriv_log_r<DataType> /*meta*/) const
+                    internal_tags::deriv_log_r<DataType, Frame> /*meta*/) const
         noexcept;
 
     void operator()(gsl::not_null<Scalar<DataType>*> H_denom,
@@ -436,9 +438,10 @@ class KerrSchild : public MarkAsAnalyticSolution {
                     internal_tags::deriv_H_temp2<DataType> /*meta*/) const
         noexcept;
 
-    void operator()(gsl::not_null<tnsr::i<DataType, 3>*> deriv_H,
+    void operator()(gsl::not_null<tnsr::i<DataType, 3, Frame>*> deriv_H,
                     gsl::not_null<CachedBuffer*> cache,
-                    internal_tags::deriv_H<DataType> /*meta*/) const noexcept;
+                    internal_tags::deriv_H<DataType, Frame> /*meta*/) const
+        noexcept;
 
     void operator()(gsl::not_null<Scalar<DataType>*> denom,
                     gsl::not_null<CachedBuffer*> cache,
@@ -449,14 +452,16 @@ class KerrSchild : public MarkAsAnalyticSolution {
                     internal_tags::a_dot_x_over_r<DataType> /*meta*/) const
         noexcept;
 
-    void operator()(gsl::not_null<tnsr::i<DataType, 3>*> null_form,
+    void operator()(gsl::not_null<tnsr::i<DataType, 3, Frame>*> null_form,
                     gsl::not_null<CachedBuffer*> cache,
-                    internal_tags::null_form<DataType> /*meta*/) const noexcept;
-
-    void operator()(gsl::not_null<tnsr::ij<DataType, 3>*> deriv_null_form,
-                    gsl::not_null<CachedBuffer*> cache,
-                    internal_tags::deriv_null_form<DataType> /*meta*/) const
+                    internal_tags::null_form<DataType, Frame> /*meta*/) const
         noexcept;
+
+    void operator()(gsl::not_null<tnsr::ij<DataType, 3, Frame>*>
+                    deriv_null_form,
+                    gsl::not_null<CachedBuffer*> cache,
+                    internal_tags::deriv_null_form<DataType, Frame> /*meta*/)
+        const noexcept;
 
     void operator()(gsl::not_null<Scalar<DataType>*> lapse_squared,
                     gsl::not_null<CachedBuffer*> cache,
@@ -478,63 +483,67 @@ class KerrSchild : public MarkAsAnalyticSolution {
         noexcept;
 
     void operator()(
-        gsl::not_null<tnsr::I<DataType, 3>*> shift,
+        gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
         gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::Shift<3, Frame::Inertial, DataType> /*meta*/) const noexcept;
+        gr::Tags::Shift<3, Frame, DataType> /*meta*/) const noexcept;
 
-    void operator()(gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift,
+    void operator()(gsl::not_null<tnsr::iJ<DataType, 3, Frame>*> deriv_shift,
                     gsl::not_null<CachedBuffer*> cache,
-                    DerivShift<DataType> /*meta*/) const noexcept;
+                    DerivShift<DataType, Frame> /*meta*/) const noexcept;
 
     void operator()(
-        gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
+        gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
         gsl::not_null<CachedBuffer*> cache,
-        gr::Tags::SpatialMetric<3, Frame::Inertial, DataType> /*meta*/) const
+        gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const
         noexcept;
 
-    void operator()(gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_spatial_metric,
+    void operator()(gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
+                    deriv_spatial_metric,
                     gsl::not_null<CachedBuffer*> cache,
-                    DerivSpatialMetric<DataType> /*meta*/) const noexcept;
+                    DerivSpatialMetric<DataType, Frame> /*meta*/) const
+        noexcept;
 
-    void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> dt_spatial_metric,
+    void operator()(gsl::not_null<tnsr::ii<DataType, 3, Frame>*>
+                    dt_spatial_metric,
                     gsl::not_null<CachedBuffer*> cache,
                     ::Tags::dt<gr::Tags::SpatialMetric<
-                        3, Frame::Inertial, DataType>> /*meta*/) const noexcept;
+                        3, Frame, DataType>> /*meta*/) const noexcept;
 
    private:
     const KerrSchild& solution_;
-    const tnsr::I<DataType, 3>& x_;
+    const tnsr::I<DataType, 3, Frame>& x_;
     double null_vector_0_;
   };
 
-  template <typename DataType>
-  class IntermediateVars : public CachedBuffer<DataType> {
+  template <typename DataType, typename Frame = ::Frame::Inertial>
+  class IntermediateVars : public CachedBuffer<DataType, Frame> {
    public:
-    using CachedBuffer = KerrSchild::CachedBuffer<DataType>;
+    using CachedBuffer = KerrSchild::CachedBuffer<DataType, Frame>;
 
     IntermediateVars(const KerrSchild& solution,
-                     const tnsr::I<DataType, 3>& x) noexcept;
+                     const tnsr::I<DataType, 3, Frame>& x) noexcept;
 
     using CachedBuffer::get_var;
 
-    tnsr::i<DataType, 3> get_var(DerivLapse<DataType> /*meta*/) noexcept;
+    tnsr::i<DataType, 3, Frame> get_var(
+        DerivLapse<DataType, Frame> /*meta*/) noexcept;
 
     Scalar<DataType> get_var(
         ::Tags::dt<gr::Tags::Lapse<DataType>> /*meta*/) noexcept;
 
-    tnsr::I<DataType, 3> get_var(
+    tnsr::I<DataType, 3, Frame> get_var(
         ::Tags::dt<
-            gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) noexcept;
+            gr::Tags::Shift<3, Frame, DataType>> /*meta*/) noexcept;
 
     Scalar<DataType> get_var(
         gr::Tags::SqrtDetSpatialMetric<DataType> /*meta*/) noexcept;
 
-    tnsr::II<DataType, 3> get_var(
-        gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
+    tnsr::II<DataType, 3, Frame> get_var(
+        gr::Tags::InverseSpatialMetric<3, Frame,
                                        DataType> /*meta*/) noexcept;
 
-    tnsr::ii<DataType, 3> get_var(
-        gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,
+    tnsr::ii<DataType, 3, Frame> get_var(
+        gr::Tags::ExtrinsicCurvature<3, Frame,
                                      DataType> /*meta*/) noexcept;
 
    private:
