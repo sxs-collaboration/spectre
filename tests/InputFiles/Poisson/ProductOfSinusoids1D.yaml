@@ -8,10 +8,10 @@
 #   PoissonProductOfSinusoids1DVolume0.h5
 # OutputFileChecks:
 #   - Label: Discretization error
-#     Subfile: /Errors.dat
+#     Subfile: /ErrorNorms.dat
 #     FileGlob: PoissonProductOfSinusoids1DReductions.h5
-#     SkipColumns: [0, 1, 3]
-#     AbsoluteTolerance: 0.02
+#     SkipColumns: [0, 1]
+#     AbsoluteTolerance: 0.004
 
 Background:
   ProductOfSinusoids:
@@ -22,10 +22,10 @@ InitialGuess:
 
 DomainCreator:
   Interval:
-    LowerBound: [0]
+    LowerBound: [-1.570796326794896]
     UpperBound: [3.141592653589793]
     InitialRefinement: [1]
-    InitialGridPoints: [3]
+    InitialGridPoints: [4]
     TimeDependence: None
     BoundaryConditions:
       LowerBoundary:
@@ -33,10 +33,10 @@ DomainCreator:
           Field: Dirichlet
       UpperBoundary:
         AnalyticSolution:
-          Field: Dirichlet
+          Field: Neumann
 
-NumericalFlux:
-  InternalPenalty:
+Discretization:
+  DiscontinuousGalerkin:
     PenaltyParameter: 1.
 
 Observers:
@@ -45,18 +45,18 @@ Observers:
 
 LinearSolver:
   ConvergenceCriteria:
-    MaxIterations: 7
-    AbsoluteResidual: 1e-10
-    RelativeResidual: 1e-10
+    MaxIterations: 8
+    RelativeResidual: 1.e-10
+    AbsoluteResidual: 1.e-10
   Verbosity: Verbose
 
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 6
+      Offset: 8
   : - ObserveErrorNorms:
-        SubfileName: Errors
+        SubfileName: ErrorNorms
     - ObserveFields:
         SubfileName: VolumeData
-        VariablesToObserve: [Field, deriv(Field)]
+        VariablesToObserve: [Field]
         InterpolateToMesh: None

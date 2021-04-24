@@ -35,7 +35,6 @@ namespace elliptic::Actions {
  *
  * Uses:
  * - System:
- *   - `fields_tag`
  *   - `primal_fields`
  * - DataBox:
  *   - `BackgroundTag`
@@ -43,7 +42,7 @@ namespace elliptic::Actions {
  *
  * DataBox:
  * - Adds:
- *   - `db::add_tag_prefix<::Tags::FixedSource, fields_tag>`
+ *   - `db::wrap_tags_in<::Tags::FixedSource, primal_fields>`
  *
  * \note This action relies on the `SetupDataBox` aggregated initialization
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
@@ -52,8 +51,8 @@ namespace elliptic::Actions {
 template <typename System, typename BackgroundTag>
 struct InitializeFixedSources {
  private:
-  using fields_tag = typename System::fields_tag;
-  using fixed_sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using fixed_sources_tag = ::Tags::Variables<
+      db::wrap_tags_in<::Tags::FixedSource, typename System::primal_fields>>;
 
  public:
   using simple_tags = tmpl::list<fixed_sources_tag>;
@@ -73,13 +72,9 @@ struct InitializeFixedSources {
 
     // Retrieve the fixed-sources of the elliptic system from the background,
     // which (along with the boundary conditions) define the problem we want to
-    // solve. We need only retrieve sources for the primal fields, since the
-    // auxiliary fields will never be sourced.
-    auto fixed_sources =
-        make_with_value<typename fixed_sources_tag::type>(inertial_coords, 0.);
-    fixed_sources.assign_subset(background.variables(
-        inertial_coords, db::wrap_tags_in<::Tags::FixedSource,
-                                          typename System::primal_fields>{}));
+    // solve.
+    auto fixed_sources = variables_from_tagged_tuple(background.variables(
+        inertial_coords, typename fixed_sources_tag::type::tags_list{}));
 
     ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                  std::move(fixed_sources));

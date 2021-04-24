@@ -30,7 +30,7 @@ template <size_t Dim>
 void primal_fluxes(
     // This wrapper function is needed to construct a constitutive relation for
     // the random values of its parameters.
-    const gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
         flux_for_displacement,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& strain,
     const tnsr::I<DataVector, Dim>& coordinates, const double bulk_modulus,
@@ -66,8 +66,7 @@ template <size_t Dim>
 void test_computers(const DataVector& used_for_size) {
   using field_tag = Elasticity::Tags::Displacement<Dim>;
   using auxiliary_field_tag = Elasticity::Tags::Strain<Dim>;
-  using field_flux_tag =
-      ::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+  using field_flux_tag = Elasticity::Tags::MinusStress<Dim>;
   using auxiliary_flux_tag =
       ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
   using field_source_tag = ::Tags::Source<field_tag>;
@@ -87,7 +86,7 @@ void test_computers(const DataVector& used_for_size) {
         constitutive_relation_tag, coordinates_tag>>(
         tnsr::I<DataVector, Dim>{num_points, 1.},
         tnsr::ii<DataVector, Dim>{num_points, 2.},
-        tnsr::IJ<DataVector, Dim>{num_points,
+        tnsr::II<DataVector, Dim>{num_points,
                                   std::numeric_limits<double>::signaling_NaN()},
         tnsr::Ijj<DataVector, Dim>{
             num_points, std::numeric_limits<double>::signaling_NaN()},
@@ -99,7 +98,7 @@ void test_computers(const DataVector& used_for_size) {
 
     db::mutate_apply<tmpl::list<field_flux_tag>, argument_tags>(
         fluxes_computer, make_not_null(&box), get<auxiliary_field_tag>(box));
-    auto expected_field_flux = tnsr::IJ<DataVector, Dim>{
+    auto expected_field_flux = tnsr::II<DataVector, Dim>{
         num_points, std::numeric_limits<double>::signaling_NaN()};
     Elasticity::primal_fluxes(
         make_not_null(&expected_field_flux), get<auxiliary_field_tag>(box),
@@ -132,7 +131,7 @@ void test_computers(const DataVector& used_for_size) {
         sources_computer, make_not_null(&box),
         tnsr::I<DataVector, Dim>{num_points,
                                  std::numeric_limits<double>::signaling_NaN()},
-        tnsr::IJ<DataVector, Dim>{
+        tnsr::II<DataVector, Dim>{
             num_points, std::numeric_limits<double>::signaling_NaN()});
     auto expected_field_source = tnsr::I<DataVector, Dim>{num_points, 0.};
     auto expected_auxiliary_source = tnsr::ii<DataVector, Dim>{num_points, 0.};

@@ -34,7 +34,7 @@ namespace Elasticity {
  */
 template <size_t Dim>
 void primal_fluxes(
-    gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
+    gsl::not_null<tnsr::II<DataVector, Dim>*> flux_for_displacement,
     const tnsr::ii<DataVector, Dim>& strain,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
@@ -106,7 +106,7 @@ struct Fluxes {
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
   using volume_tags = tmpl::list<Tags::ConstitutiveRelation<Dim>>;
   static void apply(
-      gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
+      gsl::not_null<tnsr::II<DataVector, Dim>*> flux_for_displacement,
       const ConstitutiveRelations::ConstitutiveRelation<Dim>&
           constitutive_relation,
       const tnsr::I<DataVector, Dim>& coordinates,
@@ -131,7 +131,7 @@ struct Sources {
   static void apply(
       gsl::not_null<tnsr::I<DataVector, Dim>*> equation_for_displacement,
       const tnsr::I<DataVector, Dim>& displacement,
-      const tnsr::IJ<DataVector, Dim>& minus_stress) noexcept;
+      const tnsr::II<DataVector, Dim>& minus_stress) noexcept;
   static void apply(
       gsl::not_null<tnsr::ii<DataVector, Dim>*> equation_for_strain,
       const tnsr::I<DataVector, Dim>& displacement) noexcept;

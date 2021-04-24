@@ -32,7 +32,6 @@ struct ScalarFieldTag : db::SimpleTag {
 };
 
 struct System {
-  using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
   using primal_fields = tmpl::list<ScalarFieldTag>;
 };
 

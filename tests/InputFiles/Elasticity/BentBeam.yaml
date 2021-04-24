@@ -2,10 +2,16 @@
 # See LICENSE.txt for details.
 
 # Executable: SolveElasticity2D
-# Check: parse;execute
+# Check: parse;execute_check_output
 # ExpectedOutput:
 #   ElasticBentBeam2DReductions.h5
 #   ElasticBentBeam2DVolume0.h5
+# OutputFileChecks:
+#   - Label: Discretization error
+#     Subfile: /ErrorNorms.dat
+#     FileGlob: ElasticBentBeam2DReductions.h5
+#     SkipColumns: [0, 1]
+#     AbsoluteTolerance: 1.e-8
 
 Background:
   BentBeam:
@@ -24,15 +30,15 @@ DomainCreator:
   Rectangle:
     LowerBound: [-1., -0.5]
     UpperBound: [1., 0.5]
-    InitialRefinement: [2, 1]
+    InitialRefinement: [1, 0]
     InitialGridPoints: [3, 3]
     TimeDependence: None
     BoundaryCondition:
       AnalyticSolution:
         Displacement: Dirichlet
 
-NumericalFlux:
-  InternalPenalty:
+Discretization:
+  DiscontinuousGalerkin:
     PenaltyParameter: 1.
 
 Observers:
@@ -42,18 +48,20 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 1
-      AbsoluteResidual: 0.
-      RelativeResidual: 0.
+      MaxIterations: 9
+      RelativeResidual: 1.e-8
+      AbsoluteResidual: 1.e-14
     Verbosity: Verbose
 
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 0
+      Offset: 9
   : - ObserveErrorNorms:
-        SubfileName: "element_data"
+        SubfileName: ErrorNorms
     - ObserveFields:
-        SubfileName: "element_data"
-        VariablesToObserve: [Displacement, Strain]
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - Displacement
+          - PotentialEnergyDensity
         InterpolateToMesh: None

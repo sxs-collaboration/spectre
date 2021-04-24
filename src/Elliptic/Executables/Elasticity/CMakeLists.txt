@@ -9,6 +9,7 @@ set(LIBS_TO_LINK
   DomainCreators
   Elasticity
   ElasticityAnalyticData
+  ElasticityBoundaryConditions
   ElasticityPointwiseFunctions
   ElasticitySolutions
   Elliptic
