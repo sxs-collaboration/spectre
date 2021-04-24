@@ -36,13 +36,13 @@ function(add_algorithm_test TEST_NAME DIM)
   add_dependencies(test-executables ${EXECUTABLE_NAME})
 
   add_test(
-    NAME "\"${TEST_IDENTIFIER}\""
+    NAME ${TEST_IDENTIFIER}
     COMMAND ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME} --input-file
     ${CMAKE_CURRENT_SOURCE_DIR}/${EXECUTABLE_NAME}.yaml
     )
 
   set_tests_properties(
-    "\"${TEST_IDENTIFIER}\""
+    ${TEST_IDENTIFIER}
     PROPERTIES
     TIMEOUT 5
     LABELS "integration"

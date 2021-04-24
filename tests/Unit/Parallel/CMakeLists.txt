@@ -71,7 +71,7 @@ endif()
 
 function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
   add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
+    NAME Unit.Parallel.${TEST_NAME}
     COMMAND
     ${SHELL_EXECUTABLE}
     -c
@@ -80,7 +80,7 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
 
   if("${REGEX_TO_MATCH}" STREQUAL "")
     set_tests_properties(
-      "\"Unit.Parallel.${TEST_NAME}\""
+      Unit.Parallel.${TEST_NAME}
       PROPERTIES
       FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
@@ -88,7 +88,7 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   else()
     set_tests_properties(
-      "\"Unit.Parallel.${TEST_NAME}\""
+      Unit.Parallel.${TEST_NAME}
       PROPERTIES
       PASS_REGULAR_EXPRESSION
       "${REGEX_TO_MATCH}"
