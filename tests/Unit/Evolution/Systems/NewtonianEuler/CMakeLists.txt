@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Hll.cpp
+  BoundaryCorrections/Test_Hllc.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
