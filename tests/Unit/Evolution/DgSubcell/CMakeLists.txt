@@ -5,6 +5,7 @@ set(LIBRARY "Test_DgSubcell")
 
 set(LIBRARY_SOURCES
   Actions/Test_Initialize.cpp
+  Actions/Test_SelectNumericalMethod.cpp
   Test_ActiveGrid.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
@@ -34,5 +35,6 @@ target_link_libraries(
   Domain
   DgSubcell
   DgSubcellHelpers
+  Parallel
   Spectral
   )

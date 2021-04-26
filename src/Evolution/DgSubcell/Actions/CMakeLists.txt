@@ -9,4 +9,6 @@ spectre_target_headers(
   HEADERS
   Actions.hpp
   Initialize.hpp
+  Labels.hpp
+  SelectNumericalMethod.hpp
   )
