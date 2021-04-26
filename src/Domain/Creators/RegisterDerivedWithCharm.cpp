@@ -68,6 +68,6 @@ void register_derived_with_charm() {
   using maps_to_register =
       tmpl::remove_duplicates<tmpl::append<all_maps, maps_to_grid>>;
 
-  Parallel::register_classes_in_list<maps_to_register>();
+  Parallel::register_classes_with_charm(maps_to_register{});
 }
 }  // namespace domain::creators

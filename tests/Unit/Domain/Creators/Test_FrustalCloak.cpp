@@ -59,8 +59,8 @@ auto create_boundary_conditions() {
 void test_frustal_cloak_construction(
     const domain::creators::FrustalCloak& frustal_cloak,
     const BoundaryCondVector& expected_external_boundary_conditions) {
-  Parallel::register_classes_in_list<
-      typename domain::creators::FrustalCloak::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::FrustalCloak::maps_list{});
 
   const auto test_impl = [&expected_external_boundary_conditions,
                           &frustal_cloak](const auto& domain) {

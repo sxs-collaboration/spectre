@@ -479,7 +479,7 @@ template <typename Metavariables>
 Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
                                                   /*msg*/) noexcept {
   // Register the pup functions.
-  Parallel::register_classes_in_list<tmpl::list<Triangle, Square, Arthropod>>();
+  Parallel::register_classes_with_charm<Triangle, Square, Arthropod>();
 
   // Call the single core test before doing anything else.
   run_single_core_test();

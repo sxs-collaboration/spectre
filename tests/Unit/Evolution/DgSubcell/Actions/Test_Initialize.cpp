@@ -282,19 +282,19 @@ void test(const bool always_use_subcell, const bool interior_element) {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
                   "[Evolution][Unit]") {
-  Parallel::register_classes_in_list<
-      tmpl::list<domain::CoordinateMap<Frame::Logical, Frame::Grid,
-                                       domain::CoordinateMaps::Identity<1>>,
-                 domain::CoordinateMap<Frame::Logical, Frame::Grid,
-                                       domain::CoordinateMaps::Identity<2>>,
-                 domain::CoordinateMap<Frame::Logical, Frame::Grid,
-                                       domain::CoordinateMaps::Identity<3>>,
-                 domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                       domain::CoordinateMaps::Identity<1>>,
-                 domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                       domain::CoordinateMaps::Identity<2>>,
-                 domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                       domain::CoordinateMaps::Identity<3>>>>();
+  Parallel::register_classes_with_charm<
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<1>>,
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<2>>,
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<3>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<1>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<2>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<3>>>();
   for (const bool always_use_subcell : {false, true}) {
     for (const bool interior_element : {false, true}) {
       test<1, true>(always_use_subcell, interior_element);

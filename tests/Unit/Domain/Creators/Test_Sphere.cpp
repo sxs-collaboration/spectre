@@ -241,8 +241,8 @@ void test_sphere_construction(
   test_initial_domain(domain, sphere.initial_refinement_levels());
   test_initial_domain(domain_no_corners, sphere.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<
-      typename domain::creators::Sphere::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::Sphere::maps_list{});
 
   test_serialization(domain);
   test_serialization(domain_no_corners);

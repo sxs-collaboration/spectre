@@ -67,8 +67,8 @@ void test_rotated_intervals_construction(
       0.0, {}, {}, expected_boundary_conditions);
   test_initial_domain(domain, rotated_intervals.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<
-      typename domain::creators::RotatedIntervals::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::RotatedIntervals::maps_list{});
   test_serialization(domain);
 }
 

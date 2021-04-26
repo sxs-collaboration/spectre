@@ -104,8 +104,8 @@ void test_shell_construction(
     const std::vector<DirectionMap<
         3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
         expected_boundary_conditions = {}) {
-  Parallel::register_classes_in_list<
-      typename domain::creators::Shell::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::Shell::maps_list{});
   const auto domain = shell.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(

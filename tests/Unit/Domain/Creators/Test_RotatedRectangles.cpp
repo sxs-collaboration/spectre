@@ -90,8 +90,8 @@ void test_rotated_rectangles_construction(
                            expected_boundary_conditions);
   test_initial_domain(domain, rotated_rectangles.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<
-      typename domain::creators::RotatedRectangles::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::RotatedRectangles::maps_list{});
   test_serialization(domain);
 }
 

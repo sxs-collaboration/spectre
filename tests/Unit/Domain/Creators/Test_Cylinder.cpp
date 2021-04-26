@@ -257,7 +257,8 @@ void test_cylinder_construction(
 
   test_initial_domain(domain, cylinder.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::Cylinder::maps_list{});
   test_serialization(domain);
 }
 
@@ -815,7 +816,8 @@ void test_refined_cylinder_boundaries(const bool use_equiangular_map) {
 
   test_initial_domain(domain, refined_cylinder.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::Cylinder::maps_list{});
   test_serialization(domain);
 }
 
@@ -1217,7 +1219,8 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
 
   test_initial_domain(domain, refined_cylinder.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::Cylinder::maps_list{});
   test_serialization(domain);
 }
 

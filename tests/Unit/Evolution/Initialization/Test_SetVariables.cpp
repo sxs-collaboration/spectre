@@ -283,22 +283,22 @@ void test_analytic_data() noexcept {
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.SetVariables",
                   "[Unit][Evolution][Actions]") {
   domain::FunctionsOfTime::register_derived_with_charm();
-  Parallel::register_classes_in_list<
-      tmpl::list<domain::CoordinateMap<Frame::Logical, Frame::Grid,
-                                       domain::CoordinateMaps::Identity<1>>,
-                 domain::CoordinateMap<Frame::Logical, Frame::Grid,
-                                       domain::CoordinateMaps::Identity<2>>,
-                 domain::CoordinateMap<Frame::Logical, Frame::Grid,
-                                       domain::CoordinateMaps::Identity<3>>,
-                 domain::CoordinateMap<
-                     Frame::Grid, Frame::Inertial,
-                     domain::CoordinateMaps::TimeDependent::CubicScale<1>>,
-                 domain::CoordinateMap<
-                     Frame::Grid, Frame::Inertial,
-                     domain::CoordinateMaps::TimeDependent::CubicScale<2>>,
-                 domain::CoordinateMap<
-                     Frame::Grid, Frame::Inertial,
-                     domain::CoordinateMaps::TimeDependent::CubicScale<3>>>>();
+  Parallel::register_classes_with_charm<
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<1>>,
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<2>>,
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<3>>,
+      domain::CoordinateMap<
+          Frame::Grid, Frame::Inertial,
+          domain::CoordinateMaps::TimeDependent::CubicScale<1>>,
+      domain::CoordinateMap<
+          Frame::Grid, Frame::Inertial,
+          domain::CoordinateMaps::TimeDependent::CubicScale<2>>,
+      domain::CoordinateMap<
+          Frame::Grid, Frame::Inertial,
+          domain::CoordinateMaps::TimeDependent::CubicScale<3>>>();
 
   // Test setting variables from analytic solution
   test_analytic_solution<1, false>();

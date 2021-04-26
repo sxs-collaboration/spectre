@@ -47,8 +47,8 @@ void test_aligned_blocks(
     const creators::AlignedLattice<VolumeDim>& aligned_lattice,
     const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>&
         expected_boundary_condition) noexcept {
-  Parallel::register_classes_in_list<
-      typename creators::AlignedLattice<VolumeDim>::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::AlignedLattice<VolumeDim>::maps_list{});
 
   const auto test_impl = [&expected_boundary_condition,
                           &aligned_lattice](const auto& domain) {

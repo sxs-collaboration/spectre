@@ -136,7 +136,7 @@ void test_disk_construction(
 
   test_initial_domain(domain, disk.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Disk::maps_list>();
+  Parallel::register_classes_with_charm(typename creators::Disk::maps_list{});
   test_serialization(domain);
 }
 

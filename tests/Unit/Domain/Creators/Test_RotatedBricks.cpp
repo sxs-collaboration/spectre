@@ -158,8 +158,8 @@ void test_rotated_bricks_construction(
                            expected_boundary_conditions);
   test_initial_domain(domain, rotated_bricks.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<
-      typename domain::creators::RotatedBricks::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::RotatedBricks::maps_list{});
   test_serialization(domain);
 }
 

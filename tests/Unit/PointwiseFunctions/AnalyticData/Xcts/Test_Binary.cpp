@@ -96,8 +96,7 @@ void test_data(const std::array<double, 2>& x_coords,
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Xcts.Binary",
                   "[PointwiseFunctions][Unit]") {
-  Parallel::register_classes_in_list<
-      tmpl::list<Xcts::Solutions::Schwarzschild<>>>();
+  Parallel::register_classes_with_charm<Xcts::Solutions::Schwarzschild<>>();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/Xcts"};
   test_data<tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>(
