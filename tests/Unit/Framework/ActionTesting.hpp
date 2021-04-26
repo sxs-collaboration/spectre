@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <charm++.h>
 #include <cstddef>
 #include <tuple>
 #include <unordered_map>
@@ -422,7 +423,7 @@ namespace ActionTesting_detail {
 // A mock class for the Charm++ generated CProxyElement_AlgorithmArray. This
 // is each element obtained by indexing a CProxy_AlgorithmArray.
 template <typename Component, typename InboxTagList>
-class MockDistributedObjectProxy {
+class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
  public:
   using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
@@ -494,12 +495,24 @@ class MockDistributedObjectProxy {
   Inbox& inbox_;
 };
 
+template <typename ChareType>
+struct charm_base_proxy;
+template <>
+struct charm_base_proxy<MockArrayChare> : public CProxy_ArrayElement {};
+template <>
+struct charm_base_proxy<MockGroupChare> : public CProxy_IrrGroup {};
+template <>
+struct charm_base_proxy<MockNodeGroupChare> : public CProxy_NodeGroup {};
+template <>
+struct charm_base_proxy<MockSingletonChare> : public CProxy_Chare {};
+
 // A mock class for the Charm++ generated CProxy_AlgorithmArray or
 // CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup or
 // CProxy_AlgorithmSingleton.
 template <typename Component, typename Index, typename InboxTagList,
           typename ChareType>
-class MockCollectionOfDistributedObjectsProxy {
+class MockCollectionOfDistributedObjectsProxy
+    : public charm_base_proxy<ChareType> {
  public:
   using Inboxes =
       std::unordered_map<Index,
