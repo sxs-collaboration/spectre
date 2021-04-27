@@ -534,10 +534,15 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
               std::integral_constant<Basis, Basis::FiniteDifference>{},
               std::integral_constant<Quadrature, Quadrature::CellCentered>{},
               num_points);
+        case Quadrature::FaceCentered:
+          return f(
+              std::integral_constant<Basis, Basis::FiniteDifference>{},
+              std::integral_constant<Quadrature, Quadrature::FaceCentered>{},
+              num_points);
         default:
           ERROR(
-              "Only CellCentered is supported for finite difference "
-              "quadrature.");
+              "Only CellCentered and FaceCentered are supported for finite "
+              "difference quadrature.");
       }
     default:
       ERROR("Missing basis case for spectral quantity. The missing basis is: "
