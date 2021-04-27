@@ -36,6 +36,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -138,18 +139,22 @@ struct MockObserverComponent {
                                         tmpl::list<>>>;
 };
 
-template <typename System>
+template <typename System, bool HasAnalyticSolution>
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
+  using initial_data =
+      tmpl::conditional_t<HasAnalyticSolution,
+                          typename System::solution_for_test, NoSuchType>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
 // Test systems
 
+template <template <size_t, class...> class ObservationEvent>
 struct ScalarSystem {
   struct ScalarVar : db::SimpleTag {
     static std::string name() noexcept { return "Scalar"; }
@@ -165,8 +170,8 @@ struct ScalarSystem {
   }
 
   using all_vars_for_test = tmpl::list<ScalarVar>;
-  struct solution_for_test {
-    using vars_for_test = variables_tag::tags_list;
+  struct solution_for_test : public MarkAsAnalyticSolution {
+    using vars_for_test = typename variables_tag::tags_list;
 
     template <typename CheckComponent>
     static void check_data(const CheckComponent& check_component) noexcept {
@@ -183,9 +188,8 @@ struct ScalarSystem {
   };
 
   using ObserveEvent =
-      dg::Events::ObserveFields<volume_dim, ObservationTimeTag,
-                                all_vars_for_test,
-                                solution_for_test::vars_for_test>;
+      ObservationEvent<volume_dim, ObservationTimeTag, all_vars_for_test,
+                       typename solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
@@ -196,6 +200,7 @@ struct ScalarSystem {
   }
 };
 
+template <template <size_t, class...> class ObservationEvent>
 struct ComplicatedSystem {
   struct ScalarVar : db::SimpleTag {
     static std::string name() noexcept { return "Scalar"; }
@@ -248,8 +253,8 @@ struct ComplicatedSystem {
 
   using all_vars_for_test = tmpl::list<TensorVar, ScalarVar, UnobservedVar,
                                        VectorVar, TensorVar2, UnobservedVar2>;
-  struct solution_for_test {
-    using vars_for_test = primitive_variables_tag::tags_list;
+  struct solution_for_test : public MarkAsAnalyticSolution {
+    using vars_for_test = typename primitive_variables_tag::tags_list;
 
     template <typename CheckComponent>
     static void check_data(const CheckComponent& check_component) noexcept {
@@ -280,9 +285,8 @@ struct ComplicatedSystem {
   };
 
   using ObserveEvent =
-      dg::Events::ObserveFields<volume_dim, ObservationTimeTag,
-                                all_vars_for_test,
-                                solution_for_test::vars_for_test>;
+      ObservationEvent<volume_dim, ObservationTimeTag, all_vars_for_test,
+                       typename solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
@@ -302,7 +306,7 @@ void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions) noexcept {
-  using metavariables = Metavariables<System>;
+  using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   static constexpr auto volume_dim = System::volume_dim;
@@ -334,8 +338,7 @@ void test_observe(
   const Variables<solution_variables> errors =
       vars.template extract_subset<solution_variables>() - solutions;
 
-  using MockRuntimeSystem =
-      ActionTesting::MockRuntimeSystem<Metavariables<System>>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   MockRuntimeSystem runner(
       tuples::TaggedTuple<
           Tags::AnalyticSolution<typename System::solution_for_test>>{
@@ -465,10 +468,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
     const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, std::nullopt, true),
-                         (ScalarSystem, ComplicatedSystem), (true));
+                         (ScalarSystem<dg::Events::ObserveFields>,
+                          ComplicatedSystem<dg::Events::ObserveFields>),
+                         (true));
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, std::nullopt, false),
-                         (ScalarSystem, ComplicatedSystem), (true, false));
+                         (ScalarSystem<dg::Events::ObserveFields>,
+                          ComplicatedSystem<dg::Events::ObserveFields>),
+                         (true, false));
   }
 
   {
@@ -482,14 +489,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                         Spectral::Quadrature::GaussLobatto};
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, interpolating_mesh_1d, true),
-                         (ScalarSystem), (true));
-    INVOKE_TEST_FUNCTION(test_system,
-                         (interpolating_mesh_str, interpolating_mesh_1d, false),
-                         (ScalarSystem), (true, false));
+                         (ScalarSystem<dg::Events::ObserveFields>), (true));
+    INVOKE_TEST_FUNCTION(
+        test_system, (interpolating_mesh_str, interpolating_mesh_1d, false),
+        (ScalarSystem<dg::Events::ObserveFields>), (true, false));
     const Mesh<2> interpolating_mesh_2d{12, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto};
-    test_system<ComplicatedSystem>(interpolating_mesh_str,
-                                   interpolating_mesh_2d);
+    test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
+        interpolating_mesh_str, interpolating_mesh_2d);
   }
 
   {
@@ -503,9 +510,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                        Spectral::Quadrature::GaussLobatto};
     const Mesh<2> interpolating_mesh_2{3, Spectral::Basis::Legendre,
                                        Spectral::Quadrature::GaussLobatto};
-    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
-    test_system<ComplicatedSystem>(interpolating_mesh_str,
-                                   interpolating_mesh_2);
+    test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
+                                                         interpolating_mesh_1);
+    test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
+        interpolating_mesh_str, interpolating_mesh_2);
   }
 
   {
@@ -519,9 +527,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                        Spectral::Quadrature::GaussLobatto};
     const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Chebyshev,
                                        Spectral::Quadrature::GaussLobatto};
-    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
-    test_system<ComplicatedSystem>(interpolating_mesh_str,
-                                   interpolating_mesh_2);
+    test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
+                                                         interpolating_mesh_1);
+    test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
+        interpolating_mesh_str, interpolating_mesh_2);
   }
 
   {
@@ -535,9 +544,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                        Spectral::Quadrature::Gauss};
     const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Legendre,
                                        Spectral::Quadrature::Gauss};
-    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
-    test_system<ComplicatedSystem>(interpolating_mesh_str,
-                                   interpolating_mesh_2);
+    test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
+                                                         interpolating_mesh_1);
+    test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
+        interpolating_mesh_str, interpolating_mesh_2);
   }
 
   {
@@ -551,9 +561,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                        Spectral::Quadrature::CellCentered};
     const Mesh<2> interpolating_mesh_2{8, Spectral::Basis::FiniteDifference,
                                        Spectral::Quadrature::CellCentered};
-    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
-    test_system<ComplicatedSystem>(interpolating_mesh_str,
-                                   interpolating_mesh_2);
+    test_system<ScalarSystem<dg::Events::ObserveFields>>(interpolating_mesh_str,
+                                                         interpolating_mesh_1);
+    test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
+        interpolating_mesh_str, interpolating_mesh_2);
   }
 
   {
@@ -563,9 +574,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         {3, 9}, {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
         {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto});
 
-    test_observe<ComplicatedSystem, true>(
-        std::make_unique<typename ComplicatedSystem::ObserveEvent>(
-            ComplicatedSystem::make_test_object(interpolating_mesh)),
+    test_observe<ComplicatedSystem<dg::Events::ObserveFields>, true>(
+        std::make_unique<typename ComplicatedSystem<
+            dg::Events::ObserveFields>::ObserveEvent>(
+            ComplicatedSystem<dg::Events::ObserveFields>::make_test_object(
+                interpolating_mesh)),
         interpolating_mesh, true);
   }
 }
@@ -574,7 +587,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
                   "[Unit][Evolution]") {
   ERROR_TEST();
-  TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
+  TestHelpers::test_creation<
+      typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
       "SubfileName: VolumeData\n"
       "VariablesToObserve: [NotAVar]\n"
       "InterpolateToMesh: None");
@@ -584,7 +598,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.repeated_field",
                   "[Unit][Evolution]") {
   ERROR_TEST();
-  TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
+  TestHelpers::test_creation<
+      typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
       "SubfileName: VolumeData\n"
       "VariablesToObserve: [Scalar, Scalar]\n"
       "InterpolateToMesh: None");
