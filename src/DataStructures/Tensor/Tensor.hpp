@@ -15,7 +15,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tensor/Expressions/AddSubtract.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
+#include "DataStructures/Tensor/Expressions/Evaluate.hpp"
+#include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
+#include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
+#include "DataStructures/Tensor/Expressions/Product.hpp"
+#include "DataStructures/Tensor/Expressions/SquareRoot.hpp"
 #include "DataStructures/Tensor/Expressions/TensorAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -32,6 +38,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
+// Not all the TensorExpression includes are necessary, but we include them so
+// that Tensor.hpp provides a uniform interface to Tensors and TensorExpressions
 
 /// \cond
 template <typename X, typename Symm = Symmetry<>,

@@ -7,7 +7,6 @@
 #include <iterator>
 #include <numeric>
 
-#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 

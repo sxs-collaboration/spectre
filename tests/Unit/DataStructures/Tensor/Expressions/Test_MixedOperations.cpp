@@ -9,10 +9,6 @@
 #include <type_traits>
 
 #include "DataStructures/Tags/TempTensor.hpp"
-#include "DataStructures/Tensor/Expressions/AddSubtract.hpp"
-#include "DataStructures/Tensor/Expressions/Evaluate.hpp"
-#include "DataStructures/Tensor/Expressions/Product.hpp"
-#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
