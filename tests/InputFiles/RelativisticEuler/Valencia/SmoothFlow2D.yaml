@@ -16,10 +16,10 @@ DomainCreator:
   Rectangle:
     LowerBound: [0.0, 0.0]
     UpperBound: [0.1, 0.1]
-    IsPeriodicIn: [false, false]
     InitialRefinement: [0, 0]
     InitialGridPoints: [4, 4]
     TimeDependence: None
+    BoundaryCondition: DirichletAnalytic
 
 AnalyticSolution:
   SmoothFlow:
@@ -30,12 +30,11 @@ AnalyticSolution:
     PerturbationSize: 0.7
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    Rusanov:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-NumericalFlux:
-  LocalLaxFriedrichs:
 
 Limiter:
   Minmod:

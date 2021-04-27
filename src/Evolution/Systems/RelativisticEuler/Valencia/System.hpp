@@ -5,8 +5,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
@@ -34,6 +35,9 @@ struct System {
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
 
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
+
   using variables_tag = ::Tags::Variables<
       tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>>;
   using flux_variables =
@@ -58,13 +62,6 @@ struct System {
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
   using primitive_from_conservative =
       PrimitiveFromConservative<thermodynamic_dim, Dim>;
-
-  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
-  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;
