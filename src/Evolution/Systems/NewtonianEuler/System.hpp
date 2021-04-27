@@ -52,7 +52,6 @@ struct System {
   using volume_fluxes = ComputeFluxes<Dim>;
   using volume_sources = ComputeSources<InitialDataType>;
 
-
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
   using primitive_from_conservative =
       PrimitiveFromConservative<Dim, thermodynamic_dim>;
