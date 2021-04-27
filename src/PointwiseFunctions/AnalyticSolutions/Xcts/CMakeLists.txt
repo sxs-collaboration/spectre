@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ConstantDensityStar.cpp
+  Kerr.cpp
   Schwarzschild.cpp
   )
 
@@ -21,6 +22,7 @@ spectre_target_headers(
   CommonVariables.tpp
   ConstantDensityStar.hpp
   Flatness.hpp
+  Kerr.hpp
   Schwarzschild.hpp
   )
 
@@ -28,8 +30,10 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  ElasticityPointwiseFunctions
   ErrorHandling
   GeneralRelativity
+  GeneralRelativitySolutions
   Options
   Parallel
   Utilities
