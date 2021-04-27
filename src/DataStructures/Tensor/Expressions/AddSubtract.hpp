@@ -6,16 +6,17 @@
 
 #pragma once
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
-#include "Utilities/Requires.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
+
 /// \cond
 namespace TensorExpressions {
 template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,

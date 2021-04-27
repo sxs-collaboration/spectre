@@ -4,11 +4,13 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <numeric>
 #include <type_traits>
 
 #include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"

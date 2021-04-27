@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <array>
 #include <type_traits>
 
 #include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
@@ -14,6 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
 

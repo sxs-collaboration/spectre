@@ -8,12 +8,17 @@
 
 #include <array>
 #include <cstddef>
+#include <iterator>
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {

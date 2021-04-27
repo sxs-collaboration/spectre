@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"

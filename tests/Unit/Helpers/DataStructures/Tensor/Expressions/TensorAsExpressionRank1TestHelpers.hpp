@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <iterator>
 #include <numeric>
 
 #include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 
 namespace TestHelpers::TensorExpressions {

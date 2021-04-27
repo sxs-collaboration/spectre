@@ -4,7 +4,10 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 #include <cstddef>
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "Utilities/ForceInline.hpp"
