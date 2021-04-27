@@ -282,26 +282,16 @@ that load balancing calls may result in array elements being moved.
 
 # Actions {#dev_guide_parallelization_actions}
 
-For those familiar with Charm++, actions should be thought of as effectively
-being entry methods. They are functions that can be invoked on a remote object
-(chare/parallel component) using a `CProxy` (see the [Charm++
-manual](http://charm.cs.illinois.edu/help)), which is retrieved from the
-Parallel::GlobalCache using the parallel component struct and the
-`Parallel::get_parallel_component()` function. %Actions are structs with a
-static `apply` method and come in three variants: simple actions, iterable
-actions, and reduction actions. One important thing to note
-is that actions cannot return any data to the caller of the remote method.
-Instead, "returning" data must be done via callbacks or a callback-like
-mechanism.
+%Actions are structs with a static `apply` method and come in five
+variants: simple actions, iterable actions, reduction actions,
+threaded actions, and local synchronous actions.
 
-The simplest signature of an `apply` method is for iterable actions:
-\snippet Test_AlgorithmCore.cpp apply_iterative
-The return type is discussed at the end of each section describing a particular
-type of action. Simple actions can have additional arguments, do not receive
-the `inboxes` or `ActionList`, and take the `ParallelComponent` as an
-explicit first template parameter. Reduction actions have the same signature as
-simple actions except that the additional arguments must be of the types reduced
-over.
+The signature of `apply` methods differs for the different types of
+actions, but all types have the same general form.  Actions receive a
+`db::DataBox`, the Parallel::GlobalCache, and their element's index
+and parallel component, as well as arguments specific to the action
+type.
+
 The `db::DataBox` should be thought of as the member data of the parallel
 component while the actions are the member functions. The combination of a
 `db::DataBox` and actions allows building up classes with arbitrary member data
@@ -352,14 +342,12 @@ action on all elements of an array parallel component.
 
 The `array_index` argument passed to all `apply` methods is the index into the
 parallel component array. If the parallel component is not an array the value
-and type of `array_index` is implementation defined and cannot be relied on. The
-`ActionList` type is the `tmpl::list` of iterable actions in the current phase.
-That is, it is equal to the `action_list` type alias in the current PDAL.
+and type of `array_index` is implementation defined and cannot be relied on.
 
 ## 1. Simple Actions {#dev_guide_parallelization_simple_actions}
 
-Simple actions are designed to be called in a similar fashion to
-member functions of classes. They are the direct analog of entry
+Simple actions can be thought of as member functions of remote objects
+(chares/parallel components).  They are the direct analog of entry
 methods in Charm++ except that the member data is stored in the
 `db::DataBox` that is passed in as the first argument. A simple action
 must return void but can use `db::mutate` to change values of items in
@@ -369,68 +357,45 @@ reference. In some cases you will need specific items to be in the
 `db::DataBox`es can be passed you should use `Requires` in the
 action's `apply` function template parameter list. For example,
 \snippet Test_AlgorithmCore.cpp requires_action
-where the conditional checks if any element in the parameter pack `DbTags` is
-`CountActionsCalled`.
+checks that `CountActionsCalled` is available in the box.
 
-A simple action that does not take any arguments can be called using a `CProxy`
-from the Parallel::GlobalCache as follows:
-
+Simple actions can be called using a `CProxy` (see the [Charm++
+manual](http://charm.cs.illinois.edu/help)), which is retrieved from
+the Parallel::GlobalCache using the parallel component struct and the
+`Parallel::get_parallel_component()` function.  For example, the
+action above could be called as
 \snippet Test_AlgorithmCore.cpp simple_action_call
-
-If the simple action takes arguments then the arguments must be as follows:
-
-\snippet Test_AlgorithmNodelock.cpp simple_action_with_args
+Any arguments after the proxy are passed as additional arguments to
+the action's `apply` function.
 
 ## 2. Iterable Actions {#dev_guide_parallelization_iterable_actions}
 
-%Actions in the algorithm that are part of the current PDAL are executed one
-after the other until one of them cannot be evaluated. Iterable
-actions may have an `is_ready` method that returns `true` or `false` depending
-on whether or not the action is ready to be evaluated. If no `is_ready` method
-is provided then the action is assumed to be ready to be evaluated. The
-`is_ready` method typically checks that required data from other parallel
-components has been received. For example, it may check that all data from
-neighboring elements has arrived to be able to continue integrating in time.
-The signature of an `is_ready` method must be:
+Iterable actions make up the algorithms described by the PDALs.  These
+actions are executed one after the other until one of them cannot be
+evaluated.  Their `apply` methods signature is
+\snippet Test_AlgorithmCore.cpp apply_iterative
+The `ActionList` type is the `tmpl::list` of iterable actions in the
+current phase.  That is, it is equal to the `action_list` type alias
+in the current PDAL.  The `inboxes` is a collection of the tags
+specified as `tmpl::list`s in the iterable actions' member type
+aliases `inbox_tags`.  This collection represents data received from
+other chares using the `receive_data` function.  The return type will
+be discussed below.
+
+Iterable actions may have an `is_ready` method that returns `true` or
+`false` depending on whether or not the action is ready to be
+evaluated.  If no `is_ready` method is provided then the action is
+assumed to be ready to be evaluated.  The `is_ready` method typically
+checks that required data from other parallel components has been
+received.  For example, it may check that all data from neighboring
+elements has arrived to be able to continue integrating in time.  The
+signature of an `is_ready` method must be:
 
 \snippet Test_AlgorithmCore.cpp is_ready_example
 
-The `inboxes` is a collection of the tags passed to `receive_data` and are
-specified in the iterable actions member type alias `inbox_tags`, which must be
-a `tmpl::list`. The `inbox_tags` must have two member type aliases, a
-`temporal_id` which is used to identify when the data was sent, and a `type`
-which is the type of the data to be stored in the `inboxes`. The types are
-typically a `std::unordered_map<temporal_id, DATA>`. In the discussed scenario
-of waiting for neighboring elements to send their data the `DATA` type would be
-a `std::unordered_map<TheElementId, DataSent>`. Inbox tags must also specify
-a `static void insert_into_inbox()` function. For example,
-
-\snippet Test_AlgorithmParallel.cpp int_receive_tag
-
-For common types of `DATA`, such as a `map`, a data structure with an `insert`
-function, a data structure with a `push_back` function, or copy/move assignment
-that is used to insert the received data, inserters are available in
-`Parallel::InboxInserters`. For example, there is
-`Parallel::InboxInserters::Map` for `map` data structures. The inbox tag can
-inherit publicly off the inserters to gain the required insertion capabilities:
-
-\snippet Test_AlgorithmCore.cpp int receive tag insert
-
-The `inbox_tags` type alias for the action is:
-
-\snippet Test_AlgorithmParallel.cpp int_receive_tag_list
-
-and the `is_ready` function is:
-
-\snippet Test_AlgorithmParallel.cpp int_receive_tag_is_ready
-
-Once all of the `int`s have been received, the iterable action is executed, not
-before.
-
-\warning
-It is the responsibility of the iterable action to remove data from the inboxes
-that will no longer be needed. The removal of unneeded data should be done in
-the `apply` function.
+The `is_ready` function is run whenever new data is received by the
+chare, and the action's `apply` function will run when it returns
+true.
 
 Iterable actions can change the type of the db::DataBox by adding or
 removing elements/tags from the db::DataBox. The only requirement is
@@ -440,19 +405,23 @@ the algorithm no longer be executed, and control which action in the
 current PDAL will be executed next. This is all done via the return
 value from the `apply` function.  The `apply` function for iterable
 actions must return a `std::tuple` of one, two, or three elements. The
-first element of the tuple is the new db::DataBox, which can be the
-same as the type passed in or a db::DataBox with different tags.  Most
-iterable actions will simply return:
+first element of the tuple is the new db::DataBox, which can be a
+db::DataBox with a new set of tags or an rvalue reference to the `box`
+argument to the function.  Most iterable actions will simply return:
 
 \snippet Test_AlgorithmParallel.cpp return_forward_as_tuple
 
 By returning the db::DataBox as a reference in a `std::tuple` we avoid
-any unnecessary copying of the db::DataBox. The second argument is an
-optional bool, and controls whether or not the algorithm is
-terminated. If the bool is `true` then the algorithm is terminated, by
-default it is `false`. Here is an example of how to return a
-db::DataBox with the same type that is passed in and also terminate
-the algorithm:
+any unnecessary copying of the db::DataBox.  The second argument
+controls whether or not the algorithm is terminated.  If present, it
+must be either a `bool` or a `Parallel::AlgorithmExecution`.  If a
+`bool` is passed, the termination flag for the chare will be set to
+that value (stopping the algorithm if that value is true).  See the
+documentation of `Parallel::AlgorithmExecution` for the meanings of
+different values of that enum.  If the returned tuple only has one
+element, it acts as if `Parallel::AlgorithmExecution::Continue` was
+returned (that is, the flow control flags are not modified).  For
+example, an action that stops the algorithm could return
 
 \snippet Test_AlgorithmParallel.cpp return_with_termination
 
@@ -502,9 +471,42 @@ and of calling individual elements:
 
 \snippet Test_AlgorithmParallel.cpp call_on_indexed_array
 
-The `receive_data` function always takes a `ReceiveTag`, which is set in the
-actions `inbox_tags` type alias as described above.  The first argument is the
-temporal identifier, and the second is the data to be sent.
+The `receive_data` function always takes a `ReceiveTag`, which is set
+in the actions' `inbox_tags` type aliases.  The `inbox_tags` must have
+two member type aliases, a `temporal_id` which is used to identify
+when the data was sent, and a `type` which is the type of the data to
+be stored in the `inboxes`.  The types are typically a
+`std::unordered_map<temporal_id, DATA>`.  In the discussed scenario of
+waiting for neighboring elements to send their data the `DATA` type
+would be a `std::unordered_map<TheElementId, DataSent>`.  Inbox tags
+must also specify a `static void insert_into_inbox()` function.  For
+example,
+
+\snippet Test_AlgorithmParallel.cpp int_receive_tag
+
+For common types of `DATA`, such as a `map`, a data structure with an `insert`
+function, a data structure with a `push_back` function, or copy/move assignment
+that is used to insert the received data, inserters are available in
+`Parallel::InboxInserters`. For example, there is
+`Parallel::InboxInserters::Map` for `map` data structures. The inbox tag can
+inherit publicly off the inserters to gain the required insertion capabilities:
+
+\snippet Test_AlgorithmCore.cpp int receive tag insert
+
+The `inbox_tags` type alias for the action is:
+
+\snippet Test_AlgorithmParallel.cpp int_receive_tag_list
+
+and the `is_ready` function is:
+
+\snippet Test_AlgorithmParallel.cpp int_receive_tag_is_ready
+
+Once all of the `int`s have been received, the iterable action is executed, not
+before.
+
+\warning
+It is the responsibility of the iterable action to remove data from the inboxes
+that will no longer be needed.
 
 Normally when remote functions are invoked they go through the Charm++ runtime
 system, which adds some overhead. The `receive_data` function tries to elide
@@ -518,9 +520,9 @@ elided.
 
 ## 3. Reduction Actions {#dev_guide_parallelization_reduction_actions}
 
-Finally, there are reduction actions which are used when reducing data over an
-array. For example, you may want to know the sum of a `int` from every
-element in the array. You can do this as follows:
+Reduction actions are the targets of reducing data over an array. For
+example, you may want to know the sum of a `int` from every element in
+the array. You can do this as follows:
 
 \snippet Test_AlgorithmReduction.cpp contribute_to_reduction_example
 
@@ -558,13 +560,6 @@ additional arguments can be any `ReductionDatum::value_type` in the
 of `ReductionDatum` is used to specify which data should be passed. It is a
 `std::index_sequence` indexing into the `ReductionData`.
 
-The action that is invoked with the result of the reduction is:
-
-\snippet Test_AlgorithmReduction.cpp custom_reduction_action
-
-Note that it takes objects of the types that the reduction was done over as
-additional arguments.
-
 \warning
 All elements of the array must call the same reductions in the same order. It is
 *defined* behavior to do multiple reductions at once as long as all contribute
@@ -572,31 +567,41 @@ calls on all array elements occurred in the same order. It is **undefined**
 behavior if the contribute calls are made in different orders on different array
 elements.
 
-## 4. Local Synchronous Actions {#dev_guide_parallelization_local_synchronous_actions}
+## 4. Threaded Actions {#dev_guide_parallelization_threaded_actions}
+
+Threaded actions are similar to simple actions, with the difference
+being that multiple threaded actions may be running on the same chare
+at the same time (potentially in parallel with one simple or reduction
+action).  The `apply` function for a threaded actions has the same
+signature as that for a simple action, except that it also receives a
+`NodeLock` intended to control access to the chare's `db::DataBox`.
+All access to the `db::DataBox`, including read-only access, must
+occur while the action owns this lock.  (Simple and reduction actions
+implicitly hold the lock for their entire execution.)
+
+\snippet Test_AlgorithmNodelock.cpp threaded_action_example
+
+Threaded actions can only be run on nodegroup chares.
+
+## 5. Local Synchronous Actions {#dev_guide_parallelization_local_synchronous_actions}
 
 There is limited ability to retrieve data held by another parallel component via
 a direct synchronous call. Unlike the above actions, the invocation of a
 synchronous action is precisely a call to a member function of another parallel
 component; therefore, these invocations will run to completion, and return their
 result before the calling code proceeds in execution.
-Currently, it is only supported to invoke a local synchronous action on a
-`Nodegroup` chare (because nodegroups are already built to handle
-parallelization between threaded actions) -- generalization of this feature on
-other chares should pose no significant problem, but would need to be limited to
-elements that share a core with the calling code.
+
+Aside from being synchronous and being able to return data, local
+synchronous actions behave the same as threaded actions, except that
+they will only run on the chare of a nodegroup that is on the local
+node.
 
 Local synchronous actions' `apply` functions follow a signature motivated by
-threaded actions, but take fewer arguments:
-- The first template parameter is the `ParallelComponent` on which the action is
-  invoked
-- The first function argument is a `db::DataBox`
-- The second function argument is a `gsl::not_null<Parallel::NodeLock*>`
-- Any other function arguments are forwarded from the `local_synchronous_action`
-  call to the `apply` function of the action.
-- In addition, local synchronous actions must specify their return type in a
-  `return_type` type alias. This is to help simplify the logic with the
-  variant `db::DataBox` held by the parallel component.
+threaded actions, but take fewer arguments.  This may be a bug.
 
+Local synchronous actions must specify their return type in a
+`return_type` type alias. This is to help simplify the logic with the
+variant `db::DataBox` held by the parallel component.
 
 An example of a definition of a local synchronous action:
 

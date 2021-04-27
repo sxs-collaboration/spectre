@@ -296,14 +296,19 @@ struct remove_int0 {
 };
 
 struct test_args {
+  // [requires_action]
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex>
-  static void apply(db::DataBox<DbTags>& /*box*/,
+            typename ArrayIndex,
+            Requires<db::tag_is_retrievable_v<CountActionsCalled,
+                                              db::DataBox<DbTags>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double v0,
                     std::vector<double>&& v1) noexcept {
+    // [requires_action]
     SPECTRE_PARALLEL_REQUIRE(v0 == 4.82937);
     SPECTRE_PARALLEL_REQUIRE(v1 == (std::vector<double>{3.2, -8.4, 7.5}));
+    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
   }
 };
 
@@ -378,13 +383,13 @@ struct MutateComponent {
     Parallel::get_parallel_component<MutateComponent>(local_cache)
         .start_phase(next_phase);
     if (next_phase == Metavariables::Phase::MutateFinish) {
+      // [simple_action_call]
       Parallel::simple_action<add_remove_test::test_args>(
           Parallel::get_parallel_component<MutateComponent>(local_cache),
           4.82937, std::vector<double>{3.2, -8.4, 7.5});
       // [simple_action_call]
       Parallel::simple_action<add_remove_test::finalize>(
           Parallel::get_parallel_component<MutateComponent>(local_cache));
-      // [simple_action_call]
     }
   }
 };
@@ -503,15 +508,13 @@ struct initialize {
 
 struct finalize {
   using inbox_tags = tmpl::list<IntReceiveTag>;
-  // [requires_action]
-  template <typename ParallelComponent, typename... DbTags,
+  template <typename ParallelComponent, typename DbTags,
             typename Metavariables, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<
-                std::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+            Requires<db::tag_is_retrievable_v<CountActionsCalled,
+                                              db::DataBox<DbTags>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
-    // [requires_action]
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              TestAlgorithmArrayInstance{4});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);

@@ -76,7 +76,6 @@ struct ProcessErrorNorms {
 };
 // [reduce_rms_action]
 
-// [custom_reduction_action]
 struct ProcessCustomReductionAction {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
@@ -99,7 +98,6 @@ struct ProcessCustomReductionAction {
                           8 * reduced_int * number_of_1d_array_elements}));
   }
 };
-// [custom_reduction_action]
 
 template <class Metavariables>
 struct SingletonParallelComponent {
@@ -160,7 +158,6 @@ struct ArrayReduce {
                                                          my_proxy, array_proxy);
     // [contribute_to_rms_reduction]
 
-    // [custom_contribute_to_reduction_example]
     std::unordered_map<std::string, int> my_send_map;
     my_send_map["unity"] = array_index;
     my_send_map["double"] = 2 * array_index;
@@ -216,12 +213,9 @@ struct ArrayReduce {
     Parallel::contribute_to_reduction<ProcessCustomReductionAction>(
         ReductionType{10, my_send_map, std::vector<int>{array_index, 10, -8}},
         my_proxy, singleton_proxy);
-    // [custom_contribute_to_reduction_example]
-    // [custom_contribute_to_broadcast_reduction]
     Parallel::contribute_to_reduction<ProcessCustomReductionAction>(
         ReductionType{10, my_send_map, std::vector<int>{array_index, 10, -8}},
         my_proxy, array_proxy);
-    // [custom_contribute_to_broadcast_reduction]
   }
 };
 
