@@ -1,17 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_EllipticDG")
+set(LIBRARY "Test_EllipticDgSubdomainOperator")
 
 set(LIBRARY_SOURCES
-  Test_DgOperator.cpp
-  Test_Penalty.cpp
-  Test_Tags.cpp
+  Test_SubdomainOperator.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Elliptic/DiscontinuousGalerkin/"
+  "Elliptic/DiscontinuousGalerkin/SubdomainOperator"
   "${LIBRARY_SOURCES}"
   ""
   )
@@ -19,23 +17,23 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  AnalyticSolutions
+  ConstitutiveRelations
   DataStructures
-  DiscontinuousGalerkin
   Domain
+  DomainBoundaryConditions
   DomainCreators
   DomainStructure
+  Elasticity
+  ElasticityBoundaryConditions
   Elliptic
   EllipticDg
+  EllipticDgSubdomainOperator
   ErrorHandling
   Parallel
+  ParallelDg
+  ParallelSchwarz
   Poisson
-  PoissonSolutions
+  PoissonBoundaryConditions
   Spectral
   Utilities
-  Xcts
-  XctsSolutions
   )
-
-add_subdirectory(Actions)
-add_subdirectory(SubdomainOperator)

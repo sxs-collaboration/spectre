@@ -31,8 +31,15 @@ namespace LinearSolver::Schwarz {
  * `LinearSolver::Schwarz::Actions::ReceiveOverlapFields` actions. Note that
  * such communication should not be necessary between iterations of the Schwarz
  * solve, but only between successive solves, because background data should not
- * change during the solve. All variable data is passed to the operator as the
- * `operand` argument (see above).
+ * change during the solve. The Schwarz algorithm takes care of communicating
+ * all variable data that the subdomain operator operates on, whenever
+ * necessary. This variable data is passed to the operator as the `operand`
+ * argument (see above). It includes the data on the central element of the
+ * subdomain, as well as the data on overlap regions with neighbors. Since data
+ * on the entire subdomain is available, applying the subdomain operator
+ * requires _no_ communication between elements. This is the strength of the
+ * Schwarz algorithm: all subdomain solves are independent of each other (see
+ * `LinearSolver::Schwarz::Schwarz` for details).
  *
  * Here's an example of a subdomain operator that is the restriction of an
  * explicit global matrix:
