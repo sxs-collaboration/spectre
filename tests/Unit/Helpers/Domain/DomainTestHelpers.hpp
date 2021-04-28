@@ -76,6 +76,16 @@ void test_physical_separation(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time = {}) noexcept;
 
+// Given a vector of Blocks, tests that the determinant of the Jacobian is
+// positive at all corners of those Blocks.
+template <size_t VolumeDim>
+void test_det_jac_positive(
+    const std::vector<Block<VolumeDim>>& blocks,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = {}) noexcept;
+
 // Fraction of the logical volume of a block covered by an element
 // The sum of this over all the elements of a block should be one
 template <size_t VolumeDim>

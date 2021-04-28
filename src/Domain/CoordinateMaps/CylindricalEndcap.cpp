@@ -134,7 +134,7 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
                 "jacobians are likely to be large and the map has not been "
                 "tested for these parameters.");
   ASSERT(
-      abs(cos_theta) >= 0.2,
+      abs(cos_theta) >= 0.15,
       "z_plane is too close to the center of sphere_one. "
           << "cos_theta = " << cos_theta
           << ". The map is not singular, but the jacobians are likely to be "
@@ -186,23 +186,26 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
     // We keep this as a separate condition because we may change the
     // number 0.85 in the future if we ever have reason to do so.
     ASSERT(radius_two <= 0.85 * (radius_one - dist_spheres) and
-               radius_two >= 0.25 * radius_one,
+               radius_two >= 0.1 * radius_one,
            "If sphere_two is contained in sphere_one, the "
            "map has been tested only for the case when sphere_two is not "
            "too small or two large. Here radius_two="
                << radius_two << ", radius_one=" << radius_one << ", distance="
                << dist_spheres << ", and the requirement is that "
                << 0.85 * (radius_one - dist_spheres) - radius_two
-               << " is positive");
+               << " is positive and that " << radius_two - 0.1 * radius_one
+               << " is positive.");
 
     // We keep this as a separate condition because we may change the
     // number 0.1 in the future if we have reason to do so.
-    ASSERT(proj_radius_two_squared <= square(0.1 * radius_two),
-           "The map has been tested only for the case when "
-           "proj_center is sufficiently contained inside sphere_two. We have"
-               << proj_radius_two_squared << " vs " << square(0.1 * radius_two)
-               << ", diff = "
-               << proj_radius_two_squared - square(0.1 * radius_two));
+    ASSERT(
+        proj_radius_two_squared <= square(0.1 * radius_two),
+        "The map has been tested only for the case when "
+        "proj_center is sufficiently contained inside sphere_two. We have "
+            << proj_radius_two_squared << " vs " << square(0.1 * radius_two)
+            << ", diff = " << proj_radius_two_squared - square(0.1 * radius_two)
+            << ". Here center_two=" << center_two << ", proj_center="
+            << proj_center << ", radius_two=" << radius_two);
   } else {
     // sphere_one is contained in sphere_two.
 

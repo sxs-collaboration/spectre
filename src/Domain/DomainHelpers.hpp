@@ -40,6 +40,16 @@ class Option;
 template <typename T>
 struct create_from_yaml;
 }  // namespace Options
+namespace domain::CoordinateMaps {
+template<typename Map1, typename Map2>
+class ProductOf2Maps;
+template<typename Map1, typename Map2, typename Map3>
+class ProductOf3Maps;
+class Affine;
+class Equiangular;
+template<size_t Dim>
+class Wedge;
+}  // namespace domain::CoordinateMaps
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
@@ -225,6 +235,62 @@ auto cyl_wedge_coordinate_maps(
     const std::vector<double>& height_partitioning = {}) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+
+enum class CylindricalDomainParityFlip { none, z_direction };
+
+/// \ingroup ComputationalDomainGroup
+/// Same as `cyl_wedge_coordinate_maps`, but only the center square blocks,
+///
+/// If `CylindricalDomainParityFlip::z_direction` is specified, then
+/// the returned maps describe a cylinder with `lower_bound`
+/// corresponding to logical coordinate `upper_zeta` and `upper_bound`
+/// corresponding to logical coordinate `lower_zeta`, and thus the
+/// resulting maps are left-handed.
+/// `CylindricalDomainParityFlip::z_direction` is therefore useful
+/// only when composing with another map that is also left-handed, so
+/// that the composed coordinate system is right-handed.
+///
+/// Returned as a vector of the coordinate maps so that they can
+/// be composed with other maps later.
+template <bool UseEquiangularMap>
+auto cyl_wedge_coord_map_center_blocks(
+    double inner_radius, double lower_bound, double upper_bound,
+    const std::vector<double>& height_partitioning = {},
+    CylindricalDomainParityFlip parity_flip =
+        CylindricalDomainParityFlip::none) noexcept
+    -> tmpl::conditional_t<
+        UseEquiangularMap,
+        std::vector<domain::CoordinateMaps::ProductOf3Maps<
+            domain::CoordinateMaps::Equiangular,
+            domain::CoordinateMaps::Equiangular,
+            domain::CoordinateMaps::Affine>>,
+        std::vector<domain::CoordinateMaps::ProductOf3Maps<
+            domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
+            domain::CoordinateMaps::Affine>>>;
+
+/// \ingroup ComputationalDomainGroup
+/// Same as cyl_wedge_coordinate_maps, but only the surrounding wedge blocks.
+///
+/// If `CylindricalDomainParityFlip::z_direction` is specified, then
+/// the returned maps describe a cylinder with `lower_bound`
+/// corresponding to logical coordinate `upper_zeta` and `upper_bound`
+/// corresponding to logical coordinate `lower_zeta`, and thus the
+/// resulting maps are left-handed.
+/// `CylindricalDomainParityFlip::z_direction` is therefore useful
+/// only when composing with another map that is also left-handed, so
+/// that the composed coordinate system is right-handed.
+///
+/// Returned as a vector of the coordinate maps so that they can
+/// be composed with other maps later.
+auto cyl_wedge_coord_map_surrounding_blocks(
+    double inner_radius, double outer_radius, double lower_bound,
+    double upper_bound, bool use_equiangular_map, double inner_circularity,
+    const std::vector<double>& radial_partitioning = {},
+    const std::vector<double>& height_partitioning = {},
+    CylindricalDomainParityFlip parity_flip =
+        CylindricalDomainParityFlip::none) noexcept
+    -> std::vector<domain::CoordinateMaps::ProductOf2Maps<
+        domain::CoordinateMaps::Wedge<2>, domain::CoordinateMaps::Affine>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a cylindrical domain split into discs with radial

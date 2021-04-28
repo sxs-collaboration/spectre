@@ -41,6 +41,7 @@ class AlignedLattice;
 class BinaryCompactObject;
 class Brick;
 class Cylinder;
+class CylindricalBinaryCompactObject;
 class Disk;
 class Interval;
 class Rectangle;
@@ -76,9 +77,10 @@ struct domain_creators<3> {
   using creators =
       tmpl::list<domain::creators::AlignedLattice<3>,
                  domain::creators::BinaryCompactObject, domain::creators::Brick,
-                 domain::creators::Cylinder, domain::creators::RotatedBricks,
-                 domain::creators::Shell, domain::creators::Sphere,
-                 domain::creators::FrustalCloak>;
+                 domain::creators::Cylinder,
+                 domain::creators::CylindricalBinaryCompactObject,
+                 domain::creators::RotatedBricks, domain::creators::Shell,
+                 domain::creators::Sphere, domain::creators::FrustalCloak>;
 };
 }  // namespace DomainCreators_detail
 
@@ -119,6 +121,7 @@ class DomainCreator {
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"
+#include "Domain/Creators/CylindricalBinaryCompactObject.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/FrustalCloak.hpp"
 #include "Domain/Creators/Interval.hpp"

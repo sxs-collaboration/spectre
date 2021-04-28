@@ -12,6 +12,7 @@ spectre_target_sources(
   BinaryCompactObject.cpp
   Brick.cpp
   Cylinder.cpp
+  CylindricalBinaryCompactObject.cpp
   Disk.cpp
   ExpandOverBlocks.cpp
   FrustalCloak.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   BinaryCompactObject.hpp
   Brick.hpp
   Cylinder.hpp
+  CylindricalBinaryCompactObject.hpp
   Disk.hpp
   DomainCreator.hpp
   ExpandOverBlocks.hpp
