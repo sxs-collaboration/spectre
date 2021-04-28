@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -51,6 +52,11 @@ namespace elliptic::Actions {
  */
 template <typename System, typename BackgroundTag>
 struct InitializeBackgroundFields {
+  static_assert(
+      not std::is_same_v<typename System::background_fields, tmpl::list<>>,
+      "The system has no background fields. Don't add the "
+      "'InitializeBackgroundFields' action to the action list.");
+
  private:
   using background_fields_tag =
       ::Tags::Variables<typename System::background_fields>;
