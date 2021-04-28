@@ -54,7 +54,7 @@ struct unmap_arg<false, FirstMapKey, MapKeys...> {
       const gsl::not_null<T*> arg,
       const std::tuple<FirstMapKey, MapKeys...>& map_keys) noexcept {
     return unmap_arg<sizeof...(MapKeys) == 0, MapKeys...>::apply(
-        make_not_null(&arg->at(std::get<0>(map_keys))),
+        make_not_null(&arg->operator[](std::get<0>(map_keys))),
         tuple_tail<sizeof...(MapKeys)>(map_keys));
   }
 };
