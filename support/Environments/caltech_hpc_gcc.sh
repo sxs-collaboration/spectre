@@ -306,7 +306,7 @@ spectre_run_cmake() {
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=off \
-          -D PYTHON_EXECUTABLE=`which python3` \
+          -D Python_EXECUTABLE=`which python3` \
           "$@" \
           $SPECTRE_HOME
 }
