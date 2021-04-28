@@ -134,7 +134,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
 
     // Nothing to do
     {
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       check_box(TimeStepId(time_runs_forward, 3, start_time));
     }
@@ -142,9 +141,9 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     // Simple case
     {
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
-      CHECK(not ActionTesting::is_ready<Component>(runner, 0));
+      REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
+          make_not_null(&runner), 0));
       get<NewSize>(inboxes)[3].insert(1.0);
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       resize_slab(1.0);
       check_box(TimeStepId(time_runs_forward, 3, start_time));
@@ -159,14 +158,16 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
-      CHECK(not ActionTesting::is_ready<Component>(runner, 0));
+      REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
+          make_not_null(&runner), 0));
       get<NewSize>(inboxes)[3].insert(2.0);
-      CHECK(not ActionTesting::is_ready<Component>(runner, 0));
+      REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
+          make_not_null(&runner), 0));
       get<NewSize>(inboxes)[4].insert(0.5);
-      CHECK(not ActionTesting::is_ready<Component>(runner, 0));
+      REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
+          make_not_null(&runner), 0));
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
       get<NewSize>(inboxes)[3].insert(3.0);
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       resize_slab(2.0);
       check_box(TimeStepId(time_runs_forward, 3, start_time));
@@ -191,10 +192,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           },
           db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       check_box(initial_id);
       CHECK(get<ExpectedMessages>(inboxes).size() == 2);
@@ -203,7 +202,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       CHECK(get<NewSize>(inboxes).empty());
       get<NewSize>(inboxes)[3].insert(0.1);
       get<NewSize>(inboxes)[4].insert(0.1);
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       check_box(initial_id);
       get<ExpectedMessages>(inboxes).clear();
@@ -225,10 +223,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           },
           db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       check_box(initial_id);
       CHECK(get<ExpectedMessages>(inboxes).size() == 2);
@@ -237,7 +233,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       CHECK(get<NewSize>(inboxes).empty());
       get<NewSize>(inboxes)[3].insert(0.1);
       get<NewSize>(inboxes)[4].insert(0.1);
-      CHECK(ActionTesting::is_ready<Component>(runner, 0));
       runner.next_action<Component>(0);
       check_box(initial_id);
       get<ExpectedMessages>(inboxes).clear();

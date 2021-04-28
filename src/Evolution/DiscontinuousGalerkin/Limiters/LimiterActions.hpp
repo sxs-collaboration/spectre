@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -81,50 +82,35 @@ struct Limit {
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using mutate_tags = typename Metavariables::limiter::type::limit_tags;
-    using argument_tags =
-        typename Metavariables::limiter::type::limit_argument_tags;
+    constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
-    const auto& limiter = get<typename Metavariables::limiter>(cache);
     const auto& local_temporal_id =
         db::get<typename Metavariables::temporal_id>(box);
     auto& inbox = tuples::get<limiter_comm_tag>(inboxes);
+    const auto& received = inbox.find(local_temporal_id);
+
+    const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
+    const auto num_expected = element.neighbors().size();
+    if (num_expected > 0 and
+        (received == inbox.end() or received->second.size() != num_expected)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
+    const auto& limiter = get<typename Metavariables::limiter>(cache);
+    using mutate_tags = typename Metavariables::limiter::type::limit_tags;
+    using argument_tags =
+        typename Metavariables::limiter::type::limit_argument_tags;
     db::mutate_apply<mutate_tags, argument_tags>(limiter, make_not_null(&box),
                                                  inbox[local_temporal_id]);
 
     inbox.erase(local_temporal_id);
 
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    constexpr size_t volume_dim = Metavariables::system::volume_dim;
-    const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
-    const auto num_expected = element.neighbors().size();
-    // Edge case where we do not receive any data
-    if (UNLIKELY(num_expected == 0)) {
-      return true;
-    }
-    const auto& local_temporal_id =
-        db::get<typename Metavariables::temporal_id>(box);
-    const auto& inbox = tuples::get<limiter_comm_tag>(inboxes);
-    const auto& received = inbox.find(local_temporal_id);
-    // Check we have at least some data from correct time
-    if (received == inbox.end()) {
-      return false;
-    }
-    // Check data was received from each neighbor
-    const size_t num_neighbors_received = received->second.size();
-    return (num_neighbors_received == num_expected);
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 

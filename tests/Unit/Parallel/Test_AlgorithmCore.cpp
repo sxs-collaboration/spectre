@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -428,48 +429,38 @@ struct set_int0_from_receive {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, bool> apply(
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box,
       tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    auto& inbox = tuples::get<IntReceiveTag>(inboxes);
+    db::mutate<Int1>(make_not_null(&box),
+                     [](const gsl::not_null<int*> int1) { ++*int1; });
+    // [retry_example]
+    if (inbox.count(db::get<TemporalId>(box)) == 0) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+    // [retry_example]
+
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
         });
     static int a = 0;
-    auto int0 = *(
-        std::move(tuples::get<IntReceiveTag>(inboxes)[db::get<TemporalId>(box)])
-            .begin());
-    tuples::get<IntReceiveTag>(inboxes).erase(db::get<TemporalId>(box));
+    auto int0 = *inbox[db::get<TemporalId>(box)].begin();
+    inbox.erase(db::get<TemporalId>(box));
     db::mutate<Int0>(
         make_not_null(&box),
         [&int0](const gsl::not_null<int*> int0_box) {
           *int0_box = int0;
         });
-    return {std::move(box), ++a >= 5};
-  }
-
-  // [is_ready_example]
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept
-  // [is_ready_example]
-  {
-    const auto& inbox = tuples::get<IntReceiveTag>(inboxes);
-    // The const_cast in this function is purely for testing purposes, this is
-    // NOT an example of how to use this function.
-    // clang-tidy: do not use const_cast
-    db::mutate<Int1>(
-        make_not_null(&const_cast<db::DataBox<DbTags>&>(box)),  // NOLINT
-        [](const gsl::not_null<int*> int1) { ++*int1; });
-    return inbox.count(db::get<TemporalId>(box)) != 0;
+    return {std::move(box),
+            ++a >= 5 ? Parallel::AlgorithmExecution::Pause
+                     : Parallel::AlgorithmExecution::Continue};
   }
 };
 

@@ -162,7 +162,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
 
   // SendData
   runner.next_action<my_component>(self_id);
-  CHECK(runner.is_ready<my_component>(self_id));
   // Limit
-  runner.next_action<my_component>(self_id);
+  CHECK(runner.next_action_if_ready<my_component>(self_id));
 }

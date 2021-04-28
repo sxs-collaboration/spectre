@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -161,42 +162,39 @@ struct use_stored_double {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+      db::DataBox<DbTags>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    ++number_of_calls_to_use_stored_double_is_ready;
+    // [check_mutable_cache_item_is_ready]
+    auto& this_proxy = Parallel::get_parallel_component<
+        UseMutatedCacheComponent<Metavariables>>(cache);
+    if (not ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
+            cache,
+            [&this_proxy](const std::vector<double>& VectorOfDoubles)
+                -> std::unique_ptr<Parallel::Callback> {
+              return VectorOfDoubles.empty()
+                         ? std::unique_ptr<Parallel::Callback>(
+                               new Parallel::PerformAlgorithmCallback(
+                                   this_proxy))
+                         : std::unique_ptr<Parallel::Callback>{};
+            })) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+    // [check_mutable_cache_item_is_ready]
+
     ++number_of_calls_to_use_stored_double_apply;
     const std::vector<double> expected_result{42.0};
     // [retrieve_mutable_cache_item]
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<Tags::VectorOfDoubles>(cache) ==
                              expected_result);
     // [retrieve_mutable_cache_item]
-    return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), true);
+    return {std::move(box), Parallel::AlgorithmExecution::Pause};
   }
-
-  // [check_mutable_cache_item_is_ready]
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& /*box*/,
-                       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                       Parallel::GlobalCache<Metavariables>& cache,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    ++number_of_calls_to_use_stored_double_is_ready;
-    auto& this_proxy = Parallel::get_parallel_component<
-        UseMutatedCacheComponent<Metavariables>>(cache);
-    return ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
-        cache,
-        [&this_proxy](const std::vector<double>& VectorOfDoubles)
-            -> std::unique_ptr<Parallel::Callback> {
-          return VectorOfDoubles.empty()
-                     ? std::unique_ptr<Parallel::Callback>(
-                           new Parallel::PerformAlgorithmCallback(this_proxy))
-                     : std::unique_ptr<Parallel::Callback>{};
-        });
-  }
-  // [check_mutable_cache_item_is_ready]
 };
 }  // namespace Actions
 
@@ -208,10 +206,8 @@ struct use_stored_double {
 //    simple_actions, and then tests that the value in the GlobalCache
 //    is correct, using simple_actions.
 //
-// 2) UseMutatedCacheComponent has a single iterable_action whose
-//    is_ready function checks the size of the value in the
-//    GlobalCache.  If the size is correct, then its apply function
-//    verifies that the value is correct.
+// 2) UseMutatedCacheComponent has a single iterable_action that waits
+//    for the size of the value in the GlobalCache to be correct.
 //
 // 3) CheckAndUseMutatedCacheComponent has a simple_action that checks
 //    the size of the value in the GlobalCache, and then if the size

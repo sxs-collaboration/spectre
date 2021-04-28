@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Importers/Tags.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -33,17 +34,22 @@ struct ReceiveVolumeData {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
     auto& inbox =
         tuples::get<Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
             inboxes);
     // Using `0` for the temporal ID since we only read the volume data once, so
     // there's no need to keep track of the temporal ID.
     const auto received_data = inbox.find(0_st);
+    if (received_data == inbox.end()) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     auto& element_data = received_data->second;
     tmpl::for_each<FieldTagsList>([&box, &element_data](auto tag_v) noexcept {
       using tag = tmpl::type_from<decltype(tag_v)>;
@@ -55,19 +61,7 @@ struct ReceiveVolumeData {
           });
     });
     inbox.erase(received_data);
-    return {std::move(box)};
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& /*box*/,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox =
-        tuples::get<Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
-            inboxes);
-    return inbox.find(0_st) != inbox.end();
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 

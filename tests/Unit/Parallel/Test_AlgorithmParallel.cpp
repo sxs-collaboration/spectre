@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
@@ -143,17 +144,22 @@ struct CountReceives {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& inboxes,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+      db::DataBox<DbTags>& box,
+      tuples::TaggedTuple<InboxTags...>& inboxes,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
                                  SingletonParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 70);
+    if (int_receives.size() != 70) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     for (const auto& p : int_receives) {
       SPECTRE_PARALLEL_REQUIRE(p.second.size() == 1);
       SPECTRE_PARALLEL_REQUIRE(*(p.second.begin()) % 3 == 0);
@@ -175,22 +181,9 @@ struct CountReceives {
     }
     // [call_on_indexed_array]
     // [return_with_termination]
-    return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), true);
+    return {std::move(box), Parallel::AlgorithmExecution::Pause};
     // [return_with_termination]
   }
-
-  // [int_receive_tag_is_ready]
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
-    return int_receives.size() == 70;
-  }
-  // [int_receive_tag_is_ready]
 };
 }  // namespace SingletonActions
 

@@ -127,8 +127,8 @@ out of order.  This means that if action B must be executed after
 action A on a given element of a parallel component, the programmer
 must ensure that either action B is called after the completion of
 action A (i.e. it is not sufficient that action B is invoked after
-action A is invoked), or that a `is_ready` function of action B only
-succeeds if action A has been completed.
+action A is invoked), or that action B checks that action A has
+completed before running.
 
 > When a chare method executes, it may create method invocations for
 > other chares. The Charm Runtime System (RTS) locates the PE where

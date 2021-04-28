@@ -271,21 +271,23 @@ bool tag_is_retrievable(
       .template tag_is_retrievable<Tag>();
 }
 
-/// Runs the next action in the current phase on the `array_index`th element
-/// of the parallel component `Component`.
+/// Invoke the next action in the ActionList on the parallel component
+/// `Component` on the component labeled by `array_index`, failing if it was
+/// not ready.
 template <typename Component, typename Metavariables>
 void next_action(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
                  const typename Component::array_index& array_index) noexcept {
   runner->template next_action<Component>(array_index);
 }
 
-/// Runs the `is_ready` function and returns the result for the next action in
-/// the current phase on the `array_index`th element of the parallel component
-/// `Component`.
+/// Invoke the next action in the ActionList on the parallel component
+/// `Component` on the component labeled by `array_index`, returning whether
+/// it was ready.
 template <typename Component, typename Metavariables>
-bool is_ready(MockRuntimeSystem<Metavariables>& runner,
-              const typename Component::array_index& array_index) noexcept {
-  return runner.template is_ready<Component>(array_index);
+bool next_action_if_ready(
+    const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
+    const typename Component::array_index& array_index) noexcept {
+  return runner->template next_action_if_ready<Component>(array_index);
 }
 
 /// Runs the simple action `Action` on the `array_index`th element of the

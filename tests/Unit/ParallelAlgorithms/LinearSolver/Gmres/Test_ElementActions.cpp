@@ -155,7 +155,8 @@ void test_element_actions() {
         set_tag(basis_history_tag{},
                 std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                                  DenseVector<double>(3, 1.5)});
-        REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+        REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+            make_not_null(&runner), 0));
         auto& inbox = ActionTesting::get_inbox_tag<
             element_array, LinearSolver::gmres::detail::Tags::
                                InitialOrthogonalization<DummyOptionsGroup>>(
@@ -164,7 +165,6 @@ void test_element_actions() {
         CAPTURE(has_converged);
         inbox[iteration_id] =
             std::make_tuple(residual_magnitude, has_converged);
-        REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
         CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
                               DenseVector<double>(3, 0.5));
@@ -202,7 +202,8 @@ void test_element_actions() {
             LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
                 fields_tag, DummyOptionsGroup, Preconditioned,
                 DummyOptionsGroup>>(0);
-        REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+        REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+            make_not_null(&runner), 0));
         auto& inbox = ActionTesting::get_inbox_tag<
             element_array, LinearSolver::gmres::detail::Tags::
                                FinalOrthogonalization<DummyOptionsGroup>>(
@@ -213,7 +214,6 @@ void test_element_actions() {
         inbox[iteration_id] =
             std::make_tuple(normalization, minres, has_converged);
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-        REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
         CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
                               DenseVector<double>(3, 0.5));
         CHECK(get_tag(basis_history_tag{}).size() == 3);

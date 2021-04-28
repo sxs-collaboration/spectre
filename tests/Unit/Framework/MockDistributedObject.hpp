@@ -485,11 +485,13 @@ class MockDistributedObject {
   /// phase.
   size_t get_next_action_index() const noexcept { return algorithm_step_; }
 
-  /// Invoke the next action in the action list for the current phase.
+  /// Invoke the next action in the action list for the current phase,
+  /// failing if it was not ready.
   void next_action() noexcept;
 
-  /// Evaluates the `is_ready` method on the next action and returns the result.
-  bool is_ready() noexcept;
+  /// Invoke the next action in the action list for the current phase,
+  /// returning whether the action was ready.
+  bool next_action_if_ready() noexcept;
 
   /// Defines the methods used for invoking threaded and simple actions. Since
   /// the two cases are so similar we use a macro to reduce the amount of
@@ -704,7 +706,7 @@ class MockDistributedObject {
   }
 
   template <typename ThisAction, typename ActionList, typename DbTags>
-  void invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
+  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
     auto action_return = ThisAction::apply(
         my_box, *inboxes_, *global_cache_, std::as_const(array_index_),
         ActionList{}, std::add_pointer_t<Component>{});
@@ -744,7 +746,9 @@ class MockDistributedObject {
           case Parallel::AlgorithmExecution::Pause:
             terminate_ = true;
             break;
-          default:
+          case Parallel::AlgorithmExecution::Retry:
+            return false;
+       default:
             break;
         }
       }
@@ -752,13 +756,11 @@ class MockDistributedObject {
     if constexpr (tuple_size >= 3_st) {
       algorithm_step_ = std::get<2>(action_return);
     }
+    return true;
   }
 
   template <typename PhaseDepActions, size_t... Is>
-  void next_action_impl(std::index_sequence<Is...> /*meta*/) noexcept;
-
-  template <typename PhaseDepActions, size_t... Is>
-  bool is_ready_impl(std::index_sequence<Is...> /*meta*/) noexcept;
+  bool next_action_impl(std::index_sequence<Is...> /*meta*/) noexcept;
 
   template <typename Tag, typename ThisVariantBox, typename Type,
             typename... Variants,
@@ -899,15 +901,25 @@ class MockDistributedObject {
 
 template <typename Component>
 void MockDistributedObject<Component>::next_action() noexcept {
+  if (not next_action_if_ready()) {
+    ERROR("Attempted to run an action, but it returned "
+          "AlgorithmExecution::Retry.  Actions that are expected to retry "
+          "can be tested with next_action_if_ready().");
+  }
+}
+
+template <typename Component>
+bool MockDistributedObject<Component>::next_action_if_ready() noexcept {
   bool found_matching_phase = false;
+  bool was_ready = false;
   const auto invoke_for_phase =
-      [this, &found_matching_phase](auto phase_dep_v) noexcept {
+      [this, &found_matching_phase, &was_ready](auto phase_dep_v) noexcept {
         using PhaseDep = typename decltype(phase_dep_v)::type;
         constexpr PhaseType phase = PhaseDep::phase;
         using actions_list = typename PhaseDep::action_list;
         if (phase_ == phase) {
           found_matching_phase = true;
-          this->template next_action_impl<PhaseDep>(
+          was_ready = this->template next_action_impl<PhaseDep>(
               std::make_index_sequence<tmpl::size<actions_list>::value>{});
         }
       };
@@ -916,11 +928,12 @@ void MockDistributedObject<Component>::next_action() noexcept {
     ERROR("Could not find any actions in the current phase for the component '"
           << pretty_type::short_name<Component>() << "'.");
   }
+  return was_ready;
 }
 
 template <typename Component>
 template <typename PhaseDepActions, size_t... Is>
-void MockDistributedObject<Component>::next_action_impl(
+bool MockDistributedObject<Component>::next_action_impl(
     std::index_sequence<Is...> /*meta*/) noexcept {
   if (UNLIKELY(performing_action_)) {
     ERROR(
@@ -936,7 +949,9 @@ void MockDistributedObject<Component>::next_action_impl(
   // Keep track of if we already evaluated an action since we want `next_action`
   // to only evaluate one per call.
   bool already_did_an_action = false;
-  const auto helper = [this, &already_did_an_action](auto iteration) noexcept {
+  bool was_ready = true;
+  const auto helper = [this, &already_did_an_action,
+                       &was_ready](auto iteration) noexcept {
     constexpr size_t iter = decltype(iteration)::value;
     if (already_did_an_action or algorithm_step_ != iter) {
       return;
@@ -944,21 +959,6 @@ void MockDistributedObject<Component>::next_action_impl(
 
     using actions_list = typename PhaseDepActions::action_list;
     using this_action = tmpl::at_c<actions_list, iter>;
-    const auto check_if_ready = [this](auto action,
-                                       const auto& check_local_box) noexcept {
-      if constexpr (Parallel::Algorithm_detail::is_is_ready_callable_t<
-                    decltype(action),
-                    std::decay_t<decltype(check_local_box)>,
-                    tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                    Parallel::GlobalCache<metavariables>&,
-                    array_index>{}) {
-        return decltype(action)::is_ready(
-            check_local_box, std::as_const(*inboxes_), *global_cache_,
-            std::as_const(array_index_));
-      } else {
-        return true;
-      }
-    };
 
     constexpr size_t phase_index =
         tmpl::index_of<phase_dependent_action_lists, PhaseDepActions>::value;
@@ -973,7 +973,7 @@ void MockDistributedObject<Component>::next_action_impl(
     bool box_found = false;
     tmpl::for_each<potential_databox_indices>(
         [this, &box_found,
-         &check_if_ready](auto potential_databox_index_v) noexcept {
+         &was_ready](auto potential_databox_index_v) noexcept {
           constexpr size_t potential_databox_index =
               decltype(potential_databox_index_v)::type::value;
           using this_databox =
@@ -984,15 +984,12 @@ void MockDistributedObject<Component>::next_action_impl(
                       tmpl::index_of<variant_boxes, this_databox>::value)) {
             box_found = true;
             auto& box = boost::get<this_databox>(box_);
-            if (not check_if_ready(this_action{}, box)) {
-              ERROR("Tried to invoke the action '"
-                    << pretty_type::get_name<this_action>()
-                    << "' but have not received all the "
-                       "necessary data.");
-            }
             performing_action_ = true;
             ++algorithm_step_;
-            invoke_iterable_action<this_action, actions_list>(box);
+            if (not invoke_iterable_action<this_action, actions_list>(box)) {
+              was_ready = false;
+              --algorithm_step_;
+            }
           }
         });
     if (not box_found) {
@@ -1015,99 +1012,7 @@ void MockDistributedObject<Component>::next_action_impl(
   // Silence compiler warning when there are no Actions.
   (void)helper;
   EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
-}
-
-template <typename Component>
-bool MockDistributedObject<Component>::is_ready() noexcept {
-  bool action_is_ready = false;
-  bool found_matching_phase = false;
-  const auto invoke_for_phase = [this, &action_is_ready, &found_matching_phase](
-                                    auto phase_dep_v) noexcept {
-    using PhaseDep = typename decltype(phase_dep_v)::type;
-    constexpr PhaseType phase = PhaseDep::phase;
-    using actions_list = typename PhaseDep::action_list;
-    if (phase_ == phase) {
-      found_matching_phase = true;
-      action_is_ready = this->template is_ready_impl<PhaseDep>(
-          std::make_index_sequence<tmpl::size<actions_list>::value>{});
-    }
-  };
-  tmpl::for_each<phase_dependent_action_lists>(invoke_for_phase);
-  if (not found_matching_phase) {
-    ERROR("Could not find any actions in the current phase for the component '"
-          << pretty_type::short_name<Component>() << "'.");
-  }
-  return action_is_ready;
-}
-
-template <typename Component>
-template <typename PhaseDepActions, size_t... Is>
-bool MockDistributedObject<Component>::is_ready_impl(
-    std::index_sequence<Is...> /*meta*/) noexcept {
-  bool next_action_is_ready = false;
-  const auto helper = [this, &array_index = array_index_, &inboxes = *inboxes_,
-                       &global_cache = global_cache_,
-                       &next_action_is_ready](auto iteration) noexcept {
-    constexpr size_t iter = decltype(iteration)::value;
-    using actions_list = typename PhaseDepActions::action_list;
-    using this_action = tmpl::at_c<actions_list, iter>;
-
-    constexpr size_t phase_index =
-        tmpl::index_of<phase_dependent_action_lists, PhaseDepActions>::value;
-    using databox_phase_type = tmpl::at_c<databox_phase_types, phase_index>;
-    using databox_types_this_phase = typename databox_phase_type::databox_types;
-    using this_databox =
-        tmpl::at_c<databox_types_this_phase,
-                   iter == 0 ? tmpl::size<databox_types_this_phase>::value - 1
-                             : iter>;
-    if (iter != algorithm_step_) {
-      return;
-    }
-
-    this_databox* box_ptr{};
-    try {
-      box_ptr = &boost::get<this_databox>(box_);
-    } catch (std::exception& e) {
-      ERROR(
-          "\nFailed to retrieve Databox in take_next_action:\nCaught "
-          "exception: '"
-          << e.what() << "'\nDataBox type: '"
-          << pretty_type::get_name<this_databox>() << "'\nIteration: " << iter
-          << "\nAction: '" << pretty_type::get_name<this_action>()
-          << "'\nBoost::Variant id: " << box_.which()
-          << "\nBoost::Variant type is: '" << type_of_current_state(box_)
-          << "'\n\n");
-    }
-    this_databox& box = *box_ptr;
-
-    // `check_if_ready` calls the `is_ready` static method on the action
-    // `action` if it has one, otherwise returns true. The first argument is the
-    // ```
-    // Algorithm_detail::is_is_ready_callable_t<action, databox,
-    //         tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-    //         Parallel::GlobalCache<metavariables>, array_index>{}
-    // ```
-    const auto check_if_ready = make_overloader(
-        [&box, &array_index, &global_cache, &inboxes](
-            std::true_type /*has_is_ready*/, auto t) {
-          return decltype(t)::is_ready(std::as_const(box),
-                                       std::as_const(inboxes), *global_cache,
-                                       std::as_const(array_index));
-        },
-        [](std::false_type /*has_is_ready*/, auto /*meta*/) { return true; });
-
-    next_action_is_ready =
-        check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<
-                           this_action, this_databox,
-                           tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                           Parallel::GlobalCache<metavariables>,
-                           typename Component::array_index>{},
-                       this_action{});
-  };
-  // Silence compiler warning when there are no Actions.
-  (void)helper;
-  EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
-  return next_action_is_ready;
+  return was_ready;
 }
 
 template <typename Component>

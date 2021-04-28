@@ -17,6 +17,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -112,15 +113,14 @@ struct ChangeSlabSize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& time_step_id = db::get<Tags::TimeStepId>(box);
-
     if (not time_step_id.is_at_slab_boundary()) {
-      return std::forward_as_tuple(std::move(box));
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
 
     auto& message_count_inbox =
@@ -128,12 +128,39 @@ struct ChangeSlabSize {
             inboxes);
     if (message_count_inbox.empty() or
         message_count_inbox.begin()->first != time_step_id.slab_number()) {
-      return std::forward_as_tuple(std::move(box));
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
-    message_count_inbox.erase(message_count_inbox.begin());
 
     auto& new_slab_size_inbox =
         tuples::get<ChangeSlabSize_detail::NewSlabSizeInbox>(inboxes);
+
+    const auto slab_number = time_step_id.slab_number();
+    const auto number_of_changes = [&slab_number](
+                                       const auto& inbox) noexcept->size_t {
+      if (inbox.empty()) {
+        return 0;
+      }
+      if (inbox.begin()->first == slab_number) {
+        return inbox.begin()->second.size();
+      }
+      ASSERT(inbox.begin()->first >= slab_number,
+             "Received data for a change at slab " << inbox.begin()->first
+             << " but it is already slab " << slab_number);
+      return 0;
+    };
+
+    const size_t expected_messages = number_of_changes(message_count_inbox);
+    const size_t received_messages = number_of_changes(new_slab_size_inbox);
+    ASSERT(expected_messages >= received_messages,
+           "Received " << received_messages << " size change messages at slab "
+                       << slab_number << ", but only expected "
+                       << expected_messages);
+    if (expected_messages != received_messages) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
+    message_count_inbox.erase(message_count_inbox.begin());
+
     const double new_slab_size =
         *alg::min_element(new_slab_size_inbox.begin()->second);
     new_slab_size_inbox.erase(new_slab_size_inbox.begin());
@@ -145,7 +172,7 @@ struct ChangeSlabSize {
     // is in an unusual state.
     if (not time_stepper.can_change_step_size(
             time_step_id, db::get<Tags::HistoryEvolvedVariables<>>(box))) {
-      return std::forward_as_tuple(std::move(box));
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
 
     const auto& current_step = db::get<Tags::TimeStep>(box);
@@ -180,49 +207,7 @@ struct ChangeSlabSize {
           *local_time_step_id = new_time_step_id;
         });
 
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    const auto& time_step_id = db::get<Tags::TimeStepId>(box);
-    if (not time_step_id.is_at_slab_boundary()) {
-      return true;
-    }
-
-    const auto& message_count_inbox =
-        tuples::get<ChangeSlabSize_detail::NumberOfExpectedMessagesInbox>(
-            inboxes);
-    const auto& new_slab_size_inbox =
-        tuples::get<ChangeSlabSize_detail::NewSlabSizeInbox>(inboxes);
-
-    const auto slab_number = time_step_id.slab_number();
-    const auto number_of_changes = [&slab_number](
-                                       const auto& inbox) noexcept->size_t {
-      if (inbox.empty()) {
-        return 0;
-      }
-      if (inbox.begin()->first == slab_number) {
-        return inbox.begin()->second.size();
-      }
-      ASSERT(inbox.begin()->first >= slab_number,
-             "Received data for a change at slab " << inbox.begin()->first
-             << " but it is already slab " << slab_number);
-      return 0;
-    };
-
-    const size_t expected_messages = number_of_changes(message_count_inbox);
-    const size_t received_messages = number_of_changes(new_slab_size_inbox);
-    ASSERT(expected_messages >= received_messages,
-           "Received " << received_messages << " size change messages at slab "
-                       << slab_number << ", but only expected "
-                       << expected_messages);
-    return expected_messages == received_messages;
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 }  // namespace Actions

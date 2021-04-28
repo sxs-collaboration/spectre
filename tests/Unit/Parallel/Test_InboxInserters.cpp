@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -96,24 +97,19 @@ struct ReceiveMap {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        const tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    if (get<Tags::MapTag>(inboxes).at(1_st).size() != 1) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     db::mutate<Tags::MapCounter>(make_not_null(&box), [
     ](const gsl::not_null<size_t*> map_counter) noexcept { (*map_counter)++; });
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename Metavariables, typename... InboxTags,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return get<Tags::MapTag>(inboxes).at(1_st).size() == 1;
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 
@@ -143,26 +139,21 @@ struct ReceiveMemberInsert {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        const tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    if (get<Tags::MemberInsertTag>(inboxes).at(1_st).size() != 1) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     db::mutate<Tags::MemberInsertCounter>(make_not_null(&box), [
     ](const gsl::not_null<size_t*> member_insert_counter) noexcept {
       (*member_insert_counter)++;
     });
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename Metavariables, typename... InboxTags,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return get<Tags::MemberInsertTag>(inboxes).at(1_st).size() == 1;
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 
@@ -192,26 +183,21 @@ struct ReceiveValue {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        const tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    if (get<Tags::ValueTag>(inboxes).count(1_st) != 1) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     db::mutate<Tags::ValueCounter>(make_not_null(&box), [
     ](const gsl::not_null<size_t*> value_counter) noexcept {
       (*value_counter)++;
     });
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename Metavariables, typename... InboxTags,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return get<Tags::ValueTag>(inboxes).count(1_st) == 1;
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 
@@ -241,26 +227,21 @@ struct ReceivePushback {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        const tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    if (get<Tags::PushbackTag>(inboxes).at(1_st).size() != 1) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     db::mutate<Tags::PushbackCounter>(make_not_null(&box), [
     ](const gsl::not_null<size_t*> pushback_counter) noexcept {
       (*pushback_counter)++;
     });
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename Metavariables, typename... InboxTags,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return get<Tags::PushbackTag>(inboxes).at(1_st).size() == 1;
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 }  // namespace Actions
@@ -303,7 +284,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
                            Metavariables::Phase::Testing);
 
   // Check map insertion
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 0);
   CHECK(ActionTesting::get_databox_tag<component, Tags::MapCounter>(runner,
                                                                     0) == 0);
@@ -314,7 +294,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
   CHECK(
       ActionTesting::get_inbox_tag<component, Tags::MapTag>(runner, 0).at(1).at(
           10) == 23);
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 1);
   CHECK(ActionTesting::get_databox_tag<component, Tags::MapCounter>(runner,
                                                                     0) == 1);
@@ -326,7 +305,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
       .clear();
 
   // Check member insertion
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 2);
   CHECK(ActionTesting::get_databox_tag<component, Tags::MemberInsertCounter>(
             runner, 0) == 0);
@@ -339,7 +317,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
       ActionTesting::get_inbox_tag<component, Tags::MemberInsertTag>(runner, 0)
           .at(1)
           .count(23) == 1);
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 3);
   CHECK(ActionTesting::get_databox_tag<component, Tags::MemberInsertCounter>(
             runner, 0) == 1);
@@ -351,14 +328,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
       .clear();
 
   // Check value insertion
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 4);
   CHECK(ActionTesting::get_databox_tag<component, Tags::ValueCounter>(runner,
                                                                       0) == 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK(ActionTesting::get_inbox_tag<component, Tags::ValueTag>(runner, 0).at(
             1) == 23);
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 5);
   CHECK(ActionTesting::get_databox_tag<component, Tags::ValueCounter>(runner,
                                                                       0) == 1);
@@ -370,7 +345,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
       .clear();
 
   // Check pushback insertion
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 6);
   CHECK(ActionTesting::get_databox_tag<component, Tags::PushbackCounter>(
             runner, 0) == 0);
@@ -381,7 +355,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
   CHECK(
       ActionTesting::get_inbox_tag<component, Tags::PushbackTag>(runner, 0).at(
           1)[0] == 23);
-  CHECK(ActionTesting::is_ready<component>(runner, 0));
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 7);
   CHECK(ActionTesting::get_databox_tag<component, Tags::PushbackCounter>(
             runner, 0) == 1);

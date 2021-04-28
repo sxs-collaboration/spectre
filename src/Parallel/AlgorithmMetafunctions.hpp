@@ -31,6 +31,11 @@ class GlobalCache;
 enum class AlgorithmExecution {
   /// Leave the algorithm termination flag in its current state.
   Continue,
+  /// Temporarily stop executing iterable actions, but try the same
+  /// action again after receiving data from other distributed
+  /// objects.  If the returned tuple has a third element, it must be
+  /// std::numeric_limits<size_t>::max().
+  Retry,
   /// Stop the execution of iterable actions, but allow entry methods
   /// (communication) to explicitly request restarting the execution.
   Pause,

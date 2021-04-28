@@ -91,8 +91,8 @@ constexpr bool has_initialization_phase_v =
 /// \ingroup TestingFrameworkGroup
 /// A class that mocks the infrastructure needed to run actions.  It simulates
 /// message passing using the inbox infrastructure and handles most of the
-/// arguments to the apply and is_ready action methods. This mocks the Charm++
-/// runtime system as well as the layer built on top of it as part of SpECTRE.
+/// arguments to the apply method. This mocks the Charm++ runtime system as
+/// well as the layer built on top of it as part of SpECTRE.
 template <typename Metavariables>
 class MockRuntimeSystem {
  public:
@@ -652,18 +652,23 @@ class MockRuntimeSystem {
   }
 
   /// Invoke the next action in the ActionList on the parallel component
-  /// `Component` on the component labeled by `array_index`.
+  /// `Component` on the component labeled by `array_index`, failing if it was
+  /// not ready.
   template <typename Component>
   void next_action(
       const typename Component::array_index& array_index) noexcept {
     mock_distributed_objects<Component>().at(array_index).next_action();
   }
 
-  /// Call is_ready on the next action in the action list as if on the portion
-  /// of Component labeled by array_index.
+  /// Invoke the next action in the ActionList on the parallel component
+  /// `Component` on the component labeled by `array_index`, returning whether
+  /// it was ready.
   template <typename Component>
-  bool is_ready(const typename Component::array_index& array_index) noexcept {
-    return mock_distributed_objects<Component>().at(array_index).is_ready();
+  bool next_action_if_ready(
+      const typename Component::array_index& array_index) noexcept {
+    return mock_distributed_objects<Component>()
+        .at(array_index)
+        .next_action_if_ready();
   }
 
   // @{

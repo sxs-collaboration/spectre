@@ -30,6 +30,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -88,34 +89,12 @@ struct ApplyBoundaryCorrections {
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    constexpr size_t volume_dim = Metavariables::system::volume_dim;
-
-    if (UNLIKELY(db::get<domain::Tags::Element<volume_dim>>(box)
-                     .number_of_neighbors() == 0)) {
-      // We have no neighbors, yay!
-      return {std::move(box)};
-    }
-
-    if constexpr (Metavariables::local_time_stepping) {
-      receive_local_time_stepping(make_not_null(&box), make_not_null(&inboxes));
-    } else {
-      receive_global_time_stepping(make_not_null(&box),
-                                   make_not_null(&inboxes));
-    }
-    complete_time_step(make_not_null(&box));
-    return {std::move(box)};
-  }
-
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept;
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept;
 
  private:
   template <typename DbTagsList, typename... InboxTags>
@@ -618,18 +597,21 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 }
 
 template <typename Metavariables>
-template <typename DbTags, typename... InboxTags, typename ArrayIndex>
-bool ApplyBoundaryCorrections<Metavariables>::is_ready(
-    const db::DataBox<DbTags>& box,
-    const tuples::TaggedTuple<InboxTags...>& inboxes,
+template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+          typename ActionList, typename ParallelComponent>
+std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+ApplyBoundaryCorrections<Metavariables>::apply(
+    db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-    const ArrayIndex& /*array_index*/) noexcept {
-  static constexpr size_t volume_dim = Metavariables::volume_dim;
+    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+    const ParallelComponent* const /*meta*/) noexcept {
+  constexpr size_t volume_dim = Metavariables::system::volume_dim;
   const Element<volume_dim>& element =
       db::get<domain::Tags::Element<volume_dim>>(box);
 
   if (UNLIKELY(element.number_of_neighbors() == 0)) {
-    return true;
+    // We have no neighbors, yay!
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 
   if constexpr (not Metavariables::local_time_stepping) {
@@ -639,7 +621,7 @@ bool ApplyBoundaryCorrections<Metavariables>::is_ready(
             Metavariables::volume_dim>>(inboxes);
     const auto received_temporal_id_and_data = inbox.find(temporal_id);
     if (received_temporal_id_and_data == inbox.end()) {
-      return false;
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
     const auto& received_neighbor_data = received_temporal_id_and_data->second;
     for (const auto& [direction, neighbors] : element.neighbors()) {
@@ -647,10 +629,12 @@ bool ApplyBoundaryCorrections<Metavariables>::is_ready(
         const auto neighbor_received =
             received_neighbor_data.find(std::pair{direction, neighbor});
         if (neighbor_received == received_neighbor_data.end()) {
-          return false;
+          return {std::move(box), Parallel::AlgorithmExecution::Retry};
         }
       }
     }
+
+    receive_global_time_stepping(make_not_null(&box), make_not_null(&inboxes));
   } else {
     const auto& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -673,16 +657,20 @@ bool ApplyBoundaryCorrections<Metavariables>::is_ready(
       while (next_temporal_id < local_next_temporal_id) {
         const auto temporal_received = inbox.find(next_temporal_id);
         if (temporal_received == inbox.end()) {
-          return false;
+          return {std::move(box), Parallel::AlgorithmExecution::Retry};
         }
         const auto mortar_received = temporal_received->second.find(mortar_id);
         if (mortar_received == temporal_received->second.end()) {
-          return false;
+          return {std::move(box), Parallel::AlgorithmExecution::Retry};
         }
         next_temporal_id = std::get<3>(mortar_received->second);
       }
     }
+
+    receive_local_time_stepping(make_not_null(&box), make_not_null(&inboxes));
   }
-  return true;
+
+  complete_time_step(make_not_null(&box));
+  return {std::move(box), Parallel::AlgorithmExecution::Continue};
 }
 }  // namespace evolution::dg::Actions

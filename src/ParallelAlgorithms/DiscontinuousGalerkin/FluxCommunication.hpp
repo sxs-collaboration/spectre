@@ -18,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -181,16 +182,23 @@ struct ReceiveDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    if (not has_received_from_all_mortars<fluxes_inbox_tag>(
+            db::get<temporal_id_tag>(box),
+            get<domain::Tags::Element<volume_dim>>(box), inboxes)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     if (UNLIKELY(
             get<domain::Tags::Element<volume_dim>>(box).number_of_neighbors() ==
             0)) {
-      return {std::move(box)};
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
+
     auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
     const auto& temporal_id = get<temporal_id_tag>(box);
     const auto temporal_received = inbox.find(temporal_id);
@@ -207,19 +215,7 @@ struct ReceiveDataForFluxes {
           }
         });
     inbox.erase(temporal_received);
-    return {std::move(box)};
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return has_received_from_all_mortars<fluxes_inbox_tag>(
-        db::get<temporal_id_tag>(box),
-        get<domain::Tags::Element<volume_dim>>(box), inboxes);
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 

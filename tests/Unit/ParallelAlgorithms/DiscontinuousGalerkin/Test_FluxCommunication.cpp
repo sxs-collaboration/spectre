@@ -52,7 +52,6 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -151,22 +150,16 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
+              Actions::SetupDataBox,
+              dg::Actions::InitializeMortars<DgBoundaryScheme<Dim>, false>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
-              // `InitializeMortars` needs to be in this phase and also needs
-              // `RemoveOptionsAndTerminatePhase` because otherwise the action
-              // testing framework can't compile `is_ready` for
-              // `ReceiveDataForFluxes`. See
-              // https://github.com/sxs-collaboration/spectre/issues/1908
-              Actions::SetupDataBox,
-              dg::Actions::InitializeMortars<DgBoundaryScheme<Dim>, false>,
               dg::Actions::CollectDataForFluxes<
                   DgBoundaryScheme<Dim>, domain::Tags::InternalDirections<Dim>>,
               dg::Actions::SendDataForFluxes<DgBoundaryScheme<Dim>>,
-              dg::Actions::ReceiveDataForFluxes<DgBoundaryScheme<Dim>>,
-              Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+              dg::Actions::ReceiveDataForFluxes<DgBoundaryScheme<Dim>>>>>;
 };
 
 template <size_t Dim>
@@ -240,6 +233,11 @@ void test_no_refinement() noexcept {
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, self_id,
         {initial_extents, time, mesh, element, std::move(map)});
+
+    // SetupDataBox
+    ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
+    // InitializeMortars
+    ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   }
 
   const auto emplace_neighbor =
@@ -252,6 +250,11 @@ void test_no_refinement() noexcept {
         ActionTesting::emplace_component_and_initialize<element_array>(
             &runner, id,
             {initial_extents, time, mesh, element, std::move(map)});
+
+        // SetupDataBox
+        ActionTesting::next_action<element_array>(make_not_null(&runner), id);
+        // InitializeMortars
+        ActionTesting::next_action<element_array>(make_not_null(&runner), id);
       };
 
   emplace_neighbor(south_id, Direction<2>::lower_eta(), {});
@@ -266,10 +269,6 @@ void test_no_refinement() noexcept {
     return ActionTesting::get_databox_tag<element_array, tag>(runner, self_id);
   };
 
-  // SetupDataBox on self
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
-  // InitializeMortars on self
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // CollectDataForFluxes on self
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // SendDataForFluxes on self
@@ -299,13 +298,8 @@ void test_no_refinement() noexcept {
 
   // Now check ReceiveDataForFluxes
   for (auto mortar_id : neighbor_mortar_ids) {
-    CHECK_FALSE(ActionTesting::is_ready<element_array>(runner, self_id));
-    // SetupDataBox on neighbor
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              mortar_id.second);
-    // InitializeMortars on neighbor
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              mortar_id.second);
+    REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+        make_not_null(&runner), self_id));
     // CollectDataForFluxes on neighbor
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               mortar_id.second);
@@ -313,7 +307,6 @@ void test_no_refinement() noexcept {
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               mortar_id.second);
   }
-  CHECK(ActionTesting::is_ready<element_array>(runner, self_id));
 
   // ReceiveDataForFluxes on self
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
@@ -369,13 +362,14 @@ void test_no_neighbors() noexcept {
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, self_id, {initial_extents, time, mesh, element, std::move(map)});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
 
   // SetupDataBox
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // InitializeMortars
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
+
   // CollectDataForFluxes
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // SendDataForFluxes
@@ -386,8 +380,6 @@ void test_no_neighbors() noexcept {
             .empty());
   CHECK(runner.template nonempty_inboxes<element_array, fluxes_inbox_tag>()
             .empty());
-
-  CHECK(ActionTesting::is_ready<element_array>(runner, self_id));
 
   // ReceiveDataForFluxes
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
@@ -443,6 +435,10 @@ void test_p_refinement() noexcept {
        // The following arguments are unused on the neighbor element, so their
        // values are irrelevant
        element, ElementMap<3, Frame::Inertial>{}});
+  // SetupDataBox
+  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
+  // InitializeMortars
+  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
@@ -451,10 +447,6 @@ void test_p_refinement() noexcept {
     return ActionTesting::get_databox_tag<element_array, tag>(runner, self_id);
   };
 
-  // SetupDataBox
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
-  // InitializeMortars
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // CollectDataForFluxes
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // SendDataForFluxes
@@ -539,6 +531,10 @@ void test_h_refinement(const Spectral::MortarSize& mortar_size) {
        // The following arguments are unused on the neighbor element, so their
        // values are irrelevant
        element, ElementMap<2, Frame::Inertial>{}});
+  // SetupDataBox
+  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
+  // InitializeMortars
+  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   runner.set_phase(metavariables::Phase::Testing);
 
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
@@ -546,10 +542,6 @@ void test_h_refinement(const Spectral::MortarSize& mortar_size) {
     return ActionTesting::get_databox_tag<element_array, tag>(runner, self_id);
   };
 
-  // SetupDataBox
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
-  // InitializeMortars
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // CollectDataForFluxes
   ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
   // SendDataForFluxes
