@@ -165,6 +165,32 @@ decltype(auto) magnitude(const std::array<T, 3>& a) noexcept {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 //@}
+//@{
+/// \ingroup UtilitiesGroup
+/// \brief Dot product between two arrays
+///
+/// \details This also works elementwise if T is a container and R is a float or
+/// the other way round. The return type will always be the same as the return
+/// type of the multiplication which may be a blaze expression template.
+
+template <typename T, typename R>
+decltype(auto) dot(const std::array<T, 1>& first,
+                   const std::array<R, 1>& second) {
+  return first[0] * second[0];
+}
+
+template <typename T, typename R>
+decltype(auto) dot(const std::array<T, 2>& first,
+                   const std::array<R, 2>& second) {
+  return first[0] * second[0] + first[1] * second[1];
+}
+
+template <typename T, typename R>
+decltype(auto) dot(const std::array<T, 3>& first,
+                   const std::array<R, 3>& second) {
+  return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
+}
+//@}
 
 namespace std_array_helpers_detail {
 template <typename T, size_t Dim, typename F, size_t... Indices>
