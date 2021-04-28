@@ -173,6 +173,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Christoffel",
       raise_or_lower_first_index(expected_spacetime_christoffel_first_kind,
                                  inverse_spacetime_metric);
 
+  // Compute Christoffel symbol of the 2nd kind in two different ways
+  // (the direct one, which we are testing here, and the one already
+  // tested independently, which uses christoffel_first_kind) and make
+  // sure we get the same result.
+  const auto spatial_christoffel_second_kind_test =
+      gr::christoffel_second_kind(deriv_spatial_metric, inverse_spatial_metric);
+  CHECK_ITERABLE_APPROX(expected_spatial_christoffel_second_kind,
+                        spatial_christoffel_second_kind_test);
+  const auto spacetime_christoffel_second_kind_test =
+      gr::christoffel_second_kind(derivatives_of_spacetime_metric,
+                                  inverse_spacetime_metric);
+  CHECK_ITERABLE_APPROX(expected_spacetime_christoffel_second_kind,
+                        spacetime_christoffel_second_kind_test);
+
   const auto box = db::create<
       db::AddSimpleTags<
           gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
