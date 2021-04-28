@@ -39,6 +39,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/CovariantDerivOfExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
@@ -188,6 +189,18 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
 
   CHECK_ITERABLE_APPROX(extrinsic_curvature, extrinsic_curvature_test);
   CHECK_ITERABLE_APPROX(deriv_spatial_metric, deriv_spatial_metric_test);
+
+  // Compute Christoffel symbol of the 2nd kind in two different ways
+  // (the gr one already tested independently) and make sure we get
+  // the same result.
+  const auto inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+  const auto christoffel_second_kind =
+      GeneralizedHarmonic::christoffel_second_kind(phi, inverse_spatial_metric);
+  const auto christoffel_second_kind_test = raise_or_lower_first_index(
+      gr::christoffel_first_kind(deriv_spatial_metric), inverse_spatial_metric);
+
+  CHECK_ITERABLE_APPROX(christoffel_second_kind, christoffel_second_kind_test);
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>

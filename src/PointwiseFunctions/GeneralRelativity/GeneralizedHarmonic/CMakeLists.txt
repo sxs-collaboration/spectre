@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Christoffel.cpp
   CovariantDerivOfExtrinsicCurvature.cpp
   DerivSpatialMetric.cpp
   ExtrinsicCurvature.cpp
@@ -27,6 +28,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Christoffel.hpp
   ConstraintGammas.hpp
   CovariantDerivOfExtrinsicCurvature.hpp
   DerivSpatialMetric.hpp
