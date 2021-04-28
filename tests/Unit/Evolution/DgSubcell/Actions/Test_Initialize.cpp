@@ -99,11 +99,13 @@ struct Component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
-                 ::Actions::SetupDataBox,
-                 evolution::Initialization::Actions::SetVariables<
-                     domain::Tags::Coordinates<Dim, Frame::Logical>>,
-                 evolution::dg::subcell::Actions::Initialize<Metavariables>>>>;
+      tmpl::list<
+          ActionTesting::InitializeDataBox<initial_tags>,
+          ::Actions::SetupDataBox,
+          evolution::Initialization::Actions::SetVariables<
+              domain::Tags::Coordinates<Dim, Frame::Logical>>,
+          evolution::dg::subcell::Actions::Initialize<
+              Dim, System<Dim>, typename Metavariables::DgInitialDataTci>>>>;
 };
 
 template <size_t Dim, bool TciFails>
@@ -119,39 +121,40 @@ struct Metavariables {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) noexcept {}
 
-  struct SubcellOptions {
-    struct DgInitialDataTci {
-      // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-      static bool invoked;
-      static bool apply(
-          const Variables<tmpl::list<Var1>>& dg_vars,
-          const Variables<
-              tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>&
-              subcell_vars,
-          const Mesh<volume_dim>& dg_mesh, const double rdmp_delta0,
-          const double rdmp_epsilon, const double persson_exponent) noexcept {
-        CHECK(dg_mesh == Mesh<Dim>(5, Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto));
-        CHECK(rdmp_delta0 == 1.0e-3);
-        CHECK(rdmp_epsilon == 1.0e-4);
-        CHECK(persson_exponent == 4.0);
-        Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
-            projected_dg_vars{subcell_vars.number_of_grid_points()};
-        evolution::dg::subcell::fd::project(
-            make_not_null(&projected_dg_vars), dg_vars, dg_mesh,
-            evolution::dg::subcell::fd::mesh(dg_mesh).extents());
-        CHECK(projected_dg_vars == subcell_vars);
-        invoked = true;
-        return TciFails;
-      }
-    };
+  struct DgInitialDataTci {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    static bool invoked;
+
+    using argument_tags = tmpl::list<domain::Tags::Mesh<volume_dim>>;
+
+    static bool apply(
+        const Variables<tmpl::list<Var1>>& dg_vars,
+        const Variables<
+            tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>&
+            subcell_vars,
+        const double rdmp_delta0, const double rdmp_epsilon,
+        const double persson_exponent,
+        const Mesh<volume_dim>& dg_mesh) noexcept {
+      CHECK(dg_mesh == Mesh<Dim>(5, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto));
+      CHECK(rdmp_delta0 == 1.0e-3);
+      CHECK(rdmp_epsilon == 1.0e-4);
+      CHECK(persson_exponent == 4.0);
+      Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
+          projected_dg_vars{subcell_vars.number_of_grid_points()};
+      evolution::dg::subcell::fd::project(
+          make_not_null(&projected_dg_vars), dg_vars, dg_mesh,
+          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+      CHECK(projected_dg_vars == subcell_vars);
+      invoked = true;
+      return TciFails;
+    }
   };
 };
 
 template <size_t Dim, bool TciFails>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool Metavariables<Dim, TciFails>::SubcellOptions::DgInitialDataTci::invoked =
-    false;
+bool Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
 template <size_t Dim, bool TciFails>
 void test(const bool always_use_subcell, const bool interior_element) {
@@ -166,8 +169,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
       {SystemAnalyticSolution{},
        evolution::dg::subcell::SubcellOptions{1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4,
                                               4.0, 4.1, always_use_subcell}}};
-  Metavariables<Dim, TciFails>::SubcellOptions::DgInitialDataTci::invoked =
-      false;
+  Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
@@ -208,8 +210,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
   // Invoke the Initialize action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
 
-  REQUIRE(
-      Metavariables<Dim, TciFails>::SubcellOptions::DgInitialDataTci::invoked);
+  REQUIRE(Metavariables<Dim, TciFails>::DgInitialDataTci::invoked);
   CHECK(
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::DidRollback>(

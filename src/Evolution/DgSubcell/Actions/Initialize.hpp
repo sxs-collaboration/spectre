@@ -82,28 +82,28 @@ namespace evolution::dg::subcell::Actions {
  * - Modifies:
  *   - `System::variables_tag` if the cell is troubled
  */
-template <typename Metavariables>
+template <size_t Dim, typename System, typename TciMutator>
 struct Initialize {
   using const_global_cache_tags = tmpl::list<Tags::SubcellOptions>;
 
-  using simple_tags = tmpl::list<
-      Tags::Mesh<Metavariables::volume_dim>, Tags::ActiveGrid,
-      Tags::DidRollback,
-      Tags::Inactive<typename Metavariables::system::variables_tag>,
-      Tags::TciGridHistory,
-      Tags::NeighborDataForReconstructionAndRdmpTci<Metavariables::volume_dim>,
-      fd::Tags::InverseJacobianLogicalToGrid<Metavariables::volume_dim>,
-      fd::Tags::DetInverseJacobianLogicalToGrid>;
-  using compute_tags = tmpl::list<
-      Tags::LogicalCoordinatesCompute<Metavariables::volume_dim>,
-      ::domain::Tags::MappedCoordinates<
-          ::domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
-          subcell::Tags::Coordinates<Metavariables::volume_dim, Frame::Logical>,
-          subcell::Tags::Coordinates>,
-      Tags::TciStatusCompute<Metavariables::volume_dim>>;
+  using simple_tags =
+      tmpl::list<Tags::Mesh<Dim>, Tags::ActiveGrid, Tags::DidRollback,
+                 Tags::Inactive<typename System::variables_tag>,
+                 Tags::TciGridHistory,
+                 Tags::NeighborDataForReconstructionAndRdmpTci<Dim>,
+                 fd::Tags::InverseJacobianLogicalToGrid<Dim>,
+                 fd::Tags::DetInverseJacobianLogicalToGrid>;
+  using compute_tags =
+      tmpl::list<Tags::LogicalCoordinatesCompute<Dim>,
+                 ::domain::Tags::MappedCoordinates<
+                     ::domain::Tags::ElementMap<Dim, Frame::Grid>,
+                     subcell::Tags::Coordinates<Dim, Frame::Logical>,
+                     subcell::Tags::Coordinates>,
+                 Tags::TciStatusCompute<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+            typename ActionList, typename ParallelComponent,
+            typename Metavariables>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
@@ -111,27 +111,25 @@ struct Initialize {
       const ArrayIndex& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
-    const Mesh<Metavariables::volume_dim>& dg_mesh =
-        db::get<::domain::Tags::Mesh<Metavariables::volume_dim>>(box);
-    const Mesh<Metavariables::volume_dim> subcell_mesh = fd::mesh(dg_mesh);
+    const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
+    const Mesh<Dim> subcell_mesh = fd::mesh(dg_mesh);
     // Note: we currently cannot do subcell at boundaries, so only set on
     // interior elements.
-    bool cell_is_troubled =
-        subcell_options.always_use_subcells() and
-        db::get<::domain::Tags::Element<Metavariables::volume_dim>>(box)
-            .external_boundaries()
-            .empty();
-    db::mutate<subcell::Tags::Mesh<Metavariables::volume_dim>, Tags::ActiveGrid,
-               Tags::DidRollback,
-               Tags::Inactive<typename Metavariables::system::variables_tag>,
-               typename Metavariables::system::variables_tag>(
-        make_not_null(&box),
+    bool cell_is_troubled = subcell_options.always_use_subcells() and
+                            db::get<::domain::Tags::Element<Dim>>(box)
+                                .external_boundaries()
+                                .empty();
+    db::mutate_apply<tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
+                                Tags::DidRollback,
+                                Tags::Inactive<typename System::variables_tag>,
+                                typename System::variables_tag>,
+                     typename TciMutator::argument_tags>(
         [&cell_is_troubled, &dg_mesh, &subcell_mesh, &subcell_options](
-            const gsl::not_null<Mesh<Metavariables::volume_dim>*>
-                subcell_mesh_ptr,
+            const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
-            const auto inactive_vars_ptr, const auto active_vars_ptr) noexcept {
+            const auto inactive_vars_ptr, const auto active_vars_ptr,
+            const auto&... args_for_tci) noexcept {
           // We don't consider setting the initial grid to subcell as rolling
           // back. Since no time step is undone, we just continue on the
           // subcells as a normal solve.
@@ -142,25 +140,32 @@ struct Initialize {
           fd::project(inactive_vars_ptr, *active_vars_ptr, dg_mesh,
                       subcell_mesh.extents());
           // Now check if the DG solution is admissible
-          cell_is_troubled |=
-              Metavariables::SubcellOptions::DgInitialDataTci::apply(
-                  *active_vars_ptr, *inactive_vars_ptr, dg_mesh,
-                  subcell_options.initial_data_rdmp_delta0(),
-                  subcell_options.initial_data_rdmp_epsilon(),
-                  subcell_options.initial_data_persson_exponent());
+          cell_is_troubled |= TciMutator::apply(
+              *active_vars_ptr, *inactive_vars_ptr,
+              subcell_options.initial_data_rdmp_delta0(),
+              subcell_options.initial_data_rdmp_epsilon(),
+              subcell_options.initial_data_persson_exponent(), args_for_tci...);
           if (cell_is_troubled) {
             // Swap grid
             *active_grid_ptr = ActiveGrid::Subcell;
             using std::swap;
             swap(*active_vars_ptr, *inactive_vars_ptr);
           }
-        });
+        },
+        make_not_null(&box));
     if (cell_is_troubled) {
       // Set variables on subcells.
-      evolution::Initialization::Actions::SetVariables<
-          Tags::Coordinates<Metavariables::volume_dim, Frame::Logical>>::
-          apply(box, inboxes, cache, array_index, ActionList{},
-                std::add_pointer_t<ParallelComponent>{nullptr});
+      if constexpr (System::has_primitive_and_conservative_vars) {
+        db::mutate<typename System::primitive_variables_tag>(
+            make_not_null(&box),
+            [&subcell_mesh](const auto prim_vars_ptr) noexcept {
+              prim_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
+            });
+      }
+      evolution::Initialization::Actions::
+          SetVariables<Tags::Coordinates<Dim, Frame::Logical>>::apply(
+              box, inboxes, cache, array_index, ActionList{},
+              std::add_pointer_t<ParallelComponent>{nullptr});
     }
     return std::forward_as_tuple(std::move(box));
   }
