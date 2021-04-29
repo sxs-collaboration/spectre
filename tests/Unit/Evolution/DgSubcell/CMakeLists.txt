@@ -6,6 +6,7 @@ set(LIBRARY "Test_DgSubcell")
 set(LIBRARY_SOURCES
   Actions/Test_Initialize.cpp
   Actions/Test_SelectNumericalMethod.cpp
+  Actions/Test_TciAndRollback.cpp
   Test_ActiveGrid.cpp
   Test_CartesianFluxDivergence.cpp
   Test_ComputeBoundaryTerms.cpp
