@@ -22,6 +22,7 @@ module Main {
 
     entry void execute_next_phase();
     entry void start_load_balance();
+    entry void start_write_checkpoint();
   }
 
   namespace detail {

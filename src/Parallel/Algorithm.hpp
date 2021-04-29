@@ -224,11 +224,22 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
     p | inboxes_;
     p | array_index_;
     p | global_cache_proxy_;
-    // note that `perform_registration_or_deregistration` passes the `box_` by
+    // Note that `perform_registration_or_deregistration` passes the `box_` by
     // const reference. If mutable access is required to the box, this function
     // call needs to be carefully considered with respect to the `p | box_` call
     // in both packing and unpacking scenarios.
-    perform_registration_or_deregistration(p, box_);
+    //
+    // Note also that we don't perform (de)registrations when pup'ing for a
+    // checkpoint/restart. This enables a simpler first-pass implementation of
+    // checkpointing, though it means the restart must occur on the same
+    // hardware configuration (same number of nodes and same procs per node)
+    // used when writing the checkpoint.
+    if constexpr (Algorithm_detail::has_LoadBalancing_v<
+                      typename metavariables::Phase>) {
+      if (phase_ == metavariables::Phase::LoadBalancing) {
+        perform_registration_or_deregistration(p, box_);
+      }
+    }
   }
   /// \cond
   ~AlgorithmImpl() override;

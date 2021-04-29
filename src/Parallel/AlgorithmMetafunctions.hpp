@@ -162,6 +162,8 @@ struct build_databox_types<
 CREATE_IS_CALLABLE(is_ready)
 CREATE_HAS_STATIC_MEMBER_VARIABLE(LoadBalancing)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(LoadBalancing)
+CREATE_HAS_STATIC_MEMBER_VARIABLE(WriteCheckpoint)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(WriteCheckpoint)
 
 // for checking the DataBox return of an iterable action
 template <typename FirstIterableActionType>
