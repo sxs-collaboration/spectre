@@ -19,6 +19,10 @@ add_test_library(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC
+  PRIVATE
+  DataStructures
+  Options
   Parallel
+  Time
+  Utilities
   )

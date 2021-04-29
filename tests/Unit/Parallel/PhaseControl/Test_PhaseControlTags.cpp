@@ -97,7 +97,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
   using triggers = tmpl::list<Triggers::Registrars::Slabs>;
   Parallel::register_derived_classes_with_charm<PhaseChange<phase_changes>>();
   Parallel::register_derived_classes_with_charm<Trigger<triggers>>();
-  Parallel::register_derived_classes_with_charm<TimeSequence<size_t>>();
+  Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
 
   TestHelpers::db::test_simple_tag<
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>(
