@@ -34,9 +34,9 @@ double displacement_r_integrand(const double k, const double r, const double z,
 
 template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::I<DataType, 3>*> displacement,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Displacement<3> /*meta*/) const
-    noexcept {
+    const gsl::not_null<Scalar<DataType>*> displacement_r,
+    const gsl::not_null<Cache*> /*cache*/,
+    DisplacementR /*meta*/) const noexcept {
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
@@ -50,14 +50,12 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
   const double prefactor = 0.25 / (shear_modulus * M_PI);
   const double modulus_term_r = 1. - (lame_parameter + 2. * shear_modulus) /
                                          (lame_parameter + shear_modulus);
-  const double modulus_term_z =
-      1. + shear_modulus / (lame_parameter + shear_modulus);
   for (size_t i = 0; i < num_points; i++) {
     const double z = get<2>(x)[i];
     const double r = radius[i];
     try {
       if (not equal_within_roundoff(r, 0.)) {
-        const double displacement_r =
+        get(*displacement_r)[i] =
             prefactor *
             integration(
                 [&r, &z, &modulus_term_r, this](const double k) noexcept {
@@ -65,9 +63,43 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
                                                   modulus_term_r);
                 },
                 lower_boundary, absolute_tolerance, relative_tolerance);
+      }
+    } catch (convergence_error& error) {
+      ERROR("The numerical integral failed at r="
+            << r << ", z=" << z << " (" << error.what()
+            << "). Try to increase 'IntegrationIntervals' or make the domain "
+               "smaller.\n");
+    }
+  }
+}
+
+template <typename DataType>
+void HalfSpaceMirrorVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> displacement,
+    const gsl::not_null<Cache*> cache, Tags::Displacement<3> /*meta*/) const
+    noexcept {
+  const double shear_modulus = constitutive_relation.shear_modulus();
+  const double lame_parameter = constitutive_relation.lame_parameter();
+  const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
+  const auto& displacement_r = get(cache->get_var(DisplacementR{}));
+
+  const integration::GslQuadAdaptive<
+      integration::GslIntegralType::UpperBoundaryInfinite>
+      integration{integration_intervals};
+  const double lower_boundary = 0.;
+  const size_t num_points = get<0>(x).size();
+
+  const double prefactor = 0.25 / (shear_modulus * M_PI);
+  const double modulus_term_z =
+      1. + shear_modulus / (lame_parameter + shear_modulus);
+  for (size_t i = 0; i < num_points; i++) {
+    const double z = get<2>(x)[i];
+    const double r = radius[i];
+    try {
+      if (not equal_within_roundoff(r, 0.)) {
         // projection on cartesian grid
-        get<0>(*displacement)[i] = get<0>(x)[i] / r * displacement_r;
-        get<1>(*displacement)[i] = get<1>(x)[i] / r * displacement_r;
+        get<0>(*displacement)[i] = get<0>(x)[i] / r * displacement_r[i];
+        get<1>(*displacement)[i] = get<1>(x)[i] / r * displacement_r[i];
       } else {
         get<0>(*displacement)[i] = 0.;
         get<1>(*displacement)[i] = 0.;
@@ -94,11 +126,13 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
 template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> strain,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Strain<3> /*meta*/) const
+    const gsl::not_null<Cache*> cache, Tags::Strain<3> /*meta*/) const
     noexcept {
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
+  const auto& displacement_r = get(cache->get_var(DisplacementR{}));
+
   const integration::GslQuadAdaptive<
       integration::GslIntegralType::UpperBoundaryInfinite>
       integration{integration_intervals};
@@ -110,8 +144,6 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
       -2. * shear_modulus / (lame_parameter + shear_modulus);
   const double modulus_term_zz =
       shear_modulus / (lame_parameter + shear_modulus);
-  const double modulus_term_r = 1. - (lame_parameter + 2. * shear_modulus) /
-                                         (lame_parameter + shear_modulus);
   for (size_t i = 0; i < num_points; i++) {
     const double r = radius[i];
     const double z = get<2>(x)[i];
@@ -146,17 +178,9 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
                 },
                 lower_boundary, absolute_tolerance, relative_tolerance);
 
-        const double displacement_r =
-            prefactor *
-            integration(
-                [&r, &z, &modulus_term_r, this](const double k) noexcept {
-                  return displacement_r_integrand(k, r, z, beam_width,
-                                                  modulus_term_r);
-                },
-                lower_boundary, absolute_tolerance, relative_tolerance);
         const double cos_phi = get<0>(x)[i] / r;
         const double sin_phi = get<1>(x)[i] / r;
-        const double strain_pp = displacement_r / r;
+        const double strain_pp = displacement_r[i] / r;
         const double strain_rr = trace_term - strain_pp - strain_zz;
         get<0, 0>(*strain)[i] =
             strain_pp + square(cos_phi) * (strain_rr - strain_pp);
