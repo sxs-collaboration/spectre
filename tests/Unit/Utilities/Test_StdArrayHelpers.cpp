@@ -7,14 +7,16 @@
 #include <cstddef>
 #include <functional>
 
-#include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"
 // We wish to explicitly test implicit type conversion when adding std::arrays
 // of different fundamentals, so we supress -Wsign-conversion.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #include "Utilities/StdArrayHelpers.hpp"
 #pragma GCC diagnostic pop
+
+#include "DataStructures/DataVector.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Arithmetic",
                   "[DataStructures][Unit]") {
@@ -93,6 +95,50 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Magnitude",
   CHECK(magnitude(p2) == approx(5.));
   const std::array<double, 3> p3{{-2., 10., 11.}};
   CHECK(magnitude(p3) == approx(15.));
+}
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Dot",
+                  "[DataStructures][Unit]") {
+  {
+    INFO("Testing 1D");
+    const std::array<double, 1> double_1{{-2.}};
+    const std::array<double, 1> double_2{{-3.}};
+    const std::array<DataVector, 1> dv_1{{{1., 2., 3.}}};
+    const std::array<DataVector, 1> dv_2{{{2., 4., 6.}}};
+
+    CHECK(dot(double_1, double_2) == approx(6.));
+    CHECK_ITERABLE_APPROX(dot(dv_1, dv_2), (DataVector{2., 8., 18.}));
+    CHECK_ITERABLE_APPROX(dot(dv_1, double_1), (DataVector{-2., -4., -6.}));
+    CHECK(dot(double_1, dv_1) == dot(dv_1, double_1));
+  }
+
+  {
+    INFO("Testing 2D");
+    const std::array<double, 2> double_1{{-2., -3.}};
+    const std::array<double, 2> double_2{{-3., -1.}};
+    const std::array<DataVector, 2> dv_1{{{1., 2., 3.}, {-1., -2., -3.}}};
+    const std::array<DataVector, 2> dv_2{{{2., 4., 6.}, {3., 6., 9.}}};
+
+    CHECK(dot(double_1, double_2) == approx(9.));
+    CHECK_ITERABLE_APPROX(dot(dv_1, dv_2), (DataVector{-1., -4., -9.}));
+    CHECK_ITERABLE_APPROX(dot(dv_1, double_1), (DataVector{1., 2., 3.}));
+    CHECK(dot(double_1, dv_1) == dot(dv_1, double_1));
+  }
+
+  {
+    INFO("Testing 3D");
+    const std::array<double, 3> double_1{{-2., 1., 4.}};
+    const std::array<double, 3> double_2{{-3., 2., 0.}};
+    const std::array<DataVector, 3> dv_1{
+        {{1., 2., 3.}, {-1., 2., 0.}, {-2., 1., 1.}}};
+    const std::array<DataVector, 3> dv_2{
+        {{1., 2., 3.}, {-3., -1., 2.}, {-4., 3., 1.}}};
+
+    CHECK(dot(double_1, double_2) == approx(8.));
+    CHECK_ITERABLE_APPROX(dot(dv_1, dv_2), (DataVector{12., 5., 10.}));
+    CHECK_ITERABLE_APPROX(dot(dv_1, double_1), (DataVector{-11., 2., -2.}));
+    CHECK(dot(double_1, dv_1) == dot(dv_1, double_1));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.AllButSpecifiedElementOf",
