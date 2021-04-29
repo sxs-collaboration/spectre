@@ -42,6 +42,7 @@ allowed_tags = [
     "Python",
     "RelativisticEuler",
     "RootFinding",
+    "ScalarAdvection",
     "Serialization",
     "Spectral",
     "Time",
