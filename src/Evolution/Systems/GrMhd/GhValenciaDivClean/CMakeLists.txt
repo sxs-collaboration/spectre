@@ -26,6 +26,9 @@ target_link_libraries(
   PUBLIC
   DataStructures
   GeneralRelativity
+  INTERFACE
+  Domain
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)

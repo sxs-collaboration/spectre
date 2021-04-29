@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
@@ -29,6 +30,7 @@ namespace grmhd {
 /// and Valencia formulation of ideal GRMHD with divergence cleaning systems.
 namespace GhValenciaDivClean {
 struct System {
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
