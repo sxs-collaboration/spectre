@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -26,6 +27,8 @@
 // IWYU pragma: no_forward_declare db::DataBox
 namespace intrp {
 namespace Tags {
+template <typename TemporalId>
+struct PendingTemporalIds;
 template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
@@ -113,6 +116,13 @@ struct InterpolationTargetReceiveVars {
             Parallel::simple_action<
                 SendPointsToInterpolator<InterpolationTargetTag>>(
                 my_proxy, temporal_ids.front());
+          } else if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box)
+                             .empty()) {
+            auto& my_proxy = Parallel::get_parallel_component<
+                InterpolationTarget<Metavariables, InterpolationTargetTag>>(
+                cache);
+            Parallel::simple_action<Actions::VerifyTemporalIdsAndSendPoints<
+                InterpolationTargetTag>>(my_proxy);
           }
         }
       }
