@@ -21,6 +21,7 @@ module Main {
             reduction_data);
 
     entry void execute_next_phase();
+    entry void start_load_balance();
   }
 
   namespace detail {
