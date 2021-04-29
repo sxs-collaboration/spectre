@@ -12,3 +12,9 @@ spectre_add_python_test(
   Test_Render1D.py
   "unit;visualization;python"
   None)
+
+spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.InterpolateVolumeData"
+  Test_InterpolateVolumeData.py
+  "unit;visualization;python"
+  None)
