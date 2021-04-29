@@ -11,6 +11,9 @@
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.Tags",
                   "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<
+      grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
+      "TraceReversedStressEnergy");
+  TestHelpers::db::test_simple_tag<
       grmhd::GhValenciaDivClean::Tags::StressEnergy>("StressEnergy");
   TestHelpers::db::test_simple_tag<
       grmhd::GhValenciaDivClean::Tags::ComovingMagneticField>(
