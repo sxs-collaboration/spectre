@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/ScalarAdvection/Characteristics.hpp"
 #include "Evolution/Systems/ScalarAdvection/Fluxes.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,5 +35,8 @@ struct System {
   using sourced_variables = tmpl::list<>;
 
   using volume_fluxes = Fluxes<Dim>;
+
+  using compute_largest_characteristic_speed =
+      Tags::LargestCharacteristicSpeedCompute<Dim>;
 };
 }  // namespace ScalarAdvection

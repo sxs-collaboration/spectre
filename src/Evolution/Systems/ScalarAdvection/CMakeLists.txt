@@ -16,6 +16,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Characteristics.hpp
   Fluxes.hpp
   System.hpp
   Tags.hpp
