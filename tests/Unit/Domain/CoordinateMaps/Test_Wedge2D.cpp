@@ -9,6 +9,7 @@
 #include <random>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -133,13 +134,20 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
     CAPTURE(orientation);
     for (const auto& halves : possible_halves) {
       CAPTURE(halves);
-      for (const auto with_logarithmic_map : {false, true}) {
-        CAPTURE(with_logarithmic_map);
-        test_suite_for_map_on_unit_cube(
-            Wedge2D{inner_radius, outer_radius,
-                    with_logarithmic_map ? 1.0 : inner_circularity,
-                    with_logarithmic_map ? 1.0 : outer_circularity, orientation,
-                    with_equiangular_map, halves, with_logarithmic_map});
+      for (const auto radial_distribution :
+           {CoordinateMaps::Distribution::Linear,
+            CoordinateMaps::Distribution::Logarithmic,
+            CoordinateMaps::Distribution::Inverse}) {
+        CAPTURE(radial_distribution);
+        test_suite_for_map_on_unit_cube(Wedge2D{
+            inner_radius, outer_radius,
+            radial_distribution == CoordinateMaps::Distribution::Linear
+                ? inner_circularity
+                : 1.0,
+            radial_distribution == CoordinateMaps::Distribution::Linear
+                ? outer_circularity
+                : 1.0,
+            orientation, with_equiangular_map, halves, radial_distribution});
       }
     }
   }

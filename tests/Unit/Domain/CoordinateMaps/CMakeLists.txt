@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_CylindricalFlatSide.cpp
   Test_CylindricalSide.cpp
   Test_DiscreteRotation.cpp
+  Test_Distribution.cpp
   Test_EquatorialCompression.cpp
   Test_Equiangular.cpp
   Test_Frustum.cpp

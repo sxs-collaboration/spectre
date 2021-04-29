@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
@@ -18,8 +19,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 namespace detail {
 // This mapping can be deleted once the 2D and 3D wedges are oriented the same
@@ -242,6 +242,14 @@ struct WedgeCoordOrientation<3> {
  *
  *  The jacobian simplifies similarly.
  *
+ *  Alternatively, an inverse radial distribution can be chosen where the linear
+ *  interpolation is:
+ *
+ *  \f[
+ *  \frac{1}{r} = \frac{R_\mathrm{inner} + R_\mathrm{outer}}{2 R_\mathrm{inner}
+ *  R_\mathrm{outer}} + \frac{R_\mathrm{inner} - R_\mathrm{outer}}{2
+ *  R_\mathrm{inner} R_\mathrm{outer}} \zeta
+ *  \f]
  */
 template <size_t Dim>
 class Wedge {
@@ -285,15 +293,15 @@ class Wedge {
    * intermediate map applied. In all cases, the logical points returned by the
    * inverse map will lie in the range [-1,1] in each dimension. Half wedges are
    * currently only useful in constructing domains for binary systems.
-   * \param with_logarithmic_map Determines whether to apply an exponential
-   * function mapping to the "sphere factor", the effect of which is to
-   * distribute the radial gridpoints logarithmically in physical space.
+   * \param radial_distribution Determines how to distribute grid points along
+   * the radial direction. For wedges that are not exactly spherical, only
+   * `Distribution::Linear` is currently supported.
    */
   Wedge(double radius_inner, double radius_outer, double sphericity_inner,
         double sphericity_outer, OrientationMap<Dim> orientation_of_wedge,
         bool with_equiangular_map,
         WedgeHalves halves_to_use = WedgeHalves::Both,
-        bool with_logarithmic_map = false) noexcept;
+        Distribution radial_distribution = Distribution::Linear) noexcept;
 
   Wedge() = default;
   ~Wedge() = default;
@@ -360,7 +368,7 @@ class Wedge {
   OrientationMap<Dim> orientation_of_wedge_{};
   bool with_equiangular_map_ = false;
   WedgeHalves halves_to_use_ = WedgeHalves::Both;
-  bool with_logarithmic_map_ = false;
+  Distribution radial_distribution_ = Distribution::Linear;
   double scaled_frustum_zero_{std::numeric_limits<double>::signaling_NaN()};
   double sphere_zero_{std::numeric_limits<double>::signaling_NaN()};
   double scaled_frustum_rate_{std::numeric_limits<double>::signaling_NaN()};
@@ -369,5 +377,4 @@ class Wedge {
 
 template <size_t Dim>
 bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept;
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

@@ -16,6 +16,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -227,12 +228,20 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
 /// specifies the z-boundaries, splitting the cylinder into stacked
 /// 3-dimensional disks. The circularity of the shell wedges changes from 0 to 1
 /// within the innermost sub-shell.
+///
+/// Set the `radial_distribution` to select the radial distribution of grid
+/// points in the cylindrical shells. The innermost shell must have
+/// `domain::CoordinateMaps::Distribution::Linear` because it changes the
+/// circularity.
 template <typename TargetFrame>
 auto cyl_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double lower_bound,
     double upper_bound, bool use_equiangular_map,
     const std::vector<double>& radial_partitioning = {},
-    const std::vector<double>& height_partitioning = {}) noexcept
+    const std::vector<double>& height_partitioning = {},
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        radial_distribution =
+            {domain::CoordinateMaps::Distribution::Linear}) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
@@ -287,6 +296,8 @@ auto cyl_wedge_coord_map_surrounding_blocks(
     double upper_bound, bool use_equiangular_map, double inner_circularity,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<double>& height_partitioning = {},
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
     CylindricalDomainParityFlip parity_flip =
         CylindricalDomainParityFlip::none) noexcept
     -> std::vector<domain::CoordinateMaps::ProductOf2Maps<
