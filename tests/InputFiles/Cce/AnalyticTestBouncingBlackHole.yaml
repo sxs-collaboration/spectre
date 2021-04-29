@@ -4,6 +4,8 @@
 # Executable: AnalyticTestCharacteristicExtract
 # Check: parse;execute_check_output
 # Timeout: 10
+# ExpectedOutput:
+#   CharacteristicExtractVolume0.h5
 # OutputFileChecks:
 #   - Label: "check_news"
 #     Subfile: "/News.dat"
