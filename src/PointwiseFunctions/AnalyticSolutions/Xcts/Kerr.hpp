@@ -34,7 +34,6 @@ using KerrVariablesCache = cached_temp_buffer_from_typelist<
     tmpl::push_back<
         common_tags<DataType>,
         Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-        Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>,
         ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
         gr::Tags::TraceExtrinsicCurvature<DataType>,

@@ -11,6 +11,7 @@
 #include <optional>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
@@ -22,12 +23,26 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
 namespace Xcts::AnalyticData {
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
+    const gsl::not_null<Cache*> cache,
+    Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
+    const noexcept {
+  const auto& conformal_metric =
+      cache->get_var(Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  Scalar<DataType> unused_det{get_size(*conformal_metric.begin())};
+  determinant_and_inverse(make_not_null(&unused_det), inv_conformal_metric,
+                          conformal_metric);
+}
 
 template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
