@@ -16,6 +16,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TupleSlice.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/TypeTraits/IsMaplike.hpp"
 
 namespace elliptic::util {
 namespace detail {
@@ -60,18 +61,24 @@ struct unmap_arg<false, FirstMapKey, MapKeys...> {
   template <typename T>
   static constexpr decltype(auto) apply(
       const T& arg, const std::tuple<FirstMapKey, MapKeys...>& map_keys) {
-    return unmap_arg<sizeof...(MapKeys) == 0, MapKeys...>::apply(
-        arg.at(std::get<0>(map_keys)),
-        tuple_tail<sizeof...(MapKeys)>(map_keys));
+    return unmap_arg<((sizeof...(MapKeys) == 0) or
+                      (not tt::is_maplike_v<typename T::mapped_type>)),
+                     MapKeys...>::apply(arg.at(std::get<0>(map_keys)),
+                                        tuple_tail<sizeof...(MapKeys)>(
+                                            map_keys));
   }
 
   template <typename T>
   static constexpr decltype(auto) apply(
       const gsl::not_null<T*> arg,
       const std::tuple<FirstMapKey, MapKeys...>& map_keys) {
-    return unmap_arg<sizeof...(MapKeys) == 0, MapKeys...>::apply(
-        make_not_null(&arg->operator[](std::get<0>(map_keys))),
-        tuple_tail<sizeof...(MapKeys)>(map_keys));
+    return unmap_arg<((sizeof...(MapKeys) == 0) or
+                      (not tt::is_maplike_v<typename T::mapped_type>)),
+                     MapKeys...>::apply(make_not_null(&arg->
+                                                       operator[](std::get<0>(
+                                                           map_keys))),
+                                        tuple_tail<sizeof...(MapKeys)>(
+                                            map_keys));
   }
 };
 

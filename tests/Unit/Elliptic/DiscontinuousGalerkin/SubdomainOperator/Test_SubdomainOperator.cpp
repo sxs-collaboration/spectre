@@ -24,6 +24,7 @@
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -47,6 +48,7 @@
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/InitializeSubdomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
+#include "Elliptic/Systems/Elasticity/Actions/InitializeConstitutiveRelation.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
@@ -801,7 +803,8 @@ template <size_t Dim>
 struct InitializeConstitutiveRelation
     : tt::ConformsTo<::amr::protocols::Projector> {
  public:  // Iterative action
-  using simple_tags = tmpl::list<Elasticity::Tags::ConstitutiveRelation<Dim>>;
+  using simple_tags =
+      tmpl::list<Elasticity::Tags::ConstitutiveRelationPerBlock<Dim>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -812,25 +815,26 @@ struct InitializeConstitutiveRelation
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    ::Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box),
-        std::make_unique<
-            Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1.,
-                                                                          2.));
+    db::mutate_apply<InitializeConstitutiveRelation>(make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
  public:  // amr::protocols::Projector
-  using return_tags = tmpl::list<Elasticity::Tags::ConstitutiveRelation<Dim>>;
-  using argument_tags = tmpl::list<>;
+  using return_tags = simple_tags;
+  using argument_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   template <typename... AmrData>
   static void apply(
-      const gsl::not_null<std::unique_ptr<
-          Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>*>
-          material,
-      const AmrData&... /*amr_data*/) {
-    *material = std::make_unique<
-        Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1., 2.);
+      const gsl::not_null<std::vector<std::unique_ptr<
+          Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>>*>
+          constitutive_relations,
+      const Domain<Dim>& domain, const AmrData&... /*amr_data*/) {
+    const domain::ExpandOverBlocks<std::unique_ptr<
+        Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>>
+        expand_over_blocks{domain.blocks().size()};
+    *constitutive_relations = expand_over_blocks(
+        std::make_unique<
+            Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1.,
+                                                                          2.));
   }
 };
 

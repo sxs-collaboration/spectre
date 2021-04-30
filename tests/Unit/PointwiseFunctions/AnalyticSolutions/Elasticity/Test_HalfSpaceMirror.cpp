@@ -145,9 +145,15 @@ SPECTRE_TEST_CASE(
                        Spectral::Quadrature::GaussLobatto};
     const auto logical_coords = logical_coordinates(mesh);
     const auto inertial_coords = coord_map(logical_coords);
+    std::vector<std::unique_ptr<
+        Elasticity::ConstitutiveRelations::ConstitutiveRelation<3>>>
+        constitutive_relations{};
+    constitutive_relations.push_back(constitutive_relation.get_clone());
+    const Element<3> element{ElementId<3>{0}, {}};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, mesh, coord_map, 0.05,
-        std::make_tuple(constitutive_relation, inertial_coords));
+        std::make_tuple(std::move(constitutive_relations), element,
+                        inertial_coords));
   };
 
   CHECK_THROWS_WITH(

@@ -59,14 +59,19 @@ void test_solution() {
   test_copy_semantics(solution);
 
   using system = Elasticity::FirstOrderSystem<Dim>;
-  Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>
-      constitutive_relation{1., 1.};
+  auto constitutive_relation = std::make_unique<
+      Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1., 1.);
+  std::vector<std::unique_ptr<
+      Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>>
+      constitutive_relations{};
+  constitutive_relations.push_back(std::move(constitutive_relation));
   const Mesh<Dim> mesh{12, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
+  const Element<Dim> element{ElementId<Dim>{0}, {}};
   const auto coord_map = make_coord_map<Dim>();
   FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
       solution, mesh, coord_map, 1.e-14,
-      std::make_tuple(constitutive_relation,
+      std::make_tuple(std::move(constitutive_relations), element,
                       coord_map(logical_coordinates(mesh))));
 }
 

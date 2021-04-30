@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -57,21 +59,24 @@ void add_curved_sources(
 template <size_t Dim>
 void Fluxes<Dim>::apply(
     const gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
-    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-        constitutive_relation,
-    const tnsr::I<DataVector, Dim>& coordinates,
+    const std::vector<
+        std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&
+        constitutive_relation_per_block,
+    const Element<Dim>& element, const tnsr::I<DataVector, Dim>& coordinates,
     const tnsr::I<DataVector, Dim>& /*displacement*/,
     const tnsr::iJ<DataVector, Dim>& deriv_displacement) {
-  primal_fluxes(minus_stress, deriv_displacement, constitutive_relation,
+  primal_fluxes(minus_stress, deriv_displacement,
+                *constitutive_relation_per_block.at(element.id().block_id()),
                 coordinates);
 }
 
 template <size_t Dim>
 void Fluxes<Dim>::apply(
     const gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
-    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-        constitutive_relation,
-    const tnsr::I<DataVector, Dim>& coordinates,
+    const std::vector<
+        std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&
+        constitutive_relation_per_block,
+    const Element<Dim>& element, const tnsr::I<DataVector, Dim>& coordinates,
     const tnsr::i<DataVector, Dim>& face_normal,
     const tnsr::I<DataVector, Dim>& /*face_normal_vector*/,
     const tnsr::I<DataVector, Dim>& displacement) {
@@ -82,6 +87,8 @@ void Fluxes<Dim>::apply(
                                 face_normal.get(j) * displacement.get(i));
     }
   }
+  const auto& constitutive_relation =
+      *constitutive_relation_per_block.at(element.id().block_id());
   constitutive_relation.stress(minus_stress, strain, coordinates);
   for (auto& component : *minus_stress) {
     component *= -1.;

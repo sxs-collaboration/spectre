@@ -6,6 +6,9 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/String.hpp"
@@ -23,6 +26,17 @@ struct ConstitutiveRelation : db::SimpleTag {
       "The constitutive relation of the elastic material.";
   using type =
       std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>;
+};
+
+template <size_t Dim>
+struct ConstitutiveRelationPerBlock {
+  static std::string name() { return "Material"; }
+  using ConstRelPtr =
+      std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>;
+  using type = std::variant<ConstRelPtr, std::vector<ConstRelPtr>,
+                            std::unordered_map<std::string, ConstRelPtr>>;
+  static constexpr Options::String help =
+      "A constitutive relation in every block of the domain.";
 };
 }  // namespace OptionTags
 
@@ -44,6 +58,9 @@ struct ConstitutiveRelation : db::SimpleTag {
     return deserialize<type>(serialize<type>(value).data());
   }
 };
+
+/// A constitutive relation in every block of the domain
+struct ConstitutiveRelationPerBlockBase : db::BaseTag {};
 
 }  // namespace Tags
 }  // namespace Elasticity

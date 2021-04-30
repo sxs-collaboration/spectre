@@ -1,11 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_Elasticity")
+set(LIBRARY "Test_ElasticityActions")
 
 set(LIBRARY_SOURCES
-  Test_Equations.cpp
-  Test_Tags.cpp
+  Test_InitializeConstitutiveRelation.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
@@ -16,11 +15,8 @@ target_link_libraries(
   ConstitutiveRelations
   DataStructures
   Domain
+  ElasticityActions
   Elliptic
   Elasticity
-  LinearOperators
   Utilities
   )
-
-add_subdirectory(Actions)
-add_subdirectory(BoundaryConditions)

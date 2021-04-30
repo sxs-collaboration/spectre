@@ -4,8 +4,11 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
@@ -63,23 +66,30 @@ void add_curved_sources(
 template <size_t Dim>
 struct Fluxes {
   using argument_tags =
-      tmpl::list<Tags::ConstitutiveRelation<Dim>,
+      tmpl::list<Tags::ConstitutiveRelationPerBlockBase,
+                 domain::Tags::Element<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
-  using volume_tags = tmpl::list<Tags::ConstitutiveRelation<Dim>>;
-  using const_global_cache_tags = volume_tags;
-  static void apply(gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
-                    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-                        constitutive_relation,
-                    const tnsr::I<DataVector, Dim>& coordinates,
-                    const tnsr::I<DataVector, Dim>& displacement,
-                    const tnsr::iJ<DataVector, Dim>& deriv_displacement);
-  static void apply(gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
-                    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-                        constitutive_relation,
-                    const tnsr::I<DataVector, Dim>& coordinates,
-                    const tnsr::i<DataVector, Dim>& face_normal,
-                    const tnsr::I<DataVector, Dim>& face_normal_vector,
-                    const tnsr::I<DataVector, Dim>& displacement);
+  using volume_tags = tmpl::list<Tags::ConstitutiveRelationPerBlockBase,
+                                 domain::Tags::Element<Dim>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ConstitutiveRelationPerBlockBase>;
+  static void apply(
+      gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
+      const std::vector<
+          std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&
+          constitutive_relation_per_block,
+      const Element<Dim>& element, const tnsr::I<DataVector, Dim>& coordinates,
+      const tnsr::I<DataVector, Dim>& displacement,
+      const tnsr::iJ<DataVector, Dim>& deriv_displacement);
+  static void apply(
+      gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
+      const std::vector<
+          std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&
+          constitutive_relation_per_block,
+      const Element<Dim>& element, const tnsr::I<DataVector, Dim>& coordinates,
+      const tnsr::i<DataVector, Dim>& face_normal,
+      const tnsr::I<DataVector, Dim>& face_normal_vector,
+      const tnsr::I<DataVector, Dim>& displacement);
 };
 
 }  // namespace Elasticity

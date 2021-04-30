@@ -19,6 +19,7 @@ target_link_libraries(
   DomainCreators
   DomainStructure
   Elasticity
+  ElasticityActions
   ElasticityBoundaryConditions
   Elliptic
   EllipticDg
