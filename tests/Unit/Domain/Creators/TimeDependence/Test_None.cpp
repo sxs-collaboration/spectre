@@ -31,7 +31,8 @@ void test() noexcept {
   CHECK(time_dep_clone != nullptr);
 
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep_factory =
-      TestHelpers::test_factory_creation<TimeDependence<MeshDim>>("None\n");
+      TestHelpers::test_creation<std::unique_ptr<TimeDependence<MeshDim>>>(
+          "None\n");
   CHECK(time_dep_factory != nullptr);
 
   CHECK(None<MeshDim>{} == None<MeshDim>{});

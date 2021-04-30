@@ -75,10 +75,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   CHECK_FALSE(can_change(end, start, mid));
   CHECK_FALSE(can_change(end, mid, start));
 
-  TestHelpers::test_factory_creation<TimeStepper>(
+  TestHelpers::test_creation<std::unique_ptr<TimeStepper>>(
       "AdamsBashforthN:\n"
       "  Order: 3");
-  TestHelpers::test_factory_creation<LtsTimeStepper>(
+  TestHelpers::test_creation<std::unique_ptr<LtsTimeStepper>>(
       "AdamsBashforthN:\n"
       "  Order: 3");
 

@@ -47,8 +47,8 @@ void test_aligned_blocks(
     const creators::AlignedLattice<VolumeDim>& aligned_lattice,
     const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>&
         expected_boundary_condition) noexcept {
-  Parallel::register_classes_in_list<
-      typename creators::AlignedLattice<VolumeDim>::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::AlignedLattice<VolumeDim>::maps_list{});
 
   const auto test_impl = [&expected_boundary_condition,
                           &aligned_lattice](const auto& domain) {
@@ -89,8 +89,8 @@ template <size_t VolumeDim>
 auto make_domain_creator(const std::string& opt_string,
                          const bool use_boundary_condition) {
   if (use_boundary_condition) {
-    return TestHelpers::test_factory_creation<
-        DomainCreator<VolumeDim>, domain::OptionTags::DomainCreator<VolumeDim>,
+    return TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<VolumeDim>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<VolumeDim>>(
         opt_string + std::string{"  BoundaryCondition:\n"
@@ -98,8 +98,8 @@ auto make_domain_creator(const std::string& opt_string,
                                  "      Direction: upper-xi\n"
                                  "      BlockId: 100\n"});
   } else {
-    return TestHelpers::test_factory_creation<
-        DomainCreator<VolumeDim>, domain::OptionTags::DomainCreator<VolumeDim>,
+    return TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<VolumeDim>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<VolumeDim>>(opt_string);
   }
@@ -212,8 +212,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                         expected_boundary_condition_3d);
   }
 
-  const auto domain_creator_2d_periodic = TestHelpers::test_factory_creation<
-      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+  const auto domain_creator_2d_periodic = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithoutBoundaryConditions<2>>(
       "AlignedLattice:\n"
@@ -229,8 +229,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           domain_creator_2d_periodic.get());
   test_aligned_blocks(*aligned_blocks_creator_2d_periodic, nullptr);
 
-  const auto domain_creator_3d_periodic = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+  const auto domain_creator_3d_periodic = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithoutBoundaryConditions<3>>(
       "AlignedLattice:\n"
@@ -251,8 +251,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     // 23 23 67
     // 23 45 67
     // 23 XX 45
-    const auto refined_domain = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto refined_domain = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<2>>(
         "AlignedLattice:\n"
@@ -303,8 +303,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     // 25 25 46
     // 25 35 46
     // 25 XX 35
-    const auto refined_domain = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto refined_domain = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<2>>(
         "AlignedLattice:\n"

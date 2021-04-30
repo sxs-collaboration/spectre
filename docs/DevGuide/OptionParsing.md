@@ -84,13 +84,22 @@ Example:
 
 The factory interface creates an object of type
 `std::unique_ptr<Base>` containing a pointer to some class derived
-from `Base`.  The base class must define a type alias listing the
-derived classes that can be created.
-\code{cpp}
- using creatable_classes = tmpl::list<Derived1, ...>;
-\endcode
-The requested derived class is created in the same way as an
-explicitly constructible class.
+from `Base`.  The list of creatable derived classes is specified in
+the `factory_creation` struct in the metavariables, which must contain
+a `factory_classes` type alias that is a `tmpl::map` from base classes
+to lists of derived classes:
+\snippet Test_Factory.cpp factory_creation
+
+When a `std::unique_ptr<Base>` is requested, the factory will expect a
+single YAML argument specifying the name of the class (as given by a
+static `name()` function or, lacking that, the actual class name).  If
+the derived class takes no arguments, the name can be given as a YAML
+string, otherwise it must be given as a single key-value pair, with
+the key the name of the class.  The value portion of this pair is then
+used to create the requested derived class in the same way as an
+explicitly constructible class.  Examples:
+\snippet Test_Factory.cpp factory_without_arguments
+\snippet Test_Factory.cpp factory_with_arguments
 
 \anchor custom-parsing
 ## Custom parsing

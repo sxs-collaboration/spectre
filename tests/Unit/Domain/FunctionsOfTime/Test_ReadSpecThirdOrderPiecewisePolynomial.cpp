@@ -195,39 +195,36 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       {"Unity", "Unity"},
       {"RotationAngle", "RotationAngle"}};
 
-  const auto& created_domain_creator =
-      TestHelpers::test_creation<std::unique_ptr<::DomainCreator<3>>,
-                                 domain::OptionTags::DomainCreator<3>,
-                                 TestHelpers::domain::BoundaryConditions::
-                                     MetavariablesWithoutBoundaryConditions<3>>(
-          "Brick:\n"
-          "  LowerBound: [-4.0, -5.0, -6.0]\n"
-          "  UpperBound: [6.0, 5.0, 4.0]\n"
-          "  IsPeriodicIn: [false, false, false]\n"
-          "  InitialRefinement: [0, 0, 0]\n"
-          "  InitialGridPoints: [5, 5, 5]\n"
-          "  TimeDependence:\n"
-          "    Composition:\n"
-          "      CubicScale:\n"
-          "        CubicScale:\n"
-          "            InitialTime: 0.0\n"
-          "            InitialExpirationDeltaT: 0.2\n"
-          "            InitialExpansion: [1.0, 1.0]\n"
-          "            Velocity: [0.0, 0.0]\n"
-          "            Acceleration: [0.0, 0.0]\n"
-          "            OuterBoundary: 839.661030811156\n"
-          "            FunctionOfTimeNames: [\"ExpansionFactor\", \"Unity\"]\n"
-          "      UniformRotationAboutZAxis:\n"
-          "        UniformRotationAboutZAxis:\n"
-          "          InitialTime: 0.0\n"
-          "          InitialExpirationDeltaT: 0.2\n"
-          "          AngularVelocity: 0.0\n"
-          "          FunctionOfTimeName: \"RotationAngle\"\n");
-  const auto& created_function_of_time_file = TestHelpers::test_creation<
-      std::optional<std::string>,
+  const auto created_domain_creator = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
+      "Brick:\n"
+      "  LowerBound: [-4.0, -5.0, -6.0]\n"
+      "  UpperBound: [6.0, 5.0, 4.0]\n"
+      "  IsPeriodicIn: [false, false, false]\n"
+      "  InitialRefinement: [0, 0, 0]\n"
+      "  InitialGridPoints: [5, 5, 5]\n"
+      "  TimeDependence:\n"
+      "    Composition:\n"
+      "      CubicScale:\n"
+      "        CubicScale:\n"
+      "            InitialTime: 0.0\n"
+      "            InitialExpirationDeltaT: 0.2\n"
+      "            InitialExpansion: [1.0, 1.0]\n"
+      "            Velocity: [0.0, 0.0]\n"
+      "            Acceleration: [0.0, 0.0]\n"
+      "            OuterBoundary: 839.661030811156\n"
+      "            FunctionOfTimeNames: [\"ExpansionFactor\", \"Unity\"]\n"
+      "      UniformRotationAboutZAxis:\n"
+      "        UniformRotationAboutZAxis:\n"
+      "          InitialTime: 0.0\n"
+      "          InitialExpirationDeltaT: 0.2\n"
+      "          AngularVelocity: 0.0\n"
+      "          FunctionOfTimeName: \"RotationAngle\"\n");
+  const auto created_function_of_time_file = TestHelpers::test_option_tag<
       domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>(test_filename);
-  const auto& created_function_of_time_name_map = TestHelpers::test_creation<
-      std::optional<std::map<std::string, std::string>>,
+  const auto created_function_of_time_name_map = TestHelpers::test_option_tag<
       domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
       "{ExpansionFactor: ExpansionFactor, Unity: Unity, RotationAngle: "
       "RotationAngle}");
@@ -289,9 +286,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   check_read_functions_of_time(functions_of_time, expected_functions);
 
   // Read the file again, but this time, only override one FunctionOfTime
-  const auto& created_function_of_time_name_map_expansion =
-      TestHelpers::test_creation<
-          std::optional<std::map<std::string, std::string>>,
+  const auto created_function_of_time_name_map_expansion =
+      TestHelpers::test_option_tag<
           domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
           "{ExpansionFactor: ExpansionFactor}");
   const auto& functions_of_time_expansion =

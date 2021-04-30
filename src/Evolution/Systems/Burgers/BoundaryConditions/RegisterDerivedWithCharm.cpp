@@ -11,7 +11,6 @@
 
 namespace Burgers::BoundaryConditions {
 void register_derived_with_charm() noexcept {
-  Parallel::register_classes_in_list<
-      typename BoundaryCondition::creatable_classes>();
+  Parallel::register_derived_classes_with_charm<BoundaryCondition>();
 }
 }  // namespace Burgers::BoundaryConditions

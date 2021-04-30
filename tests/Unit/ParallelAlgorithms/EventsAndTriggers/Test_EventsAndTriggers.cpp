@@ -72,7 +72,8 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
 void check_trigger(const bool expected, const std::string& trigger_string) {
   // Test factory
   std::unique_ptr<Trigger<tmpl::list<>>> trigger =
-      TestHelpers::test_factory_creation<Trigger<tmpl::list<>>>(trigger_string);
+      TestHelpers::test_creation<std::unique_ptr<Trigger<tmpl::list<>>>>(
+          trigger_string);
 
   EventsAndTriggersType::Storage events_and_triggers_map;
   events_and_triggers_map.emplace(
@@ -89,7 +90,8 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
   {
     const auto completion =
-        TestHelpers::test_factory_creation<Event<tmpl::list<>>>("Completion");
+        TestHelpers::test_creation<std::unique_ptr<Event<tmpl::list<>>>>(
+            "Completion");
     CHECK(not completion->needs_evolved_variables());
   }
 

@@ -132,7 +132,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
   check_rounding(1.0e5, 1.0e5);
   check_rounding(-1.0e5, 1.0e5);
 
-  TestHelpers::test_factory_creation<StepChooserType>(
+  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>(
       "StepToTimes:\n"
       "  Times:\n"
       "    Specified:\n"

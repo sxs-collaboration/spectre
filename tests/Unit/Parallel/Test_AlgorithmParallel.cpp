@@ -35,6 +35,9 @@
 
 static constexpr int number_of_1d_array_elements = 14;
 
+namespace PUP {
+class er;
+}  // namespace PUP
 namespace db {
 template <typename TagsList>
 class DataBox;
@@ -663,6 +666,9 @@ struct TestMetavariables {
 
     return Phase::Exit;
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 // [charm_include_example]

@@ -103,7 +103,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
   check(5.0, 3.0, {1.0, 9.0}, Direction::Before, false);
   check(5.0, 3.0, {1.0, 9.0}, Direction::After, false);
 
-  TestHelpers::test_factory_creation<TriggerType>(
+  TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
       "NearTimes:\n"
       "  Times:\n"
       "    Specified:\n"

@@ -15,7 +15,7 @@
 #include "Time/Time.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepController>();
+  Parallel::register_classes_with_charm<StepControllers::FullSlab>();
   const auto check = [](const auto& fs) noexcept {
     const Slab slab(1., 4.);
     CHECK(fs.choose_step(slab.start(), 4.) == slab.duration());
@@ -31,5 +31,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
   };
   check(StepControllers::FullSlab{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_factory_creation<StepController>("FullSlab")));
+      TestHelpers::test_factory_creation<
+          StepController, StepControllers::FullSlab>("FullSlab")));
 }

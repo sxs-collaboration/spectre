@@ -196,6 +196,8 @@ set(LIBRARY_SOURCES
   Test_TypeTraits.cpp
   )
 
+add_subdirectory(Tags)
+
 add_test_library(
   ${LIBRARY}
   "Parallel"

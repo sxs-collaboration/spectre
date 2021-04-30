@@ -258,7 +258,8 @@ void test_cylinder_construction(
 
   test_initial_domain(domain, cylinder.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::Cylinder::maps_list{});
   test_serialization(domain);
 }
 
@@ -342,13 +343,13 @@ void test_cylinder_no_refinement() {
         const auto cylinder_factory = [&opt_string,
                                        with_boundary_conditions]() {
           if (with_boundary_conditions) {
-            return TestHelpers::test_factory_creation<
-                DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+            return TestHelpers::test_option_tag<
+                domain::OptionTags::DomainCreator<3>,
                 TestHelpers::domain::BoundaryConditions::
                     MetavariablesWithBoundaryConditions<3>>(opt_string);
           } else {
-            return TestHelpers::test_factory_creation<
-                DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+            return TestHelpers::test_option_tag<
+                domain::OptionTags::DomainCreator<3>,
                 TestHelpers::domain::BoundaryConditions::
                     MetavariablesWithoutBoundaryConditions<3>>(opt_string);
           }
@@ -836,7 +837,8 @@ void test_refined_cylinder_boundaries(
 
   test_initial_domain(domain, refined_cylinder.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::Cylinder::maps_list{});
   test_serialization(domain);
 }
 
@@ -1242,7 +1244,8 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
 
   test_initial_domain(domain, refined_cylinder.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename creators::Cylinder::maps_list{});
   test_serialization(domain);
 }
 

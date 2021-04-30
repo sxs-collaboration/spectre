@@ -44,6 +44,12 @@
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "ScalarField"; }
@@ -382,6 +388,9 @@ struct Metavariables {
         return Phase::Exit;
     }
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 /// [metavars]
 

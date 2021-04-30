@@ -30,6 +30,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -584,6 +585,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   using all_cache_tags = get_const_global_cache_tags<metavariables>;
   using initial_databox = db::compute_databox_type<tmpl::flatten<tmpl::list<
+      Tags::MetavariablesImpl<metavariables>,
       Tags::GlobalCacheImpl<metavariables>,
       typename ParallelComponent::initialization_tags,
       db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>>;
@@ -643,10 +645,12 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   global_cache_ = global_cache_proxy.ckLocalBranch();
   box_ = db::create<
       db::AddSimpleTags<tmpl::flatten<
-          tmpl::list<Tags::GlobalCacheImpl<metavariables>,
+          tmpl::list<Tags::MetavariablesImpl<metavariables>,
+                     Tags::GlobalCacheImpl<metavariables>,
                      typename ParallelComponent::initialization_tags>>>,
       db::AddComputeTags<
           db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
+          metavariables{},
           global_cache_,
       std::move(get<InitializationTags>(initialization_items))...);
 }

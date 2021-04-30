@@ -62,7 +62,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
           std::make_pair(expected, true));
   }
 
-  TestHelpers::test_factory_creation<StepChooserType>(
+  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>(
       "ByBlock:\n"
       "  Sizes: [1.0, 2.0]");
 }

@@ -54,8 +54,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.BoundaryCorrectionTags",
                   "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<evolution::Tags::BoundaryCorrection<System>>(
       "BoundaryCorrection");
-  const auto boundary_correction = TestHelpers::test_factory_creation<
-      BoundaryCorrectionBase,
+  const auto boundary_correction = TestHelpers::test_option_tag<
       evolution::OptionTags::BoundaryCorrection<System>>("BoundaryCorrection");
   CHECK(dynamic_cast<const BoundaryCorrection*>(boundary_correction.get()) !=
         nullptr);

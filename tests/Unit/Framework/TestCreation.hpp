@@ -6,13 +6,29 @@
 #include <boost/algorithm/string.hpp>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace TestHelpers {
 namespace TestCreation_detail {
+template <typename T, typename = std::void_t<>>
+struct looks_like_tag : std::false_type {};
+
+template <typename T>
+struct looks_like_tag<T, std::void_t<typename T::type>> : std::true_type {};
+
+template <typename T>
+struct TestCreationOpt {
+  using type = T;
+  static constexpr Options::String help = {"halp"};
+};
+
 template <typename Tag, typename = void>
 struct AddGroups {
   template <typename OptionTag = Tag>
@@ -32,41 +48,63 @@ struct AddGroups<Tag, std::void_t<typename Tag::group>> {
         AddGroups<void>::template apply<Tag>(construction_string));
   }
 };
+
+template <typename BaseClass, typename DerivedClass>
+struct SingleFactoryMetavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<BaseClass, tmpl::list<DerivedClass>>>;
+  };
+};
 }  // namespace TestCreation_detail
 
 /// \ingroup TestingFrameworkGroup
-/// The default option tag for `TestHelpers::test_creation()`, and
-/// `TestHelpers::test_factory_creation()`.
-template <typename T>
-struct TestCreationOpt {
-  using type = T;
-  static constexpr Options::String help = {"halp"};
-};
+/// Creates an instance of a given option-creatable type.
+///
+/// This is a wrapper around Options::Parser constructing a single,
+/// specified type \p T from the supplied string.  If necessary,
+/// metavariables can be supplied as the second template argument.
+///
+/// A class can be explicitly created through a factory by passing
+/// `std::unique_ptr<BaseClass>` as the type.  This will require
+/// metavariables to be passed.  For testing basic factory creation,
+/// the simpler TestHelpers::test_factory_creation() can be used
+/// instead.
+///
+/// \snippet Test_TestCreation.cpp class_without_metavariables
+/// \snippet Test_TestCreation.cpp class_without_metavariables_create
+///
+/// \see TestHelpers::test_option_tag()
+template <typename T, typename Metavariables = NoSuchType>
+T test_creation(const std::string& construction_string) noexcept {
+  static_assert(not TestCreation_detail::looks_like_tag<Metavariables>::value,
+                "test_creation no longer allows overriding the default "
+                "option tag.  To test a particular option tag use "
+                "test_option_tag.");
+  using tag = TestCreation_detail::TestCreationOpt<T>;
+  Options::Parser<tmpl::list<tag>> options("");
+  options.parse(
+      TestCreation_detail::AddGroups<tag>::apply(construction_string));
+  return options.template get<tag, Metavariables>();
+}
 
 /// \ingroup TestingFrameworkGroup
-/// Construct an object or enum from a given string.
+/// Runs the option parser on a given tag
 ///
-/// When creating a non-enum option the string must not contain the name of the
-/// option (specifically, the struct being created from options, which is the
-/// name of the struct by default if no `name()` function is present). For
-/// example, to create a struct named `ClassWithoutMetavariables` with an option
-/// tag named `SizeT` the following would be used:
+/// Runs the option parser with the supplied input on a given tag.
+/// The tag name and any groups are handled by this function and
+/// should not be supplied in the argument string.  If necessary,
+/// metavariables can be supplied as the second template argument.
 ///
-/// \snippet Test_TestCreation.cpp size_t_argument
+/// \snippet Test_TestCreation.cpp class_without_metavariables
+/// \snippet Test_TestCreation.cpp class_without_metavariables_tag
+/// \snippet Test_TestCreation.cpp class_without_metavariables_create_tag
 ///
-/// When creating an enum option the string must not contain the name of the
-/// enum being constructed. The following is an example of an enum named `Color`
-/// with a member `Purple` being created from options.
-///
-/// \snippet Test_TestCreation.cpp enum_purple
-///
-/// Option tags can be tested by passing them as the second template parameter.
-/// If the metavariables are required to create the class then the metavariables
-/// must be passed as the third template parameter. The default option tag is
-/// `TestCreationOpt<T>`.
-template <typename T, typename OptionTag = TestCreationOpt<T>,
-          typename Metavariables = NoSuchType>
-T test_creation(const std::string& construction_string) noexcept {
+/// \see TestHelpers::test_creation()
+template <typename OptionTag, typename Metavariables = NoSuchType>
+typename OptionTag::type test_option_tag(
+    const std::string& construction_string) noexcept {
   Options::Parser<tmpl::list<OptionTag>> options("");
   options.parse(
       TestCreation_detail::AddGroups<OptionTag>::apply(construction_string));
@@ -74,27 +112,25 @@ T test_creation(const std::string& construction_string) noexcept {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// Construct a factory object from a given string.
+/// Creates a class of a known derived type using a factory.
 ///
-/// The string must contain the name of the option (specifically, the struct
-/// being created from options, which is the name of the struct). Note that it
-/// is not the name of the base class, but the name of the derived class that
-/// must be given. For example, to create a `BaseClass*` pointing to a derived
-/// class of type `size_t_argument_base` with an option tag name `SizeT` the
-/// following would be used:
+/// This is a shorthand for creating a \p DerivedClass through a \p
+/// BaseClass factory, saving the caller from having to explicitly
+/// write metavariables with the appropriate `factory_classes` alias.
+/// The name of the type should be supplied as the first line of the
+/// passed string, just as for normal use of a factory.
 ///
-/// \snippet Test_TestCreation.cpp size_t_argument_base
+/// If multiple factory creatable types must be handled or if
+/// metavariables must be passed for some other reason, then the more
+/// general TestHelpers::test_creation() must be used instead.
 ///
-/// Option tags can be tested by passing them as the second template parameter.
-/// If the metavariables are required to create the class then the metavariables
-/// must be passed as the third template parameter. The default option tag is
-/// `TestCreationOpt<std::unique_ptr<BaseClass>>`.
-template <typename BaseClass,
-          typename OptionTag = TestCreationOpt<std::unique_ptr<BaseClass>>,
-          typename Metavariables = NoSuchType>
+/// \snippet Test_TestCreation.cpp test_factory_creation
+template <typename BaseClass, typename DerivedClass>
 std::unique_ptr<BaseClass> test_factory_creation(
     const std::string& construction_string) noexcept {
-  return TestHelpers::test_creation<std::unique_ptr<BaseClass>, OptionTag,
-                                    Metavariables>(construction_string);
+  return TestHelpers::test_creation<
+      std::unique_ptr<BaseClass>,
+      TestCreation_detail::SingleFactoryMetavariables<BaseClass, DerivedClass>>(
+      construction_string);
 }
 }  // namespace TestHelpers

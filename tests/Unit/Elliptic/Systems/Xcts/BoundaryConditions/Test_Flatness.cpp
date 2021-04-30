@@ -75,9 +75,9 @@ void test_flatness(const Flatness<>& boundary_condition) {
 
 SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.Flatness", "[Unit][Elliptic]") {
   // Test factory-creation
-  const auto created = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<
-          3, tmpl::list<Registrars::Flatness>>>("Flatness");
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
+          3, tmpl::list<Registrars::Flatness>>>>("Flatness");
   REQUIRE(dynamic_cast<const Flatness<>*>(created.get()) != nullptr);
   const auto& boundary_condition = dynamic_cast<const Flatness<>&>(*created);
   {

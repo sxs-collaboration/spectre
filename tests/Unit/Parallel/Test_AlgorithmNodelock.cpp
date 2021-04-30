@@ -34,6 +34,9 @@ static constexpr int number_of_1d_array_elements_per_core = 10;
 
 struct TestMetavariables;
 
+namespace PUP {
+class er;
+}  // namespace PUP
 namespace db {
 template <typename TagsList>
 class DataBox;
@@ -103,10 +106,11 @@ struct nodegroup_initialize {
 };
 
 struct nodegroup_receive {
-  template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<sizeof...(DbTags) == 3> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<db::tag_is_retrievable_v<Tags::vector_of_array_indexs,
+                                              db::DataBox<DbTags>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const int& id_of_array) {
     static_assert(std::is_same_v<ParallelComponent,
@@ -129,10 +133,11 @@ struct nodegroup_receive {
 };
 
 struct nodegroup_check_first_result {
-  template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<sizeof...(DbTags) == 3> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<db::tag_is_retrievable_v<Tags::vector_of_array_indexs,
+                                              db::DataBox<DbTags>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     static_assert(std::is_same_v<ParallelComponent,
@@ -154,10 +159,11 @@ struct nodegroup_check_first_result {
 
 struct nodegroup_threaded_receive {
   // [threaded_action_example]
-  template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<sizeof...(DbTags) == 3> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<db::tag_is_retrievable_v<Tags::vector_of_array_indexs,
+                                              db::DataBox<DbTags>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
@@ -182,10 +188,11 @@ struct nodegroup_threaded_receive {
 };
 
 struct nodegroup_check_threaded_result {
-  template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<sizeof...(DbTags) == 3> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<db::tag_is_retrievable_v<Tags::vector_of_array_indexs,
+                                              db::DataBox<DbTags>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     static_assert(std::is_same_v<ParallelComponent,
@@ -372,6 +379,9 @@ struct TestMetavariables {
 
     return Phase::Exit;
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

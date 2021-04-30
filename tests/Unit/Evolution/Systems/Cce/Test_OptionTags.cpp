@@ -77,69 +77,54 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::OutputNoninertialNews>(
       "OutputNoninertialNews");
 
-  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
-  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::FilterLMax>("7") ==
-        7_st);
-  CHECK(TestHelpers::test_creation<double, Cce::OptionTags::RadialFilterAlpha>(
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::LMax>("8") == 8_st);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::FilterLMax>("7") == 7_st);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::RadialFilterAlpha>(
             "32.5") == 32.5);
-  CHECK(TestHelpers::test_creation<size_t,
-                                   Cce::OptionTags::RadialFilterHalfPower>(
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::RadialFilterHalfPower>(
             "20") == 20_st);
-  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ObservationLMax>(
-            "6") == 6_st);
-  CHECK(
-      TestHelpers::test_creation<size_t, Cce::OptionTags::NumberOfRadialPoints>(
-          "3") == 3_st);
-  CHECK(TestHelpers::test_creation<double, Cce::OptionTags::ExtractionRadius>(
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ObservationLMax>("6") ==
+        6_st);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::NumberOfRadialPoints>(
+            "3") == 3_st);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ExtractionRadius>(
             "100.0") == 100.0);
-  CHECK(TestHelpers::test_creation<std::optional<double>,
-                                   Cce::OptionTags::ExtractionRadius>(
-            "100.0") == std::optional<double>{100.0});
 
-  CHECK(TestHelpers::test_creation<std::optional<double>,
-                                   Cce::OptionTags::EndTime>("4.0") ==
-        std::optional<double>{4.0});
-  CHECK(TestHelpers::test_creation<std::optional<double>,
-                                   Cce::OptionTags::EndTime>("Auto") ==
-        std::optional<double>{});
-  CHECK(TestHelpers::test_creation<std::optional<double>,
-                                   Cce::OptionTags::StartTime>("2.0") ==
-        std::optional<double>{2.0});
-  CHECK(TestHelpers::test_creation<std::optional<double>,
-                                   Cce::OptionTags::StartTime>("Auto") ==
-        std::optional<double>{});
-  CHECK(TestHelpers::test_creation<double, Cce::OptionTags::TargetStepSize>(
-            "0.5") == 0.5);
-  CHECK(TestHelpers::test_creation<std::string,
-                                   Cce::OptionTags::BoundaryDataFilename>(
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::EndTime>("4.0") ==
+        Options::Auto<double>{4.0});
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::EndTime>("Auto") ==
+        Options::Auto<double>{});
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::StartTime>("2.0") ==
+        Options::Auto<double>{2.0});
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::StartTime>("Auto") ==
+        Options::Auto<double>{});
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::TargetStepSize>("0.5") ==
+        0.5);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::BoundaryDataFilename>(
             "OptionTagsCceR0100.h5") == "OptionTagsCceR0100.h5");
-  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::H5LookaheadTimes>(
-            "5") == 5_st);
-  CHECK(TestHelpers::test_creation<size_t,
-                                   Cce::OptionTags::ScriInterpolationOrder>(
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::H5LookaheadTimes>("5") ==
+        5_st);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ScriInterpolationOrder>(
             "4") == 4_st);
 
-  auto option_created_lockstep_interface_manager = TestHelpers::test_creation<
-      std::unique_ptr<Cce::InterfaceManagers::GhInterfaceManager>,
-      Cce::OptionTags::GhInterfaceManager>("GhLockstep");
+  auto option_created_lockstep_interface_manager =
+      TestHelpers::test_option_tag<Cce::OptionTags::GhInterfaceManager>(
+          "GhLockstep");
   CHECK(std::is_same_v<
         decltype(option_created_lockstep_interface_manager),
         std::unique_ptr<Cce::InterfaceManagers::GhInterfaceManager>>);
 
-  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ScriOutputDensity>(
-            "6") == 6_st);
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ScriOutputDensity>("6") ==
+        6_st);
 
-  TestHelpers::test_creation<std::unique_ptr<::Cce::InitializeJ::InitializeJ>,
-                             Cce::OptionTags::InitializeJ>("InverseCubic");
-  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
-                             Cce::OptionTags::AnalyticSolution>(
+  TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ>("InverseCubic");
+  TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "BouncingBlackHole:\n"
       "  Period: 40.0\n"
       "  ExtractionRadius: 30.0\n"
       "  Mass: 1.0\n"
       "  Amplitude: 2.0");
-  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
-                             Cce::OptionTags::AnalyticSolution>(
+  TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "GaugeWave:\n"
       "  ExtractionRadius: 40.0\n"
       "  Mass: 1.0\n"
@@ -147,20 +132,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  Amplitude: 0.1\n"
       "  PeakTime: 50.0\n"
       "  Duration: 10.0");
-  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
-                             Cce::OptionTags::AnalyticSolution>(
+  TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "LinearizedBondiSachs:\n"
       "  ExtractionRadius: 40.0\n"
       "  InitialModes: [[0.20, 0.10], [0.08, 0.04]]\n"
       "  Frequency: 0.2");
-  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
-                             Cce::OptionTags::AnalyticSolution>(
+  TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "RotatingSchwarzschild:\n"
       "  ExtractionRadius: 20.0\n"
       "  Mass: 1.0\n"
       "  Frequency: 0.0");
-  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
-                             Cce::OptionTags::AnalyticSolution>(
+  TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "TeukolskyWave:\n"
       "  ExtractionRadius: 40.0\n"
       "  Amplitude: 0.1\n"

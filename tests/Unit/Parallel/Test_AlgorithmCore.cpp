@@ -732,6 +732,9 @@ struct TestMetavariables {
     return Phase::Exit;
   }
   // [determine_next_phase_example]
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 // [charm_init_funcs_example]

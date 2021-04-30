@@ -45,9 +45,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
   using triggers = tmpl::list<>;
   Parallel::GlobalCache<Metavariables> cache{};
 
-  const auto created_phase_changes = TestHelpers::test_creation<
-      typename PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes,
-                                                                triggers>::type,
+  const auto created_phase_changes = TestHelpers::test_option_tag<
       PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes,
                                                        triggers>>(
       " - - Always:\n"

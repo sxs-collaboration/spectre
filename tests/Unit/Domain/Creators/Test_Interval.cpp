@@ -228,8 +228,8 @@ void test_interval_factory() {
        {Direction<1>::upper_xi(), {0, {}}}}};
   {
     INFO("Interval factory time independent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<1>>(
         "Interval:\n"
@@ -246,8 +246,8 @@ void test_interval_factory() {
   }
   {
     INFO("Interval factory time independent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<1>>(
         "Interval:\n"
@@ -273,8 +273,8 @@ void test_interval_factory() {
   }
   {
     INFO("Interval factory time dependent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<1>>(
         "Interval:\n"
@@ -305,8 +305,8 @@ void test_interval_factory() {
   }
   {
     INFO("Interval factory time dependent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<1>>(
         "Interval:\n"

@@ -376,7 +376,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
           tmpl::list<Registrars::Gmres<DenseVector<double>>>;
       using LinearSolverFactory = LinearSolver<LinearSolverRegistrars>;
       const auto solver =
-          TestHelpers::test_factory_creation<LinearSolverFactory>(
+          TestHelpers::test_creation<std::unique_ptr<LinearSolverFactory>>(
               "Gmres:\n"
               "  ConvergenceCriteria:\n"
               "    MaxIterations: 2\n"

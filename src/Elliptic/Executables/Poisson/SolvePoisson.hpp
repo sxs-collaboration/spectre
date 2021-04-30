@@ -58,6 +58,12 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 namespace SolvePoisson::OptionTags {
 struct LinearSolverGroup {
   static std::string name() noexcept { return "LinearSolver"; }
@@ -249,6 +255,9 @@ struct Metavariables {
             "value?");
     }
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Slabs", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<TriggerType>();
   Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
 
-  const auto trigger = TestHelpers::test_factory_creation<TriggerType>(
+  const auto trigger = TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
       "Slabs:\n"
       "  Specified:\n"
       "    Values: [3, 6, 8]");

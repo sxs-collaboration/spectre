@@ -89,12 +89,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.Registration", "[Unit][Utilities]") {
       Base<tmpl::list<Registrars::Derived1, Registrars::Derived2<double>,
                       Registrars::Derived3<4>>>;
   // [registrar_use]
-  CHECK(TestHelpers::test_factory_creation<ConcreteBase>("Derived1")->func() ==
-        1);
-  CHECK(TestHelpers::test_factory_creation<ConcreteBase>("Derived2")->func() ==
-        2);
-  CHECK(TestHelpers::test_factory_creation<ConcreteBase>("Derived3")->func() ==
-        4);
+  CHECK(TestHelpers::test_creation<std::unique_ptr<ConcreteBase>>("Derived1")
+            ->func() == 1);
+  CHECK(TestHelpers::test_creation<std::unique_ptr<ConcreteBase>>("Derived2")
+            ->func() == 2);
+  CHECK(TestHelpers::test_creation<std::unique_ptr<ConcreteBase>>("Derived3")
+            ->func() == 4);
 
   // Test standalone derived classes
   CHECK(Derived1<>{}.func() == 1);

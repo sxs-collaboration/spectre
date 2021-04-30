@@ -25,6 +25,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -352,6 +353,7 @@ class MockDistributedObject {
   using initialization_tags =
       typename detail::get_initialization_tags_from_component<Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
+      Parallel::Tags::MetavariablesImpl<metavariables>,
       Parallel::Tags::GlobalCacheImpl<metavariables>, initialization_tags,
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>;
   using initial_databox = db::compute_databox_type<initial_tags>;
@@ -394,10 +396,11 @@ class MockDistributedObject {
         inboxes_(inboxes) {
     box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
         db::create<
-            db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<metavariables>>,
+            db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                              Parallel::Tags::GlobalCacheImpl<metavariables>>,
             db::AddComputeTags<db::wrap_tags_in<Parallel::Tags::FromGlobalCache,
                                                 all_cache_tags>>>(
-            global_cache_),
+            metavariables{}, global_cache_),
         std::forward<Options>(opts)...);
   }
 

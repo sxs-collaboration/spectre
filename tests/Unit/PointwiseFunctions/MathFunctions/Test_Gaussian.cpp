@@ -78,7 +78,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
                   "[PointwiseFunctions][Unit]") {
-  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
+  TestHelpers::test_creation<std::unique_ptr<MathFunction<1, Frame::Inertial>>>(
       "Gaussian:\n"
       "  Amplitude: 3\n"
       "  Width: 2\n"
@@ -95,10 +95,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
           "Width: 1.5\n"
           "Center: [1.1, -2.2, 3.3]");
   CHECK(created_gauss == gauss_3d);
-  const auto created_gauss_mathfunction =
-      TestHelpers::test_factory_creation<MathFunction<3, Frame::Inertial>>(
-          "Gaussian:\n"
-          "  Amplitude: 4.0\n"
-          "  Width: 1.5\n"
-          "  Center: [1.1, -2.2, 3.3]");
+  const auto created_gauss_mathfunction = TestHelpers::test_creation<
+      std::unique_ptr<MathFunction<3, Frame::Inertial>>>(
+      "Gaussian:\n"
+      "  Amplitude: 4.0\n"
+      "  Width: 1.5\n"
+      "  Center: [1.1, -2.2, 3.3]");
 }

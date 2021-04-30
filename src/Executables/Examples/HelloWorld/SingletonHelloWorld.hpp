@@ -18,6 +18,10 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 /// [executable_example_includes]
 
 /// [executable_example_options]
@@ -101,6 +105,9 @@ struct Metavars {
     return current_phase == Phase::Initialization ? Phase::Execute
                                                   : Phase::Exit;
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 /// [executable_example_metavariables]
 

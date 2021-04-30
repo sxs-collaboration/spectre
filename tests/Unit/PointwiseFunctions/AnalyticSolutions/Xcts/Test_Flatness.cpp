@@ -21,9 +21,9 @@ namespace Xcts::Solutions {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Xcts.Flatness",
                   "[PointwiseFunctions][Unit]") {
-  const auto created =
-      TestHelpers::test_factory_creation<Xcts::Solutions::AnalyticSolution<
-          tmpl::list<Xcts::Solutions::Registrars::Flatness>>>("Flatness");
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<Xcts::Solutions::AnalyticSolution<
+          tmpl::list<Xcts::Solutions::Registrars::Flatness>>>>("Flatness");
   REQUIRE(dynamic_cast<const Flatness<>*>(created.get()) != nullptr);
   const auto& solution = dynamic_cast<const Flatness<>&>(*created);
   {

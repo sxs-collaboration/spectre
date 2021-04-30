@@ -32,3 +32,5 @@ target_link_libraries(
   Utilities
   YamlCpp
   )
+
+add_subdirectory(Protocols)

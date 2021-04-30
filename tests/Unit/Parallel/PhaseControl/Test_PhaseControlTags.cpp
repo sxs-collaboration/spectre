@@ -103,9 +103,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>(
       "PhaseChangeAndTriggers");
 
-  const auto created_phase_changes = TestHelpers::test_creation<
-      typename PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes,
-                                                                triggers>::type,
+  const auto created_phase_changes = TestHelpers::test_option_tag<
       PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes,
                                                        triggers>>(
       " - - Slabs:\n"

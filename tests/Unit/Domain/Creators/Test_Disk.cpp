@@ -136,7 +136,7 @@ void test_disk_construction(
 
   test_initial_domain(domain, disk.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<typename creators::Disk::maps_list>();
+  Parallel::register_classes_with_charm(typename creators::Disk::maps_list{});
   test_serialization(domain);
 }
 
@@ -189,8 +189,8 @@ void test_disk_boundaries_equiangular() {
 
 void test_disk_factory_equiangular() {
   INFO("Disk factory equiangular");
-  const auto disk = TestHelpers::test_factory_creation<
-      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+  const auto disk = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithoutBoundaryConditions<2>>(
       "Disk:\n"
@@ -208,8 +208,8 @@ void test_disk_factory_equiangular() {
                          inner_radius, outer_radius, grid_points,
                          {5, make_array<2>(refinement_level)}, true);
 
-  const auto disk_boundary_conditions = TestHelpers::test_factory_creation<
-      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+  const auto disk_boundary_conditions = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithBoundaryConditions<2>>(
       "Disk:\n"
@@ -270,8 +270,8 @@ void test_disk_boundaries_equidistant() {
 
 void test_disk_factory_equidistant() {
   INFO("Disk factory equidistant");
-  const auto disk = TestHelpers::test_factory_creation<
-      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+  const auto disk = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithoutBoundaryConditions<2>>(
       "Disk:\n"
@@ -289,8 +289,8 @@ void test_disk_factory_equidistant() {
                          inner_radius, outer_radius, grid_points,
                          {5, make_array<2>(refinement_level)}, false);
 
-  const auto disk_boundary_conditions = TestHelpers::test_factory_creation<
-      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+  const auto disk_boundary_conditions = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
           MetavariablesWithBoundaryConditions<2>>(
       "Disk:\n"

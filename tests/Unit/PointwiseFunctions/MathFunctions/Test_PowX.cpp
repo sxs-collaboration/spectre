@@ -58,9 +58,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX.Factory",
                   "[PointwiseFunctions][Unit]") {
-  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
+  TestHelpers::test_creation<std::unique_ptr<MathFunction<1, Frame::Inertial>>>(
       "PowX:\n    Power: 3");
-  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
+  TestHelpers::test_creation<std::unique_ptr<MathFunction<1, Frame::Inertial>>>(
       "PowX:\n    Power: 3");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.PointwiseFunctions.MathFunctions.PowX.Factory does not need to

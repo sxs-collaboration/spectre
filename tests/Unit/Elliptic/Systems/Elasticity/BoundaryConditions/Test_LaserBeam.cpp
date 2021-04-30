@@ -61,9 +61,9 @@ void apply_boundary_condition(
 SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
                   "[Unit][Elliptic]") {
   // Test factory-creation
-  const auto created = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<
-          3, tmpl::list<Registrars::LaserBeam>>>(
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
+          3, tmpl::list<Registrars::LaserBeam>>>>(
       "LaserBeam:\n"
       "  BeamWidth: 2.");
 

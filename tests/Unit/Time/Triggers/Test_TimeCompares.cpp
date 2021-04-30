@@ -20,7 +20,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.TimeCompares", "[Unit][Time]") {
   using TriggerType = Trigger<tmpl::list<Triggers::Registrars::TimeCompares>>;
   Parallel::register_derived_classes_with_charm<TriggerType>();
 
-  const auto trigger = TestHelpers::test_factory_creation<TriggerType>(
+  const auto trigger = TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
       "TimeCompares:\n"
       "  Comparison: GreaterThan\n"
       "  Value: 3.5");

@@ -17,6 +17,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+namespace PUP {
+class er;
+}  // namespace PUP
 namespace db {
 template <typename TagsList>
 class DataBox;
@@ -77,6 +80,9 @@ struct TestMetavariables {
     }
     return Phase::Exit;
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

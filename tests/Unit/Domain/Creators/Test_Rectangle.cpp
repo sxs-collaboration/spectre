@@ -229,8 +229,8 @@ void test_rectangle_factory() {
 
   {
     INFO("Rectangle factory time independent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<2>>(
         "Rectangle:\n"
@@ -250,8 +250,8 @@ void test_rectangle_factory() {
   }
   {
     INFO("Rectangle factory time independent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<2>>(
         "Rectangle:\n"
@@ -276,8 +276,8 @@ void test_rectangle_factory() {
   }
   {
     INFO("Rectangle factory time dependent");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithoutBoundaryConditions<2>>(
         "Rectangle:\n"
@@ -315,8 +315,8 @@ void test_rectangle_factory() {
   }
   {
     INFO("Rectangle factory time dependent, with boundary conditions");
-    const auto domain_creator = TestHelpers::test_factory_creation<
-        DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<2>>(
         "Rectangle:\n"

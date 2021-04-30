@@ -156,8 +156,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseChange",
           std::numeric_limits<double>::signaling_NaN(), -5);
   tuples::TaggedTuple<Tags::Request> phase_change_decision_data{true};
 
-  auto phase_change = TestHelpers::test_factory_creation<
-      PhaseChange<tmpl::list<Registrars::TestPhaseChange>>>(
+  auto phase_change = TestHelpers::test_creation<
+      std::unique_ptr<PhaseChange<tmpl::list<Registrars::TestPhaseChange>>>>(
       "TestPhaseChange:\n"
       "  Factor: 3");
 

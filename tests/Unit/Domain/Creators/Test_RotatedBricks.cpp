@@ -158,8 +158,8 @@ void test_rotated_bricks_construction(
                            expected_boundary_conditions);
   test_initial_domain(domain, rotated_bricks.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<
-      typename domain::creators::RotatedBricks::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::RotatedBricks::maps_list{});
   test_serialization(domain);
 }
 
@@ -399,13 +399,13 @@ void test_rotated_bricks_factory() {
                         : "  IsPeriodicIn: [false, false, false]\n"}};
     const auto domain_creator = [&opt_string, with_boundary_conditions]() {
       if (with_boundary_conditions) {
-        return TestHelpers::test_factory_creation<
-            DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        return TestHelpers::test_option_tag<
+            domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
                 MetavariablesWithBoundaryConditions<3>>(opt_string);
       } else {
-        return TestHelpers::test_factory_creation<
-            DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        return TestHelpers::test_option_tag<
+            domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
                 MetavariablesWithoutBoundaryConditions<3>>(opt_string);
       }

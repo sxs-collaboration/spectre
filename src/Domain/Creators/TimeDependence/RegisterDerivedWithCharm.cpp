@@ -38,7 +38,7 @@ void register_maps_with_charm() noexcept {
           domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                                 CoordinateMaps::Identity<Dim>>>>>;
 
-  Parallel::register_classes_in_list<maps_to_register>();
+  Parallel::register_classes_with_charm(maps_to_register{});
 }
 }  // namespace
 

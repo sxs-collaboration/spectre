@@ -418,14 +418,14 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
   const auto binary_compact_object = [&with_boundary_conditions]() {
     if (with_boundary_conditions) {
-      return TestHelpers::test_factory_creation<
-          DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      return TestHelpers::test_option_tag<
+          domain::OptionTags::DomainCreator<3>,
           TestHelpers::domain::BoundaryConditions::
               MetavariablesWithBoundaryConditions<3>>(create_option_string(
           true, true, true, false, 0, 0, 0, with_boundary_conditions));
     } else {
-      return TestHelpers::test_factory_creation<
-          DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      return TestHelpers::test_option_tag<
+          domain::OptionTags::DomainCreator<3>,
           TestHelpers::domain::BoundaryConditions::
               MetavariablesWithoutBoundaryConditions<3>>(create_option_string(
           true, true, true, false, 0, 0, 0, with_boundary_conditions));
@@ -494,13 +494,13 @@ void test_binary_factory() {
     const auto binary_compact_object = [&opt_string,
                                         &with_boundary_conditions]() {
       if (with_boundary_conditions) {
-        return TestHelpers::test_factory_creation<
-            DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        return TestHelpers::test_option_tag<
+            domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
                 MetavariablesWithBoundaryConditions<3>>(opt_string);
       } else {
-        return TestHelpers::test_factory_creation<
-            DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        return TestHelpers::test_option_tag<
+            domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
                 MetavariablesWithoutBoundaryConditions<3>>(opt_string);
       }

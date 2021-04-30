@@ -15,8 +15,7 @@ namespace GeneralizedHarmonic::ConstraintDamping {
 namespace {
 template <size_t Dim, typename Fr>
 void register_damping_functions_with_charm() noexcept {
-  Parallel::register_classes_in_list<
-      typename DampingFunction<Dim, Fr>::creatable_classes>();
+  Parallel::register_derived_classes_with_charm<DampingFunction<Dim, Fr>>();
 }
 }  // namespace
 

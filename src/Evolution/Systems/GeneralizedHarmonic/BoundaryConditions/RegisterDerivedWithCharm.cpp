@@ -9,11 +9,8 @@
 
 namespace GeneralizedHarmonic::BoundaryConditions {
 void register_derived_with_charm() noexcept {
-  Parallel::register_classes_in_list<
-      typename BoundaryCondition<1>::creatable_classes>();
-  Parallel::register_classes_in_list<
-      typename BoundaryCondition<2>::creatable_classes>();
-  Parallel::register_classes_in_list<
-      typename BoundaryCondition<3>::creatable_classes>();
+  Parallel::register_derived_classes_with_charm<BoundaryCondition<1>>();
+  Parallel::register_derived_classes_with_charm<BoundaryCondition<2>>();
+  Parallel::register_derived_classes_with_charm<BoundaryCondition<3>>();
 }
 }  // namespace GeneralizedHarmonic::BoundaryConditions

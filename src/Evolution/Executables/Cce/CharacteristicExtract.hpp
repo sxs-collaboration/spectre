@@ -37,6 +37,12 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 template <template <typename> class BoundaryComponent>
 struct EvolutionMetavars {
   using system = Cce::System;
@@ -125,6 +131,9 @@ struct EvolutionMetavars {
       return Phase::Exit;
     }
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

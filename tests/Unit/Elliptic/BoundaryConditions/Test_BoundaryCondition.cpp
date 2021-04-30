@@ -110,8 +110,9 @@ PUP::able::PUP_ID TestBoundaryCondition<Registrars>::my_PUP_ID = 0;
 SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.Base", "[Unit][Elliptic]") {
   using BoundaryConditionType = TestBoundaryCondition<>;
   // Factory-create a boundary condition and cast down to derived class
-  const auto boundary_condition_base = TestHelpers::test_factory_creation<
-      BoundaryCondition<1, tmpl::list<TestRegistrar>>>("TestBoundaryCondition");
+  const auto boundary_condition_base = TestHelpers::test_creation<
+      std::unique_ptr<BoundaryCondition<1, tmpl::list<TestRegistrar>>>>(
+          "TestBoundaryCondition");
   const auto& boundary_condition =
       dynamic_cast<const BoundaryConditionType&>(*boundary_condition_base);
 

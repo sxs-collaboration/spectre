@@ -241,8 +241,8 @@ void test_sphere_construction(
   test_initial_domain(domain, sphere.initial_refinement_levels());
   test_initial_domain(domain_no_corners, sphere.initial_refinement_levels());
 
-  Parallel::register_classes_in_list<
-      typename domain::creators::Sphere::maps_list>();
+  Parallel::register_classes_with_charm(
+      typename domain::creators::Sphere::maps_list{});
 
   test_serialization(domain);
   test_serialization(domain_no_corners);
@@ -296,8 +296,8 @@ void test_sphere_factory_equiangular() {
   INFO("Sphere factory equiangular");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto sphere = TestHelpers::test_factory_creation<
-        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+    const auto sphere = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,
@@ -354,8 +354,8 @@ void test_sphere_factory_equidistant() {
   INFO("Sphere factory equidistant");
   const auto helper = [](const auto expected_boundary_conditions,
                          auto use_boundary_condition) {
-    const auto sphere = TestHelpers::test_factory_creation<
-        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+    const auto sphere = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
                                 MetavariablesWithBoundaryConditions<3>,

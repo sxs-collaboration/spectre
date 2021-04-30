@@ -55,7 +55,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
   check(std::numeric_limits<double>::infinity(),
         std::numeric_limits<double>::infinity());
 
-  TestHelpers::test_factory_creation<StepChooserType>(
+  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>(
       "Increase:\n"
       "  Factor: 5.0");
 }

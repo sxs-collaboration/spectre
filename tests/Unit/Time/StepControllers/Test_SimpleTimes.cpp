@@ -17,7 +17,7 @@
 // IWYU pragma: no_include "Utilities/Rational.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepController>();
+  Parallel::register_classes_with_charm<StepControllers::SimpleTimes>();
   const auto check = [](const auto& st) noexcept {
     const Slab slab(1., 4.);
     CHECK(st.choose_step(slab.start(), 4.) == slab.duration());
@@ -41,5 +41,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
   };
   check(StepControllers::SimpleTimes{});
   check(*serialize_and_deserialize(
-      TestHelpers::test_factory_creation<StepController>("SimpleTimes")));
+      TestHelpers::test_factory_creation<
+          StepController, StepControllers::SimpleTimes>("SimpleTimes")));
 }

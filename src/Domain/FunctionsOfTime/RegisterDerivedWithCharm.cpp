@@ -15,11 +15,10 @@
 namespace domain {
 namespace FunctionsOfTime {
 void register_derived_with_charm() noexcept {
-  using to_register = tmpl::list<FunctionsOfTime::PiecewisePolynomial<2>,
-                                 FunctionsOfTime::PiecewisePolynomial<3>,
-                                 FunctionsOfTime::PiecewisePolynomial<4>,
-                                 FunctionsOfTime::SettleToConstant>;
-  Parallel::register_classes_in_list<to_register>();
+  Parallel::register_classes_with_charm<FunctionsOfTime::PiecewisePolynomial<2>,
+                                        FunctionsOfTime::PiecewisePolynomial<3>,
+                                        FunctionsOfTime::PiecewisePolynomial<4>,
+                                        FunctionsOfTime::SettleToConstant>();
 }
 }  // namespace FunctionsOfTime
 }  // namespace domain
