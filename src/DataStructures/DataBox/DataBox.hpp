@@ -136,27 +136,13 @@ struct create_compute_tag_argument_edges {
                  tmpl::pin<ComputeTag>>>;
 };
 
-template <typename Tag>
-struct create_subitem_reverse_edge {
-  // This edge records that the value of a subitem of a compute
-  // item depend on the value of the compute item itself.
-  using type = tmpl::edge<typename Tag::parent_tag, Tag>;
-};
-
-template <typename TagsList, typename ComputeTagsList>
+template <typename TagsList, typename ImmutableItemTagsList>
 struct create_dependency_graph {
-  using compute_tag_argument_edges =
-      tmpl::join<tmpl::transform<ComputeTagsList,
+  using immutable_item_argument_edges =
+      tmpl::join<tmpl::transform<ImmutableItemTagsList,
                                  detail::create_compute_tag_argument_edges<
                                      tmpl::pin<TagsList>, tmpl::_1>>>;
-  using subitems_that_need_reverse_edges = tmpl::transform<
-      tmpl::filter<compute_tag_argument_edges,
-                   db::is_reference_tag<tmpl::get_source<tmpl::_1>>>,
-      tmpl::get_source<tmpl::_1>>;
-  using subitem_reverse_edges =
-      tmpl::transform<subitems_that_need_reverse_edges,
-                      create_subitem_reverse_edge<tmpl::_1>>;
-  using type = tmpl::append<compute_tag_argument_edges, subitem_reverse_edges>;
+  using type = immutable_item_argument_edges;
 };
 }  // namespace detail
 
@@ -182,7 +168,8 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
    */
   using tags_list = tmpl::list<Tags...>;
 
-  /// A list of all the immutable item tags, including their subitems
+  /// A list of all the immutable item tags, including their subitems.
+  /// Immutable items are compute tags and reference tags.
   using immutable_item_tags =
       tmpl::filter<tags_list, db::is_immutable_item_tag<tmpl::_1>>;
 
@@ -300,6 +287,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename ComputeTag, typename... ArgumentTags>
   void evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const;
 
+  // retrieves the reference of the ReferenceTag passing along items fetched via
+  // ArgumentTags
+  template <typename ReferenceTag, typename... ArgumentTags>
+  const auto& get_reference_item(tmpl::list<ArgumentTags...> /*meta*/) const;
+
   // get a constant reference to the item corresponding to Tag
   template <typename Tag>
   const auto& get_item() const {
@@ -374,7 +366,7 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   using edge_list =
       typename detail::create_dependency_graph<tags_list,
-                                               compute_item_tags>::type;
+                                               immutable_item_tags>::type;
 
   bool mutate_locked_box_{false};
 };
@@ -751,6 +743,13 @@ void DataBox<tmpl::list<Tags...>>::evaluate_compute_item(
 }
 
 template <typename... Tags>
+template <typename ReferenceTag, typename... ArgumentTags>
+const auto& DataBox<tmpl::list<Tags...>>::get_reference_item(
+    tmpl::list<ArgumentTags...> /*meta*/) const {
+  return ReferenceTag::get(get<ArgumentTags>()...);
+}
+
+template <typename... Tags>
 template <typename Tag>
 const auto& DataBox<tmpl::list<Tags...>>::get() const {
   if constexpr (std::is_same_v<Tag, ::Tags::DataBox>) {
@@ -782,7 +781,7 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const {
     }
     if constexpr (detail::Item<item_tag>::item_type ==
                   detail::ItemType::Reference) {
-      return item_tag::get(get<typename item_tag::parent_tag>());
+      return get_reference_item<item_tag>(typename item_tag::argument_tags{});
     } else {
       if constexpr (detail::Item<item_tag>::item_type ==
                     detail::ItemType::Compute) {

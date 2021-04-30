@@ -74,6 +74,9 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
   void evaluate_compute_item(
       tmpl::list<ArgumentTags...> /*meta*/) const;
 
+  template <typename ReferenceTag, typename... ArgumentTags>
+  const auto& get_reference_item(tmpl::list<ArgumentTags...> /*meta*/) const;
+
   const DataBoxType* databox_ = nullptr;
 };
 
@@ -122,7 +125,7 @@ const auto& ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::get()
       using item_tag = db::detail::first_matching_tag<compute_item_tags, Tag>;
       if constexpr (db::detail::Item<item_tag>::item_type ==
                     db::detail::ItemType::Reference) {
-        return item_tag::get(get<typename item_tag::parent_tag>());
+        return get_reference_item<item_tag>(typename item_tag::argument_tags{});
       } else {
         if (not get_item<item_tag>().evaluated()) {
           evaluate_compute_item<item_tag>(typename item_tag::argument_tags{});
@@ -142,6 +145,14 @@ template <typename ComputeTag, typename... ArgumentTags>
 void ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::
     evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const {
   get_item<ComputeTag>().evaluate(get<ArgumentTags>()...);
+}
+
+template <typename DataBoxType, typename... ComputeTags>
+template <typename ReferenceTag, typename... ArgumentTags>
+const auto&
+ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::get_reference_item(
+    tmpl::list<ArgumentTags...> /*meta*/) const {
+  return ReferenceTag::get(get<ArgumentTags>()...);
 }
 
 template <typename ComputeTagsList, typename DataBoxType>

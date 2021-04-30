@@ -19,5 +19,13 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/DataBox"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ErrorHandling;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  ErrorHandling
+  Utilities
+)
