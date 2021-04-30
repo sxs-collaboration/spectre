@@ -19,28 +19,24 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-// IWYU pragma: no_forward_declare Tensor
 
+namespace Elasticity::ConstitutiveRelations {
 namespace {
 
 void test_semantics() {
   INFO("Test type traits");
-  const Elasticity::ConstitutiveRelations::CubicCrystal relation{3., 2., 1.};
-  CHECK(relation ==
-        Elasticity::ConstitutiveRelations::CubicCrystal{3., 2., 1.});
-  CHECK(relation !=
-        Elasticity::ConstitutiveRelations::CubicCrystal{2., 2., 2.});
-  CHECK(relation !=
-        Elasticity::ConstitutiveRelations::CubicCrystal{3., 0.2, 1.});
+  const CubicCrystal relation{3., 2., 1.};
+  CHECK(relation == CubicCrystal{3., 2., 1.});
+  CHECK(relation != CubicCrystal{2., 2., 2.});
+  CHECK(relation != CubicCrystal{3., 0.2, 1.});
   test_serialization(relation);
   test_copy_semantics(relation);
-  const auto created_relation = TestHelpers::test_creation<
-      Elasticity::ConstitutiveRelations::CubicCrystal>(
+  const auto created_relation = TestHelpers::test_creation<CubicCrystal>(
       "C_11: 3.\n"
       "C_12: 2.\n"
       "C_44: 1.\n");
   CHECK(created_relation == relation);
-  Elasticity::ConstitutiveRelations::CubicCrystal moved_relation{3., 2., 1.};
+  CubicCrystal moved_relation{3., 2., 1.};
   test_move_semantics(std::move(moved_relation), relation);
 }
 
@@ -53,17 +49,15 @@ void test_consistency(const tnsr::ii<DataVector, 3>& random_strain,
       youngs_modulus / (1. - 2. * poisson_ratio) / 3.;
   const double isotropic_shear_modulus =
       youngs_modulus / (1. + poisson_ratio) / 2.;
-  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>
-      isotropic_homogeneous_relation{isotropic_bulk_modulus,
-                                     isotropic_shear_modulus};
-  const double c_11 = youngs_modulus * (1.- poisson_ratio) /
+  const IsotropicHomogeneous<3> isotropic_homogeneous_relation{
+      isotropic_bulk_modulus, isotropic_shear_modulus};
+  const double c_11 = youngs_modulus * (1. - poisson_ratio) /
                       ((1. + poisson_ratio) * (1. - 2. * poisson_ratio));
   const double c_12 = youngs_modulus * poisson_ratio /
                       ((1. + poisson_ratio) * (1. - 2. * poisson_ratio));
   const double c_44 = isotropic_shear_modulus;
   // this should be isotropic homogeneous
-  const Elasticity::ConstitutiveRelations::CubicCrystal
-      cubic_crystalline_relation{c_11, c_12, c_44};
+  const CubicCrystal cubic_crystalline_relation{c_11, c_12, c_44};
   tnsr::II<DataVector, 3> cubic_crystalline_stress{
       random_strain.begin()->size()};
   cubic_crystalline_relation.stress(make_not_null(&cubic_crystalline_stress),
@@ -80,7 +74,7 @@ void test_consistency(const tnsr::ii<DataVector, 3>& random_strain,
     }
   }
   // This relation should be the negative identity
-  const Elasticity::ConstitutiveRelations::CubicCrystal relation{1., 0., 0.5};
+  const CubicCrystal relation{1., 0., 0.5};
   relation.stress(make_not_null(&cubic_crystalline_stress), random_strain,
                   random_inertial_coords);
   for (size_t i = 0; i < 3; i++) {
@@ -93,13 +87,12 @@ void test_consistency(const tnsr::ii<DataVector, 3>& random_strain,
 
 void test_implementation(const double youngs_modulus,
                          const double poisson_ratio, double shear_modulus) {
-  const Elasticity::ConstitutiveRelations::CubicCrystal relation{
-      youngs_modulus, poisson_ratio, shear_modulus};
+  const CubicCrystal relation{youngs_modulus, poisson_ratio, shear_modulus};
   pypp::check_with_random_values<1>(
-      static_cast<void (Elasticity::ConstitutiveRelations::CubicCrystal::*)(
+      static_cast<void (CubicCrystal::*)(
           gsl::not_null<tnsr::II<DataVector, 3>*>,
           const tnsr::ii<DataVector, 3>&, const tnsr::I<DataVector, 3>&) const>(
-          &Elasticity::ConstitutiveRelations::CubicCrystal::stress),
+          &CubicCrystal::stress),
       relation, "CubicCrystal", {"stress"}, {{{-1., 1.}}},
       std::tuple<double, double, double>{youngs_modulus, poisson_ratio,
                                          shear_modulus},
@@ -161,3 +154,5 @@ SPECTRE_TEST_CASE("Unit.Elasticity.ConstitutiveRelations.CubicCrystal",
     test_implementation_suite();
   }
 }
+
+}  // namespace Elasticity::ConstitutiveRelations
