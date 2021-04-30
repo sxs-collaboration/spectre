@@ -5,10 +5,11 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <variant>
 #include <vector>
 
-#include "Domain/Creators/ExpandOverBlocks.hpp"
+#include "Domain/Creators/ExpandOverBlocks.tpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace domain {
@@ -18,9 +19,22 @@ void test_expand_over_blocks(
         input_value,
     const size_t num_blocks,
     const std::vector<std::array<T, Dim>>& expected_expanded_value) {
-  CHECK(std::visit(ExpandOverBlocks<T, Dim>{num_blocks}, input_value) ==
-        expected_expanded_value);
+  CHECK(std::visit(ExpandOverBlocks<std::array<T, Dim>>{num_blocks},
+                   input_value) == expected_expanded_value);
 }
+
+struct Base {
+  virtual ~Base() = default;
+  virtual std::unique_ptr<Base> get_clone() const = 0;
+};
+
+struct Derived : Base {
+  explicit Derived(const size_t local_id) : id{local_id} {}
+  std::unique_ptr<Base> get_clone() const override {
+    return std::make_unique<Derived>(*this);
+  }
+  size_t id;
+};
 
 SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
   test_expand_over_blocks<size_t, 1>(size_t{2}, 3, {3, {2}});
@@ -40,7 +54,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
       std::vector<std::array<size_t, 3>>{{2, 3, 4}, {3, 4, 5}, {4, 5, 6}}, 3,
       {{2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
   CHECK_THROWS_WITH(
-      (ExpandOverBlocks<size_t, 1>{3}(
+      (ExpandOverBlocks<std::array<size_t, 1>>{3}(
           std::vector<std::array<size_t, 1>>{{2}, {3}})),
       Catch::Matchers::ContainsSubstring(
           "You supplied 2 values, but the domain creator has 3 blocks."));
@@ -59,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
     try {
       // Invoke `ExpandOverBlocks`:
       const auto initial_refinement =
-          std::visit(ExpandOverBlocks<size_t, Dim>{num_blocks},
+          std::visit(ExpandOverBlocks<std::array<size_t, Dim>>{num_blocks},
                      initial_refinement_from_options);
       // Since a single number was specified, we expect the vector over blocks
       // is homogeneously and isotropically filled with that number:
@@ -83,7 +97,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
         block_groups{{"Wedges", {"East", "North", "West", "South"}}};
     // Now we can expand values over blocks by giving their names. This can also
     // be used with a std::variant like in the other example.
-    ExpandOverBlocks<size_t, Dim> expand{block_names, block_groups};
+    ExpandOverBlocks<std::array<size_t, Dim>> expand{block_names, block_groups};
     CHECK(expand({{"West", {{3, 4}}},
                   {"InnerCube", {{2, 3}}},
                   {"South", {{3, 4}}},
@@ -112,6 +126,50 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
                       Catch::Matchers::ContainsSubstring(
                           "Value for block 'InnerCube' is missing. Did "
                           "you misspell its name?"));
+  }
+  {
+    INFO("Expand non-array");
+    ExpandOverBlocks<std::string> expand{3};
+    CHECK(expand(std::string{"A"}) == std::vector<std::string>{3, "A"});
+  }
+  {
+    INFO("Expand unique_ptr");
+    ExpandOverBlocks<std::unique_ptr<Base>> expand{{"A", "B"}};
+    {
+      const auto expanded = expand(std::make_unique<Derived>(size_t{1}));
+      CHECK(expanded.size() == 2);
+      for (const auto& v : expanded) {
+        const auto v_derived = dynamic_cast<const Derived*>(v.get());
+        CHECK(v_derived != nullptr);
+        CHECK(v_derived->id == 1);
+      }
+    }
+    {
+      std::vector<std::unique_ptr<Base>> original{};
+      original.emplace_back(std::make_unique<Derived>(size_t{1}));
+      original.emplace_back(std::make_unique<Derived>(size_t{2}));
+      const auto expanded = expand(original);
+      CHECK(expanded.size() == 2);
+      auto v_derived = dynamic_cast<const Derived*>(expanded[0].get());
+      CHECK(v_derived != nullptr);
+      CHECK(v_derived->id == 1);
+      v_derived = dynamic_cast<const Derived*>(expanded[1].get());
+      CHECK(v_derived != nullptr);
+      CHECK(v_derived->id == 2);
+    }
+    {
+      std::unordered_map<std::string, std::unique_ptr<Base>> original{};
+      original.emplace("A", std::make_unique<Derived>(size_t{1}));
+      original.emplace("B", std::make_unique<Derived>(size_t{2}));
+      const auto expanded = expand(original);
+      CHECK(expanded.size() == 2);
+      auto v_derived = dynamic_cast<const Derived*>(expanded[0].get());
+      CHECK(v_derived != nullptr);
+      CHECK(v_derived->id == 1);
+      v_derived = dynamic_cast<const Derived*>(expanded[1].get());
+      CHECK(v_derived != nullptr);
+      CHECK(v_derived->id == 2);
+    }
   }
 }
 

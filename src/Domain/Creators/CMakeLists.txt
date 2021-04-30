@@ -40,6 +40,7 @@ spectre_target_headers(
   Disk.hpp
   DomainCreator.hpp
   ExpandOverBlocks.hpp
+  ExpandOverBlocks.tpp
   Factory.hpp
   Factory1D.hpp
   Factory2D.hpp
