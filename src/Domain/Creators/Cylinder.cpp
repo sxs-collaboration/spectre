@@ -143,16 +143,28 @@ Cylinder::Cylinder(
   for (size_t layer = 0; layer < num_layers; ++layer) {
     std::string layer_prefix =
         num_layers > 1 ? "Layer" + std::to_string(layer) : "";
-    block_names_.push_back(layer_prefix + "InnerCube");
+    const std::string inner_cube_name = layer_prefix + "InnerCube";
+    block_names_.push_back(inner_cube_name);
+    if (num_layers > 1) {
+      block_groups_[layer_prefix].insert(inner_cube_name);
+      block_groups_["InnerCubes"].insert(inner_cube_name);
+    }
     for (size_t shell = 0; shell < num_shells; ++shell) {
       std::string shell_prefix =
           num_shells > 1 ? "Shell" + std::to_string(shell) : "";
       std::string group_name = layer_prefix + shell_prefix + "Wedges";
       for (size_t direction = 0; direction < 4; ++direction) {
-        std::string block_name = layer_prefix + shell_prefix +
-                                 gsl::at(direction_descriptions, direction);
-        block_names_.push_back(block_name);
-        block_groups_[group_name].insert(block_name);
+        const std::string shell_name =
+            layer_prefix + shell_prefix +
+            gsl::at(direction_descriptions, direction);
+        block_names_.push_back(shell_name);
+        block_groups_[group_name].insert(shell_name);
+        if (num_layers > 1) {
+          block_groups_[layer_prefix].insert(shell_name);
+        }
+        if (num_shells > 1) {
+          block_groups_[shell_prefix].insert(shell_name);
+        }
       }
     }
   }
