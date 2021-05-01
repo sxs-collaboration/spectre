@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Krivodonova.cpp
+  Kuzmin.cpp
   Sinusoid.cpp
   )
 
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   AnalyticData.hpp
   Krivodonova.hpp
+  Kuzmin.hpp
   Sinusoid.hpp
   )
 
