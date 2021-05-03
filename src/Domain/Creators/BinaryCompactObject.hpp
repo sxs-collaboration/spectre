@@ -15,7 +15,6 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
@@ -342,13 +341,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "level set by InitialRefinement."};
   };
 
-  struct TimeDependence {
-    using type =
-        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
-    static constexpr Options::String help = {
-        "The time dependence of the moving mesh domain."};
-  };
-
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
     using group = OuterSphere;
@@ -363,7 +355,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, RadiusOuterSphere,
                  InitialRefinement, InitialGridPoints, UseProjectiveMap,
                  UseLogarithmicMapOuterSphericalShell,
-                 AdditionToOuterLayerRadialRefinementLevel, TimeDependence>,
+                 AdditionToOuterLayerRadialRefinementLevel>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -405,8 +397,6 @@ class BinaryCompactObject : public DomainCreator<3> {
       size_t initial_grid_points_per_dim, bool use_projective_map = true,
       bool use_logarithmic_map_outer_spherical_shell = false,
       size_t addition_to_outer_layer_radial_refinement_level = 0,
-      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-          time_dependence = nullptr,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -446,8 +436,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   double length_inner_cube_{};
   double length_outer_cube_{};
   size_t number_of_blocks_{};
-  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-      time_dependence_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
 };

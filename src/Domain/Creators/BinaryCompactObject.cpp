@@ -24,7 +24,6 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
@@ -46,8 +45,6 @@ BinaryCompactObject::BinaryCompactObject(
     size_t initial_grid_points_per_dim, bool use_projective_map,
     bool use_logarithmic_map_outer_spherical_shell,
     size_t addition_to_outer_layer_radial_refinement_level,
-    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dependence,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
@@ -62,7 +59,6 @@ BinaryCompactObject::BinaryCompactObject(
           use_logarithmic_map_outer_spherical_shell),
       addition_to_outer_layer_radial_refinement_level_(
           addition_to_outer_layer_radial_refinement_level),
-      time_dependence_(std::move(time_dependence)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   // Determination of parameters for domain construction:
   translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
@@ -98,10 +94,6 @@ BinaryCompactObject::BinaryCompactObject(
     projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
   } else {
     projective_scale_factor_ = 1.0;
-  }
-  if (time_dependence_ == nullptr) {
-    time_dependence_ =
-        std::make_unique<domain::creators::time_dependence::None<3>>();
   }
   if (object_A_.use_logarithmic_map and not object_A_.is_excised()) {
     PARSE_ERROR(
@@ -349,13 +341,6 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
                                              not object_B_.is_excised()),
       {},
       std::move(boundary_conditions_all_blocks)};
-  if (not time_dependence_->is_none()) {
-    for (size_t block = 0; block < number_of_blocks_; ++block) {
-      domain.inject_time_dependent_map_for_block(
-          block,
-          std::move(time_dependence_->block_maps(number_of_blocks_)[block]));
-    }
-  }
   return domain;
 }
 
@@ -413,10 +398,6 @@ BinaryCompactObject::initial_refinement_levels() const noexcept {
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 BinaryCompactObject::functions_of_time() const noexcept {
-  if (time_dependence_->is_none()) {
-    return {};
-  } else {
-    return time_dependence_->functions_of_time();
-  }
+  return {};
 }
 }  // namespace domain::creators
