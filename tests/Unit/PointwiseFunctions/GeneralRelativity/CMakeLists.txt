@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_Ricci.cpp
   Test_Tags.cpp
   Test_WeylElectric.cpp
+  Test_WeylMagnetic.cpp
   Test_WeylPropagating.cpp
   )
 
