@@ -229,6 +229,13 @@ inline bool SegmentId::overlaps(const SegmentId& other) const noexcept {
 // hash_value is called by boost::hash and related functions.
 size_t hash_value(const SegmentId& s) noexcept;
 
+namespace std {
+template <>
+struct hash<SegmentId> {
+  size_t operator()(const SegmentId& segment_id) const noexcept;
+};
+}  // namespace std
+
 inline bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept {
   return (lhs.refinement_level() == rhs.refinement_level() and
           lhs.index() == rhs.index());

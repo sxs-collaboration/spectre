@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <unordered_set>
 
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
@@ -72,6 +73,13 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId", "[Domain][Unit]") {
   // Test output operator:
   SegmentId level_3_index_2(3, 2);
   CHECK(get_output(level_3_index_2) == "L3I2");
+
+  {
+    INFO("Hash");
+    CHECK(std::unordered_set<SegmentId>{SegmentId{2, 3}, SegmentId{2, 3},
+                                        SegmentId{3, 2}} ==
+          std::unordered_set<SegmentId>{SegmentId{3, 2}, SegmentId{2, 3}});
+  }
 }
 
 // [[OutputRegex, index = 8, refinement_level = 3]]
