@@ -96,6 +96,9 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>, tmpl::size_t<3>,
           Frame::Inertial>::type*>... flux_tilde_s,
 
+      const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+          inv_spatial_metric,
+
       const std::optional<
           tnsr::I<DataVector, 3, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, 3, Frame::Inertial>& /*normal_covector*/,
@@ -130,15 +133,17 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
       }
     }();
 
+    *inv_spatial_metric =
+        get<gr::Tags::InverseSpatialMetric<3>>(boundary_values);
+
     // Allocate the temporary tensors outside the loop over species
-    const auto& lapse = get<gr::Tags::Lapse<>>(boundary_values);
     Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempII<0, 3>,
                          ::Tags::TempScalar<1>, ::Tags::TempScalar<2>,
                          ::Tags::Tempi<0, 3>, ::Tags::TempI<0, 3>>>
-        buffer(get(lapse).size());
+        buffer((*inv_spatial_metric)[0].size());
 
     const auto assign_boundary_values_for_neutrino_species =
-        [&boundary_values, &lapse, &buffer](
+        [&boundary_values, &inv_spatial_metric, &buffer](
             const gsl::not_null<Scalar<DataVector>*> local_tilde_e,
             const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
                 local_tilde_s,
@@ -158,11 +163,10 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
               get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values);
           const auto& fluid_lorentz_factor =
               get<hydro::Tags::LorentzFactor<DataVector>>(boundary_values);
+          const auto& lapse = get<gr::Tags::Lapse<>>(boundary_values);
           const auto& shift = get<gr::Tags::Shift<3>>(boundary_values);
           const auto& spatial_metric =
               get<gr::Tags::SpatialMetric<3>>(boundary_values);
-          const auto& inv_spatial_metric =
-              get<gr::Tags::InverseSpatialMetric<3>>(boundary_values);
           auto& closure_factor = get<::Tags::TempScalar<0>>(buffer);
           // The M1Closure reads in values from `closure_factor` as an initial
           // guess. We need to specify some value (else code fails in DEBUG
@@ -181,7 +185,7 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
               make_not_null(&comoving_momentum_density_normal),
               make_not_null(&comoving_momentum_density_spatial), *local_tilde_e,
               *local_tilde_s, fluid_velocity, fluid_lorentz_factor,
-              spatial_metric, inv_spatial_metric);
+              spatial_metric, *inv_spatial_metric);
           // Store det of metric in (otherwise unused) comoving_energy_density
           get(comoving_energy_density) = get(determinant(spatial_metric));
           for (auto& component : pressure_tensor) {
@@ -193,7 +197,7 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
           detail::compute_fluxes_impl(local_flux_tilde_e, local_flux_tilde_s,
                                       &tilde_s_M, *local_tilde_e,
                                       *local_tilde_s, tilde_p, lapse, shift,
-                                      spatial_metric, inv_spatial_metric);
+                                      spatial_metric, *inv_spatial_metric);
           return '0';
         };
 
