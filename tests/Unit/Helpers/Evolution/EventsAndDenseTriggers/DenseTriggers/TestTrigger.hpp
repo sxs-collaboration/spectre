@@ -6,7 +6,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <pup.h>
+#include <string>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -69,4 +71,51 @@ class TestTrigger : public DenseTrigger {
   bool is_triggered_;
   double next_check_;
 };
+
+template <typename Label>
+class BoxTrigger : public DenseTrigger {
+ public:
+  /// \cond
+  BoxTrigger() = default;
+  explicit BoxTrigger(CkMigrateMessage* const msg) noexcept
+      : DenseTrigger(msg) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BoxTrigger);  // NOLINT
+  /// \endcond
+
+  static std::string name() noexcept {
+    return "BoxTrigger<" + Options::name<Label>() + ">";
+  }
+
+  using options = tmpl::list<>;
+  constexpr static Options::String help = "help";
+
+  struct IsTriggered : db::SimpleTag {
+    using type = bool;
+  };
+
+  struct NextCheck : db::SimpleTag {
+    using type = double;
+  };
+
+  struct IsReady : db::SimpleTag {
+    using type = bool;
+  };
+
+  using is_triggered_argument_tags =
+      tmpl::list<IsReady, IsTriggered, NextCheck>;
+  Result is_triggered(const bool is_ready, const bool is_triggered,
+                      const double next_check) const noexcept {
+    CHECK(is_ready);
+    return {is_triggered, next_check};
+  }
+
+  using is_ready_argument_tags = tmpl::list<IsReady>;
+  bool is_ready(const bool is_ready) const noexcept { return is_ready; }
+};
+
+/// \cond
+template <typename Label>
+PUP::able::PUP_ID BoxTrigger<Label>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
 }  // namespace TestHelpers::DenseTriggers
