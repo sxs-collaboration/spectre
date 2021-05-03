@@ -20,4 +20,5 @@ spectre_target_headers(
   ReconstructWork.tpp
   Reconstructor.hpp
   RegisterDerivedWithCharm.hpp
+  Tag.hpp
   )

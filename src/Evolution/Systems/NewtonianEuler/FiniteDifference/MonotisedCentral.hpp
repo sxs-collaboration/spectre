@@ -139,4 +139,16 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const noexcept;
 };
+
+template <size_t Dim>
+bool operator==(const MonotisedCentralPrim<Dim>& /*lhs*/,
+                const MonotisedCentralPrim<Dim>& /*rhs*/) noexcept {
+  return true;
+}
+
+template <size_t Dim>
+bool operator!=(const MonotisedCentralPrim<Dim>& lhs,
+                const MonotisedCentralPrim<Dim>& rhs) noexcept {
+  return not(lhs == rhs);
+}
 }  // namespace NewtonianEuler::fd

@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Hllc.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_MonotisedCentral.cpp
+  FiniteDifference/Test_Tag.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Test_Characteristics.cpp
