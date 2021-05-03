@@ -48,9 +48,10 @@ struct TimeDerivativeTerms {
       // Source terms
       TildeSUp, DensitizedStress,
 
-      // Need lapse, shift, and spatial metric to be projected to the boundary
-      // for Riemann solvers.
-      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>>;
+      // Need lapse, shift, spatial metric, and inverse spatial metric to be
+      // projected to the boundary for Riemann solvers.
+      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
+      gr::Tags::InverseSpatialMetric<Dim>>;
 
   using argument_tags = tmpl::list<
       RelativisticEuler::Valencia::Tags::TildeD,
@@ -96,6 +97,8 @@ struct TimeDerivativeTerms {
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> temp_shift,
       gsl::not_null<tnsr::ii<DataVector, Dim, Frame::Inertial>*>
           temp_spatial_metric,
+      gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+          temp_inv_spatial_metric,
 
       // For fluxes and sources
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,

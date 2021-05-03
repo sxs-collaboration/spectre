@@ -75,6 +75,8 @@ void TimeDerivativeTerms<Dim>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> temp_shift,
     const gsl::not_null<tnsr::ii<DataVector, Dim, Frame::Inertial>*>
         temp_spatial_metric,
+    const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+        temp_inv_spatial_metric,
 
     // For fluxes and sources
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
@@ -97,6 +99,7 @@ void TimeDerivativeTerms<Dim>::apply(
   *temp_lapse = lapse;
   *temp_shift = shift;
   *temp_spatial_metric = spatial_metric;
+  *temp_inv_spatial_metric = inv_spatial_metric;
 
   get(*pressure_lapse_sqrt_det_spatial_metric) =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
