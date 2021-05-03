@@ -15,6 +15,7 @@ spectre_target_headers(
   Mesh.hpp
   NeighborData.hpp
   SubcellOptions.hpp
+  SubcellSolver.hpp
   Tags.hpp
   TciGridHistory.hpp
   TciStatus.hpp
