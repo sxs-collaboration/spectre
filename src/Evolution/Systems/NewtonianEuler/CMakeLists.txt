@@ -43,9 +43,11 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE Hydro
+  PUBLIC
+  DataStructures
+  DgSubcell
+  ErrorHandling
+  Hydro
   )
 
 add_subdirectory(BoundaryConditions)
