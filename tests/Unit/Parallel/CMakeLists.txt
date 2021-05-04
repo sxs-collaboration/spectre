@@ -46,6 +46,7 @@ add_algorithm_test(Test_PhaseChangeMain)
 add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
 add_algorithm_test(Test_GlobalCache)
+add_algorithm_test(Test_SectionReductions)
 
 # Test GlobalCache
 add_charm_module(Test_GlobalCache)
@@ -175,6 +176,8 @@ add_algorithm_test("PhaseChangeMain" "")
 add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
 add_algorithm_test("GlobalCache" "")
+add_algorithm_test("SectionReductions"
+  "Element 0 received reduction: Counted 2 odd elements.")
 add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
   "AlgorithmParallel" "Objects migrating: 14")
 

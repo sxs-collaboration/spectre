@@ -13,6 +13,7 @@ spectre_target_sources(
   PRIVATE
   InitializationFunctions.cpp
   NodeLock.cpp
+  Reduction.cpp
   )
 
 spectre_target_headers(
