@@ -35,7 +35,8 @@ void forward_to_time_deriv(
     const tnsr::ijj<DataVector, 3>& d_spatial_metric,
     const tnsr::ii<DataVector, 3>& extrinsic_curvature) {
   Variables<tmpl::list<typename RadiationTransport::M1Grey::TimeDerivativeTerms<
-      neutrinos::ElectronNeutrinos<1>>::TildeSUp>>
+                           neutrinos::ElectronNeutrinos<1>>::TildeSUp,
+                       gr::Tags::InverseSpatialMetric<3>>>
       temp(get(lapse).size());
 
   RadiationTransport::M1Grey::
@@ -46,6 +47,7 @@ void forward_to_time_deriv(
           make_not_null(
               &get<typename RadiationTransport::M1Grey::TimeDerivativeTerms<
                   neutrinos::ElectronNeutrinos<1>>::TildeSUp>(temp)),
+          make_not_null(&get<gr::Tags::InverseSpatialMetric<3>>(temp)),
 
           tilde_e, tilde_s, tilde_p, lapse, shift, spatial_metric,
           inv_spatial_metric,
