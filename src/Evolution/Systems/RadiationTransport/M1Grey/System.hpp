@@ -5,8 +5,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Fluxes.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Sources.hpp"
@@ -39,6 +40,11 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   // For early tests of M1, we'll ignore coupling to the fluid
   // and provide analytical expressions for its 4-velocity / LorentzFactor
   //static constexpr size_t thermodynamic_dim = 3;
+
+  using boundary_conditions_base =
+      BoundaryConditions::BoundaryCondition<tmpl::list<NeutrinoSpecies...>>;
+  using boundary_correction_base =
+      BoundaryCorrections::BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>;
 
   using variables_tag = ::Tags::Variables<
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
@@ -83,13 +89,6 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       TimeDerivativeTerms<NeutrinoSpecies...>;
   using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
   using volume_sources = ComputeSources<NeutrinoSpecies...>;
-
-  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute;
-  using char_speeds_tag = Tags::CharacteristicSpeeds;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>;
