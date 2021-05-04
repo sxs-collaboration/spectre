@@ -18,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -153,11 +154,6 @@ struct SendDataForFluxes {
  * contributes it to the data in `Tags::Mortars<BoundaryScheme::mortar_data_tag,
  * volume_dim>` that already holds the local boundary data.
  *
- * For boundary schemes that communicate asynchronously, in the sense that
- * neighboring elements may not send and receive data at the same temporal IDs
- * (e.g. for local time-stepping), see the documentation of this action's
- * template specialization.
- *
  * Uses:
  * - DataBox:
  *   - `Tags::Element<volume_dim>`
@@ -186,16 +182,23 @@ struct ReceiveDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    if (not has_received_from_all_mortars<fluxes_inbox_tag>(
+            db::get<temporal_id_tag>(box),
+            get<domain::Tags::Element<volume_dim>>(box), inboxes)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     if (UNLIKELY(
             get<domain::Tags::Element<volume_dim>>(box).number_of_neighbors() ==
             0)) {
-      return {std::move(box)};
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
+
     auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
     const auto& temporal_id = get<temporal_id_tag>(box);
     const auto temporal_received = inbox.find(temporal_id);
@@ -212,166 +215,7 @@ struct ReceiveDataForFluxes {
           }
         });
     inbox.erase(temporal_received);
-    return {std::move(box)};
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return has_received_from_all_mortars<fluxes_inbox_tag>(
-        db::get<temporal_id_tag>(box),
-        get<domain::Tags::Element<volume_dim>>(box), inboxes);
-  }
-};
-
-/*!
- * \ingroup ActionsGroup
- * \ingroup DiscontinuousGalerkinGroup
- * \brief Receive asynchronous boundary data needed for fluxes from neighbors.
- *
- * Waits until remote boundary data from all internal mortars has arrived, then
- * contributes it to the data in `Tags::Mortars<BoundaryScheme::mortar_data_tag,
- * volume_dim>` that already holds the local boundary data.
- *
- * This template specialization handles asynchronous boundary schemes, e.g.
- * for local time-stepping. It proceeds only once the received boundary data
- * on every mortar has caught up with the `BoundaryScheme::receive_temporal_id`
- * on the element.
- *
- * Uses:
- * - DataBox:
- *   - `Tags::Element<volume_dim>`
- *   - `BoundaryScheme::receive_temporal_id`
- *
- * DataBox changes:
- * - Adds: nothing
- * - Removes: nothing
- * - Modifies:
- *   - `Tags::Mortars<BoundaryScheme::mortar_data_tag, volume_dim>`
- *   - `Tags::Mortars<BoundaryScheme::receive_temporal_id_tag, volume_dim>`
- *
- * \see `dg::Actions::SendDataForFluxes`
- * \see `dg::Actions::ReceiveDataForFluxes`
- */
-template <typename BoundaryScheme>
-struct ReceiveDataForFluxes<
-    BoundaryScheme, Requires<not std::is_same_v<
-                        typename BoundaryScheme::receive_temporal_id_tag,
-                        typename BoundaryScheme::temporal_id_tag>>> {
- private:
-  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
-  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
-  using receive_temporal_id_tag =
-      typename BoundaryScheme::receive_temporal_id_tag;
-  using fluxes_inbox_tag = dg::FluxesInboxTag<BoundaryScheme>;
-  using all_mortar_data_tag =
-      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
-
- public:
-  using inbox_tags = tmpl::list<fluxes_inbox_tag>;
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
-      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<all_mortar_data_tag,
-               ::Tags::Mortars<receive_temporal_id_tag, volume_dim>>(
-        make_not_null(&box),
-        [&inboxes](const gsl::not_null<typename all_mortar_data_tag::type*>
-                       mortar_data,
-                   const gsl::not_null<typename ::Tags::Mortars<
-                       receive_temporal_id_tag, volume_dim>::type*>
-                       neighbor_next_temporal_ids,
-                   const typename receive_temporal_id_tag::type&
-                       local_next_temporal_id) noexcept {
-          auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
-          for (auto received_data = inbox.begin();
-               received_data != inbox.end() and
-                   received_data->first < local_next_temporal_id;
-               received_data = inbox.erase(received_data)) {
-            const auto& receive_temporal_id = received_data->first;
-            for (auto& received_mortar_data : received_data->second) {
-              const auto mortar_id = received_mortar_data.first;
-              ASSERT(neighbor_next_temporal_ids->at(mortar_id) ==
-                         receive_temporal_id,
-                     "Expected data at "
-                     << neighbor_next_temporal_ids->at(mortar_id)
-                     << " but received at " << receive_temporal_id);
-              neighbor_next_temporal_ids->at(mortar_id) =
-                  received_mortar_data.second.first;
-              mortar_data->at(mortar_id).remote_insert(
-                  receive_temporal_id,
-                  std::move(received_mortar_data.second.second));
-            }
-          }
-
-          // The apparently pointless lambda wrapping this check
-          // prevents gcc-7.3.0 from segfaulting.
-          ASSERT(([
-                   &neighbor_next_temporal_ids, &local_next_temporal_id
-                 ]() noexcept {
-                   return std::all_of(
-                       neighbor_next_temporal_ids->begin(),
-                       neighbor_next_temporal_ids->end(),
-                       [&local_next_temporal_id](const auto& next) noexcept {
-                         return next.first.second ==
-                                    ElementId<
-                                        volume_dim>::external_boundary_id() or
-                                next.second >= local_next_temporal_id;
-                       });
-                 }()),
-                 "apply called before all data received");
-          ASSERT(
-              inbox.empty() or (inbox.size() == 1 and
-                                inbox.begin()->first == local_next_temporal_id),
-              "Shouldn't have received data that depended upon the step being "
-              "taken: Received data at " << inbox.begin()->first
-              << " while stepping to " << local_next_temporal_id);
-        },
-        db::get<receive_temporal_id_tag>(box));
-
-    return std::forward_as_tuple(std::move(box));
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
-    const auto& local_next_temporal_id = db::get<receive_temporal_id_tag>(box);
-    const auto& mortars_next_temporal_id =
-        db::get<::Tags::Mortars<receive_temporal_id_tag, volume_dim>>(box);
-    for (const auto& mortar_id_next_temporal_id : mortars_next_temporal_id) {
-      const auto& mortar_id = mortar_id_next_temporal_id.first;
-      // If on an external boundary
-      if (mortar_id.second == ElementId<volume_dim>::external_boundary_id()) {
-        continue;
-      }
-      auto next_temporal_id = mortar_id_next_temporal_id.second;
-      while (next_temporal_id < local_next_temporal_id) {
-        const auto temporal_received = inbox.find(next_temporal_id);
-        if (temporal_received == inbox.end()) {
-          return false;
-        }
-        const auto mortar_received = temporal_received->second.find(mortar_id);
-        if (mortar_received == temporal_received->second.end()) {
-          return false;
-        }
-        next_temporal_id = mortar_received->second.first;
-      }
-    }
-    return true;
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 

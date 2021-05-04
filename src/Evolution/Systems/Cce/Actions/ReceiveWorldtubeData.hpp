@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
@@ -50,14 +51,19 @@ struct ReceiveWorldtubeData {
               Cce::ReceiveTags::BoundaryData<
                   typename Metavariables::cce_boundary_communication_tags>> and
           tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& inboxes,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+      db::DataBox<DbTags>& box,
+      tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     auto& inbox = tuples::get<Cce::ReceiveTags::BoundaryData<
         typename Metavariables::cce_boundary_communication_tags>>(inboxes);
+    if (inbox.count(db::get<::Tags::TimeStepId>(box)) != 1) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
     tmpl::for_each<typename Metavariables::cce_boundary_communication_tags>(
         [&inbox, &box ](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
@@ -70,7 +76,7 @@ struct ReceiveWorldtubeData {
               db::get<::Tags::TimeStepId>(box));
         });
     inbox.erase(db::get<::Tags::TimeStepId>(box));
-    return std::forward_as_tuple(std::move(box));
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
   template <
       typename DbTags, typename... InboxTags, typename ArrayIndex,
@@ -92,41 +98,6 @@ struct ReceiveWorldtubeData {
         "boundary data");
     // provided for return type inference. This line will never be executed.
     return std::forward_as_tuple(std::move(box));
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      Requires<
-          tmpl::list_contains_v<
-              tmpl::list<InboxTags...>,
-              Cce::ReceiveTags::BoundaryData<
-                  typename Metavariables::cce_boundary_communication_tags>> and
-          tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return tuples::get<Cce::ReceiveTags::BoundaryData<
-               typename Metavariables::cce_boundary_communication_tags>>(
-               inboxes)
-               .count(db::get<::Tags::TimeStepId>(box)) == 1;
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      Requires<
-          not tmpl::list_contains_v<
-              tmpl::list<InboxTags...>,
-              Cce::ReceiveTags::BoundaryData<
-                  typename Metavariables::cce_boundary_communication_tags>> or
-          not tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return false;
   }
 };
 }  // namespace Actions

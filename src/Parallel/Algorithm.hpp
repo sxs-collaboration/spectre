@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <exception>
 #include <initializer_list>
+#include <limits>
 #include <ostream>
 #include <pup.h>
 #include <tuple>
@@ -308,12 +309,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
                     bool enable_if_disabled = false) noexcept;
 
   // @{
-  /// Start evaluating the algorithm until the is_ready function of an Action
-  /// returns false, or an Action returns with `terminate` set to `true` or a
-  /// `Parallel::AlgorithmExecution` flag of `AlgorithmExecution::Pause` or
-  /// `AlgorithmExecution::Halt`.
-  ///
-  /// In the case where no phase is passed the current phase is assumed.
+  /// Start evaluating the algorithm until it is stopped by an action.
   constexpr void perform_algorithm() noexcept;
 
   constexpr void perform_algorithm(const bool restart_if_terminated) noexcept {
@@ -509,15 +505,23 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   //    2a. A bool determining whether or not to terminate (and potentially move
   //        to the next phase), or
   //    2b. An `AlgorithmExecution` object describing whether to continue,
-  //        pause, or halt. `AlgorithmExecution::Continue` does not alter the
-  //        termination flag, `AlgorithmExecution::Pause` is equivalent to
-  //        passing `true`, and `AlgorithmExecution::Halt` causes the algorithm
-  //        to stop without the possibility of restart until after the next
-  //        phase change.
+  //        pause, or halt.
   // 3. An unsigned integer corresponding to which action in the current phase's
   //    algorithm to execute next.
+  //
+  // Returns whether the action ran successfully, i.e., did not return
+  // AlgorithmExecution::Retry.
   template <typename ThisAction, typename ActionList, typename DbTags>
-  void invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
+  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
+    static_assert(not Algorithm_detail::is_is_ready_callable_t<
+                  ThisAction,
+                  db::DataBox<DbTags>&,
+                  tuples::tagged_tuple_from_typelist<inbox_tags_list>&,
+                  Parallel::GlobalCache<metavariables>&,
+                  array_index>{},
+                  "Actions no longer support is_ready methods.  Instead, "
+                  "return AlgorithmExecution::Retry from apply().");
+
     auto action_return = ThisAction::apply(
         my_box, inboxes_, *global_cache_, std::as_const(array_index_),
         ActionList{}, std::add_pointer_t<ParallelComponent>{});
@@ -556,6 +560,15 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
           case AlgorithmExecution::Pause:
             terminate_ = true;
             break;
+          case AlgorithmExecution::Retry:
+            if constexpr (tuple_size >= 3_st) {
+              ASSERT(
+                  get<2>(action_return) == std::numeric_limits<size_t>::max(),
+                  "Switching actions on a Retry doesn't make sense.  If you "
+                  "need to return a three-element tuple, pass "
+                  "std::numeric_limits<size_t>::max() as the last element.");
+            }
+            return false;
           default:
             break;
         }
@@ -564,6 +577,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
     if constexpr (tuple_size >= 3_st) {
       algorithm_step_ = get<2>(action_return);
     }
+    return true;
   }
 
   // Member variables
@@ -832,21 +846,6 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     }
     using actions_list = typename PhaseDepActions::action_list;
     using this_action = tmpl::at_c<actions_list, iter>;
-    const auto check_if_ready = [this](auto action,
-                                       const auto& check_local_box) noexcept {
-      if constexpr (Algorithm_detail::is_is_ready_callable_t<
-                    decltype(action),
-                    std::decay_t<decltype(check_local_box)>,
-                    tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                    Parallel::GlobalCache<metavariables>&,
-                    array_index>{}) {
-        return decltype(action)::is_ready(
-            check_local_box, std::as_const(inboxes_), *global_cache_,
-            std::as_const(array_index_));
-      } else {
-        return true;
-      }
-    };
 
     constexpr size_t phase_index =
         tmpl::index_of<phase_dependent_action_lists, PhaseDepActions>::value;
@@ -860,8 +859,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
         tmpl::integral_list<size_t, iter>>;
     bool box_found = false;
     tmpl::for_each<potential_databox_indices>(
-        [this, &box_found, &take_next_action,
-         &check_if_ready](auto potential_databox_index_v) noexcept {
+        [this, &box_found,
+         &take_next_action](auto potential_databox_index_v) noexcept {
           constexpr size_t potential_databox_index =
               decltype(potential_databox_index_v)::type::value;
           using this_databox =
@@ -872,13 +871,12 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                       tmpl::index_of<variant_boxes, this_databox>::value)) {
             box_found = true;
             auto& box = boost::get<this_databox>(box_);
-            if (not check_if_ready(this_action{}, box)) {
-              take_next_action = false;
-              return;
-            }
             performing_action_ = true;
             ++algorithm_step_;
-            invoke_iterable_action<this_action, actions_list>(box);
+            if (not invoke_iterable_action<this_action, actions_list>(box)) {
+              take_next_action = false;
+              --algorithm_step_;
+            }
           }
         });
     if (not box_found) {

@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -406,25 +407,19 @@ struct ReceiveMortarDataAndApplyOperator<
   using inbox_tags = tmpl::list<mortar_data_inbox_tag>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    return ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
-        db::get<TemporalIdTag>(box), get<domain::Tags::Element<Dim>>(box),
-        inboxes);
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& temporal_id = get<TemporalIdTag>(box);
+
+    if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
+            temporal_id, get<domain::Tags::Element<Dim>>(box), inboxes)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
 
     // Move received "remote" mortar data into the DataBox
     if (LIKELY(db::get<domain::Tags::Element<Dim>>(box).number_of_neighbors() >
@@ -464,7 +459,7 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<elliptic::dg::Tags::PenaltyParameter>(box), temporal_id,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
 
-    return {std::move(box)};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 

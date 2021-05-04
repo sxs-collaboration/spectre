@@ -382,21 +382,6 @@ aliases `inbox_tags`.  This collection represents data received from
 other chares using the `receive_data` function.  The return type will
 be discussed below.
 
-Iterable actions may have an `is_ready` method that returns `true` or
-`false` depending on whether or not the action is ready to be
-evaluated.  If no `is_ready` method is provided then the action is
-assumed to be ready to be evaluated.  The `is_ready` method typically
-checks that required data from other parallel components has been
-received.  For example, it may check that all data from neighboring
-elements has arrived to be able to continue integrating in time.  The
-signature of an `is_ready` method must be:
-
-\snippet Test_AlgorithmCore.cpp is_ready_example
-
-The `is_ready` function is run whenever new data is received by the
-chare, and the action's `apply` function will run when it returns
-true.
-
 Iterable actions can change the type of the db::DataBox by adding or
 removing elements/tags from the db::DataBox. The only requirement is
 that the last action in each PDAL returns a db::DataBox that is the
@@ -413,7 +398,7 @@ argument to the function.  Most iterable actions will simply return:
 
 By returning the db::DataBox as a reference in a `std::tuple` we avoid
 any unnecessary copying of the db::DataBox.  The second argument
-controls whether or not the algorithm is terminated.  If present, it
+controls how algorithm execution continues.  If present, it
 must be either a `bool` or a `Parallel::AlgorithmExecution`.  If a
 `bool` is passed, the termination flag for the chare will be set to
 that value (stopping the algorithm if that value is true).  See the
@@ -432,6 +417,15 @@ by calling `receive_data(..., true)`. Since the order in which
 messages are received is undefined in most cases the
 `receive_data(..., true)` call should be used to restart the
 algorithm.
+
+The return value `Parallel::AlgorithmExecution::Retry` deserves
+special mention.  It is intended for use by actions that use data
+supplied by other parallel objects to indicate that they have not
+received all of the data they require.  The algorithm will stop until
+an operation that could supply data has occurred and then the action
+will be retried.  An example of an waiting because of missing data is
+
+\snippet Test_AlgorithmCore.cpp retry_example
 
 The third optional element in the returned `std::tuple` is a `size_t` whose
 value corresponds to the index of the action to be called next in the
@@ -496,13 +490,6 @@ inherit publicly off the inserters to gain the required insertion capabilities:
 The `inbox_tags` type alias for the action is:
 
 \snippet Test_AlgorithmParallel.cpp int_receive_tag_list
-
-and the `is_ready` function is:
-
-\snippet Test_AlgorithmParallel.cpp int_receive_tag_is_ready
-
-Once all of the `int`s have been received, the iterable action is executed, not
-before.
 
 \warning
 It is the responsibility of the iterable action to remove data from the inboxes
@@ -665,13 +652,13 @@ be called on the next `Parallel::mutate` of that item. The callback
 will typically check again if the item is up-to-date and if so will
 execute some code that gets the item via `Parallel::get`.
 
-For the case of iterable actions, `Parallel::mutable_cache_item_is_ready`
-is typically called from the `is_ready` function of the iterable action,
-and the callback is `perform_algorithm()`.  In the example below, the
-vector is considered up-to-date if it is non-empty. If the vector is not
-up-to-date, then when it becomes up-to-date the callback function will
-be invoked; in this case the callback function re-runs `perform_algorithm`,
-which will call the same `is_ready` function again.
+For the case of iterable actions,
+`Parallel::mutable_cache_item_is_ready` typically uses the callback
+`Parallel::PerformAlgorithmCallback`.  In the example below, the
+vector is considered up-to-date if it is non-empty. If the vector is
+not up-to-date, then when it becomes up-to-date the callback function
+will be invoked; in this case the callback function re-runs
+`perform_algorithm()`, which will call the same action again.
 
 \snippet Test_AlgorithmGlobalCache.cpp check_mutable_cache_item_is_ready
 

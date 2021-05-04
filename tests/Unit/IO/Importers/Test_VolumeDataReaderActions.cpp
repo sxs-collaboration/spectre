@@ -200,10 +200,10 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   for (const auto& id : element_ids) {
     // `ReadVolumeData`
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);
-    // `ReceiveVolumeData` should not be ready on the first invocation, since
-    // no data has been read yet.
-    CHECK(ActionTesting::is_ready<element_array>(runner, id) !=
-          first_invocation);
+    if (first_invocation) {
+      REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+          make_not_null(&runner), id));
+    }
     CHECK(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}).size() ==
           (first_invocation ? 0 : 1));
     // Invoke the simple_action `ReadAllVolumeDataAndDistribute` that was called
@@ -213,7 +213,6 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     CHECK(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}).size() ==
           1);
     // `ReceiveVolumeData` should be ready now
-    CHECK(ActionTesting::is_ready<element_array>(runner, id));
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);
     // Check the received data
     CHECK(get_element_tag(VectorTag{}, id) ==

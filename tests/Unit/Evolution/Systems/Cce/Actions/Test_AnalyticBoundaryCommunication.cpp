@@ -202,13 +202,13 @@ SPECTRE_TEST_CASE(
   // Execute the first request for boundary data
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // Check that the receive action is appropriately not ready
-  CHECK_FALSE(ActionTesting::is_ready<evolution_component>(runner, 0));
+  REQUIRE_FALSE(ActionTesting::next_action_if_ready<evolution_component>(
+      make_not_null(&runner), 0));
 
   // the response (`BoundaryComputeAndSendToEvolution`)
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
   // then `ReceiveWorldtubeBoundaryData` in the evolution
-  CHECK(ActionTesting::is_ready<evolution_component>(runner, 0));
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
 
   const size_t number_of_angular_points =

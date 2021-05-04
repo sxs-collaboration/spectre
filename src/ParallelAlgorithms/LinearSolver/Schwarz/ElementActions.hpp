@@ -35,6 +35,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -404,26 +405,13 @@ struct ReceiveOverlapSolution {
   using inbox_tags = tmpl::list<overlap_solution_inbox_tag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            size_t Dim>
-  static bool is_ready(const db::DataBox<DbTagsList>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ElementId<Dim>& /*element_id*/) noexcept {
-    if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0)) {
-      return true;
-    }
-    return dg::has_received_from_all_mortars<overlap_solution_inbox_tag>(
-        get<Convergence::Tags::IterationId<OptionsGroup>>(box),
-        get<domain::Tags::Element<Dim>>(box), inboxes);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ElementId<Dim>& element_id, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -431,7 +419,12 @@ struct ReceiveOverlapSolution {
     // Nothing to do if overlap is empty
     if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
                  element.number_of_neighbors() == 0)) {
-      return {std::move(box)};
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    }
+
+    if (not dg::has_received_from_all_mortars<overlap_solution_inbox_tag>(
+            iteration_id, element, inboxes)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
     // Do some logging
@@ -469,7 +462,7 @@ struct ReceiveOverlapSolution {
         db::get<Tags::IntrudingExtents<Dim, OptionsGroup>>(box),
         db::get<domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
                                         Tags::Weight<OptionsGroup>>>(box));
-    return {std::move(box)};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 

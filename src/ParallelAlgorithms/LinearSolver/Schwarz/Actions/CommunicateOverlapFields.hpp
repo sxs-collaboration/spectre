@@ -18,6 +18,7 @@
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -171,36 +172,30 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
                  logging::Tags::Verbosity<OptionsGroup>>;
   using inbox_tags = tmpl::list<overlap_fields_tag>;
 
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables>
-  static bool is_ready(const db::DataBox<DbTagsList>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ElementId<Dim>& /*element_id*/) noexcept {
-    if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0)) {
-      return true;
-    }
-    return dg::has_received_from_all_mortars<overlap_fields_tag>(
-        get<Convergence::Tags::IterationId<OptionsGroup>>(box),
-        get<domain::Tags::Element<Dim>>(box), inboxes);
-  }
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ElementId<Dim>& element_id, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    const auto& iteration_id =
+        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    const auto& element = get<domain::Tags::Element<Dim>>(box);
+
     // Nothing to receive if overlap is empty
     if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
-                 get<domain::Tags::Element<Dim>>(box).number_of_neighbors() ==
-                     0)) {
-      return {std::move(box)};
+                 element.number_of_neighbors() == 0)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    }
+
+    if (not dg::has_received_from_all_mortars<overlap_fields_tag>(
+            iteration_id, element, inboxes)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
     // Do some logging
-    const auto& iteration_id =
-        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Receive overlap fields\n", element_id,
@@ -221,7 +216,7 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
           }
         });
 
-    return {std::move(box)};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 /// \endcond

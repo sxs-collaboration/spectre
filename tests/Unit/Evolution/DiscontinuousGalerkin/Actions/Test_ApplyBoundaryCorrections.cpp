@@ -679,10 +679,8 @@ void test_impl(const Spectral::Quadrature quadrature,
            east_id_time_steps_index < east_id_next_time_steps.size();
            ++east_id_time_steps_index) {
         if (east_id_time_steps_index < east_id_next_time_steps.size() - 1) {
-          CHECK(not ActionTesting::is_ready<component<metavars>>(runner,
-                                                                 self_id));
-        } else {
-          CHECK(ActionTesting::is_ready<component<metavars>>(runner, self_id));
+          REQUIRE(not ActionTesting::next_action_if_ready<component<metavars>>(
+              make_not_null(&runner), self_id));
         }
         insert_neighbor_data(east_id_time_steps[east_id_time_steps_index],
                              east_id_next_time_steps[east_id_time_steps_index]);
@@ -690,15 +688,16 @@ void test_impl(const Spectral::Quadrature quadrature,
     } else {
       // Insert the mortar data (history) running at the same speed as the
       // self_id.
-      CHECK(not ActionTesting::is_ready<component<metavars>>(runner, self_id));
+      REQUIRE(not ActionTesting::next_action_if_ready<component<metavars>>(
+          make_not_null(&runner), self_id));
       if (UseLocalTimeStepping) {
         // Insert the past time, since we are using a 2nd order time stepper.
         const Time prev_time = time_step_id.step_time() - time_step;
         insert_neighbor_data(TimeStepId{time_step_id.time_runs_forward(),
                                         time_step_id.slab_number(), prev_time},
                              time_step_id);
-        CHECK(
-            not ActionTesting::is_ready<component<metavars>>(runner, self_id));
+        REQUIRE(not ActionTesting::next_action_if_ready<component<metavars>>(
+            make_not_null(&runner), self_id));
       }
       insert_neighbor_data(time_step_id, UseLocalTimeStepping
                                              ? local_next_time_step_id
@@ -712,9 +711,6 @@ void test_impl(const Spectral::Quadrature quadrature,
               component<metavars>,
               evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>()
           .size() == 1);
-  REQUIRE(ActionTesting::is_ready<component<metavars>>(runner, self_id));
-  // At this point we've completed testing the `is_ready` part of
-  // ApplyBoundaryCorrections
 
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);

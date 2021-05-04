@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <tuple>
 #include <utility>
 
@@ -11,6 +12,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -95,29 +97,25 @@ template <typename FieldsTag, typename OptionsGroup, typename Label>
 struct InitializeHasConverged {
   using inbox_tags = tmpl::list<Tags::InitialHasConverged<OptionsGroup>>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox = get<Tags::InitialHasConverged<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
-               box)) != inbox.end();
-  }
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    auto has_converged = std::move(
-        tuples::get<Tags::InitialHasConverged<OptionsGroup>>(inboxes)
-            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
-            .mapped());
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
+                    size_t>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    auto& inbox = get<Tags::InitialHasConverged<OptionsGroup>>(inboxes);
+    const auto& iteration_id =
+        db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    if (inbox.find(iteration_id) == inbox.end()) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry,
+              std::numeric_limits<size_t>::max()};
+    }
+
+    auto has_converged = std::move(inbox.extract(iteration_id).mapped());
 
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
@@ -132,7 +130,7 @@ struct InitializeHasConverged {
                        UpdateOperand<FieldsTag, OptionsGroup, Label>>::value;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, InitializeHasConverged>::value;
-    return {std::move(box), false,
+    return {std::move(box), Parallel::AlgorithmExecution::Continue,
             has_converged ? (step_end_index + 1) : (this_action_index + 1)};
   }
 };
@@ -189,29 +187,23 @@ struct UpdateFieldValues {
  public:
   using inbox_tags = tmpl::list<Tags::Alpha<OptionsGroup>>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox = get<Tags::Alpha<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
-               box)) != inbox.end();
-  }
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    const double alpha = std::move(
-        tuples::get<Tags::Alpha<OptionsGroup>>(inboxes)
-            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
-            .mapped());
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const ArrayIndex& array_index, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    auto& inbox = get<Tags::Alpha<OptionsGroup>>(inboxes);
+    const auto& iteration_id =
+        db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    if (inbox.find(iteration_id) == inbox.end()) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
+    const double alpha = std::move(inbox.extract(iteration_id).mapped());
 
     db::mutate<residual_tag, fields_tag>(
         make_not_null(&box),
@@ -238,7 +230,7 @@ struct UpdateFieldValues {
         Parallel::get_parallel_component<
             ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
 
-    return {std::move(box)};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 
@@ -255,30 +247,26 @@ struct UpdateOperand {
   using inbox_tags =
       tmpl::list<Tags::ResidualRatioAndHasConverged<OptionsGroup>>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox =
-        get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
-               box)) != inbox.end();
-  }
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    auto received_data = std::move(
-        tuples::get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes)
-            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
-            .mapped());
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
+                    size_t>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    auto& inbox =
+        get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes);
+    const auto& iteration_id =
+        db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    if (inbox.find(iteration_id) == inbox.end()) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry,
+              std::numeric_limits<size_t>::max()};
+    }
+
+    auto received_data = std::move(inbox.extract(iteration_id).mapped());
     const double res_ratio = get<0>(received_data);
     auto& has_converged = get<1>(received_data);
 
@@ -286,11 +274,11 @@ struct UpdateOperand {
                Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [res_ratio, &has_converged](
-            const auto operand, const gsl::not_null<size_t*> iteration_id,
+            const auto operand, const gsl::not_null<size_t*> local_iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
             const auto& residual) noexcept {
           *operand = residual + res_ratio * *operand;
-          ++(*iteration_id);
+          ++(*local_iteration_id);
           *local_has_converged = std::move(has_converged);
         },
         get<residual_tag>(box));
@@ -302,7 +290,7 @@ struct UpdateOperand {
         tmpl::index_of<ActionList, InitializeHasConverged<
                                        FieldsTag, OptionsGroup, Label>>::value +
         1;
-    return {std::move(box), false,
+    return {std::move(box), Parallel::AlgorithmExecution::Continue,
             get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : prepare_step_index};

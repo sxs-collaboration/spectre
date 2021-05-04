@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
-#include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -162,28 +162,26 @@ template <typename FieldsTag, typename OptionsGroup, typename Label>
 struct ReceiveInitialHasConverged {
   using inbox_tags = tmpl::list<Tags::GlobalizationResult<OptionsGroup>>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox = get<Tags::GlobalizationResult<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
-               box)) != inbox.end();
-  }
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
+                    size_t>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    auto& inbox = get<Tags::GlobalizationResult<OptionsGroup>>(inboxes);
+    if (inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
+            box)) == inbox.end()) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry,
+              std::numeric_limits<size_t>::max()};
+    }
+
     // Retrieve reduction data from inbox
     auto globalization_result = std::move(
-        tuples::get<Tags::GlobalizationResult<OptionsGroup>>(inboxes)
+        inbox
             .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     ASSERT(
@@ -206,7 +204,7 @@ struct ReceiveInitialHasConverged {
         1;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, ReceiveInitialHasConverged>::value;
-    return {std::move(box), false,
+    return {std::move(box), Parallel::AlgorithmExecution::Continue,
             get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? complete_step_index
                 : (this_action_index + 1)};
@@ -398,28 +396,26 @@ struct Globalize {
       tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
   using inbox_tags = tmpl::list<Tags::GlobalizationResult<OptionsGroup>>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
-  static bool is_ready(const db::DataBox<DbTags>& box,
-                       const tuples::TaggedTuple<InboxTags...>& inboxes,
-                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& inbox = get<Tags::GlobalizationResult<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
-               box)) != inbox.end();
-  }
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
+                    size_t>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& array_index, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    auto& inbox = get<Tags::GlobalizationResult<OptionsGroup>>(inboxes);
+    if (inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
+            box)) == inbox.end()) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry,
+              std::numeric_limits<size_t>::max()};
+    }
+
     // Retrieve reduction data from inbox
     auto globalization_result = std::move(
-        tuples::get<Tags::GlobalizationResult<OptionsGroup>>(inboxes)
+        inbox
             .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
@@ -450,7 +446,8 @@ struct Globalize {
       constexpr size_t perform_step_index =
           tmpl::index_of<ActionList,
                          PerformStep<FieldsTag, OptionsGroup, Label>>::value;
-      return {std::move(box), false, perform_step_index};
+      return {std::move(box), Parallel::AlgorithmExecution::Continue,
+              perform_step_index};
     }
 
     // At this point globalization is complete, so we proceed with the algorithm
@@ -465,7 +462,8 @@ struct Globalize {
 
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, Globalize>::value;
-    return {std::move(box), false, this_action_index + 1};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue,
+            this_action_index + 1};
   }
 };
 

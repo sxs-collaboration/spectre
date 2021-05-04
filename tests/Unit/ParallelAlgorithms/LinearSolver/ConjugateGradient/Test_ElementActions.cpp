@@ -126,13 +126,13 @@ SPECTRE_TEST_CASE(
         const size_t iteration_id = 0;
         set_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{},
                 iteration_id);
-        REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+        REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+            make_not_null(&runner), 0));
         auto& inbox = ActionTesting::get_inbox_tag<
             element_array, LinearSolver::cg::detail::Tags::InitialHasConverged<
                                DummyOptionsGroup>>(make_not_null(&runner), 0);
         CAPTURE(has_converged);
         inbox[iteration_id] = has_converged;
-        REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
         CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
@@ -157,7 +157,8 @@ SPECTRE_TEST_CASE(
         element_array, LinearSolver::cg::detail::UpdateOperand<
                            fields_tag, DummyOptionsGroup, DummyOptionsGroup>>(
         0);
-    REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+    REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+        make_not_null(&runner), 0));
     auto& inbox = ActionTesting::get_inbox_tag<
         element_array, LinearSolver::cg::detail::Tags::
                            ResidualRatioAndHasConverged<DummyOptionsGroup>>(
@@ -165,7 +166,6 @@ SPECTRE_TEST_CASE(
     const double res_ratio = 2.;
     CAPTURE(has_converged);
     inbox[iteration_id] = std::make_tuple(res_ratio, has_converged);
-    REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));

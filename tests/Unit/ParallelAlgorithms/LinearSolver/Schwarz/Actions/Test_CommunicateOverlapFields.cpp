@@ -130,20 +130,17 @@ void test_communicate_overlap_fields(const size_t num_points_per_dim,
   // Send from first element
   ActionTesting::next_action<element_array>(make_not_null(&runner),
                                             first_element_id);
-  REQUIRE_FALSE(
-      ActionTesting::is_ready<element_array>(runner, first_element_id));
+  REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+      make_not_null(&runner), first_element_id));
   // Send from second element
   ActionTesting::next_action<element_array>(make_not_null(&runner),
                                             second_element_id);
-  REQUIRE(ActionTesting::is_ready<element_array>(runner, first_element_id) ==
-          (Dim == 1));
-  REQUIRE(ActionTesting::is_ready<element_array>(runner, second_element_id));
   // Send from third element
   if constexpr (Dim > 1) {
+    REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+        make_not_null(&runner), first_element_id));
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               third_element_id);
-    REQUIRE(ActionTesting::is_ready<element_array>(runner, first_element_id));
-    REQUIRE(ActionTesting::is_ready<element_array>(runner, third_element_id));
   }
   // Receive on first element
   {

@@ -274,11 +274,10 @@ void test_dg_operator(
           runner.template mock_distributed_objects<element_array>()
               .at(element_id)
               .set_terminate(false);
-          while (ActionTesting::is_ready<element_array>(runner, element_id) and
-                 not ActionTesting::get_terminate<element_array>(runner,
-                                                                 element_id)) {
-            ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                                      element_id);
+          while (not ActionTesting::get_terminate<element_array>(runner,
+                                                                 element_id) and
+                 ActionTesting::next_action_if_ready<element_array>(
+                     make_not_null(&runner), element_id)) {
           }
         }
         // 2. Receive data and apply operator

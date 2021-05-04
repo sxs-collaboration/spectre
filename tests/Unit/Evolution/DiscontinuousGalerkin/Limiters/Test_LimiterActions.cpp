@@ -249,16 +249,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   }
 
   // Now we check ApplyLimiter
-  CHECK_FALSE(runner.is_ready<my_component>(self_id));
+  REQUIRE_FALSE(runner.next_action_if_ready<my_component>(self_id));
   runner.next_action<my_component>(south_id);
-  CHECK_FALSE(runner.is_ready<my_component>(self_id));
+  REQUIRE_FALSE(runner.next_action_if_ready<my_component>(self_id));
   runner.next_action<my_component>(east_id);
-  CHECK_FALSE(runner.is_ready<my_component>(self_id));
+  REQUIRE_FALSE(runner.next_action_if_ready<my_component>(self_id));
   runner.next_action<my_component>(west_id);
-  CHECK(runner.is_ready<my_component>(self_id));
 
-  // ApplyLimiter::is_ready reports true, so here we check that the inbox is
-  // correctly filled with information from neighbors.
+  // Here we check that the inbox is correctly filled with information from
+  // neighbors.
   {
     const auto check_inbox = [&runner, &self_id](
                                  const ElementId<2>& id,
@@ -341,7 +340,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
   runner.next_action<my_component>(self_id);
 
   CHECK(runner.nonempty_inboxes<my_component, limiter_comm_tag>().empty());
-  CHECK(runner.is_ready<my_component>(self_id));
   CHECK(
       tuples::get<limiter_comm_tag>(runner.inboxes<my_component>().at(self_id))
           .empty());

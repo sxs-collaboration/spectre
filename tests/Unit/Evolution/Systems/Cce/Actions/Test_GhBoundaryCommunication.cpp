@@ -222,7 +222,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // check that the 'block' appropriately reports that it's not ready:
-  CHECK_FALSE(ActionTesting::is_ready<evolution_component>(runner, 0));
+  CHECK_FALSE(ActionTesting::next_action_if_ready<evolution_component>(
+      make_not_null(&runner), 0));
 
   // send the current timestep data to the boundary component
   const auto current_time =
@@ -248,7 +249,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
   // then `ReceiveWorldtubeBoundaryData` in the evolution
-  CHECK(ActionTesting::is_ready<evolution_component>(runner, 0));
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
 
   const size_t number_of_angular_points =
