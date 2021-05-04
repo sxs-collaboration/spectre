@@ -5,8 +5,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
@@ -40,6 +41,9 @@ struct System {
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
 
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
+
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,
                                    Tags::TildeB<>, Tags::TildePhi>>;
@@ -65,15 +69,8 @@ struct System {
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
                                 thermodynamic_dim>;
 
-  using char_speeds_compute_tag =
-      Tags::CharacteristicSpeedsCompute<EquationOfStateType>;
-  using char_speeds_tag = Tags::CharacteristicSpeeds;
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;

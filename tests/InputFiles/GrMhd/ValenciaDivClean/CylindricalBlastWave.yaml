@@ -15,12 +15,14 @@ DomainCreator:
   Brick:
     LowerBound: [-6.0, -6.0, -6.0]
     UpperBound: [6.0, 6.0, 6.0]
-    IsPeriodicIn: [true, true, true]
     InitialRefinement: [2, 2, 0]
     InitialGridPoints: [2, 2, 2]
     TimeDependence: None
+    BoundaryCondition: Periodic
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    Rusanov:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -35,9 +37,6 @@ AnalyticData:
     OuterPressure: 5.0e-4
     MagneticField: [0.1, 0.0, 0.0]
     AdiabaticIndex: 1.3333333333333333333
-
-NumericalFlux:
-  LocalLaxFriedrichs:
 
 EvolutionSystem:
   ValenciaDivClean:

@@ -27,12 +27,14 @@ DomainCreator:
   Brick:
     LowerBound: [10.5, 0.0, 0.0]
     UpperBound: [11.5, 1.0, 1.0]
-    IsPeriodicIn: [false, false, false]
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [5, 5, 5]
     TimeDependence: None
+    BoundaryCondition: DirichletAnalytic
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    Rusanov:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -45,9 +47,6 @@ AnalyticSolution:
     MaxPressureRadius: 12.0
     PolytropicConstant: 0.001
     PolytropicExponent: 1.3333333333333333333333
-
-NumericalFlux:
-  LocalLaxFriedrichs:
 
 EvolutionSystem:
   ValenciaDivClean:
