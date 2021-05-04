@@ -25,6 +25,8 @@ namespace Algorithms {
  * - `ckindex`: A charm++ chare index object. Useful for obtaining entry
  *   method indices that are needed for creating callbacks. See
  *   https://charm.readthedocs.io/en/latest/charm++/manual.html#creating-a-ckcallback-object
+ * - `cproxy_section`: The charm++ section proxy class. See
+ *   https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group
  */
 struct Group {
   template <typename ParallelComponent,
@@ -46,6 +48,10 @@ struct Group {
             typename SpectreArrayIndex>
   using ckindex = CkIndex_AlgorithmGroup<ParallelComponent,
                                          SpectreArrayIndex>;
+
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  using cproxy_section =
+      CProxySection_AlgorithmGroup<ParallelComponent, SpectreArrayIndex>;
 };
 }  // namespace Algorithms
 }  // namespace Parallel

@@ -355,6 +355,9 @@ struct charm_types_with_parameters {
           ParallelComponent, Args...>;
   using ckindex = typename ParallelComponent::chare_type::template ckindex<
       ParallelComponent, Args...>;
+  using cproxy_section =
+      typename ParallelComponent::chare_type::template cproxy_section<
+          ParallelComponent, Args...>;
 };
 /// \endcond
 }  // namespace Parallel

@@ -46,6 +46,9 @@ struct Singleton {
             typename SpectreArrayIndex>
   using ckindex = CkIndex_AlgorithmSingleton<ParallelComponent,
                                              SpectreArrayIndex>;
+
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  using cproxy_section = void;
 };
 }  // namespace Algorithms
 }  // namespace Parallel
