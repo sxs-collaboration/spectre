@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  InitialDataTci.cpp
   TciOnDgGrid.cpp
   TciOptions.cpp
   )
@@ -12,6 +13,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  InitialDataTci.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOptions.hpp
