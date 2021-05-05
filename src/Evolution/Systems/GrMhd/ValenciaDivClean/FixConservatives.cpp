@@ -97,7 +97,7 @@ void FixConservatives::pup(PUP::er& p) noexcept {  // NOLINT
 // {\tilde B}^k      B^k \sqrt{g}
 // \rho              \rho_0
 // \gamma_{mn}       g_{mn}
-void FixConservatives::operator()(
+bool FixConservatives::operator()(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
@@ -105,6 +105,7 @@ void FixConservatives::operator()(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept {
+  bool needed_fixing = false;
   const size_t size = get<0>(tilde_b).size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>, ::Tags::TempScalar<3>>>
@@ -133,6 +134,7 @@ void FixConservatives::operator()(
     const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
     if (rest_mass_density_times_lorentz_factor[s] <
         rest_mass_density_times_lorentz_factor_cutoff_) {
+      needed_fixing = true;
       d_tilde = minimum_rest_mass_density_times_lorentz_factor_ * sqrt_det_g;
     }
 
@@ -142,6 +144,7 @@ void FixConservatives::operator()(
     // Equation B.39 of Foucart
     if (b_tilde_squared > one_minus_safety_factor_for_magnetic_field_ * 2. *
                               tau_tilde * sqrt_det_g) {
+      needed_fixing = true;
       tau_tilde = 0.5 * b_tilde_squared /
                   one_minus_safety_factor_for_magnetic_field_ / sqrt_det_g;
     }
@@ -221,12 +224,14 @@ void FixConservatives::operator()(
                upper_bound_for_s_tilde_squared /
                (s_tilde_squared + 1.e-16 * square(d_tilde)));
       if (rescaling_factor < 1.) {
+        needed_fixing = true;
         for (size_t i = 0; i < 3; i++) {
           tilde_s->get(i)[s] *= rescaling_factor;
         }
       }
     }
   }
+  return needed_fixing;
 }
 
 bool operator==(const FixConservatives& lhs,
