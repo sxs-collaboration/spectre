@@ -17,14 +17,20 @@
 #include "Domain/TagsCharacteresticSpeeds.hpp"
 #include "Evolution/Actions/AddMeshVelocityNonconservative.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -33,7 +39,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/Actions/ReceiveVolumeData.hpp"
@@ -44,10 +49,6 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Informer/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderSchemeLts.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
@@ -78,11 +79,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
@@ -141,6 +138,10 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+// First template parameter specifies the source of the initial data, which
+// could be an analytic solution, analytic data, or imported numerical data.
+// Second template parameter specifies the analytic solution used when imposing
+// dirichlet boundary conditions or against which to compute error norms.
 template <typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
@@ -156,15 +157,7 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   using initial_data = InitialData;
-  using boundary_conditions = BoundaryConditions;
-  // Only Dirichlet boundary conditions imposed by an analytic solution are
-  // supported right now.
-  using analytic_solution = boundary_conditions;
-  using analytic_solution_tag = Tags::AnalyticSolution<boundary_conditions>;
-  using boundary_condition_tag = analytic_solution_tag;
-
-  using normal_dot_numerical_flux = Tags::NumericalFlux<
-      GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
+  using analytic_solution_tag = Tags::AnalyticSolution<BoundaryConditions>;
 
   using step_choosers_common = tmpl::list<
       StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
@@ -185,16 +178,6 @@ struct EvolutionMetavars {
 
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-  using boundary_scheme = tmpl::conditional_t<
-      local_time_stepping,
-      dg::FirstOrderScheme::FirstOrderSchemeLts<
-          volume_dim, typename system::variables_tag,
-          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-          normal_dot_numerical_flux, Tags::TimeStepId, time_stepper_tag>,
-      dg::FirstOrderScheme::FirstOrderScheme<
-          volume_dim, typename system::variables_tag,
-          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-          normal_dot_numerical_flux, Tags::TimeStepId>>;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using observe_fields = tmpl::append<
@@ -265,14 +248,7 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme,
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      Actions::MutateApply<boundary_scheme>,
+      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>>;
@@ -309,15 +285,15 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags = tmpl::list<
-      analytic_solution_tag, normal_dot_numerical_flux, time_stepper_tag,
-    Tags::EventsAndTriggers<events, triggers>,
-    GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-      volume_dim, frame>,
-    GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-      volume_dim, frame>,
-    GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-      volume_dim, frame>,
-    PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
+      analytic_solution_tag, time_stepper_tag,
+      Tags::EventsAndTriggers<events, triggers>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+          volume_dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+          volume_dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+          volume_dim, frame>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
 
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
@@ -335,41 +311,11 @@ struct EvolutionMetavars {
               domain::Tags::Coordinates<volume_dim, Frame::Logical>>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      dg::Actions::InitializeInterfaces<
-          system,
-          dg::Initialization::slice_tags_to_face<
-              typename system::variables_tag,
-              gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
-              typename gr::Tags::DetAndInverseSpatialMetricCompute<
-                  volume_dim, frame, DataVector>::base,
-              gr::Tags::Shift<volume_dim, frame, DataVector>,
-              gr::Tags::Lapse<DataVector>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>,
-          dg::Initialization::slice_tags_to_exterior<
-              gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
-              typename gr::Tags::DetAndInverseSpatialMetricCompute<
-                  volume_dim, frame, DataVector>::base,
-              gr::Tags::Shift<volume_dim, frame, DataVector>,
-              gr::Tags::Lapse<DataVector>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
-              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>,
-          dg::Initialization::face_compute_tags<
-              domain::Tags::BoundaryCoordinates<volume_dim, true>,
-              GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
-                                                               frame>>,
-          dg::Initialization::exterior_compute_tags<
-              GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
-                                                               frame>>,
-          true, true>,
       Initialization::Actions::AddComputeTags<tmpl::push_back<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
           evolution::Tags::AnalyticCompute<volume_dim, analytic_solution_tag,
                                            analytic_solution_fields>>>,
-      dg::Actions::InitializeMortars<boundary_scheme, true>,
-      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
@@ -490,6 +436,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
+    &GeneralizedHarmonic::BoundaryConditions::register_derived_with_charm,
+    &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
