@@ -8,6 +8,7 @@ add_subdirectory(Tags)
 set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
+  Test_ApplyMassMatrix.cpp
   Test_Formulation.cpp
   Test_HasReceivedFromAllMortars.cpp
   Test_LiftFlux.cpp

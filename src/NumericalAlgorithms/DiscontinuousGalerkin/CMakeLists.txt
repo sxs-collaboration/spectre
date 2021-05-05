@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ApplyMassMatrix.cpp
   Formulation.cpp
   MetricIdentityJacobian.cpp
   MortarHelpers.cpp
@@ -17,6 +18,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ApplyMassMatrix.hpp
   Formulation.hpp
   HasReceivedFromAllMortars.hpp
   LiftFlux.hpp
@@ -35,8 +37,10 @@ target_link_libraries(
   Boost::boost
   DataStructures
   DomainStructure
+  ErrorHandling
   Options
   Spectral
+  Utilities
   INTERFACE
   Domain
   )
