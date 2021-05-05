@@ -9,6 +9,7 @@
 #include <memory>
 #include <pup.h>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
@@ -36,6 +37,7 @@
 #include "IO/Logging/Tags.hpp"  // IWYU pragma: keep
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -64,6 +66,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -92,15 +95,33 @@ class DataBox;
 
 namespace {
 
+// This struct is here to generate a snippet for the dox.
+// Otherwise, we would just call ErrorOnFailedApparentHorizon directly.
+struct TestHorizonFindFailureCallback {
+  // [horizon_find_failure_callback_example]
+  template <typename InterpolationTargetTag, typename DbTags,
+            typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& cache,
+                    const TemporalId& temporal_id,
+                    const FastFlow::Status failure_reason) noexcept {
+    // [horizon_find_failure_callback_example]
+    intrp::callbacks::ErrorOnFailedApparentHorizon::template apply<
+        InterpolationTargetTag>(box, cache, temporal_id, failure_reason);
+  }
+};
+
 // Counter to ensure that this function is called
 size_t test_schwarzschild_horizon_called = 0;
 struct TestSchwarzschildHorizon {
   using observation_types = tmpl::list<>;
+  // [post_horizon_find_callback_example]
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
+    // [post_horizon_find_callback_example]
     const auto& horizon_radius =
         get(get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
     const auto expected_radius =
@@ -217,6 +238,7 @@ struct MockMetavariables {
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>;
     using post_horizon_find_callback = PostHorizonFindCallback;
+    using horizon_find_failure_callback = TestHorizonFindFailureCallback;
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
@@ -233,7 +255,8 @@ struct MockMetavariables {
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
-template <typename PostHorizonFindCallback, typename IsTimeDependent>
+template <typename PostHorizonFindCallback, typename IsTimeDependent,
+          bool MakeHorizonFinderFailOnPurpose = false>
 void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            const size_t l_max,
                            const size_t grid_points_each_dimension,
@@ -366,6 +389,17 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                             typename metavars::AhA>>(make_not_null(&runner), 0,
                                                      temporal_ids);
 
+  // Center of the analytic solution.
+  const auto analytic_solution_center = []() noexcept -> std::array<double, 3> {
+    if constexpr (MakeHorizonFinderFailOnPurpose) {
+      // Make the analytic solution off-center on purpose, so that
+      // the domain only partially contains the horizon and therefore
+      // the interpolation fails.
+      return {0.5, 0.0, 0.0};
+    }
+    return {0.0, 0.0, 0.0};
+  }();
+
   // Create volume data and send it to the interpolator, for each temporal_id.
   for (const auto& temporal_id: temporal_ids) {
     for (const auto& element_id : element_ids) {
@@ -395,7 +429,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
       // Compute psi, pi, phi for KerrSchild.
       gr::Solutions::KerrSchild solution(mass, dimensionless_spin,
-                                         {{0.0, 0.0, 0.0}});
+                                         analytic_solution_center);
       const auto solution_vars = solution.variables(
           inertial_coords, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
       const auto& lapse = get<gr::Tags::Lapse<DataVector>>(solution_vars);
@@ -469,6 +503,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
   domain::FunctionsOfTime::register_derived_with_charm();
 
   // Time-independent tests.
+  test_schwarzschild_horizon_called = 0;
+  test_kerr_horizon_called = 0;
   test_apparent_horizon<TestSchwarzschildHorizon, std::false_type>(
       &test_schwarzschild_horizon_called, 3, 3, 1.0, {{0.0, 0.0, 0.0}});
   test_apparent_horizon<TestKerrHorizon, std::false_type>(
@@ -481,5 +517,19 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
       &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}});
   test_apparent_horizon<TestKerrHorizon, std::true_type>(
       &test_kerr_horizon_called, 3, 5, 1.1, {{0.12, 0.23, 0.45}});
+}
+
+// [[OutputRegex, Cannot interpolate onto surface]]
+SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder.Error",
+    "[Unit]") {
+  ERROR_TEST();
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+
+  test_schwarzschild_horizon_called = 0;
+  test_apparent_horizon<TestSchwarzschildHorizon, std::true_type, true>(
+      &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}});
 }
 }  // namespace
