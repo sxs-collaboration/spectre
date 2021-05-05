@@ -34,28 +34,30 @@
 
 namespace grmhd::ValenciaDivClean {
 
-template <typename OrderedListOfPrimitiveRecoverySchemes>
+template <typename OrderedListOfPrimitiveRecoverySchemes, bool ErrorOnFailure>
 template <size_t ThermodynamicDim>
-void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
-    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-        spatial_velocity,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-        magnetic_field,
-    const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
-    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
+                               ErrorOnFailure>::
+    apply(const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+          const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+              spatial_velocity,
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+              magnetic_field,
+          const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+          const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+          const gsl::not_null<Scalar<DataVector>*> pressure,
+          const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+          const Scalar<DataVector>& tilde_d,
+          const Scalar<DataVector>& tilde_tau,
+          const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+          const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+          const Scalar<DataVector>& tilde_phi,
+          const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+          const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+          const Scalar<DataVector>& sqrt_det_spatial_metric,
+          const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+              equation_of_state) noexcept {
   get(*divergence_cleaning_field) =
       get(tilde_phi) / get(sqrt_det_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
@@ -139,22 +141,27 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;
     } else {
-      ERROR("All primitive inversion schemes failed at s = "
-            << s << ".\n"
-            << std::setprecision(std::numeric_limits<double>::digits10 + 1)
-            << "total_energy_density = " << total_energy_density[s] << "\n"
-            << "momentum_density_squared = " << get(momentum_density_squared)[s]
-            << "\n"
-            << "momentum_density_dot_magnetic_field = "
-            << get(momentum_density_dot_magnetic_field)[s] << "\n"
-            << "magnetic_field_squared = " << get(magnetic_field_squared)[s]
-            << "\n"
-            << "rest_mass_density_times_lorentz_factor = "
-            << rest_mass_density_times_lorentz_factor[s] << "\n"
-            << "previous_rest_mass_density = " << get(*rest_mass_density)[s]
-            << "\n"
-            << "previous_pressure = " << get(*pressure)[s] << "\n"
-            << "previous_lorentz_factor = " << get(*lorentz_factor)[s] << "\n");
+      if constexpr (ErrorOnFailure) {
+        ERROR("All primitive inversion schemes failed at s = "
+              << s << ".\n"
+              << std::setprecision(std::numeric_limits<double>::digits10 + 1)
+              << "total_energy_density = " << total_energy_density[s] << "\n"
+              << "momentum_density_squared = "
+              << get(momentum_density_squared)[s] << "\n"
+              << "momentum_density_dot_magnetic_field = "
+              << get(momentum_density_dot_magnetic_field)[s] << "\n"
+              << "magnetic_field_squared = " << get(magnetic_field_squared)[s]
+              << "\n"
+              << "rest_mass_density_times_lorentz_factor = "
+              << rest_mass_density_times_lorentz_factor[s] << "\n"
+              << "previous_rest_mass_density = " << get(*rest_mass_density)[s]
+              << "\n"
+              << "previous_pressure = " << get(*pressure)[s] << "\n"
+              << "previous_lorentz_factor = " << get(*lorentz_factor)[s]
+              << "\n");
+      } else {
+        return false;
+      }
     }
   }
   if constexpr (ThermodynamicDim == 1) {
@@ -168,15 +175,16 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
   }
   *specific_enthalpy = hydro::relativistic_specific_enthalpy(
       *rest_mass_density, *specific_internal_energy, *pressure);
+  return true;
 }
 }  // namespace grmhd::ValenciaDivClean
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define ERROR_ON_FAILURE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(_, data)                                                 \
-  template struct grmhd::ValenciaDivClean::PrimitiveFromConservative<RECOVERY( \
-      data)>;
+#define INSTANTIATION(_, data)                                        \
+  template struct grmhd::ValenciaDivClean::PrimitiveFromConservative< \
+      RECOVERY(data), ERROR_ON_FAILURE(data)>;
 
 using NewmanHamlinThenPalenzuelaEtAl = tmpl::list<
     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
@@ -188,13 +196,17 @@ GENERATE_INSTANTIATIONS(
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-     NewmanHamlinThenPalenzuelaEtAl))
+     NewmanHamlinThenPalenzuelaEtAl),
+    (true, false))
 
 #undef INSTANTIATION
 
+#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(2, data)
+
 #define INSTANTIATION(_, data)                                                \
-  template void grmhd::ValenciaDivClean::                                     \
-      PrimitiveFromConservative<RECOVERY(data)>::apply<THERMODIM(data)>(      \
+  template bool grmhd::ValenciaDivClean::PrimitiveFromConservative<           \
+      RECOVERY(data), ERROR_ON_FAILURE(data)>::                               \
+      apply<THERMODIM(data)>(                                                 \
           const gsl::not_null<Scalar<DataVector>*> rest_mass_density,         \
           const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,  \
           const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>       \
@@ -223,7 +235,7 @@ GENERATE_INSTANTIATIONS(
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanHamlinThenPalenzuelaEtAl),
-    (1, 2))
+    (true, false), (1, 2))
 
 #undef INSTANTIATION
 #undef THERMODIM
