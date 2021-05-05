@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_MonotisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
   Subcell/Test_InitialDataTci.cpp
+  Subcell/Test_PrimsAfterRollback.cpp
   Subcell/Test_ResizeAndComputePrimitives.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
