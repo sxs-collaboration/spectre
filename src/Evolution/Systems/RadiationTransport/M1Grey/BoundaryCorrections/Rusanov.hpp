@@ -62,6 +62,11 @@ void dg_boundary_terms_impl(
     dg::Formulation dg_formulation) noexcept;
 }  // namespace Rusanov_detail
 
+/// \cond
+template <typename NeutrinoSpeciesList>
+class Rusanov;
+/// \endcond
+
 /*!
  * \brief A Rusanov/local Lax-Friedrichs Riemann solver
  *
@@ -90,7 +95,8 @@ void dg_boundary_terms_impl(
  * \f$G - F_\text{int}\f$
  */
 template <typename... NeutrinoSpecies>
-class Rusanov final : public BoundaryCorrection<NeutrinoSpecies...> {
+class Rusanov<tmpl::list<NeutrinoSpecies...>> final
+    : public BoundaryCorrection<tmpl::list<NeutrinoSpecies...>> {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -106,16 +112,16 @@ class Rusanov final : public BoundaryCorrection<NeutrinoSpecies...> {
 
   /// \cond
   explicit Rusanov(CkMigrateMessage* msg) noexcept
-      : BoundaryCorrection<NeutrinoSpecies...>(msg) {}
+      : BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override {  // NOLINT
-    BoundaryCorrection<NeutrinoSpecies...>::pup(p);
+    BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>::pup(p);
   }
 
-  std::unique_ptr<BoundaryCorrection<NeutrinoSpecies...>> get_clone()
-      const noexcept override {
+  std::unique_ptr<BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>>
+  get_clone() const noexcept override {
     return std::make_unique<Rusanov>(*this);
   }
 
@@ -201,7 +207,7 @@ class Rusanov final : public BoundaryCorrection<NeutrinoSpecies...> {
 /// \cond
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID Rusanov<NeutrinoSpecies...>::my_PUP_ID = 0;
+PUP::able::PUP_ID Rusanov<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID = 0;
 /// \endcond
 
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections

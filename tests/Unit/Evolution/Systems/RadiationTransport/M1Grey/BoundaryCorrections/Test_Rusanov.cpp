@@ -25,10 +25,11 @@ namespace {
 namespace helpers = TestHelpers::evolution::dg;
 
 void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
-  using system = RadiationTransport::M1Grey::System<tmpl::list<
-      neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>>;
+  using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
+                                      neutrinos::ElectronAntiNeutrinos<1>>;
+  using system = RadiationTransport::M1Grey::System<neutrino_species>;
   using rusanov = RadiationTransport::M1Grey::BoundaryCorrections::Rusanov<
-      neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>;
+      neutrino_species>;
 
   helpers::test_boundary_correction_conservation<system>(
       gen, rusanov{},
@@ -49,10 +50,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       {}, {});
 
-  const auto rusanov_from_factory = TestHelpers::test_creation<std::unique_ptr<
-      RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection<
-          neutrinos::ElectronNeutrinos<1>,
-          neutrinos::ElectronAntiNeutrinos<1>>>>("Rusanov:");
+  const auto rusanov_from_factory = TestHelpers::test_creation<
+      std::unique_ptr<RadiationTransport::M1Grey::BoundaryCorrections::
+                          BoundaryCorrection<neutrino_species>>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<system>(
       gen, "Rusanov",
@@ -72,8 +72,10 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
 
 SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Rusanov",
                   "[Unit][Evolution]") {
+  using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
+                                      neutrinos::ElectronAntiNeutrinos<1>>;
   using rusanov = RadiationTransport::M1Grey::BoundaryCorrections::Rusanov<
-      neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>;
+      neutrino_species>;
   PUPable_reg(rusanov);
   Parallel::register_derived_classes_with_charm<rusanov>();
 
