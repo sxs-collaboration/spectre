@@ -26,13 +26,19 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -45,6 +51,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -58,6 +65,11 @@
 
 namespace domain {
 namespace {
+using Translation = CoordinateMaps::TimeDependent::Translation;
+using Translation3D =
+    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
+                                                  Translation>;
+
 using BoundaryCondVector = std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
 
@@ -94,6 +106,7 @@ auto create_boundary_conditions(const size_t number_of_layers,
   return boundary_conditions_all_blocks;
 }
 
+template <typename... FuncsOfTime>
 void test_shell_construction(
     const creators::Shell& shell, const double inner_radius,
     const double outer_radius, const bool use_equiangular_map,
@@ -101,6 +114,10 @@ void test_shell_construction(
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
     const double aspect_ratio = 1.0, const bool use_logarithmic_map = false,
     const ShellWedges which_wedges = ShellWedges::All,
+    const std::tuple<std::pair<std::string, FuncsOfTime>...>&
+        expected_functions_of_time = {},
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::Grid, Frame::Inertial, 3>>>& expected_grid_to_inertial_maps = {},
     const std::vector<DirectionMap<
         3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
         expected_boundary_conditions = {}) {
@@ -204,8 +221,9 @@ void test_shell_construction(
       use_logarithmic_map ? domain::CoordinateMaps::Distribution::Logarithmic
                           : domain::CoordinateMaps::Distribution::Linear;
   if (aspect_ratio == 1.0) {
-    auto vector_of_maps = make_vector_coordinate_map_base<Frame::Logical,
-                                                          Frame::Inertial>(
+    auto vector_of_maps = make_vector_coordinate_map_base<
+        Frame::Logical, tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
+                                            Frame::Inertial, Frame::Grid>>(
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0, OrientationMap<3>{},
                    use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
@@ -238,27 +256,39 @@ void test_shell_construction(
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 5);
     }
-    test_domain_construction(domain, expected_block_neighbors,
-                             expected_external_boundaries, vector_of_maps,
-                             std::numeric_limits<double>::signaling_NaN(), {},
-                             {}, expected_boundary_conditions);
-    const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
+    test_domain_construction(
+        domain, expected_block_neighbors, expected_external_boundaries,
+        vector_of_maps,
+        expected_grid_to_inertial_maps.empty() ?
+        std::numeric_limits<double>::signaling_NaN() : 10.0,
+        shell.functions_of_time(), expected_grid_to_inertial_maps,
+        expected_boundary_conditions);
 
-    Domain<3> domain_no_corners =
-        expected_boundary_conditions.empty()
-            ? Domain<3>{std::move(vector_of_maps)}
-            : Domain<3>{std::move(vector_of_maps),
-                        create_boundary_conditions(
-                            expected_boundary_conditions.size() / 6,
-                            ShellWedges::All)};
+    if constexpr(sizeof...(FuncsOfTime) == 0) {
+      // We turn off the domain_no_corners test for time-dependent
+      // maps because Domain doesn't have a constructor that takes
+      // maps from Logical to Grid.
+      const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
 
-    test_domain_construction(domain_no_corners, expected_block_neighbors,
-                             expected_external_boundaries, vector_of_maps_copy,
-                             std::numeric_limits<double>::signaling_NaN(), {},
-                             {}, expected_boundary_conditions);
-    test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
-    test_serialization(domain_no_corners);
+      Domain<3> domain_no_corners =
+          expected_boundary_conditions.empty()
+              ? Domain<3>{std::move(vector_of_maps)}
+              : Domain<3>{std::move(vector_of_maps),
+                          create_boundary_conditions(
+                              expected_boundary_conditions.size() / 6,
+                              ShellWedges::All)};
 
+      test_domain_construction(
+          domain_no_corners, expected_block_neighbors,
+          expected_external_boundaries, vector_of_maps_copy,
+          expected_grid_to_inertial_maps.empty()
+              ? std::numeric_limits<double>::signaling_NaN()
+              : 10.0,
+          shell.functions_of_time(), expected_grid_to_inertial_maps,
+          expected_boundary_conditions);
+      test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
+      test_serialization(domain_no_corners);
+    }
   } else {
     const auto compression =
         CoordinateMaps::EquatorialCompression{aspect_ratio};
@@ -268,20 +298,22 @@ void test_shell_construction(
     const auto translation =
         domain::CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
             Affine{-1.0, 1.0, -1.0, 1.0}, Identity2D{});
+    using TargetFrame = tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
+                                            Frame::Inertial, Frame::Grid>;
     auto vector_of_maps = make_vector(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{}, use_equiangular_map, Halves::Both,
                        radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
                        use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -289,7 +321,7 @@ void test_shell_construction(
                      Direction<3>::lower_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -297,7 +329,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -305,7 +337,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -320,27 +352,44 @@ void test_shell_construction(
     }
     test_domain_construction(domain, expected_block_neighbors,
                              expected_external_boundaries, vector_of_maps,
-                             std::numeric_limits<double>::signaling_NaN(), {},
-                             {}, expected_boundary_conditions);
+                             expected_grid_to_inertial_maps.empty()
+                                 ? std::numeric_limits<double>::signaling_NaN()
+                                 : 10.0,
+                             shell.functions_of_time(),
+                             expected_grid_to_inertial_maps,
+                             expected_boundary_conditions);
 
-    const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
-    Domain<3> domain_no_corners =
-        expected_boundary_conditions.empty()
-            ? Domain<3>{std::move(vector_of_maps)}
-            : Domain<3>{std::move(vector_of_maps),
-                        create_boundary_conditions(
-                            expected_boundary_conditions.size() / 6,
-                            ShellWedges::All)};
-    test_domain_construction(domain_no_corners, expected_block_neighbors,
-                             expected_external_boundaries, vector_of_maps_copy,
-                             std::numeric_limits<double>::signaling_NaN(), {},
-                             {}, expected_boundary_conditions);
+    if constexpr (sizeof...(FuncsOfTime) == 0) {
+      // We turn off the domain_no_corners test for time-dependent
+      // maps because Domain doesn't have a constructor that takes
+      // maps from Logical to Grid.
+      const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
+      Domain<3> domain_no_corners =
+          expected_boundary_conditions.empty()
+              ? Domain<3>{std::move(vector_of_maps)}
+              : Domain<3>{std::move(vector_of_maps),
+                          create_boundary_conditions(
+                              expected_boundary_conditions.size() / 6,
+                              ShellWedges::All)};
+      test_domain_construction(
+          domain_no_corners, expected_block_neighbors,
+          expected_external_boundaries, vector_of_maps_copy,
+          expected_grid_to_inertial_maps.empty() == 0
+              ? std::numeric_limits<double>::signaling_NaN()
+              : 10.0,
+          shell.functions_of_time(), expected_grid_to_inertial_maps,
+          expected_boundary_conditions);
 
-    test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
-    test_serialization(domain_no_corners);
+      test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
+      test_serialization(domain_no_corners);
+    }
   }
 
   test_initial_domain(domain, shell.initial_refinement_levels());
+  TestHelpers::domain::creators::test_functions_of_time(
+      shell, expected_functions_of_time);
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
   test_serialization(domain);
 }
 
@@ -369,6 +418,7 @@ void test_shell_boundaries() {
         false,
         ShellWedges::All,
         1,
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
         create_inner_boundary_condition(),
         create_outer_boundary_condition()};
     test_physical_separation(
@@ -376,8 +426,8 @@ void test_shell_boundaries() {
     test_shell_construction(
         shell_boundary_conditions, inner_radius, outer_radius,
         use_equiangular_map, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All,
-        create_boundary_conditions(1, ShellWedges::All));
+        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All, {},
+        {}, create_boundary_conditions(1, ShellWedges::All));
   }
 }
 
@@ -414,6 +464,7 @@ void test_shell_factory_equiangular() {
         "  AspectRatio: 1.0\n"
         "  UseLogarithmicMap: false\n"
         "  WhichWedges: All\n"
+        "  TimeDependence: None\n"
         "  RadialBlockLayers: 1\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
@@ -421,11 +472,88 @@ void test_shell_factory_equiangular() {
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-    test_shell_construction(dynamic_cast<const creators::Shell&>(*shell),
-                            inner_radius, outer_radius, true,
-                            grid_points_r_angular,
-                            {6, make_array<3>(refinement_level)}, 1.0, false,
-                            ShellWedges::All, expected_boundary_conditions);
+    test_shell_construction(
+        dynamic_cast<const creators::Shell&>(*shell), inner_radius,
+        outer_radius, true, grid_points_r_angular,
+        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All, {},
+        {}, expected_boundary_conditions);
+  };
+  helper(BoundaryCondVector{}, std::false_type{});
+  helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
+}
+
+void test_shell_factory_equiangular_time_dependent() {
+  INFO("Shell factory equiangular_time_dependent");
+  const auto helper = [](const auto expected_boundary_conditions,
+                         auto use_boundary_condition) {
+    const auto shell = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
+        tmpl::conditional_t<decltype(use_boundary_condition)::value,
+                            TestHelpers::domain::BoundaryConditions::
+                                MetavariablesWithBoundaryConditions<3>,
+                            TestHelpers::domain::BoundaryConditions::
+                                MetavariablesWithoutBoundaryConditions<3>>>(
+        "Shell:\n"
+        "  InnerRadius: 1\n"
+        "  OuterRadius: 3\n"
+        "  InitialRefinement: 2\n"
+        "  InitialGridPoints: [2,3]\n"
+        "  UseEquiangularMap: true\n"
+        "  AspectRatio: 1.0\n"
+        "  UseLogarithmicMap: false\n"
+        "  WhichWedges: All\n"
+        "  TimeDependence:\n"
+        "    UniformTranslation:\n"
+        "      InitialTime: 1.0\n"
+        "      InitialExpirationDeltaT: 9.0\n"
+        "      Velocity: [2.3, -0.3, 1.2]\n"
+        "      FunctionOfTimeNames: [TranslationX,"
+        "                            TranslationY,"
+        "                            TranslationZ]\n"
+        "  RadialBlockLayers: 1\n" +
+        (expected_boundary_conditions.empty() ? std::string{}
+                                              : boundary_conditions_string()));
+    const double inner_radius = 1.0;
+    const double outer_radius = 3.0;
+    const size_t refinement_level = 2;
+    const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
+    test_shell_construction(
+        dynamic_cast<const creators::Shell&>(*shell), inner_radius,
+        outer_radius, true, grid_points_r_angular,
+        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All,
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                "TranslationX",
+                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                "TranslationY",
+                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}, 10.0}},
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                "TranslationZ",
+                {1.0, std::array<DataVector, 3>{{{0.0}, {1.2}, {0.0}}}, 10.0}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}},
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}},
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}},
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}},
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}},
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}}),
+        expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -451,6 +579,7 @@ void test_shell_factory_equidistant() {
         "  AspectRatio: 1.0\n"
         "  UseLogarithmicMap: false\n"
         "  WhichWedges: All\n"
+        "  TimeDependence: None\n"
         "  RadialBlockLayers: 1\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
@@ -458,11 +587,11 @@ void test_shell_factory_equidistant() {
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-    test_shell_construction(dynamic_cast<const creators::Shell&>(*shell),
-                            inner_radius, outer_radius, false,
-                            grid_points_r_angular,
-                            {6, make_array<3>(refinement_level)}, 1.0, false,
-                            ShellWedges::All, expected_boundary_conditions);
+    test_shell_construction(
+        dynamic_cast<const creators::Shell&>(*shell), inner_radius,
+        outer_radius, false, grid_points_r_angular,
+        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All, {},
+        {}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -494,13 +623,15 @@ void test_shell_boundaries_aspect_ratio() {
       false,
       ShellWedges::All,
       1,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
   test_physical_separation(shell_boundary_condition.create_domain().blocks());
-  test_shell_construction(
-      shell_boundary_condition, inner_radius, outer_radius, false,
-      grid_points_r_angular, {6, make_array<3>(refinement_level)}, aspect_ratio,
-      false, ShellWedges::All, create_boundary_conditions(1, ShellWedges::All));
+  test_shell_construction(shell_boundary_condition, inner_radius, outer_radius,
+                          false, grid_points_r_angular,
+                          {6, make_array<3>(refinement_level)}, aspect_ratio,
+                          false, ShellWedges::All, {}, {},
+                          create_boundary_conditions(1, ShellWedges::All));
 }
 
 void test_shell_factory_aspect_ratio() {
@@ -523,6 +654,7 @@ void test_shell_factory_aspect_ratio() {
         "  AspectRatio: 2.0        \n"
         "  UseLogarithmicMap: false\n"
         "  WhichWedges: All\n"
+        "  TimeDependence: None\n"
         "  RadialBlockLayers: 1\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
@@ -535,7 +667,7 @@ void test_shell_factory_aspect_ratio() {
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
         {6, make_array<3>(refinement_level)}, aspect_ratio, false,
-        ShellWedges::All, expected_boundary_conditions);
+        ShellWedges::All, {}, {}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -568,19 +700,22 @@ void test_shell_boundaries_logarithmic_map() {
       use_logarithmic_map,
       ShellWedges::All,
       1,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
   test_physical_separation(shell_boundary_condition.create_domain().blocks());
   test_shell_construction(shell_boundary_condition, inner_radius, outer_radius,
                           false, grid_points_r_angular,
                           {6, make_array<3>(refinement_level)}, aspect_ratio,
-                          use_logarithmic_map, ShellWedges::All,
+                          use_logarithmic_map, ShellWedges::All, {}, {},
                           create_boundary_conditions(1, ShellWedges::All));
 
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
           false, aspect_ratio, use_logarithmic_map, ShellWedges::All, 1,
+          std::unique_ptr<
+              domain::creators::time_dependence::TimeDependence<3>>{},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
@@ -590,6 +725,8 @@ void test_shell_boundaries_logarithmic_map() {
       creators::Shell(inner_radius, outer_radius, refinement_level,
                       grid_points_r_angular, false, aspect_ratio,
                       use_logarithmic_map, ShellWedges::All, 1,
+                      std::unique_ptr<
+                      domain::creators::time_dependence::TimeDependence<3>>{},
                       create_inner_boundary_condition(),
                       std::make_unique<TestHelpers::domain::BoundaryConditions::
                                            TestPeriodicBoundaryCondition<3>>(),
@@ -600,6 +737,8 @@ void test_shell_boundaries_logarithmic_map() {
       creators::Shell(inner_radius, outer_radius, refinement_level,
                       grid_points_r_angular, false, aspect_ratio,
                       use_logarithmic_map, ShellWedges::All, 1,
+                      std::unique_ptr<
+                      domain::creators::time_dependence::TimeDependence<3>>{},
                       create_inner_boundary_condition(),
                       std::make_unique<TestHelpers::domain::BoundaryConditions::
                                            TestNoneBoundaryCondition<3>>(),
@@ -611,6 +750,8 @@ void test_shell_boundaries_logarithmic_map() {
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
           false, aspect_ratio, use_logarithmic_map, ShellWedges::All, 1,
+          std::unique_ptr<
+              domain::creators::time_dependence::TimeDependence<3>>{},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
@@ -639,6 +780,7 @@ void test_shell_factory_logarithmic_map() {
         "  AspectRatio: 2.0        \n"
         "  UseLogarithmicMap: true\n"
         "  WhichWedges: All\n"
+        "  TimeDependence: None\n"
         "  RadialBlockLayers: 1\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
@@ -652,7 +794,7 @@ void test_shell_factory_logarithmic_map() {
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
         {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
-        ShellWedges::All, expected_boundary_conditions);
+        ShellWedges::All, {}, {}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -671,6 +813,7 @@ void test_shell_factory_logarithmic_map() {
       "  AspectRatio: 2.0        \n"
       "  UseLogarithmicMap: true\n"
       "  WhichWedges: All\n"
+      "  TimeDependence: None\n"
       "  RadialBlockLayers: 3\n" +
       boundary_conditions_string());
   const Domain<3> multiple_layers_domain = shell->create_domain();
@@ -718,6 +861,7 @@ void test_shell_factory_wedges_four_on_equator() {
       "  AspectRatio: 2.0        \n"
       "  UseLogarithmicMap: true\n"
       "  WhichWedges: FourOnEquator\n"
+      "  TimeDependence: None\n"
       "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
@@ -747,6 +891,7 @@ void test_shell_factory_wedges_one_along_minus_x() {
       "  AspectRatio: 2.7        \n"
       "  UseLogarithmicMap: false\n"
       "  WhichWedges: OneAlongMinusX \n"
+      "  TimeDependence: None\n"
       "  RadialBlockLayers: 1\n");
   const double inner_radius = 2.0;
   const double outer_radius = 3.0;
@@ -860,6 +1005,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell", "[Domain][Unit]") {
   test_shell_factory_logarithmic_map();
   test_shell_factory_wedges_four_on_equator();
   test_shell_factory_wedges_one_along_minus_x();
+  test_shell_factory_equiangular_time_dependent();
 
   {
     INFO("Radial block layers 1");

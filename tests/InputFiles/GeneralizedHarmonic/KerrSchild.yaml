@@ -28,6 +28,7 @@ DomainCreator:
       UseLogarithmicMap: true
       WhichWedges: All
       RadialBlockLayers: 1
+      TimeDependence: None
 
 AnalyticSolution:
   KerrSchild:
