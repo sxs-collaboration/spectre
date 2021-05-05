@@ -46,6 +46,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  DgSubcell
   ErrorHandling
   GeneralRelativity
   Hydro
