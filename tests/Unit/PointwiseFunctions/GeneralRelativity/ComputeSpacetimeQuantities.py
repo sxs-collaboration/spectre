@@ -4,6 +4,17 @@
 import numpy as np
 
 
+def shift(spacetime_metric, inverse_spatial_metric):
+    return np.einsum('ij,j->i', inverse_spatial_metric, spacetime_metric[1:,
+                                                                         0])
+
+
+def lapse(shift, spacetime_metric):
+    return np.sqrt(
+        np.einsum('i,i->', shift, spacetime_metric[1:, 0]) -
+        spacetime_metric[0, 0])
+
+
 def spacetime_metric(lapse, shift, spatial_metric):
     dim = shift.size
     psi = np.zeros([dim + 1, dim + 1])
