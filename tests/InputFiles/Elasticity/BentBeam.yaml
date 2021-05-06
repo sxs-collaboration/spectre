@@ -49,10 +49,16 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 2
+      MaxIterations: 1
       RelativeResidual: 1.e-8
       AbsoluteResidual: 1.e-14
     Verbosity: Verbose
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    Verbosity: Quiet
+    OutputVolumeData: False
 
   SchwarzSmoother:
     Iterations: 3
