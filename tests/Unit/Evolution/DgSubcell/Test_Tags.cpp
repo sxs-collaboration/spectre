@@ -16,6 +16,7 @@
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/OnSubcells.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -85,6 +86,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags",
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Inactive<
       ::Tags::Variables<tmpl::list<Var1, Var2>>>>(
       "Inactive(Variables(Var1,Var2))");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::Tags::OnSubcells<Var1>>("OnSubcells(Var1)");
+  TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::OnSubcells<
+      ::Tags::Variables<tmpl::list<Var1, Var2>>>>(
+      "OnSubcells(Variables(Var1,Var2))");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::SubcellOptions>("SubcellOptions");
   TestHelpers::db::test_simple_tag<
