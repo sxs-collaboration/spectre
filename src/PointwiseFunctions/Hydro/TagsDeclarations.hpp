@@ -60,6 +60,8 @@ template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>
 struct SpecificInternalEnergy;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct LowerSpatialFourVelocity;
 }  // namespace Tags
 /// \endcond
 
