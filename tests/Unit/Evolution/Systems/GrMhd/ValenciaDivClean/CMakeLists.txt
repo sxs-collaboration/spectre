@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_GrTagsForHydro.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_PrimitiveGhostData.cpp
+  Subcell/Test_PrimsAfterRollback.cpp
   Subcell/Test_ResizeAndComputePrimitives.cpp
   Subcell/Test_SwapGrTags.cpp
   Subcell/Test_TciOnDgGrid.cpp
