@@ -11,7 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/SliceIterator.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Side.hpp"
@@ -47,11 +49,12 @@ namespace TestHelpers::fd::reconstruction {
  *  const Index<Dim>& volume_extents, const size_t number_of_variables)
  * \endcode
  */
-template <size_t Dim, typename ReconsFunction>
+template <size_t Dim, typename ReconsFunction, typename F1>
 void test_with_python(const Index<Dim>& extents, const size_t stencil_width,
                       const std::string& python_test_file,
                       const std::string& python_function,
-                      const ReconsFunction& recons_function) {
+                      const ReconsFunction& recons_function,
+                      const F1& invoke_reconstruct_neighbor) {
   CAPTURE(extents);
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
@@ -221,6 +224,47 @@ void test_with_python(const Index<Dim>& extents, const size_t stencil_width,
               (var_index + 1) * reconstructed_num_pts);
       CHECK_ITERABLE_APPROX(recons_lower_side_this_var,
                             python_recons_on_lower[d]);
+
+      // Test fd::reconstruction::reconstruct_neighbor
+      Index<Dim> ghost_data_extents = extents;
+      ghost_data_extents[d] = (stencil_width + 1) / 2;
+      Index<Dim> extents_with_faces = extents;
+      ++extents_with_faces[d];
+      const DataVector dv_var{
+          const_cast<double*>(volume_vars.data() +
+                              var_index * extents.product()),
+          extents.product()};
+
+      const Direction<Dim> upper_direction{d, Side::Upper};
+      DataVector upper_face_var{extents.slice_away(d).product()};
+      auto& upper_neighbor_data = ghost_cells.at(upper_direction);
+      DataVector upper_neighbor_var{
+          // NOLINTNEXTLINE
+          upper_neighbor_data.data() + var_index * ghost_data_extents.product(),
+          ghost_data_extents.product()};
+      invoke_reconstruct_neighbor(make_not_null(&upper_face_var), dv_var,
+                                  upper_neighbor_var, extents,
+                                  ghost_data_extents, upper_direction);
+      for (SliceIterator si(extents_with_faces, d, extents_with_faces[d] - 1);
+           si; ++si) {
+        CHECK(approx(upper_face_var[si.slice_offset()]) ==
+              recons_upper_side_this_var[si.volume_offset()]);
+      }
+
+      const Direction<Dim> lower_direction{d, Side::Lower};
+      DataVector lower_face_var{extents.slice_away(d).product()};
+      auto& lower_neighbor_data = ghost_cells.at(lower_direction);
+      DataVector lower_neighbor_var{
+          // NOLINTNEXTLINE
+          lower_neighbor_data.data() + var_index * ghost_data_extents.product(),
+          ghost_data_extents.product()};
+      invoke_reconstruct_neighbor(make_not_null(&lower_face_var), dv_var,
+                                  lower_neighbor_var, extents,
+                                  ghost_data_extents, lower_direction);
+      for (SliceIterator si(extents_with_faces, d, 0); si; ++si) {
+        CHECK(approx(lower_face_var[si.slice_offset()]) ==
+              recons_lower_side_this_var[si.volume_offset()]);
+      }
     }
   }
 }

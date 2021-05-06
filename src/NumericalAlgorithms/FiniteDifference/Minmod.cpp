@@ -8,7 +8,8 @@
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace fd::reconstruction::detail {
+// NOLINTNEXTLINE(modernize-concat-nested-namespaces)
+namespace fd::reconstruction {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                 \
@@ -22,8 +23,25 @@ namespace fd::reconstruction::detail {
       const Index<DIM(data)>& volume_extents,                                  \
       const size_t number_of_variables) noexcept;
 
+namespace detail {
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+}  // namespace detail
 
-#undef DIM
+
 #undef INSTANTIATION
-}  // namespace fd::reconstruction::detail
+
+#define SIDE(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATION(r, data)                                                 \
+  template void reconstruct_neighbor<SIDE(data), detail::MinmodReconstructor>( \
+      gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
+      const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
+      const Index<DIM(data)>& ghost_data_extents,                              \
+      const Direction<DIM(data)>& direction_to_reconstruct) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (Side::Upper, Side::Lower))
+
+#undef INSTANTIATION
+#undef SIDE
+#undef DIM
+}  // namespace fd::reconstruction

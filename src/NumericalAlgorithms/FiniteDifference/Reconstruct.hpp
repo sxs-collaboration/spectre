@@ -7,9 +7,11 @@
 #include <cstddef>
 #include <utility>  // for std::pair
 
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim>
 class Direction;
 template <size_t Dim, typename T>
@@ -89,7 +91,7 @@ namespace fd {
  */
 namespace reconstruction {
 namespace detail {
-template <typename Reconstructor, typename... ArgsForReconstructor, size_t Dim>
+template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
 void reconstruct(
     const gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_upper_side_of_face_vars,
@@ -100,5 +102,31 @@ void reconstruct(
     const Index<Dim>& volume_extents, const size_t number_of_variables,
     const ArgsForReconstructor&... args_for_reconstructor) noexcept;
 }  // namespace detail
+
+/*!
+ * \ingroup FiniteDifferenceGroup
+ * \brief In a given direction, reconstruct the cells in the neighboring Element
+ * (or cluster of cells) nearest to the shared boundary between the current and
+ * neighboring Element (or cluster of cells).
+ *
+ * This is needed if one is sending reconstruction and flux data separately, or
+ * if one is using DG-FD hybrid schemes. Below is an ASCII diagram of what is
+ * reconstructed.
+ *
+ * ```
+ *  Self      |  Neighbor
+ *  x x x x x | o o o
+ *            ^+
+ *            Reconstruct to right/+ side of the interface
+ * ```
+ */
+template <Side LowerOrUpperSide, typename Reconstructor, size_t Dim,
+          typename... ArgsForReconstructor>
+void reconstruct_neighbor(
+    gsl::not_null<DataVector*> face_data, const DataVector& volume_data,
+    const DataVector& neighbor_data, const Index<Dim>& volume_extents,
+    const Index<Dim>& ghost_data_extents,
+    const Direction<Dim>& direction_to_reconstruct,
+    const ArgsForReconstructor&... args_for_reconstructor) noexcept;
 }  // namespace reconstruction
 }  // namespace fd

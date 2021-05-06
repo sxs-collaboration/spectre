@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "NumericalAlgorithms/FiniteDifference/Reconstruct.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
@@ -38,11 +40,11 @@ namespace TestHelpers::fd::reconstruction {
  * logical coordinates. The translation is done to catch subtle bugs that may
  * arise from indexing in the wrong dimension.
  */
-template <size_t Dim, typename F>
-void test_reconstruction_is_exact_if_in_basis(const size_t max_degree,
-                                              const size_t points_per_dimension,
-                                              const size_t stencil_width,
-                                              const F& invoke_recons) {
+template <size_t Dim, typename F, typename F1>
+void test_reconstruction_is_exact_if_in_basis(
+    const size_t max_degree, const size_t points_per_dimension,
+    const size_t stencil_width, const F& invoke_recons,
+    const F1& invoke_reconstruct_neighbor) {
   const size_t number_of_vars = 2;  // arbitrary, 2 is "cheap but not trivial"
 
   const Mesh<Dim> mesh{points_per_dimension, Spectral::Basis::FiniteDifference,
@@ -170,6 +172,59 @@ void test_reconstruction_is_exact_if_in_basis(const size_t max_degree,
                    logical_coords_face_centered);
     CHECK_ITERABLE_APPROX(gsl::at(reconstructed_upper_side_of_face_vars, dim),
                           expected_volume_vars);
+
+    // Test fd::reconstruction::reconstruct_neighbor
+    Index<Dim> ghost_data_extents = mesh.extents();
+    ghost_data_extents[dim] = (stencil_width + 1) / 2;
+    Index<Dim> extents_with_faces = mesh.extents();
+    ++extents_with_faces[dim];
+
+    const Direction<Dim> upper_direction{dim, Side::Upper};
+    DataVector upper_face_var1{mesh.extents().slice_away(dim).product()};
+    DataVector upper_face_var2{mesh.extents().slice_away(dim).product()};
+    auto& upper_neighbor_data = neighbor_data.at(upper_direction);
+    DataVector upper_neighbor_var1{upper_neighbor_data.data(),
+                                   ghost_data_extents.product()};
+    DataVector upper_neighbor_var2{
+        // NOLINTNEXTLINE
+        upper_neighbor_data.data() + ghost_data_extents.product(),
+        ghost_data_extents.product()};
+    invoke_reconstruct_neighbor(make_not_null(&upper_face_var1), var1,
+                                upper_neighbor_var1, mesh.extents(),
+                                ghost_data_extents, upper_direction);
+    invoke_reconstruct_neighbor(make_not_null(&upper_face_var2), var2,
+                                upper_neighbor_var2, mesh.extents(),
+                                ghost_data_extents, upper_direction);
+    for (SliceIterator si(extents_with_faces, dim, extents_with_faces[dim] - 1);
+         si; ++si) {
+      CHECK(approx(upper_face_var1[si.slice_offset()]) ==
+            expected_var1[si.volume_offset()]);
+      CHECK(approx(upper_face_var2[si.slice_offset()]) ==
+            expected_var2[si.volume_offset()]);
+    }
+
+    const Direction<Dim> lower_direction{dim, Side::Lower};
+    DataVector lower_face_var1{mesh.extents().slice_away(dim).product()};
+    DataVector lower_face_var2{mesh.extents().slice_away(dim).product()};
+    auto& lower_neighbor_data = neighbor_data.at(lower_direction);
+    DataVector lower_neighbor_var1{lower_neighbor_data.data(),
+                                   ghost_data_extents.product()};
+    DataVector lower_neighbor_var2{
+        // NOLINTNEXTLINE
+        lower_neighbor_data.data() + ghost_data_extents.product(),
+        ghost_data_extents.product()};
+    invoke_reconstruct_neighbor(make_not_null(&lower_face_var1), var1,
+                                lower_neighbor_var1, mesh.extents(),
+                                ghost_data_extents, lower_direction);
+    invoke_reconstruct_neighbor(make_not_null(&lower_face_var2), var2,
+                                lower_neighbor_var2, mesh.extents(),
+                                ghost_data_extents, lower_direction);
+    for (SliceIterator si(extents_with_faces, dim, 0); si; ++si) {
+      CHECK(approx(lower_face_var1[si.slice_offset()]) ==
+            expected_var1[si.volume_offset()]);
+      CHECK(approx(lower_face_var2[si.slice_offset()]) ==
+            expected_var2[si.volume_offset()]);
+    }
   }
 }
 }  // namespace TestHelpers::fd::reconstruction
