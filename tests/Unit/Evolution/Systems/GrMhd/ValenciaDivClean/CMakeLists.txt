@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_PrimitiveGhostData.cpp
+  Subcell/Test_ResizeAndComputePrimitives.cpp
   Subcell/Test_SwapGrTags.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
