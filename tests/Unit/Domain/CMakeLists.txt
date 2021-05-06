@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_Domain.cpp
   Test_DomainHelpers.cpp
   Test_DomainTestHelpers.cpp
+  Test_ElementDistribution.cpp
   Test_ElementMap.cpp
   Test_FaceNormal.cpp
   Test_InterfaceHelpers.cpp
