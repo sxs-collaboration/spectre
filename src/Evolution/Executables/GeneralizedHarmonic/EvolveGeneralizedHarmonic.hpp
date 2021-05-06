@@ -143,7 +143,7 @@ class CProxy_GlobalCache;
 
 template <typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars {
-  static constexpr int volume_dim = 3;
+  static constexpr size_t volume_dim = 3;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
   static constexpr dg::Formulation dg_formulation =
