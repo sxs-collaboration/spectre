@@ -261,11 +261,15 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // would make the test slower).
   if constexpr (IsTimeDependent::value) {
     const double expiration_time = 1.0;
+    std::vector<double> radial_partitioning{};
+    std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+        domain::CoordinateMaps::Distribution::Linear};
+
     domain_creator = std::make_unique<domain::creators::Shell>(
         1.9, 2.9, 1,
         std::array<size_t, 2>{grid_points_each_dimension,
                               grid_points_each_dimension},
-        false, 1.0, false, ShellWedges::All, 1,
+        false, 1.0, radial_partitioning, radial_distribution, ShellWedges::All,
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
             0.0, expiration_time, std::array<double, 3>({{0.01, 0.02, 0.03}})));

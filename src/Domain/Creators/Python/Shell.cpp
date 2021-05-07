@@ -12,19 +12,15 @@
 
 namespace py = pybind11;
 
-namespace domain {
-namespace creators {
-namespace py_bindings {
+namespace domain::creators::py_bindings {
+
 void bind_shell(py::module& m) {  // NOLINT
   py::class_<Shell, DomainCreator<3>>(m, "Shell")
-      .def(py::init<double, double, size_t, std::array<size_t, 2>, bool, double,
-                    bool>(),
+      .def(py::init<double, double, size_t, std::array<size_t, 2>, bool,
+                    double>(),
            py::arg("inner_radius"), py::arg("outer_radius"),
            py::arg("initial_refinement"),
            py::arg("initial_number_of_grid_points"),
-           py::arg("use_equiangular_map") = true, py::arg("aspect_ratio") = 1.,
-           py::arg("use_logarithmic_map") = false);
+           py::arg("use_equiangular_map") = true, py::arg("aspect_ratio") = 1.);
 }
-}  // namespace py_bindings
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::py_bindings

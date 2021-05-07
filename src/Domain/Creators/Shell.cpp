@@ -25,15 +25,12 @@ struct Logical;
 
 namespace domain::creators {
 Shell::Shell(
-    typename InnerRadius::type inner_radius,
-    typename OuterRadius::type outer_radius,
-    typename InitialRefinement::type initial_refinement,
-    typename InitialGridPoints::type initial_number_of_grid_points,
-    typename UseEquiangularMap::type use_equiangular_map,
-    typename AspectRatio::type aspect_ratio,
-    typename UseLogarithmicMap::type use_logarithmic_map,
-    typename WhichWedges::type which_wedges,
-    typename RadialBlockLayers::type number_of_layers,
+    double inner_radius, double outer_radius, size_t initial_refinement,
+    std::array<size_t, 2> initial_number_of_grid_points,
+    bool use_equiangular_map, double aspect_ratio,
+    std::vector<double> radial_partitioning,
+    std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
+    ShellWedges which_wedges,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -41,21 +38,19 @@ Shell::Shell(
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
-    // clang-tidy: trivially copyable
-    : inner_radius_(std::move(inner_radius)),                // NOLINT
-      outer_radius_(std::move(outer_radius)),                // NOLINT
-      initial_refinement_(                                   // NOLINT
-          std::move(initial_refinement)),                    // NOLINT
-      initial_number_of_grid_points_(                        // NOLINT
-          std::move(initial_number_of_grid_points)),         // NOLINT
-      use_equiangular_map_(std::move(use_equiangular_map)),  // NOLINT
-      aspect_ratio_(std::move(aspect_ratio)),                // NOLINT
-      use_logarithmic_map_(std::move(use_logarithmic_map)),  // NOLINT
-      which_wedges_(std::move(which_wedges)),                // NOLINT
-      number_of_layers_(std::move(number_of_layers)),        // NOLINT
+    : inner_radius_(inner_radius),
+      outer_radius_(outer_radius),
+      initial_refinement_(initial_refinement),
+      initial_number_of_grid_points_(initial_number_of_grid_points),
+      use_equiangular_map_(use_equiangular_map),
+      aspect_ratio_(aspect_ratio),
+      radial_partitioning_(std::move(radial_partitioning)),
+      radial_distribution_(std::move(radial_distribution)),
+      which_wedges_(which_wedges),
       time_dependence_(std::move(time_dependence)),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
+  number_of_layers_ = radial_partitioning_.size() + 1;
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
@@ -89,6 +84,35 @@ Shell::Shell(
     PARSE_ERROR(context,
                 "Cannot have periodic boundary conditions with a shell");
   }
+  if (not std::is_sorted(radial_partitioning_.begin(),
+                         radial_partitioning_.end())) {
+    PARSE_ERROR(context,
+                "Specify radial partitioning in ascending order. Specified "
+                "radial partitioning is: "
+                    << get_output(radial_partitioning_));
+  }
+  if (not radial_partitioning_.empty()) {
+    if (radial_partitioning_.front() <= inner_radius_) {
+      PARSE_ERROR(
+          context,
+          "First radial partition must be larger than inner radius, but is: "
+              << inner_radius_);
+    }
+    if (radial_partitioning_.back() >= outer_radius_) {
+      PARSE_ERROR(
+          context,
+          "Last radial partition must be smaller than outer radius, but is: "
+              << outer_radius_);
+    }
+  }
+  if (radial_distribution_.size() != number_of_layers_) {
+    PARSE_ERROR(context,
+                "Specify a 'RadialDistribution' for every spherical shell. You "
+                "specified "
+                    << radial_distribution_.size()
+                    << " items, but the domain has " << number_of_layers_
+                    << " shells.");
+  }
 }
 
 Domain<3> Shell::create_domain() const noexcept {
@@ -96,8 +120,8 @@ Domain<3> Shell::create_domain() const noexcept {
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
       coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
-          false, aspect_ratio_, use_logarithmic_map_, which_wedges_,
-          number_of_layers_);
+          false, aspect_ratio_, radial_partitioning_, radial_distribution_,
+          which_wedges_);
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -109,9 +133,9 @@ Domain<3> Shell::create_domain() const noexcept {
     // updated. This would require adding more boundary condition options to the
     // domain creator.
     const size_t blocks_per_layer =
-        which_wedges_ == ShellWedges::All                 ? 6
-            : which_wedges_ == ShellWedges::FourOnEquator ? 4
-                                                          : 1;
+        which_wedges_ == ShellWedges::All             ? 6
+        : which_wedges_ == ShellWedges::FourOnEquator ? 4
+                                                      : 1;
 
     boundary_conditions_all_blocks.resize(blocks_per_layer * number_of_layers_);
     for (size_t block_id = 0; block_id < blocks_per_layer; ++block_id) {
@@ -155,8 +179,8 @@ std::vector<std::array<size_t, 3>> Shell::initial_extents() const noexcept {
         initial_number_of_grid_points_[0]}}};
 }
 
-std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels() const
-    noexcept {
+std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels()
+    const noexcept {
   std::vector<std::array<size_t, 3>>::size_type num_wedges =
       6 * number_of_layers_;
   if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {

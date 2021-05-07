@@ -34,8 +34,7 @@ class CoordinateMap;
 }  // namespace domain
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 /*!
  * \brief Creates a 3D Domain in the shape of a hollow spherical shell
  * consisting of six wedges.
@@ -91,10 +90,23 @@ class Shell : public DomainCreator<3> {
         "The equatorial compression factor."};
   };
 
-  struct UseLogarithmicMap {
-    using type = bool;
+  struct RadialPartitioning {
+    using type = std::vector<double>;
     static constexpr Options::String help = {
-        "Use a logarithmically spaced radial grid."};
+        "Radial coordinates of the boundaries splitting the shell "
+        "between InnerRadius and OuterRadius. This should be used if "
+        "boundaries need to be set at specific radii. If the number but not "
+        "the specific locations of the boundaries are important, use "
+        "InitialRefinement instead."};
+  };
+
+  struct RadialDistribution {
+    using type = std::vector<domain::CoordinateMaps::Distribution>;
+    static constexpr Options::String help = {
+        "Select the radial distribution of grid points in each spherical "
+        "shell. The 'RadialPartitioning' determines the "
+        "number of shells."};
+    static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
   struct WhichWedges {
@@ -104,13 +116,6 @@ class Shell : public DomainCreator<3> {
     static constexpr type suggested_value() noexcept {
       return ShellWedges::All;
     }
-  };
-
-  struct RadialBlockLayers {
-    using type = size_t;
-    static constexpr Options::String help = {
-        "The number of concentric layers of Blocks to have."};
-    static type lower_bound() { return 1; }
   };
 
   struct BoundaryConditions {
@@ -137,8 +142,8 @@ class Shell : public DomainCreator<3> {
 
   using basic_options =
       tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, AspectRatio, UseLogarithmicMap, WhichWedges,
-                 RadialBlockLayers,TimeDependence>;
+                 UseEquiangularMap, AspectRatio, RadialPartitioning,
+                 RadialDistribution, WhichWedges, TimeDependence>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -161,22 +166,26 @@ class Shell : public DomainCreator<3> {
       "Cartesian grids. However, the option is allowed for testing "
       "purposes. The `aspect_ratio` moves grid points on the shell towards\n"
       "the equator for values greater than 1.0, and towards the poles for\n"
-      "positive values less than 1.0. If `UseLogarithmicMap` is set to true,\n"
-      "the radial gridpoints will be spaced uniformly in log(r). The\n"
-      "user may also choose to use only a single wedge (along the -x\n"
-      "direction), or four wedges along the x-y plane using the `WhichWedges`\n"
-      "option. Using the RadialBlockLayers option, a user may increase the\n"
-      "number of Blocks in the radial direction."};
+      "positive values less than 1.0. The user may also choose to use only a "
+      "single wedge (along the -x direction), or four wedges along the x-y "
+      "plane using the `WhichWedges` option. Using the RadialPartitioning "
+      "option, a user may set the locations of boundaries of radial "
+      "partitions, each of which will have the grid points and refinement "
+      "specified from the previous options. The RadialDistribution option "
+      "specifies whether the radial grid points are distributed linearly or "
+      "logarithmically for each radial partition. Therefore, there must be N+1 "
+      "radial distributions specified for N radial partitions. For simple "
+      "h-refinement where the number but not the locations of the radial "
+      "boundaries are important, the InitialRefinement option should be used "
+      "instead of RadialPartitioning."};
 
-  Shell(typename InnerRadius::type inner_radius,
-        typename OuterRadius::type outer_radius,
-        typename InitialRefinement::type initial_refinement,
-        typename InitialGridPoints::type initial_number_of_grid_points,
-        typename UseEquiangularMap::type use_equiangular_map = true,
-        typename AspectRatio::type aspect_ratio = 1.0,
-        typename UseLogarithmicMap::type use_logarithmic_map = false,
-        typename WhichWedges::type which_wedges = ShellWedges::All,
-        typename RadialBlockLayers::type number_of_layers = 1,
+  Shell(double inner_radius, double outer_radius, size_t initial_refinement,
+        std::array<size_t, 2> initial_number_of_grid_points,
+        bool use_equiangular_map = true, double aspect_ratio = 1.0,
+        std::vector<double> radial_partitioning = {},
+        std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
+            {domain::CoordinateMaps::Distribution::Linear},
+        ShellWedges = ShellWedges::All,
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
             time_dependence = nullptr,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -196,29 +205,29 @@ class Shell : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels()
+      const noexcept override;
 
   auto functions_of_time() const noexcept -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  typename InnerRadius::type inner_radius_{};
-  typename OuterRadius::type outer_radius_{};
-  typename InitialRefinement::type initial_refinement_{};
-  typename InitialGridPoints::type initial_number_of_grid_points_{};
-  typename UseEquiangularMap::type use_equiangular_map_ = true;
-  typename AspectRatio::type aspect_ratio_ = 1.0;
-  typename UseLogarithmicMap::type use_logarithmic_map_ = false;
-  typename WhichWedges::type which_wedges_ = ShellWedges::All;
-  typename RadialBlockLayers::type number_of_layers_ = 1;
+  double inner_radius_{};
+  double outer_radius_{};
+  size_t initial_refinement_{};
+  std::array<size_t, 2> initial_number_of_grid_points_{};
+  bool use_equiangular_map_ = true;
+  double aspect_ratio_ = 1.0;
+  std::vector<double> radial_partitioning_ = {};
+  std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
+  ShellWedges which_wedges_ = ShellWedges::All;
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
+  size_t number_of_layers_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       inner_boundary_condition_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
 };
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

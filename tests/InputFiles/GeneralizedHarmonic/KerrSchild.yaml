@@ -25,9 +25,9 @@ DomainCreator:
     InitialGridPoints: [5, 5]
     UseEquiangularMap: true
     AspectRatio: 1.0
-    UseLogarithmicMap: true
+    RadialPartitioning: []
+    RadialDistribution: [Logarithmic]
     WhichWedges: All
-    RadialBlockLayers: 1
     TimeDependence: None
     BoundaryConditions:
       InnerBoundary: DirichletAnalytic
