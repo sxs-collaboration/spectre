@@ -16,6 +16,7 @@
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcells.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
@@ -53,6 +54,12 @@ void test() {
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>(
       "InverseJacobian(Logical,Grid)");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::Tags::OnSubcellFaces<Var1, Dim>>(
+      "OnSubcellFaces(Var1)");
+  TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::OnSubcellFaces<
+      ::Tags::Variables<tmpl::list<Var1, Var2>>, Dim>>(
+      "OnSubcellFaces(Variables(Var1,Var2))");
 
   TestHelpers::db::test_compute_tag<
       evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>(
