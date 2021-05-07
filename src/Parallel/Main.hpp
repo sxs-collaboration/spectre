@@ -83,6 +83,12 @@ class Main : public CBase_Main<Metavariables> {
   /// Determine the next phase of the simulation and execute it.
   void execute_next_phase() noexcept;
 
+  /// Place the Charm++ call that starts load balancing
+  ///
+  /// \details This call is wrapped within an entry method so that it may be
+  /// used as the callback after a quiescence detection.
+  void start_load_balance() noexcept;
+
   /// Reduction target for data used in phase change decisions.
   ///
   /// It is required that the `Parallel::ReductionData` holds a single
@@ -503,19 +509,42 @@ void Main<Metavariables>::execute_next_phase() noexcept {
     Informer::print_exit_info();
     sys::exit();
   }
-  if constexpr (Algorithm_detail::has_LoadBalancing_v<
-                    typename Metavariables::Phase>) {
-    if(current_phase_ == Metavariables::Phase::LoadBalancing) {
-      at_sync_indicator_proxy_.IndicateAtSync();
-      return;
-    }
-  }
   tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
     tmpl::type_from<decltype(parallel_component)>::execute_next_phase(
         current_phase_, global_cache_proxy_);
   });
+
+  // Here we handle phases with direct Charm++ calls. By handling these phases
+  // after calling each component's execute_next_phase entry method, we ensure
+  // that each component knows what phase it is in. This is useful for pup
+  // functions that need special handling that depends on the phase.
+  //
+  // Note that in future versions of Charm++ it may become possible for pup
+  // functions to have knowledge of the migration type. At that point, it
+  // should no longer be necessary to wait until after
+  // component::execute_next_phase to make the direct charm calls. Instead, the
+  // load balance or checkpoint work could be initiated *before* the call to
+  // component::execute_next_phase and *without* the need for a quiescence
+  // detection. This may be a slight optimization.
+  if constexpr (Algorithm_detail::has_LoadBalancing_v<
+                    typename Metavariables::Phase>) {
+    if (current_phase_ == Metavariables::Phase::LoadBalancing) {
+      CkStartQD(CkCallback(CkIndex_Main<Metavariables>::start_load_balance(),
+                           this->thisProxy));
+      return;
+    }
+  }
+
+  // The general case simply returns to execute_next_phase
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::start_load_balance() noexcept {
+  at_sync_indicator_proxy_.IndicateAtSync();
+  // No need for a callback to return to execute_next_phase: this is done by
+  // ResumeFromSync instead.
 }
 
 template <typename Metavariables>
