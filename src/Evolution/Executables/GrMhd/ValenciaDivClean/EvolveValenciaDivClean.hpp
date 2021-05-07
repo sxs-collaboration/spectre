@@ -15,8 +15,11 @@
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
@@ -28,6 +31,10 @@
 #include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
@@ -40,11 +47,7 @@
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderSchemeLts.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
@@ -73,11 +76,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
@@ -165,8 +164,6 @@ struct EvolutionMetavars {
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag =
       hydro::Tags::EquationOfState<equation_of_state_type>;
-  using normal_dot_numerical_flux =
-      Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // Do not limit the divergence-cleaning field Phi
   using limiter = Tags::Limiter<
       Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
@@ -199,16 +196,6 @@ struct EvolutionMetavars {
 
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-  using boundary_scheme = tmpl::conditional_t<
-      local_time_stepping,
-      dg::FirstOrderScheme::FirstOrderSchemeLts<
-          volume_dim, typename system::variables_tag,
-          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-          normal_dot_numerical_flux, Tags::TimeStepId, time_stepper_tag>,
-      dg::FirstOrderScheme::FirstOrderScheme<
-          volume_dim, typename system::variables_tag,
-          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-          normal_dot_numerical_flux, Tags::TimeStepId>>;
 
   // public for use by the Charm++ registration code
   using observation_events = tmpl::flatten<tmpl::list<
@@ -250,15 +237,7 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
-          dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
-          tmpl::list<>>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme,
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      Actions::MutateApply<boundary_scheme>,
+      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
@@ -313,17 +292,6 @@ struct EvolutionMetavars {
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim, thermodynamic_dim>>,
       Actions::UpdateConservatives,
-      dg::Actions::InitializeInterfaces<
-          system,
-          dg::Initialization::slice_tags_to_face<
-              typename system::variables_tag,
-              typename system::spacetime_variables_tag,
-              typename system::primitive_variables_tag>,
-          dg::Initialization::slice_tags_to_exterior<
-              typename system::spacetime_variables_tag,
-              typename system::primitive_variables_tag>,
-          dg::Initialization::face_compute_tags<>,
-          dg::Initialization::exterior_compute_tags<>, true, true>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           Initialization::Actions::AddComputeTags<
@@ -332,8 +300,7 @@ struct EvolutionMetavars {
           tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
-      dg::Actions::InitializeMortars<boundary_scheme>,
-      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<3>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
@@ -381,7 +348,7 @@ struct EvolutionMetavars {
       dg_element_array_component>;
 
   using const_global_cache_tags = tmpl::list<
-      initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
+      initial_data_tag, time_stepper_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       Tags::EventsAndTriggers<events, triggers>,
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
@@ -459,6 +426,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
+    &grmhd::ValenciaDivClean::BoundaryConditions::register_derived_with_charm,
+    &grmhd::ValenciaDivClean::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<

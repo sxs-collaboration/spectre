@@ -96,6 +96,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           spatial_velocity,
+      const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+          inv_spatial_metric,
 
       const std::optional<
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
@@ -117,7 +119,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                        hydro::Tags::SpatialVelocity<DataVector, Dim>,
                        hydro::Tags::LorentzFactor<DataVector>,
                        gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::Lapse<>,
-                       gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>>{});
+                       gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
+                       gr::Tags::InverseSpatialMetric<Dim>>{});
       } else {
         (void)time;
         return analytic_solution_or_data.variables(
@@ -129,13 +132,16 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                        hydro::Tags::SpatialVelocity<DataVector, Dim>,
                        hydro::Tags::LorentzFactor<DataVector>,
                        gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::Lapse<>,
-                       gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>>{});
+                       gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
+                       gr::Tags::InverseSpatialMetric<Dim>>{});
       }
     }();
 
     *lapse = get<gr::Tags::Lapse<>>(boundary_values);
     *shift = get<gr::Tags::Shift<Dim>>(boundary_values);
     *spatial_metric = get<gr::Tags::SpatialMetric<Dim>>(boundary_values);
+    *inv_spatial_metric =
+        get<gr::Tags::InverseSpatialMetric<Dim>>(boundary_values);
     *rest_mass_density =
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
     *specific_internal_energy =

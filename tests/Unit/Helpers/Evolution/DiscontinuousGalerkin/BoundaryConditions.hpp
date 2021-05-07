@@ -409,11 +409,22 @@ void test_boundary_condition_with_python_impl(
                      &face_mesh_velocity, &interior_normal_covector,
                      &python_boundary_condition_functions, &python_module](
                         const auto&... interior_face_and_volume_args) {
-      const std::optional<std::string> error_msg = boundary_condition.dg_ghost(
-          make_not_null(&get<BoundaryCorrectionPackagedDataInputTags>(
-              exterior_face_fields))...,
-          face_mesh_velocity, interior_normal_covector,
-          interior_face_and_volume_args...);
+      std::optional<std::string> error_msg{};
+      if constexpr (has_inv_spatial_metric) {
+        error_msg = boundary_condition.dg_ghost(
+            make_not_null(&get<BoundaryCorrectionPackagedDataInputTags>(
+                exterior_face_fields))...,
+            make_not_null(&get<typename System::inverse_spatial_metric_tag>(
+                exterior_face_fields)),
+            face_mesh_velocity, interior_normal_covector,
+            interior_face_and_volume_args...);
+      } else {
+        error_msg = boundary_condition.dg_ghost(
+            make_not_null(&get<BoundaryCorrectionPackagedDataInputTags>(
+                exterior_face_fields))...,
+            face_mesh_velocity, interior_normal_covector,
+            interior_face_and_volume_args...);
+      }
 
       const std::string& python_error_msg_function =
           get_python_error_message_function<BoundaryCorrection>(

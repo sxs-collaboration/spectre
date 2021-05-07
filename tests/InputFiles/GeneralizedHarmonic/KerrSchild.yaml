@@ -18,17 +18,20 @@ Evolution:
 PhaseChangeAndTriggers:
 
 DomainCreator:
-    Shell:
-      InnerRadius: 1.9
-      OuterRadius: 2.3
-      InitialRefinement: 0
-      InitialGridPoints: [5, 5]
-      UseEquiangularMap: true
-      AspectRatio: 1.0
-      UseLogarithmicMap: true
-      WhichWedges: All
-      RadialBlockLayers: 1
-      TimeDependence: None
+  Shell:
+    InnerRadius: 1.9
+    OuterRadius: 2.3
+    InitialRefinement: 0
+    InitialGridPoints: [5, 5]
+    UseEquiangularMap: true
+    AspectRatio: 1.0
+    UseLogarithmicMap: true
+    WhichWedges: All
+    RadialBlockLayers: 1
+    TimeDependence: None
+    BoundaryConditions:
+      InnerBoundary: DirichletAnalytic
+      OuterBoundary: DirichletAnalytic
 
 AnalyticSolution:
   KerrSchild:
@@ -67,12 +70,11 @@ EvolutionSystem:
         Center: [0.0, 0.0, 0.0]
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-NumericalFlux:
-  UpwindPenalty:
 
 EventsAndTriggers:
   ? Slabs:

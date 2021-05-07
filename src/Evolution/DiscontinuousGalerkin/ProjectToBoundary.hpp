@@ -156,9 +156,6 @@ void project_tensors_to_boundary(
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) noexcept {
   static_assert(tmpl::size<VolumeVarsTagsList>::value != 0,
                 "Must have non-zero number of volume fields");
-  static_assert(tmpl::size<FaceVarsTagsList>::value >=
-                    tmpl::size<VolumeVarsTagsList>::value,
-                "There must not be more volume tags than there are face tags.");
   static_assert(
       tmpl::size<
           tmpl::list_difference<TagsToProjectList, FaceVarsTagsList>>::value ==

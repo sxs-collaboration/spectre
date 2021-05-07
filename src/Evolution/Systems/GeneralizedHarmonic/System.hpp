@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
@@ -27,6 +28,9 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool is_euclidean = false;
 
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
+
   using variables_tag = ::Tags::Variables<tmpl::list<
       gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
       Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>>>;
@@ -40,15 +44,8 @@ struct System {
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 
-  using char_speeds_compute_tag =
-      CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
-  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim, Frame::Inertial>;
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>;

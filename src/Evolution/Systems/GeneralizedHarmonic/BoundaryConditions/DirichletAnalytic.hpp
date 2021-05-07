@@ -86,6 +86,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       const gsl::not_null<Scalar<DataVector>*> gamma2,
       const gsl::not_null<Scalar<DataVector>*> lapse,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
+      const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+          inv_spatial_metric,
       const std::optional<
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& /*normal_covector*/,
@@ -127,14 +129,17 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
         boundary_values);
 
     // Now compute lapse and shift...
-    lapse_and_shift(lapse, shift, *spacetime_metric);
+    lapse_shift_and_inv_spatial_metric(lapse, shift, inv_spatial_metric,
+                                       *spacetime_metric);
     return {};
   }
 
  private:
-  void lapse_and_shift(
+  void lapse_shift_and_inv_spatial_metric(
       gsl::not_null<Scalar<DataVector>*> lapse,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
+      gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+          inv_spatial_metric,
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric)
       const noexcept;
 };

@@ -95,6 +95,8 @@ class DirichletAnalytic final : public BoundaryCondition {
 
       const gsl::not_null<Scalar<DataVector>*> lapse,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+      const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+          inv_spatial_metric,
 
       const std::optional<
           tnsr::I<DataVector, 3, Frame::Inertial>>& /*face_mesh_velocity*/,
@@ -147,6 +149,9 @@ class DirichletAnalytic final : public BoundaryCondition {
     *lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
     *shift =
         get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(boundary_values);
+    *inv_spatial_metric =
+        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+            boundary_values);
 
     ConservativeFromPrimitive::apply(
         tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,

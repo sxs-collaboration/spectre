@@ -29,15 +29,16 @@ void DirichletAnalytic<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-void DirichletAnalytic<Dim>::lapse_and_shift(
+void DirichletAnalytic<Dim>::lapse_shift_and_inv_spatial_metric(
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
+    const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+        inv_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric)
     const noexcept {
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
-  const auto inv_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
-  gr::shift(shift, spacetime_metric, inv_spatial_metric);
+  *inv_spatial_metric = determinant_and_inverse(spatial_metric).second;
+  gr::shift(shift, spacetime_metric, *inv_spatial_metric);
   gr::lapse(lapse, *shift, spacetime_metric);
 }
 
