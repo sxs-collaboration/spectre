@@ -223,6 +223,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
+  using dg_package_data_primitive_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;
 
   double dg_package_data(
