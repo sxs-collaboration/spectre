@@ -52,6 +52,7 @@ target_link_libraries(
   DgSubcell
   DiscontinuousGalerkin
   ErrorHandling
+  FiniteDifference
   GeneralRelativity
   Hydro
   Limiters
