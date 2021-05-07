@@ -2676,7 +2676,6 @@ void test_reference_item() noexcept {
         std::vector<double>{8.7, 93.2, 84.7});
   CHECK(get<test_databox_tags::Tag2>(box) == "My Sample String"s);
 }
-}  // namespace
 
 void test_serialization() noexcept {
   serialization_non_subitem_simple_items();
@@ -2685,6 +2684,7 @@ void test_serialization() noexcept {
   serialization_compute_items_of_base_tags();
   serialization_of_pointers();
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_databox();
