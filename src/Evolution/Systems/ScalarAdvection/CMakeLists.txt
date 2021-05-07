@@ -9,12 +9,15 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
+  Fluxes.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Characteristics.hpp
+  Fluxes.hpp
   System.hpp
   Tags.hpp
   )
