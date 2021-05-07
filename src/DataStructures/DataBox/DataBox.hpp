@@ -241,6 +241,11 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename Tag>
   const auto& get() const noexcept;
 
+  /// Retrieve a mutable reference to the tag `Tag`, should be called
+  /// by the free function db::get_mutable_reference
+  template <typename Tag>
+  auto& get_mutable_reference() noexcept;
+
   // clang-tidy: no non-const references
   void pup(PUP::er& p) noexcept {  // NOLINT
     using non_subitems_tags =
@@ -785,6 +790,55 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const noexcept {
 template <typename Tag, typename TagList>
 SPECTRE_ALWAYS_INLINE const auto& get(const DataBox<TagList>& box) noexcept {
   return box.template get<Tag>();
+}
+
+template <typename... Tags>
+template <typename Tag>
+auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() noexcept {
+  DEBUG_STATIC_ASSERT(
+      not detail::has_no_matching_tag_v<tmpl::list<Tags...>, Tag>,
+      "Found no tags in the DataBox that match the tag being retrieved.");
+  DEBUG_STATIC_ASSERT(
+      detail::has_unique_matching_tag_v<tmpl::list<Tags...>, Tag>,
+      "Found more than one tag in the DataBox that matches the tag "
+      "being retrieved. This happens because more than one tag with the same "
+      "base (class) tag was added to the DataBox.");
+
+  using item_tag = detail::first_matching_tag<tmpl::list<Tags...>, Tag>;
+
+  DEBUG_STATIC_ASSERT(tmpl::list_contains_v<mutable_item_tags, item_tag>,
+                      "Can only mutate mutable items");
+
+  DEBUG_STATIC_ASSERT(
+      not (... or
+           tmpl::list_contains_v<typename Subitems<Tags>::type, item_tag>),
+      "Cannot extract references to subitems");
+  DEBUG_STATIC_ASSERT(not detail::has_subitems_v<item_tag>,
+                      "Cannot extract references to items with subitems.");
+
+  DEBUG_STATIC_ASSERT(
+      tmpl::none<edge_list, std::is_same<tmpl::pin<item_tag>,
+                                         tmpl::get_source<tmpl::_1>>>::value,
+      "Cannot extract references to items used by compute items.");
+
+  return get_item<item_tag>().mutate();
+}
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Retrieve a mutable reference to the item with tag `Tag` from the
+ * DataBox.
+ *
+ * The tag retrieved cannot be used by any compute tags, cannot have
+ * subitems, and cannot itself be a subitem.  These requirements
+ * prevent changes to the retrieved item from affecting any other tags
+ * in the DataBox, so it can safely be modified without causing
+ * internal inconsistencies.
+ */
+template <typename Tag, typename TagList>
+SPECTRE_ALWAYS_INLINE auto& get_mutable_reference(
+    const gsl::not_null<DataBox<TagList>*> box) noexcept {
+  return box->template get_mutable_reference<Tag>();
 }
 
 /*!
