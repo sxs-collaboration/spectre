@@ -25,10 +25,13 @@ namespace Elasticity::Solutions {
 namespace detail {
 template <typename DataType>
 struct HalfSpaceMirrorVariables {
+  struct DisplacementR {
+    using type = Scalar<DataType>;
+  };
   using Cache =
-      CachedTempBuffer<HalfSpaceMirrorVariables, Tags::Displacement<3>,
-                       Tags::Strain<3>, Tags::MinusStress<3>,
-                       Tags::PotentialEnergyDensity<3>,
+      CachedTempBuffer<HalfSpaceMirrorVariables, DisplacementR,
+                       Tags::Displacement<3>, Tags::Strain<3>,
+                       Tags::MinusStress<3>, Tags::PotentialEnergyDensity<3>,
                        ::Tags::FixedSource<Tags::Displacement<3>>>;
 
   const tnsr::I<DataType, 3>& x;
@@ -38,6 +41,9 @@ struct HalfSpaceMirrorVariables {
   const double absolute_tolerance;
   const double relative_tolerance;
 
+  void operator()(gsl::not_null<Scalar<DataType>*> displacement_r,
+                  gsl::not_null<Cache*> cache,
+                  DisplacementR /*meta*/) const noexcept;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> displacement,
                   gsl::not_null<Cache*> cache,
                   Tags::Displacement<3> /*meta*/) const noexcept;

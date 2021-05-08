@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE(
     // The accuracy of the random-value tests is limited by the numerical
     // integrations in both the HalfSpaceMirror solution and the Python
     // implementation
-    const double eps = 1.e-9;
+    const double eps = 1.e-8;
     pypp::check_with_random_values<1>(
         &HalfSpaceMirrorProxy::field_variables, solution,
         "AnalyticSolutions.Elasticity.HalfSpaceMirror",
