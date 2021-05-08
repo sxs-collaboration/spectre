@@ -35,22 +35,16 @@ struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct AuxiliaryFieldTag : db::SimpleTag {
-  using type = tnsr::i<DataVector, 1>;
-};
-
 struct System {
-  using fields_tag =
-      Tags::Variables<tmpl::list<ScalarFieldTag, AuxiliaryFieldTag>>;
+  using primal_fields = tmpl::list<ScalarFieldTag>;
 };
 
 struct InitialGuess {
-  static tuples::TaggedTuple<ScalarFieldTag, AuxiliaryFieldTag> variables(
+  static tuples::TaggedTuple<ScalarFieldTag> variables(
       const tnsr::I<DataVector, 1>& x,
-      tmpl::list<ScalarFieldTag, AuxiliaryFieldTag> /*meta*/) noexcept {
+      tmpl::list<ScalarFieldTag> /*meta*/) noexcept {
     Scalar<DataVector> scalar_field{2. * get<0>(x)};
-    tnsr::i<DataVector, 1> aux_field{3. * get<0>(x)};
-    return {std::move(scalar_field), std::move(aux_field)};
+    return {std::move(scalar_field)};
   }
   // NOLINTNEXTLINE
   void pup(PUP::er& /*p*/) noexcept {}
@@ -118,5 +112,4 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFields",
   const auto& inertial_coords =
       get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
   CHECK(get(get_tag(ScalarFieldTag{})) == 2. * get<0>(inertial_coords));
-  CHECK(get<0>(get_tag(AuxiliaryFieldTag{})) == 3. * get<0>(inertial_coords));
 }

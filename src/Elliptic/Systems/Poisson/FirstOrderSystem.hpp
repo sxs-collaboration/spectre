@@ -10,10 +10,9 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/VariablesTag.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/Systems/Poisson/BoundaryConditions/Robin.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
@@ -87,8 +86,6 @@ struct FirstOrderSystem {
   // The physical fields to solve for
   using primal_fields = tmpl::list<field>;
   using auxiliary_fields = tmpl::list<field_gradient>;
-  using fields_tag =
-      ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
 
   // Tags for the first-order fluxes. We just use the standard `Flux` prefix
   // because the fluxes don't have symmetries and we don't need to give them a
@@ -118,14 +115,7 @@ struct FirstOrderSystem {
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<
           Dim, tmpl::list<elliptic::BoundaryConditions::Registrars::
-                              AnalyticSolution<FirstOrderSystem>>>;
-
-  // The tag of the operator to compute magnitudes on the manifold, e.g. to
-  // normalize vectors on the faces of an element
-  template <typename Tag>
-  using magnitude_tag =
-      tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian,
-                          ::Tags::EuclideanMagnitude<Tag>,
-                          ::Tags::NonEuclideanMagnitude<Tag, inv_metric_tag>>;
+                              AnalyticSolution<FirstOrderSystem>,
+                          Poisson::BoundaryConditions::Registrars::Robin<Dim>>>;
 };
 }  // namespace Poisson

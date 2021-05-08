@@ -26,14 +26,14 @@ namespace elliptic::Actions {
  *
  * Uses:
  * - System:
- *   - `fields_tag`
+ *   - `primal_fields`
  * - DataBox:
  *   - `InitialGuessTag`
  *   - `Tags::Coordinates<Dim, Frame::Inertial>`
  *
  * DataBox:
  * - Adds:
- *   - `fields_tag`
+ *   - `primal_fields`
  *
  * \note This action relies on the `SetupDataBox` aggregated initialization
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
@@ -42,13 +42,10 @@ namespace elliptic::Actions {
 template <typename System, typename InitialGuessTag>
 struct InitializeFields {
  private:
-  using system = System;
-  using fields_tag = typename system::fields_tag;
+  using fields_tag = ::Tags::Variables<typename System::primal_fields>;
 
  public:
-  using simple_tags = tmpl::list<
-      fields_tag,
-      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>>;
+  using simple_tags = tmpl::list<fields_tag>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -64,19 +61,8 @@ struct InitializeFields {
     const auto& initial_guess = db::get<InitialGuessTag>(box);
     auto initial_fields = variables_from_tagged_tuple(initial_guess.variables(
         inertial_coords, typename fields_tag::tags_list{}));
-    ::Initialization::mutate_assign<tmpl::list<fields_tag>>(
-        make_not_null(&box), std::move(initial_fields));
-    // For now we assume the initial data is zero so we don't need to apply the
-    // DG operator but may just set it to zero as well. This will be replaced
-    // ASAP by applying the DG operator to the initial fields.
-    db::mutate<
-        db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>>(
-        make_not_null(&box),
-        [&inertial_coords](
-            const auto linear_operator_applied_to_fields) noexcept {
-          linear_operator_applied_to_fields->initialize(
-              inertial_coords.begin()->size(), 0.);
-        });
+    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                                 std::move(initial_fields));
     return {std::move(box)};
   }
 };

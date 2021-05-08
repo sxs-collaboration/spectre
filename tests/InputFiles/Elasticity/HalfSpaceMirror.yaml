@@ -6,6 +6,12 @@
 # ExpectedOutput:
 #   ElasticHalfSpaceMirrorReductions.h5
 #   ElasticHalfSpaceMirrorVolume0.h5
+# OutputFileChecks:
+#   - Label: Discretization error
+#     Subfile: /ErrorNorms.dat
+#     FileGlob: ElasticHalfSpaceMirrorReductions.h5
+#     SkipColumns: [0, 1]
+#     AbsoluteTolerance: 1.e-3
 
 Background:
   HalfSpaceMirror:
@@ -44,9 +50,9 @@ DomainCreator:
         AnalyticSolution:
           Displacement: Dirichlet
 
-NumericalFlux:
-  InternalPenalty:
-    PenaltyParameter: 1
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
 
 Observers:
   VolumeFileName: "ElasticHalfSpaceMirrorVolume"
@@ -55,23 +61,25 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 1
-      RelativeResidual: 1e-8
-      AbsoluteResidual: 1e-12
+      MaxIterations: 22
+      RelativeResidual: 1.e-4
+      AbsoluteResidual: 1.e-12
     Verbosity: Verbose
 
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 0
+      Offset: 22
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveVolumeIntegrals:
         SubfileName: VolumeIntegrals
   ? EveryNIterations:
-      N: 10
+      N: 2
       Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData
-        VariablesToObserve: [Displacement, Strain]
+        VariablesToObserve:
+          - Displacement
+          - PotentialEnergyDensity
         InterpolateToMesh: None

@@ -17,6 +17,7 @@ set(LIBS_TO_LINK
   Parallel
   ParallelLinearSolver
   Poisson
+  PoissonBoundaryConditions
   PoissonSolutions
   Utilities
   )

@@ -11,12 +11,8 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
-#include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
-#include "Elliptic/DiscontinuousGalerkin/InitializeFirstOrderOperator.hpp"
-#include "Elliptic/DiscontinuousGalerkin/NumericalFluxes/FirstOrderInternalPenalty.hpp"
-#include "Elliptic/FirstOrderOperator.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Elliptic/Tags.hpp"
@@ -25,7 +21,6 @@
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -36,11 +31,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
@@ -57,6 +48,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/Zero.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
+#include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
@@ -101,60 +93,54 @@ struct Metavariables {
   using background_tag = elliptic::Tags::Background<
       Elasticity::AnalyticData::AnalyticData<Dim, background_registrars>>;
 
-  // List the possible initial guesses. We currently only support the trivial
-  // "zero" initial guess. This will be generalized ASAP.
+  // List the possible initial guesses
   using initial_guess_registrars =
-      tmpl::list<Elasticity::Solutions::Registrars::Zero<Dim>>;
+      tmpl::append<tmpl::list<Elasticity::Solutions::Registrars::Zero<Dim>>,
+                   analytic_solution_registrars>;
   using initial_guess_tag = elliptic::Tags::InitialGuess<
       ::AnalyticData<Dim, initial_guess_registrars>>;
 
   static constexpr Options::String help{
       "Find the solution to a linear elasticity problem."};
 
-  using fluxes_computer_tag =
-      elliptic::Tags::FluxesComputer<typename system::fluxes_computer>;
-
-  // Only Dirichlet boundary conditions are currently supported, and they are
-  // are all imposed by analytic solutions right now. This will be generalized
-  // ASAP and this alias deleted.
-  using analytic_solution_tag = background_tag;
+  // These are the fields we solve for
+  using fields_tag = ::Tags::Variables<typename system::primal_fields>;
+  // These are the fixed sources, i.e. the RHS of the equations
+  using fixed_sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  // This is the linear operator applied to the fields. We'll only use it to
+  // apply the operator to the initial guess, so an optimization would be to
+  // re-use the `operator_applied_to_vars_tag` below. This optimization needs a
+  // few minor changes to the parallel linear solver algorithm.
+  using operator_applied_to_fields_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
 
   // The linear solver algorithm. We must use GMRES since the operator is
-  // not positive-definite for the first-order system.
+  // not guaranteed to be symmetric. It can be made symmetric by multiplying by
+  // the DG mass matrix.
   using linear_solver =
-      LinearSolver::gmres::Gmres<Metavariables, typename system::fields_tag,
+      LinearSolver::gmres::Gmres<Metavariables, fields_tag,
                                  SolveElasticity::OptionTags::GmresGroup,
                                  false>;
   using linear_solver_iteration_id =
       Convergence::Tags::IterationId<typename linear_solver::options_group>;
   // For the GMRES linear solver we need to apply the DG operator to its
   // internal "operand" in every iteration of the algorithm.
-  using linear_operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand,
-                                                typename system::fields_tag>;
-  using primal_variables = db::wrap_tags_in<LinearSolver::Tags::Operand,
-                                            typename system::primal_fields>;
-  using auxiliary_variables =
-      db::wrap_tags_in<LinearSolver::Tags::Operand,
-                       typename system::auxiliary_fields>;
-
-  // Parse numerical flux parameters from the input file to store in the cache.
-  using normal_dot_numerical_flux = Tags::NumericalFlux<
-      elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
-          volume_dim, fluxes_computer_tag, primal_variables,
-          auxiliary_variables>>;
-  // Specify the DG boundary scheme. We use the strong first-order scheme here
-  // that only requires us to compute normals dotted into the first-order
-  // fluxes.
-  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
-      volume_dim, linear_operand_tag,
-      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
-                         linear_operand_tag>,
-      normal_dot_numerical_flux, linear_solver_iteration_id>;
+  using vars_tag = typename linear_solver::operand_tag;
+  using operator_applied_to_vars_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, vars_tag>;
+  // We'll buffer the corresponding fluxes in this tag, but won't actually need
+  // to access them outside applying the operator
+  using fluxes_vars_tag =
+      ::Tags::Variables<db::wrap_tags_in<LinearSolver::Tags::Operand,
+                                         typename system::primal_fluxes>>;
 
   // Collect events and triggers
   // (public for use by the Charm++ registration code)
-  using observe_fields = typename system::fields_tag::tags_list;
-  using analytic_solution_fields = observe_fields;
+  using analytic_solution_fields = typename system::primal_fields;
+  using observe_fields = tmpl::append<
+      analytic_solution_fields,
+      tmpl::list<Elasticity::Tags::Strain<volume_dim>,
+                 Elasticity::Tags::PotentialEnergyDensity<volume_dim>>>;
   using events = tmpl::list<
       dg::Events::Registrars::ObserveFields<
           volume_dim, linear_solver_iteration_id, observe_fields,
@@ -169,8 +155,7 @@ struct Metavariables {
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<background_tag, initial_guess_tag, fluxes_computer_tag,
-                 normal_dot_numerical_flux,
+      tmpl::list<background_tag, initial_guess_tag,
                  Tags::EventsAndTriggers<events, triggers>>;
 
   // Collect all reduction tags for observers
@@ -183,45 +168,31 @@ struct Metavariables {
 
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox, dg::Actions::InitializeDomain<volume_dim>,
-      dg::Actions::InitializeInterfaces<
-          system, dg::Initialization::slice_tags_to_face<>,
-          dg::Initialization::slice_tags_to_exterior<>,
-          dg::Initialization::face_compute_tags<
-              domain::Tags::BoundaryCoordinates<volume_dim>>,
-          dg::Initialization::exterior_compute_tags<>, false, false>,
       typename linear_solver::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       Initialization::Actions::AddComputeTags<tmpl::list<
           Elasticity::Tags::ConstitutiveRelationReference<volume_dim,
                                                           background_tag>,
+          Elasticity::Tags::StrainCompute<volume_dim>,
           Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
-          background_tag, analytic_solution_fields,
+          background_tag,
+          tmpl::append<typename system::primal_fields,
+                       typename system::primal_fluxes>,
           Elasticity::Solutions::AnalyticSolution<Dim, background_registrars>>,
+      elliptic::dg::Actions::initialize_operator<system>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
-          Metavariables>,
-      dg::Actions::InitializeMortars<boundary_scheme>,
-      elliptic::dg::Actions::InitializeFirstOrderOperator<
-          volume_dim, typename system::fluxes_computer,
-          typename system::sources_computer, linear_operand_tag,
-          primal_variables, auxiliary_variables>,
+          system, fixed_sources_tag>,
+      // Apply the DG operator to the initial guess
+      elliptic::dg::Actions::apply_operator<
+          system, true, linear_solver_iteration_id, fields_tag, fluxes_vars_tag,
+          operator_applied_to_fields_tag, vars_tag, fluxes_vars_tag>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
-  using build_linear_operator_actions = tmpl::list<
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme, domain::Tags::InternalDirections<volume_dim>>,
-      dg::Actions::SendDataForFluxes<boundary_scheme>,
-      Actions::MutateApply<elliptic::FirstOrderOperator<
-          volume_dim, LinearSolver::Tags::OperatorAppliedTo,
-          linear_operand_tag>>,
-      elliptic::dg::Actions::ImposeHomogeneousDirichletBoundaryConditions<
-          linear_operand_tag, primal_variables>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme,
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      Actions::MutateApply<boundary_scheme>>;
+  using build_linear_operator_actions = elliptic::dg::Actions::apply_operator<
+      system, true, linear_solver_iteration_id, vars_tag, fluxes_vars_tag,
+      operator_applied_to_vars_tag>;
 
   using register_actions =
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
