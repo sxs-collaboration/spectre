@@ -11,6 +11,21 @@ namespace grmhd::GhValenciaDivClean {
 /// %Tags for the combined system of the Generalized Harmonic formulation for
 /// the Einstein field equations and the Valencia GRMHD formulation.
 namespace Tags {
+namespace detail {
+// A const reference to another tag, used for rerouting arguments in the
+// combined system utilities
+template <typename Tag>
+struct TemporaryReference {
+  using tag = Tag;
+  using type = const typename Tag::type&;
+};
+}  // namespace detail
+
+/// Represents the trace reversed stress-energy tensor of the matter in the MHD
+/// sector of the GRMHD system
+struct TraceReversedStressEnergy : db::SimpleTag {
+  using type = tnsr::aa<DataVector, 3>;
+};
 
 /// Represents the stress-energy tensor of the matter in the MHD sector of the
 /// GRMHD system
