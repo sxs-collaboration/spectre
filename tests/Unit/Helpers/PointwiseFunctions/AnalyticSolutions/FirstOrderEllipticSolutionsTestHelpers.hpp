@@ -135,20 +135,55 @@ void verify_solution_impl(
 /// \ingroup TestingFrameworkGroup
 /// Test that the `solution` numerically solves the `System` on the given grid
 /// for the given tolerance
+// @{
 template <typename System, typename SolutionType, typename... Maps,
           typename... FluxesArgs, typename... SourcesArgs>
 void verify_solution(
     const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
         coord_map,
-    const double tolerance,
-    const std::tuple<FluxesArgs...>& fluxes_args = std::tuple<>{},
+    const double tolerance, const std::tuple<FluxesArgs...>& fluxes_args,
     const std::tuple<SourcesArgs...>& sources_args = std::tuple<>{}) {
   detail::verify_solution_impl<System>(
       solution, mesh, coord_map, tolerance, fluxes_args, sources_args,
       typename System::primal_fields{}, typename System::auxiliary_fields{},
       typename System::primal_fluxes{}, typename System::auxiliary_fluxes{});
 }
+
+template <typename System, typename SolutionType, typename... Maps>
+void verify_solution(
+    const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
+    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
+        coord_map,
+    const double tolerance) {
+  using argument_tags = tmpl::remove_duplicates<
+      tmpl::append<typename System::fluxes_computer::argument_tags,
+                   typename System::sources_computer::argument_tags>>;
+  const auto background_fields = [&solution, &mesh, &coord_map]() {
+    if constexpr (tmpl::size<argument_tags>::value > 0) {
+      const auto logical_coords = logical_coordinates(mesh);
+      const auto inertial_coords = coord_map(logical_coords);
+      const auto inv_jacobian = coord_map.inv_jacobian(logical_coords);
+      return solution.variables(inertial_coords, mesh, inv_jacobian,
+                                argument_tags{});
+    } else {
+      (void)solution;
+      (void)mesh;
+      (void)coord_map;
+      return tuples::TaggedTuple<>{};
+    }
+  }();
+  const auto get_items = [](const auto&... args) {
+    return std::forward_as_tuple(args...);
+  };
+  verify_solution<System>(
+      solution, mesh, coord_map, tolerance,
+      tuples::apply<typename System::fluxes_computer::argument_tags>(
+          get_items, background_fields),
+      tuples::apply<typename System::sources_computer::argument_tags>(
+          get_items, background_fields));
+}
+// @}
 
 /*!
  * \ingroup TestingFrameworkGroup

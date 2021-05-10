@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Equations.cpp
+  FluxesAndSources.cpp
   )
 
 spectre_target_headers(
@@ -16,6 +17,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Equations.hpp
+  FirstOrderSystem.hpp
+  FluxesAndSources.hpp
   Geometry.hpp
   Tags.hpp
   Xcts.hpp
@@ -27,8 +30,13 @@ target_link_libraries(
   DataStructures
   Utilities
   PRIVATE
+  Elasticity
   ErrorHandling
   GeneralRelativity
+  LinearOperators
+  Poisson
+  Utilities
+  XctsPointwiseFunctions
   )
 
 add_subdirectory(BoundaryConditions)

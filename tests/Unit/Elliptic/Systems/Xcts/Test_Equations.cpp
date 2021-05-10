@@ -5,13 +5,30 @@
 
 #include <array>
 #include <cstddef>
-#include <random>
+#include <optional>
 #include <string>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Tags.hpp"
+#include "Elliptic/FirstOrderOperator.hpp"
 #include "Elliptic/Systems/Xcts/Equations.hpp"
+#include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/Elliptic/FirstOrderSystem.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/FunctionInfo.hpp"
 
 namespace {
 
@@ -118,10 +135,29 @@ void test_equations(const DataVector& used_for_size) {
       {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
 }
 
+template <Xcts::Equations EnabledEquations, Xcts::Geometry ConformalGeometry,
+          int ConformalMatterScale>
+void test_computers(const DataVector& used_for_size) {
+  CAPTURE(EnabledEquations);
+  CAPTURE(ConformalGeometry);
+  CAPTURE(ConformalMatterScale);
+  using system = Xcts::FirstOrderSystem<EnabledEquations, ConformalGeometry,
+                                        ConformalMatterScale>;
+  TestHelpers::elliptic::test_first_order_fluxes_computer<system>(
+      used_for_size);
+  TestHelpers::elliptic::test_first_order_sources_computer<system>(
+      used_for_size);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts", "[Unit][Elliptic]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Elliptic/Systems/Xcts"};
-  DataVector used_for_size{5};
-  test_equations(used_for_size);
+  GENERATE_UNINITIALIZED_DATAVECTOR;
+  test_equations(dv);
+  CHECK_FOR_DATAVECTORS(
+      test_computers,
+      (Xcts::Equations::Hamiltonian, Xcts::Equations::HamiltonianAndLapse,
+       Xcts::Equations::HamiltonianLapseAndShift),
+      (Xcts::Geometry::FlatCartesian, Xcts::Geometry::Curved), (0, 6, 8));
 }

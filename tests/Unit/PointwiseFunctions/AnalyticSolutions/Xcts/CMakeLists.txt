@@ -27,4 +27,5 @@ target_link_libraries(
   Utilities
   Xcts
   XctsSolutions
+  XctsSolutionsTestHelpers
   )
