@@ -19,6 +19,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Penalty.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -33,6 +34,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -45,22 +47,8 @@
  * preparation and will be referenced here.
  *
  * The DG schemes apply to any elliptic PDE that can be formulated in
- * first-order flux-form
- *
- * \f{equation}
- * -\partial_i F^i_\alpha + S_\alpha = f_\alpha(x)
- * \f}
- *
- * in terms of fluxes \f$F^i_\alpha\f$, sources \f$S_\alpha\f$ and fixed-sources
- * \f$f_\alpha(x)\f$. The fluxes and sources are functionals of the "primal"
- * system variables \f$u_A(x)\f$ and their corresponding "auxiliary" variables
- * \f$v_A(x)\f$. The uppercase index enumerates the variables such that
- * \f$v_A\f$ is the auxiliary variable corresponding to \f$u_A\f$. Greek indices
- * enumerate _all_ variables. In documentation related to particular elliptic
- * systems we generally use the canonical system-specific symbols for the fields
- * in place of these indices. See the `Poisson::FirstOrderSystem` and the
- * `Elasticity::FirstOrderSystem` for examples.
- *
+ * first-order flux-form, as detailed by
+ * `elliptic::protocols::FirstOrderSystem`.
  * The DG discretization of equations in this first-order form amounts to
  * projecting the equations on the set of basis functions that we also use to
  * represent the fields on the computational grid. The currently implemented DG
@@ -240,6 +228,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                       tmpl::list<AuxiliaryFields...>,
                       tmpl::list<PrimalFluxes...>,
                       tmpl::list<AuxiliaryFluxes...>> {
+  static_assert(
+      tt::assert_conforms_to<System, elliptic::protocols::FirstOrderSystem>);
+
   static constexpr size_t Dim = System::volume_dim;
   using FluxesComputer = typename System::fluxes_computer;
   using SourcesComputer = elliptic::get_sources_computer<System, Linearized>;

@@ -12,7 +12,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
+#include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -22,6 +24,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -64,6 +67,8 @@ void test_equations(const DataVector& used_for_size) {
 
 template <size_t Dim>
 void test_computers(const DataVector& used_for_size) {
+  static_assert(tt::assert_conforms_to<Elasticity::FirstOrderSystem<Dim>,
+                                       elliptic::protocols::FirstOrderSystem>);
   using field_tag = Elasticity::Tags::Displacement<Dim>;
   using auxiliary_field_tag = Elasticity::Tags::Strain<Dim>;
   using field_flux_tag = Elasticity::Tags::MinusStress<Dim>;
