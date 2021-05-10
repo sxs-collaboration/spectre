@@ -116,8 +116,6 @@ struct Fluxes {
                         constitutive_relation,
                     const tnsr::I<DataVector, Dim>& coordinates,
                     const tnsr::I<DataVector, Dim>& displacement) noexcept;
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 /*!
