@@ -12,7 +12,7 @@
 /// Boundary corrections/numerical fluxes
 namespace RadiationTransport::M1Grey::BoundaryCorrections {
 /// \cond
-template <typename... NeutrinoSpecies>
+template <typename NeutrinoSpeciesList>
 class Rusanov;
 /// \endcond
 
@@ -20,7 +20,7 @@ class Rusanov;
  * \brief The base class used to create boundary corrections from input files
  * and store them in the global cache.
  */
-template <typename... NeutrinoSpecies>
+template <typename NeutrinoSpeciesList>
 class BoundaryCorrection : public PUP::able {
  public:
   BoundaryCorrection() = default;
@@ -33,12 +33,12 @@ class BoundaryCorrection : public PUP::able {
   /// \cond
   explicit BoundaryCorrection(CkMigrateMessage* msg) noexcept
       : PUP::able(msg) {}
-  WRAPPED_PUPable_abstract(BoundaryCorrection<NeutrinoSpecies...>);  // NOLINT
+  WRAPPED_PUPable_abstract(BoundaryCorrection<NeutrinoSpeciesList>);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<Rusanov<NeutrinoSpecies...>>;
+  using creatable_classes = tmpl::list<Rusanov<NeutrinoSpeciesList>>;
 
-  virtual std::unique_ptr<BoundaryCorrection<NeutrinoSpecies...>> get_clone()
+  virtual std::unique_ptr<BoundaryCorrection<NeutrinoSpeciesList>> get_clone()
       const noexcept = 0;
 };
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections

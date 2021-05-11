@@ -37,12 +37,19 @@ struct Coordinates;
 /// \endcond
 
 namespace RadiationTransport::M1Grey::BoundaryConditions {
+
+/// \cond
+template <typename NeutrinoSpeciesList>
+class DirichletAnalytic;
+/// \endcond
+
 /*!
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
  */
 template <typename... NeutrinoSpecies>
-class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
+class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
+    : public BoundaryCondition<tmpl::list<NeutrinoSpecies...>> {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -58,7 +65,7 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
   ~DirichletAnalytic() override = default;
 
   explicit DirichletAnalytic(CkMigrateMessage* msg) noexcept
-      : BoundaryCondition<NeutrinoSpecies...>(msg) {}
+      : BoundaryCondition<tmpl::list<NeutrinoSpecies...>>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
@@ -72,7 +79,7 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
       evolution::BoundaryConditions::Type::Ghost;
 
   void pup(PUP::er& p) override {
-    BoundaryCondition<NeutrinoSpecies...>::pup(p);
+    BoundaryCondition<tmpl::list<NeutrinoSpecies...>>::pup(p);
   }
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
@@ -210,7 +217,8 @@ class DirichletAnalytic final : public BoundaryCondition<NeutrinoSpecies...> {
 /// \cond
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID DirichletAnalytic<NeutrinoSpecies...>::my_PUP_ID = 0;
+PUP::able::PUP_ID DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID =
+    0;
 /// \endcond
 
 }  // namespace RadiationTransport::M1Grey::BoundaryConditions

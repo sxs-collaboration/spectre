@@ -59,16 +59,17 @@ void test() {
                       RadiationTransport::M1Grey::Solutions::ConstantM1>>>(
       0.5, ConvertConstantM1::create_container());
 
-  using system = RadiationTransport::M1Grey::System<tmpl::list<
-      neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>>;
+  using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
+                                      neutrinos::ElectronAntiNeutrinos<1>>;
+  using system = RadiationTransport::M1Grey::System<neutrino_species>;
   using boundary_condition =
       RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
-          neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>;
+          neutrino_species>;
   using dirichlet_analytic =
       RadiationTransport::M1Grey::BoundaryConditions::DirichletAnalytic<
-          neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>;
+          neutrino_species>;
   using rusanov = RadiationTransport::M1Grey::BoundaryCorrections::Rusanov<
-      neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>;
+      neutrino_species>;
 
   using tilde_e_nue_tag =
       RadiationTransport::M1Grey::Tags::TildeE<Frame::Inertial,
@@ -118,9 +119,11 @@ void test() {
 SPECTRE_TEST_CASE(
     "Unit.RadiationTransport.M1Grey.BoundaryConditions.DirichletAnalytic",
     "[Unit][Evolution]") {
+  using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
+                                      neutrinos::ElectronAntiNeutrinos<1>>;
   using dirichlet_analytic =
       RadiationTransport::M1Grey::BoundaryConditions::DirichletAnalytic<
-          neutrinos::ElectronNeutrinos<1>, neutrinos::ElectronAntiNeutrinos<1>>;
+          neutrino_species>;
   PUPable_reg(dirichlet_analytic);
   Parallel::register_derived_classes_with_charm<dirichlet_analytic>();
 

@@ -9,23 +9,22 @@
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace RadiationTransport::M1Grey::BoundaryConditions {
-template <typename... NeutrinoSpecies>
-class DirichletAnalytic;
-}  // namespace RadiationTransport::M1Grey::BoundaryConditions
-/// \endcond
-
 /// \brief Boundary conditions for the M1Grey radiation transport system
 namespace RadiationTransport::M1Grey::BoundaryConditions {
+
+/// \cond
+template <typename NeutrinoSpeciesList>
+class DirichletAnalytic;
+/// \endcond
+
 /// \brief The base class off of which all boundary conditions must inherit
-template <typename... NeutrinoSpecies>
+template <typename NeutrinoSpeciesList>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   using creatable_classes =
-      tmpl::list<DirichletAnalytic<NeutrinoSpecies...>,
+      tmpl::list<DirichletAnalytic<NeutrinoSpeciesList>,
                  domain::BoundaryConditions::Periodic<
-                     BoundaryCondition<NeutrinoSpecies...>>>;
+                     BoundaryCondition<NeutrinoSpeciesList>>>;
 
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;

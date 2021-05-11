@@ -19,10 +19,10 @@ DomainCreator:
   Brick:
     LowerBound: [10.5, 0.0, 0.0]
     UpperBound: [11.5, 1.0, 1.0]
-    IsPeriodicIn: [false, false, false]
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [5, 5, 5]
     TimeDependence: None
+    BoundaryCondition: DirichletAnalytic
 
 AnalyticSolution:
   ConstantM1:
@@ -30,12 +30,11 @@ AnalyticSolution:
     ComovingEnergyDensity: 1.0
 
 SpatialDiscretization:
+  BoundaryCorrection:
+    Rusanov:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-NumericalFlux:
-  LocalLaxFriedrichs:
 
 Limiter:
   Minmod:

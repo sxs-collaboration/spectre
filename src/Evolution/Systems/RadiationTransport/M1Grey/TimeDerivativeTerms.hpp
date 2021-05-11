@@ -24,7 +24,8 @@ struct TimeDerivativeTerms {
     using type = tnsr::I<DataVector, 3, Frame::Inertial>;
   };
 
-  using temporary_tags = tmpl::list<TildeSUp>;
+  using temporary_tags =
+      tmpl::list<TildeSUp, gr::Tags::InverseSpatialMetric<3>>;
   using argument_tags = tmpl::list<
       Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
       Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
@@ -40,7 +41,7 @@ struct TimeDerivativeTerms {
                     tmpl::size_t<3>, Frame::Inertial>,
       ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector> >;
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
 
   static void apply(
       const gsl::not_null<typename Tags::TildeE<
@@ -58,6 +59,8 @@ struct TimeDerivativeTerms {
           Frame::Inertial>::type*>... tilde_s_flux,
 
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_s_M,
+      const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+          temp_inv_spatial_metric,
 
       const typename Tags::TildeE<Frame::Inertial,
                                   NeutrinoSpecies>::type&... tilde_e,
@@ -78,6 +81,7 @@ struct TimeDerivativeTerms {
       const tnsr::iJ<DataVector, 3>& d_shift,
       const tnsr::ijj<DataVector, 3>& d_spatial_metric,
       const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept {
+    *temp_inv_spatial_metric = inv_spatial_metric;
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_fluxes_impl(
         tilde_e_flux, tilde_s_flux, tilde_s_M, tilde_e, tilde_s, tilde_p, lapse,
         shift, spatial_metric, inv_spatial_metric));
