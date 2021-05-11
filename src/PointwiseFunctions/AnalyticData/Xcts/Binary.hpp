@@ -265,8 +265,8 @@ class Binary : public ::AnalyticData<3, Registrars> {
       const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
-    return variables_impl(x, mesh, inv_jacobian,
-                          tmpl::list<RequestedTags...>{});
+    return variables_impl<DataVector>(x, mesh, inv_jacobian,
+                                      tmpl::list<RequestedTags...>{});
   }
 
   // NOLINTNEXTLINE
@@ -298,9 +298,9 @@ class Binary : public ::AnalyticData<3, Registrars> {
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      std::optional<Mesh<3>> mesh,
-      std::optional<
-          InverseJacobian<DataType, 3, Frame::Logical, Frame::Inertial>>
+      std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
+      std::optional<std::reference_wrapper<
+          const InverseJacobian<DataType, 3, Frame::Logical, Frame::Inertial>>>
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
     std::array<tnsr::I<DataVector, 3>, 2> x_isolated{{x, x}};

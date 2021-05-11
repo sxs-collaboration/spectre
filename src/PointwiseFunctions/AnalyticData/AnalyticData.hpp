@@ -13,6 +13,10 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+struct DataVector;
+template <size_t Dim>
+struct Mesh;
+
 // Empty base class for marking analytic data.
 struct MarkAsAnalyticData {};
 /// \endcond
@@ -53,13 +57,33 @@ class AnalyticData : public PUP::able {
 
   /// Retrieve a collection of tensor fields at spatial coordinate(s) `x`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, Dim>& x,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
     return call_with_dynamic_type<tuples::TaggedTuple<Tags...>,
                                   creatable_classes>(
         this, [&x](auto* const derived) noexcept {
           return derived->variables(x, tmpl::list<Tags...>{});
+        });
+  }
+
+  /*!
+   * \brief Retrieve a collection of tensor fields at spatial coordinate(s) `x`
+   *
+   * This overload allows computing numeric derivatives using the Mesh and the
+   * inverse Jacobian, if necessary.
+   */
+  template <typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& mesh,
+      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+          inv_jacobian,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
+    return call_with_dynamic_type<tuples::TaggedTuple<Tags...>,
+                                  creatable_classes>(
+        this, [&x, &mesh, &inv_jacobian](auto* const derived) noexcept {
+          return derived->variables(x, mesh, inv_jacobian,
+                                    tmpl::list<Tags...>{});
         });
   }
 };
