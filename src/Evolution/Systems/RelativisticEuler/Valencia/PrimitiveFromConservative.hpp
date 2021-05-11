@@ -59,7 +59,7 @@ namespace Valencia {
  * \todo The method also will make corrections if physical bounds are violated,
  * see the paper for details.
  */
-template <size_t ThermodynamicDim, size_t Dim>
+template <size_t Dim>
 struct PrimitiveFromConservative {
   using return_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -77,6 +77,7 @@ struct PrimitiveFromConservative {
                  gr::Tags::SqrtDetSpatialMetric<>,
                  hydro::Tags::EquationOfStateBase>;
 
+  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,

@@ -178,15 +178,12 @@ struct TimeDerivativeTermsImpl<
  * can be explicitly inlined here to reduce memory pressure and the number of
  * compute tags.
  */
-template <typename EquationOfStateType>
 struct TimeDerivativeTerms {
-  using valencia_dt_tags =
-      db::wrap_tags_in<::Tags::dt,
-                       typename grmhd::ValenciaDivClean::System<
-                           EquationOfStateType>::variables_tag::tags_list>;
+  using valencia_dt_tags = db::wrap_tags_in<
+      ::Tags::dt,
+      typename grmhd::ValenciaDivClean::System::variables_tag::tags_list>;
   using valencia_flux_tags = tmpl::transform<
-      typename grmhd::ValenciaDivClean::System<
-          EquationOfStateType>::flux_variables,
+      typename grmhd::ValenciaDivClean::System::flux_variables,
       tmpl::bind<::Tags::Flux, tmpl::_1, tmpl::pin<tmpl::size_t<3_st>>,
                  tmpl::pin<Frame::Inertial>>>;
 

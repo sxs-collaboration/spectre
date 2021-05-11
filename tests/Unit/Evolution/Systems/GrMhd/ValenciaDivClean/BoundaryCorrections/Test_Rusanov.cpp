@@ -25,10 +25,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
       "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections"};
   MAKE_GENERATOR(gen);
 
-  // need some equation of state. Rusanov doesn't care about it since the max
-  // speed is set by the speed of light.
-  using system =
-      grmhd::ValenciaDivClean::System<EquationsOfState::IdealFluid<true>>;
+  using system = grmhd::ValenciaDivClean::System;
 
   TestHelpers::evolution::dg::test_boundary_correction_conservation<system>(
       make_not_null(&gen),

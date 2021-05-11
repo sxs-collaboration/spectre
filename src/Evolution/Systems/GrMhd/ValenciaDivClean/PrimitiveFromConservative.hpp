@@ -41,8 +41,7 @@ namespace ValenciaDivClean {
  * (http://iopscience.iop.org/article/10.3847/1538-4357/aabcc5/meta)
  * compares several inversion methods.
  */
-template <typename OrderedListOfPrimitiveRecoverySchemes,
-          size_t ThermodynamicDim>
+template <typename OrderedListOfPrimitiveRecoverySchemes>
 struct PrimitiveFromConservative {
   using return_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -64,6 +63,7 @@ struct PrimitiveFromConservative {
                  gr::Tags::SqrtDetSpatialMetric<>,
                  hydro::Tags::EquationOfStateBase>;
 
+  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,

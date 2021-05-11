@@ -89,15 +89,12 @@ void test_primitive_from_conservative(
   auto spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim>>(used_for_size, 0.0);
 
-  RelativisticEuler::Valencia::PrimitiveFromConservative<
-      ThermodynamicDim, Dim>::apply(make_not_null(&rest_mass_density),
-                                    make_not_null(&specific_internal_energy),
-                                    make_not_null(&lorentz_factor),
-                                    make_not_null(&specific_enthalpy),
-                                    make_not_null(&pressure),
-                                    make_not_null(&spatial_velocity), tilde_d,
-                                    tilde_tau, tilde_s, inv_spatial_metric,
-                                    sqrt_det_spatial_metric, equation_of_state);
+  RelativisticEuler::Valencia::PrimitiveFromConservative<Dim>::apply(
+      make_not_null(&rest_mass_density),
+      make_not_null(&specific_internal_energy), make_not_null(&lorentz_factor),
+      make_not_null(&specific_enthalpy), make_not_null(&pressure),
+      make_not_null(&spatial_velocity), tilde_d, tilde_tau, tilde_s,
+      inv_spatial_metric, sqrt_det_spatial_metric, equation_of_state);
 
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e7);

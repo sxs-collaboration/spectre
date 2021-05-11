@@ -8,21 +8,9 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/TimeDerivativeTerms.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace {
-// The system is currently templated on the equation of state, but it's only
-// used in code that will be removed and that we don't care about. Even the
-// dependence on the thermodynamic dimension can probably be removed. In either
-// case, we don't care about the thermodynamic dimension for the explicit
-// instantiation either.
-struct DummyEquationOfStateType {
-  static constexpr size_t thermodynamic_dim = 1;
-};
-}  // namespace
-
 namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define SYSTEM(data) \
-  ::RelativisticEuler::Valencia::System<DIM(data), DummyEquationOfStateType>
+#define SYSTEM(data) ::RelativisticEuler::Valencia::System<DIM(data)>
 
 #define INSTANTIATION(r, data)                                                 \
   template void                                                                \

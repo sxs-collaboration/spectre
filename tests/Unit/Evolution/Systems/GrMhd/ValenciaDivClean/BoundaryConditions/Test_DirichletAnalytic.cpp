@@ -112,8 +112,7 @@ void test_soln() {
   helpers::test_boundary_condition_with_python<
       grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic,
       grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
-      grmhd::ValenciaDivClean::System<
-          typename grmhd::Solutions::SmoothFlow::equation_of_state_type>,
+      grmhd::ValenciaDivClean::System,
       tmpl::list<grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>,
       tmpl::list<ConvertSmoothFlow>>(
       make_not_null(&gen),
@@ -168,8 +167,7 @@ void test_data() {
   helpers::test_boundary_condition_with_python<
       grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic,
       grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
-      grmhd::ValenciaDivClean::System<
-          typename grmhd::AnalyticData::MagneticRotor::equation_of_state_type>,
+      grmhd::ValenciaDivClean::System,
       tmpl::list<grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>,
       tmpl::list<ConvertMagneticRotor>>(
       make_not_null(&gen),

@@ -27,13 +27,11 @@ namespace RelativisticEuler {
 /// Zanotti or http://iopscience.iop.org/article/10.1086/303604
 namespace Valencia {
 
-template <size_t Dim, typename EquationOfStateType>
+template <size_t Dim>
 struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = Dim;
-  static constexpr size_t thermodynamic_dim =
-      EquationOfStateType::thermodynamic_dim;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
@@ -60,8 +58,7 @@ struct System {
   using volume_sources = ComputeSources<Dim>;
 
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
-  using primitive_from_conservative =
-      PrimitiveFromConservative<thermodynamic_dim, Dim>;
+  using primitive_from_conservative = PrimitiveFromConservative<Dim>;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;

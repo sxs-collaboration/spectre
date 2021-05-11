@@ -21,28 +21,31 @@ namespace {
 
 template <size_t Dim>
 void test_variable_fixer(
-    const VariableFixing::FixToAtmosphere<Dim, 1>& variable_fixer) {
-  EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
-
+    const VariableFixing::FixToAtmosphere<Dim>& variable_fixer,
+    const EquationsOfState::EquationOfState<true, 1>&
+        equation_of_state) noexcept {
   Scalar<DataVector> density{DataVector{2.e-12, 2.e-11}};
-  auto pressure = polytrope.pressure_from_density(density);
-  auto specific_enthalpy = polytrope.specific_enthalpy_from_density(density);
+  auto pressure = equation_of_state.pressure_from_density(density);
+  auto specific_enthalpy =
+      equation_of_state.specific_enthalpy_from_density(density);
   auto specific_internal_energy =
-      polytrope.specific_internal_energy_from_density(density);
+      equation_of_state.specific_internal_energy_from_density(density);
 
   Scalar<DataVector> lorentz_factor{DataVector{5.0 / 3.0, 1.25}};
   auto spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   spatial_velocity.get(0) = DataVector{0.8, 0.6};
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
-                 &lorentz_factor, &pressure, &specific_enthalpy, polytrope);
+                 &lorentz_factor, &pressure, &specific_enthalpy,
+                 equation_of_state);
 
   Scalar<DataVector> expected_density{DataVector{1.e-12, 2.e-11}};
-  auto expected_pressure = polytrope.pressure_from_density(expected_density);
+  auto expected_pressure =
+      equation_of_state.pressure_from_density(expected_density);
   auto expected_specific_enthalpy =
-      polytrope.specific_enthalpy_from_density(expected_density);
+      equation_of_state.specific_enthalpy_from_density(expected_density);
   auto expected_specific_internal_energy =
-      polytrope.specific_internal_energy_from_density(expected_density);
+      equation_of_state.specific_internal_energy_from_density(expected_density);
   Scalar<DataVector> expected_lorentz_factor{DataVector{1.0, 1.25}};
   auto expected_spatial_velocity =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
@@ -59,15 +62,14 @@ void test_variable_fixer(
 
 template <size_t Dim>
 void test_variable_fixer(
-    const VariableFixing::FixToAtmosphere<Dim, 2>& variable_fixer) {
-  EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
-
+    const VariableFixing::FixToAtmosphere<Dim>& variable_fixer,
+    const EquationsOfState::EquationOfState<true, 2>& equation_of_state) {
   Scalar<DataVector> density{DataVector{2.e-12, 2.e-11}};
   Scalar<DataVector> specific_internal_energy{DataVector{2.0, 3.0}};
-  auto pressure = ideal_fluid.pressure_from_density_and_energy(
+  auto pressure = equation_of_state.pressure_from_density_and_energy(
       density, specific_internal_energy);
   auto specific_enthalpy =
-      ideal_fluid.specific_enthalpy_from_density_and_energy(
+      equation_of_state.specific_enthalpy_from_density_and_energy(
           density, specific_internal_energy);
 
   Scalar<DataVector> lorentz_factor{DataVector{5.0 / 3.0, 1.25}};
@@ -75,14 +77,15 @@ void test_variable_fixer(
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   spatial_velocity.get(0) = DataVector{0.8, 0.6};
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
-                 &lorentz_factor, &pressure, &specific_enthalpy, ideal_fluid);
+                 &lorentz_factor, &pressure, &specific_enthalpy,
+                 equation_of_state);
 
   Scalar<DataVector> expected_density{DataVector{1.e-12, 2.e-11}};
   Scalar<DataVector> expected_specific_internal_energy{DataVector{0.0, 3.0}};
-  auto expected_pressure = ideal_fluid.pressure_from_density_and_energy(
+  auto expected_pressure = equation_of_state.pressure_from_density_and_energy(
       expected_density, expected_specific_internal_energy);
   auto expected_specific_enthalpy =
-      ideal_fluid.specific_enthalpy_from_density_and_energy(
+      equation_of_state.specific_enthalpy_from_density_and_energy(
           expected_density, expected_specific_internal_energy);
   Scalar<DataVector> expected_lorentz_factor{DataVector{1.0, 1.25}};
   auto expected_spatial_velocity =
@@ -101,26 +104,23 @@ void test_variable_fixer(
 template <size_t Dim>
 void test_variable_fixer() noexcept {
   // Test for representative 1-d equation of state
-  VariableFixing::FixToAtmosphere<Dim, 1> variable_fixer_1d{1.e-12, 1.e-11};
-  test_variable_fixer<Dim>(variable_fixer_1d);
-  test_serialization(variable_fixer_1d);
+  VariableFixing::FixToAtmosphere<Dim> variable_fixer{1.e-12, 1.e-11};
+  EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
+  test_variable_fixer<Dim>(variable_fixer, polytrope);
+  test_serialization(variable_fixer);
 
-  const auto fixer_from_options_1d =
-      TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim, 1>>(
+  const auto fixer_from_options =
+      TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim>>(
           "DensityOfAtmosphere: 1.0e-12\n"
           "DensityCutoff: 1.0e-11\n");
-  test_variable_fixer(fixer_from_options_1d);
+  test_variable_fixer(fixer_from_options, polytrope);
 
   // Test for representative 2-d equation of state
-  VariableFixing::FixToAtmosphere<Dim, 2> variable_fixer_2d{1.e-12, 1.e-11};
-  test_variable_fixer<Dim>(variable_fixer_2d);
-  test_serialization(variable_fixer_2d);
+  EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
+  test_variable_fixer<Dim>(variable_fixer, ideal_fluid);
+  test_serialization(variable_fixer);
 
-  const auto fixer_from_options_2d =
-      TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim, 2>>(
-          "DensityOfAtmosphere: 1.0e-12\n"
-          "DensityCutoff: 1.0e-11\n");
-  test_variable_fixer<Dim>(fixer_from_options_2d);
+  test_variable_fixer<Dim>(fixer_from_options, ideal_fluid);
 }
 }  // namespace
 

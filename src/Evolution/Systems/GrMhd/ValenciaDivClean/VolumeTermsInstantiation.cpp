@@ -7,41 +7,29 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 
-namespace {
-// The system is currently templated on the equation of state, but it's only
-// used in code that will be removed and that we don't care about. Even the
-// dependence on the thermodynamic dimension can probably be removed. In either
-// case, we don't care about the thermodynamic dimension for the explicit
-// instantiation either.
-struct DummyEquationOfStateType {
-  static constexpr size_t thermodynamic_dim = 1;
-};
-}  // namespace
-
 namespace evolution::dg::Actions::detail {
 template void volume_terms<::grmhd::ValenciaDivClean::TimeDerivativeTerms>(
     const gsl::not_null<Variables<db::wrap_tags_in<
-        ::Tags::dt, typename ::grmhd::ValenciaDivClean::System<
-                        DummyEquationOfStateType>::variables_tag::tags_list>>*>
+        ::Tags::dt,
+        typename ::grmhd::ValenciaDivClean::System::variables_tag::tags_list>>*>
         dt_vars_ptr,
-    const gsl::not_null<Variables<
-        db::wrap_tags_in<::Tags::Flux,
-                         typename ::grmhd::ValenciaDivClean::System<
-                             DummyEquationOfStateType>::flux_variables,
-                         tmpl::size_t<3>, Frame::Inertial>>*>
+    const gsl::not_null<Variables<db::wrap_tags_in<
+        ::Tags::Flux,
+        typename ::grmhd::ValenciaDivClean::System::flux_variables,
+        tmpl::size_t<3>, Frame::Inertial>>*>
         volume_fluxes,
-    const gsl::not_null<Variables<
-        db::wrap_tags_in<::Tags::deriv,
-                         typename ::grmhd::ValenciaDivClean::System<
-                             DummyEquationOfStateType>::gradient_variables,
-                         tmpl::size_t<3>, Frame::Inertial>>*>
+    const gsl::not_null<Variables<db::wrap_tags_in<
+        ::Tags::deriv,
+        typename ::grmhd::ValenciaDivClean::System::gradient_variables,
+        tmpl::size_t<3>, Frame::Inertial>>*>
         partial_derivs,
-    const gsl::not_null<Variables<
-        typename ::grmhd::ValenciaDivClean::System<DummyEquationOfStateType>::
-            compute_volume_time_derivative_terms::temporary_tags>*>
+    const gsl::not_null<
+        Variables<typename ::grmhd::ValenciaDivClean::System::
+                      compute_volume_time_derivative_terms::temporary_tags>*>
         temporaries,
-    const Variables<typename ::grmhd::ValenciaDivClean::System<
-        DummyEquationOfStateType>::variables_tag::tags_list>& evolved_vars,
+    const Variables<
+        typename ::grmhd::ValenciaDivClean::System::variables_tag::tags_list>&
+        evolved_vars,
     const ::dg::Formulation dg_formulation, const Mesh<3>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, 3, Frame::Inertial>&
         inertial_coordinates,

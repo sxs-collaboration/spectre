@@ -108,19 +108,16 @@ void test_primitive_from_conservative_random(
   // not nan
   Scalar<DataVector> pressure(number_of_points, 0.0);
   Scalar<DataVector> specific_enthalpy(number_of_points);
-  grmhd::ValenciaDivClean::PrimitiveFromConservative<
-      OrderedListOfPrimitiveRecoverySchemes,
-      ThermodynamicDim>::apply(make_not_null(&rest_mass_density),
-                               make_not_null(&specific_internal_energy),
-                               make_not_null(&spatial_velocity),
-                               make_not_null(&magnetic_field),
-                               make_not_null(&divergence_cleaning_field),
-                               make_not_null(&lorentz_factor),
-                               make_not_null(&pressure),
-                               make_not_null(&specific_enthalpy), tilde_d,
-                               tilde_tau, tilde_s, tilde_b, tilde_phi,
-                               spatial_metric, inv_spatial_metric,
-                               sqrt_det_spatial_metric, equation_of_state);
+  grmhd::ValenciaDivClean::
+      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
+          make_not_null(&rest_mass_density),
+          make_not_null(&specific_internal_energy),
+          make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
+          make_not_null(&divergence_cleaning_field),
+          make_not_null(&lorentz_factor), make_not_null(&pressure),
+          make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
+          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          sqrt_det_spatial_metric, equation_of_state);
 
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
@@ -204,17 +201,16 @@ void test_primitive_from_conservative_known(
   Scalar<DataVector> pressure(number_of_points, 0.0);
   Scalar<DataVector> specific_enthalpy(number_of_points);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
-  grmhd::ValenciaDivClean::PrimitiveFromConservative<
-      OrderedListOfPrimitiveRecoverySchemes,
-      2>::apply(make_not_null(&rest_mass_density),
-                make_not_null(&specific_internal_energy),
-                make_not_null(&spatial_velocity),
-                make_not_null(&magnetic_field),
-                make_not_null(&divergence_cleaning_field),
-                make_not_null(&lorentz_factor), make_not_null(&pressure),
-                make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
-                tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
-                sqrt_det_spatial_metric, ideal_fluid);
+  grmhd::ValenciaDivClean::
+      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
+          make_not_null(&rest_mass_density),
+          make_not_null(&specific_internal_energy),
+          make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
+          make_not_null(&divergence_cleaning_field),
+          make_not_null(&lorentz_factor), make_not_null(&pressure),
+          make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
+          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          sqrt_det_spatial_metric, ideal_fluid);
 
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
   CHECK_ITERABLE_APPROX(expected_specific_internal_energy,

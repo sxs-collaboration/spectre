@@ -16,7 +16,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -54,46 +53,42 @@ struct ComputeVolumeTimeDerivativeTermsHelper<
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GhValenciaDivClean.TimeDerivativeTerms",
     "[Unit][Evolution]") {
-  using equation_of_state_type = EquationsOfState::IdealFluid<true>;
   using gh_variables_tags =
       typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list;
-  using valencia_variables_tags = typename grmhd::ValenciaDivClean::System<
-      equation_of_state_type>::variables_tag::tags_list;
+  using valencia_variables_tags =
+      typename grmhd::ValenciaDivClean::System::variables_tag::tags_list;
 
-  using gh_dt_variables_tags = grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-      equation_of_state_type>::gh_dt_tags;
+  using gh_dt_variables_tags =
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::gh_dt_tags;
   using valencia_dt_variables_tags =
-      grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-          equation_of_state_type>::valencia_dt_tags;
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::valencia_dt_tags;
   using dt_variables_type =
       Variables<tmpl::append<gh_dt_variables_tags, valencia_dt_variables_tags>>;
 
   using gh_flux_tags = tmpl::list<>;
-  using valencia_flux_tags = grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-      equation_of_state_type>::valencia_flux_tags;
+  using valencia_flux_tags =
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::valencia_flux_tags;
   using flux_variables_type =
       Variables<tmpl::append<gh_flux_tags, valencia_flux_tags>>;
 
-  using gh_temp_tags = grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-      equation_of_state_type>::gh_temp_tags;
-  using valencia_temp_tags = grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-      equation_of_state_type>::valencia_temp_tags;
-  using temp_variables_type =
-      Variables<typename grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-          equation_of_state_type>::temporary_tags>;
+  using gh_temp_tags =
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::gh_temp_tags;
+  using valencia_temp_tags =
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::valencia_temp_tags;
+  using temp_variables_type = Variables<
+      typename grmhd::GhValenciaDivClean::TimeDerivativeTerms::temporary_tags>;
 
   using gh_gradient_tags = tmpl::transform<
-      grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-          equation_of_state_type>::gh_gradient_tags,
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::gh_gradient_tags,
       tmpl::bind<::Tags::deriv, tmpl::_1, tmpl::pin<tmpl::size_t<3_st>>,
                  tmpl::pin<Frame::Inertial>>>;
   using valencia_gradient_tags = tmpl::list<>;
   using gradient_variables_type = Variables<gh_gradient_tags>;
 
-  using gh_arg_tags = grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-      equation_of_state_type>::gh_arg_tags;
-  using valencia_arg_tags = grmhd::GhValenciaDivClean::TimeDerivativeTerms<
-      equation_of_state_type>::valencia_arg_tags;
+  using gh_arg_tags =
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::gh_arg_tags;
+  using valencia_arg_tags =
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms::valencia_arg_tags;
   using all_valencia_arg_tags =
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags;
   using arg_variables_type = tuples::tagged_tuple_from_typelist<
@@ -220,8 +215,8 @@ SPECTRE_TEST_CASE(
       get<gr::Tags::Lapse<>>(expected_temp_variables));
 
   ComputeVolumeTimeDerivativeTermsHelper<
-      grmhd::GhValenciaDivClean::TimeDerivativeTerms<equation_of_state_type>,
-      3_st, tmpl::append<gh_variables_tags, valencia_variables_tags>,
+      grmhd::GhValenciaDivClean::TimeDerivativeTerms, 3_st,
+      tmpl::append<gh_variables_tags, valencia_variables_tags>,
       typename flux_variables_type::tags_list,
       typename temp_variables_type::tags_list,
       typename gradient_variables_type::tags_list,

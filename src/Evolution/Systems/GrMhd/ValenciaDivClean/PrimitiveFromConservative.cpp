@@ -34,30 +34,28 @@
 
 namespace grmhd::ValenciaDivClean {
 
-template <typename OrderedListOfPrimitiveRecoverySchemes,
-          size_t ThermodynamicDim>
-void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
-                               ThermodynamicDim>::
-    apply(const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-          const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-              spatial_velocity,
-          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-              magnetic_field,
-          const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
-          const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-          const gsl::not_null<Scalar<DataVector>*> pressure,
-          const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-          const Scalar<DataVector>& tilde_d,
-          const Scalar<DataVector>& tilde_tau,
-          const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-          const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-          const Scalar<DataVector>& tilde_phi,
-          const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-          const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-          const Scalar<DataVector>& sqrt_det_spatial_metric,
-          const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-              equation_of_state) noexcept {
+template <typename OrderedListOfPrimitiveRecoverySchemes>
+template <size_t ThermodynamicDim>
+void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        magnetic_field,
+    const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+    const gsl::not_null<Scalar<DataVector>*> pressure,
+    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const Scalar<DataVector>& tilde_phi,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) noexcept {
   get(*divergence_cleaning_field) =
       get(tilde_phi) / get(sqrt_det_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
@@ -176,13 +174,47 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(_, data)                                        \
-  template struct grmhd::ValenciaDivClean::PrimitiveFromConservative< \
-      RECOVERY(data), THERMODIM(data)>;
+#define INSTANTIATION(_, data)                                                 \
+  template struct grmhd::ValenciaDivClean::PrimitiveFromConservative<RECOVERY( \
+      data)>;
 
 using NewmanHamlinThenPalenzuelaEtAl = tmpl::list<
     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
+
+GENERATE_INSTANTIATIONS(
+    INSTANTIATION,
+    (tmpl::list<
+         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+     tmpl::list<
+         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+     NewmanHamlinThenPalenzuelaEtAl))
+
+#undef INSTANTIATION
+
+#define INSTANTIATION(_, data)                                                \
+  template void grmhd::ValenciaDivClean::                                     \
+      PrimitiveFromConservative<RECOVERY(data)>::apply<THERMODIM(data)>(      \
+          const gsl::not_null<Scalar<DataVector>*> rest_mass_density,         \
+          const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,  \
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>       \
+              spatial_velocity,                                               \
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>       \
+              magnetic_field,                                                 \
+          const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field, \
+          const gsl::not_null<Scalar<DataVector>*> lorentz_factor,            \
+          const gsl::not_null<Scalar<DataVector>*> pressure,                  \
+          const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,         \
+          const Scalar<DataVector>& tilde_d,                                  \
+          const Scalar<DataVector>& tilde_tau,                                \
+          const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,             \
+          const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,             \
+          const Scalar<DataVector>& tilde_phi,                                \
+          const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,     \
+          const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric, \
+          const Scalar<DataVector>& sqrt_det_spatial_metric,                  \
+          const EquationsOfState::EquationOfState<true, THERMODIM(data)>&     \
+              equation_of_state) noexcept;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
