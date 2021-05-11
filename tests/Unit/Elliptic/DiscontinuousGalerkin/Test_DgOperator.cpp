@@ -19,6 +19,7 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -31,7 +32,6 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -113,7 +113,8 @@ struct ElementArray {
               ActionTesting::InitializeDataBox<tmpl::list<
                   domain::Tags::InitialRefinementLevels<Dim>,
                   domain::Tags::InitialExtents<Dim>, fixed_sources_tag>>,
-              ::Actions::SetupDataBox, ::dg::Actions::InitializeDomain<Dim>,
+              ::Actions::SetupDataBox,
+              ::elliptic::dg::Actions::InitializeDomain<Dim>,
               ::elliptic::Actions::InitializeAnalyticSolution<
                   ::Tags::AnalyticSolution<
                       typename metavariables::analytic_solution>,

@@ -48,7 +48,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"      // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"

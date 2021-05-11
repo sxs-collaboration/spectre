@@ -18,10 +18,10 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -57,7 +57,8 @@ struct ElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
                          tmpl::list<domain::Tags::InitialRefinementLevels<1>,
                                     domain::Tags::InitialExtents<1>>>,
-                     Actions::SetupDataBox, dg::Actions::InitializeDomain<1>>>,
+                     Actions::SetupDataBox,
+                     elliptic::dg::Actions::InitializeDomain<1>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<elliptic::Actions::InitializeFixedSources<

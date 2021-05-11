@@ -29,13 +29,13 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -117,7 +117,8 @@ struct ElementArray {
                          db::add_tag_prefix<
                              ::Tags::FixedSource,
                              typename Metavariables::system::fields_tag>>>,
-                     Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
+                     Actions::SetupDataBox,
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
                      dg::Actions::InitializeInterfaces<
                          typename Metavariables::system,
                          dg::Initialization::slice_tags_to_face<>,

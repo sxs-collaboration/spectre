@@ -23,11 +23,11 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -48,7 +48,8 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
+          tmpl::list<Actions::SetupDataBox,
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
                      // Remove options so that dependencies for
                      // `InitializeDomain` are no longer fulfilled in following
                      // iterations of the action list. Else `merge_into_databox`

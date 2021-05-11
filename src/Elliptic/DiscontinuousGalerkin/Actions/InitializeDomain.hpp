@@ -34,8 +34,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace dg {
-namespace Actions {
+namespace elliptic::dg::Actions {
 /*!
  * \ingroup InitializationGroup
  * \brief Initialize items related to the basic structure of the element
@@ -116,5 +115,4 @@ struct InitializeDomain {
     return std::make_tuple(std::move(box));
   }
 };
-}  // namespace Actions
-}  // namespace dg
+}  // namespace elliptic::dg::Actions

@@ -23,13 +23,13 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -100,7 +100,7 @@ struct ElementArray {
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
                       evolution::dg::Initialization::Domain<Dim>>,
                   tmpl::list<Actions::SetupDataBox,
-                             dg::Actions::InitializeDomain<Dim>>>,
+                             ::elliptic::dg::Actions::InitializeDomain<Dim>>>,
               ActionTesting::InitializeDataBox<tmpl::append<
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                              domain::Tags::InitialExtents<Dim>,

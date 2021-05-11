@@ -23,12 +23,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeFirstOrderOperator.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "Utilities/Functional.hpp"
@@ -110,7 +110,8 @@ struct ElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
                          domain::Tags::InitialRefinementLevels<Dim>,
                          domain::Tags::InitialExtents<Dim>, vars_tag<Dim>>>,
-                     Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
+                     Actions::SetupDataBox,
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
                      dg::Actions::InitializeInterfaces<
                          typename Metavariables::system,
                          dg::Initialization::slice_tags_to_face<>,
