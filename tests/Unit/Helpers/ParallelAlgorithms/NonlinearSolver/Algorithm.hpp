@@ -143,8 +143,6 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Solve,
           tmpl::list<
-              typename Metavariables::template apply_nonlinear_operator<
-                  typename nonlinear_solver::fields_tag>,
               typename nonlinear_solver::template solve<
                   typename Metavariables::template apply_nonlinear_operator<
                       typename nonlinear_solver::operand_tag>,

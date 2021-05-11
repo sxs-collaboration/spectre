@@ -42,7 +42,7 @@ struct ResidualMonitor;
 template <typename FieldsTag, typename OptionsGroup, typename Label>
 struct PrepareStep;
 template <typename FieldsTag, typename OptionsGroup, typename Label>
-struct Globalize;
+struct CompleteStep;
 }  // namespace NonlinearSolver::newton_raphson::detail
 /// \endcond
 
@@ -200,8 +200,7 @@ struct ReceiveInitialHasConverged {
     // Skip steps entirely if the solve has already converged
     constexpr size_t complete_step_index =
         tmpl::index_of<ActionList,
-                       Globalize<FieldsTag, OptionsGroup, Label>>::value +
-        1;
+                       CompleteStep<FieldsTag, OptionsGroup, Label>>::value;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, ReceiveInitialHasConverged>::value;
     return {std::move(box), Parallel::AlgorithmExecution::Continue,
