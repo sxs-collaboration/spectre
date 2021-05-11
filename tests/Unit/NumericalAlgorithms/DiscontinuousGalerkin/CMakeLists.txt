@@ -10,6 +10,7 @@ set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
   Test_Formulation.cpp
+  Test_HasReceivedFromAllMortars.cpp
   Test_LiftFlux.cpp
   Test_MetricIdentityJacobian.cpp
   Test_MortarHelpers.cpp
@@ -24,5 +25,17 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;DiscontinuousGalerkin;ErrorHandling;Spectral;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Domain
+  DomainStructure
+  DiscontinuousGalerkin
+  ErrorHandling
+  Spectral
+  Utilities
   )

@@ -18,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Formulation.hpp
+  HasReceivedFromAllMortars.hpp
   LiftFlux.hpp
   MetricIdentityJacobian.hpp
   MortarHelpers.hpp
