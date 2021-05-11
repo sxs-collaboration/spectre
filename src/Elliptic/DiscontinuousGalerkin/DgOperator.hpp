@@ -829,11 +829,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       };
       EXPAND_PACK_LEFT_TO_RIGHT(add_remote_avg_contribution(
           get<PrimalMortarVars>(primal_boundary_corrections_on_mortar),
-          get<::Tags::NormalDotFlux<PrimalMortarVars>...>(
-              local_data.field_data)));
+          get<::Tags::NormalDotFlux<PrimalMortarVars>>(local_data.field_data)));
       EXPAND_PACK_LEFT_TO_RIGHT(add_remote_avg_contribution(
           get<PrimalMortarVars>(primal_boundary_corrections_on_mortar),
-          get<::Tags::NormalDotFlux<PrimalMortarVars>...>(
+          get<::Tags::NormalDotFlux<PrimalMortarVars>>(
               remote_data.field_data)));
       primal_boundary_corrections_on_mortar *= -1.;
 
