@@ -2676,7 +2676,6 @@ void test_reference_item() noexcept {
         std::vector<double>{8.7, 93.2, 84.7});
   CHECK(get<test_databox_tags::Tag2>(box) == "My Sample String"s);
 }
-}  // namespace
 
 void test_serialization() noexcept {
   serialization_non_subitem_simple_items();
@@ -2685,6 +2684,38 @@ void test_serialization() noexcept {
   serialization_compute_items_of_base_tags();
   serialization_of_pointers();
 }
+
+void test_get_mutable_reference() noexcept {
+  INFO("test get_mutable_reference");
+  // Make sure the presence of tags that could not be extracted
+  // doesn't prevent the function from working on other tags.
+  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0,
+                                          test_databox_tags::Tag2, Parent<0>>,
+                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
+      3.14, "Original string"s,
+      std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                     Boxed<double>(std::make_shared<double>(3.5))));
+
+  decltype(auto) ref =
+      db::get_mutable_reference<test_databox_tags::Tag2>(make_not_null(&box));
+  static_assert(std::is_same_v<decltype(ref), std::string&>);
+  decltype(auto) base_ref =
+      db::get_mutable_reference<test_databox_tags::Tag2Base>(
+          make_not_null(&box));
+  static_assert(std::is_same_v<decltype(base_ref), std::string&>);
+  CHECK(&ref == &base_ref);
+  ref = "New string";
+  CHECK(db::get<test_databox_tags::Tag2Base>(box) == "New string");
+
+  // These should all fail to compile:
+  // db::get_mutable_reference<test_databox_tags::Tag0>(make_not_null(&box));
+  // db::get_mutable_reference<test_databox_tags::Tag4>(make_not_null(&box));
+  // db::get_mutable_reference<test_databox_tags::Tag4Compute>(
+  //     make_not_null(&box));
+  // db::get_mutable_reference<Parent<0>>(make_not_null(&box));
+  // db::get_mutable_reference<First<0>>(make_not_null(&box));
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_databox();
@@ -2705,6 +2736,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_with_tagged_tuple();
   test_serialization();
   test_reference_item();
+  test_get_mutable_reference();
 }
 
 // Test`tag_is_retrievable_v`
