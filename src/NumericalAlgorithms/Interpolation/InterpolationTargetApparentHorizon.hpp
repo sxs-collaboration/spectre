@@ -144,14 +144,16 @@ struct ApparentHorizon {
   using initialization_tags =
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    tmpl::list<::ah::Tags::FastFlow,
-                              logging::Tags::Verbosity<InterpolationTargetTag>>,
+                              logging::Tags::Verbosity<InterpolationTargetTag>,
+                              ::ah::Tags::PreviousStrahlkorper<Frame>>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::true_type;
   using frame = Frame;
 
   using simple_tags =
       tmpl::push_back<StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
-                      logging::Tags::Verbosity<InterpolationTargetTag>>;
+                      logging::Tags::Verbosity<InterpolationTargetTag>,
+                      ::ah::Tags::PreviousStrahlkorper<Frame>>;
   using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
 
   template <typename DbTags, typename Metavariables>
@@ -164,8 +166,10 @@ struct ApparentHorizon {
 
     // Put Strahlkorper and its ComputeItems, FastFlow,
     // and verbosity into a new DataBox.
+    // Put the initial guess also into PreviousStrahlkorper.
     Initialization::mutate_assign<simple_tags>(
-        box, options.initial_guess, options.fast_flow, options.verbosity);
+        box, options.initial_guess, options.fast_flow, options.verbosity,
+        options.initial_guess);
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
