@@ -36,25 +36,35 @@ module AlgorithmArray {
     // instrumentation performed during charm entry method calls, while being
     // certain to avoid stack overflows.
 
+    // The charm [inline] flag has been temporarily removed from the following
+    // entry methods:
+    // - `simple action` (both overloads)
+    // - `perform_algorithm` (both overloads)
+    // - `receive_data`
+    // The [inline] has been removed because of a charm bug that causes inlined
+    // entry methods to not be instrumented for load-balancing.
+    // Once the charm fix is published and we have updated our support, the
+    // [inline] flag should be restored to the listed entry methods.
+    // Related charm pull request: https://github.com/UIUC-PPL/charm/pull/3352
+
     template <typename Action, typename... Args>
-    entry [inline] void simple_action(std::tuple<Args...> & args);
+    entry void simple_action(std::tuple<Args...> & args);
 
     template <typename Action>
-    entry [inline] void simple_action();
+    entry void simple_action();
 
     template <typename Action, typename Arg>
     entry[reductiontarget] void reduction_action(Arg arg);
 
-    entry [inline] void perform_algorithm();
+    entry void perform_algorithm();
 
-    entry [inline] void perform_algorithm(bool);
+    entry void perform_algorithm(bool);
 
     entry void start_phase(typename ParallelComponent::metavariables::Phase);
 
     template <typename ReceiveTag, typename ReceiveData_t>
-    entry [inline] void receive_data(typename ReceiveTag::temporal_id&,
-                                    ReceiveData_t&,
-                                    bool enable_if_disabled = false);
+    entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,
+                            bool enable_if_disabled = false);
 
     entry void set_terminate(bool);
   }

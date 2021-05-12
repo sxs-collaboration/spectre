@@ -1,5 +1,12 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
+This patch is currently unused because we have disabled charm inlining due to a
+Charm bug that causes inlined functions to not be instrumented for communication
+aware load balancers.
+This file should be renamed to `AlgorithmArray.def.h.patch` when re-enabling
+charm inlining, once the bug fix is applied to charm and we update to the
+appropriately fixed version.
+Related charm pull request: https://github.com/UIUC-PPL/charm/pull/3352
 --- AlgorithmArray.def.h	2021-04-01 14:42:23.928094971 -0700
 +++ alterations/AlgorithmArray.def.h	2021-04-01 14:44:19.599096051 -0700
 @@ -310,7 +310,7 @@
