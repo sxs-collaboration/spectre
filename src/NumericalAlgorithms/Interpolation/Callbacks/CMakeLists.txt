@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   Callbacks.hpp
   FindApparentHorizon.hpp
+  IgnoreFailedApparentHorizon.hpp
   ObserveTimeSeriesOnSurface.hpp
   SendGhWorldtubeData.hpp
   )
