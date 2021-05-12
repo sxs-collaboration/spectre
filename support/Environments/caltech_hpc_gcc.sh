@@ -176,6 +176,31 @@ EOF
     fi
     cd $dep_dir
 
+    if [ -f $dep_dir/scotch/lib/libscotch.a ]; then
+        echo "Scotch is already installed"
+    else
+        echo "Installing Scotch..."
+        wget https://gitlab.inria.fr/scotch/scotch/-/archive/v6.1.0/scotch-v6.1.0.tar.bz2
+        tar xjf scotch-v6.1.0.tar.bz2
+        mv scotch-v6.1.0 scotch
+        cd $dep_dir/scotch
+        cp src/Make.inc/Makefile.inc.x86-64_pc_linux2 src/Makefile.inc
+        cd src
+        make -j4
+        cd $dep_dir
+        rm scotch-v6.1.0.tar.bz2
+        echo "Installed Scotch into $dep_dir/scotch"
+        cat >$dep_dir/modules/scotch <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/scotch/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/scotch/lib"
+prepend-path CPATH "$dep_dir/scotch/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/scotch/"
+EOF
+    fi
+
+    module use $dep_dir/modules
+    module load scotch
     # Set up Charm++ because that can be difficult
     if [ -f $dep_dir/charm/verbs-linux-x86_64-smp/lib/libck.a ]; then
         echo "Charm++ is already installed"
@@ -187,6 +212,7 @@ EOF
         cd $dep_dir/charm
         ./build charm++ verbs-linux-x86_64-smp --with-production -j4
         ./build LIBS verbs-linux-x86_64-smp --with-production -j4
+        ./build ScotchLB verbs-linux-x86_64-smp --with-production -j4
         cd $dep_dir
         rm v6.10.2.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
@@ -257,6 +283,7 @@ EOF
     cd $start_dir
 
     spectre_unload_sys_modules
+    module unload scotch
 
     printf "\n\nIMPORTANT!!!\nIn order to be able to use these modules you\n"
     echo "must run:"
@@ -267,6 +294,7 @@ EOF
 
 spectre_unload_modules() {
     module unload charm
+    module unload scotch
     module unload yaml-cpp
     module unload spectre_boost
     module unload spectre_gsl
@@ -292,6 +320,7 @@ spectre_load_modules() {
     module load spectre_boost
     module load spectre_gsl
     module load yaml-cpp
+    module load scotch
     module load charm
 }
 
@@ -307,6 +336,7 @@ spectre_run_cmake() {
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=off \
           -D Python_EXECUTABLE=`which python3` \
+          -D USE_SCOTCH_LB=ON \
           "$@" \
           $SPECTRE_HOME
 }
