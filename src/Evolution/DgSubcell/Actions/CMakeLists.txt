@@ -12,6 +12,7 @@ spectre_target_headers(
   Labels.hpp
   ReconstructionCommunication.hpp
   SelectNumericalMethod.hpp
+  TakeTimeStep.hpp
   TciAndRollback.hpp
   TciAndSwitchToDg.hpp
   )

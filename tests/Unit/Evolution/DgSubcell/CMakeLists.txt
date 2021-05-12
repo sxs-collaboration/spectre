@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Actions/Test_Initialize.cpp
   Actions/Test_ReconstructionCommunication.cpp
   Actions/Test_SelectNumericalMethod.cpp
+  Actions/Test_TakeTimeStep.cpp
   Actions/Test_TciAndRollback.cpp
   Actions/Test_TciAndSwitchToDg.cpp
   Events/Test_ObserveFields.cpp
