@@ -10,6 +10,7 @@ spectre_target_headers(
   Actions.hpp
   Initialize.hpp
   Labels.hpp
+  ReconstructionCommunication.hpp
   SelectNumericalMethod.hpp
   TciAndRollback.hpp
   TciAndSwitchToDg.hpp
