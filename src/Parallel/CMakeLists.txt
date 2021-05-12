@@ -64,6 +64,7 @@ target_link_libraries(
 
 add_dependencies(
   ${LIBRARY}
+  module_GlobalCache
   module_Main          # GlobalCache module depends on Main module
   )
 
