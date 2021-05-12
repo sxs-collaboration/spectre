@@ -67,6 +67,8 @@ environment differently, read on!
 * [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
 * [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
 * [yapf](https://github.com/google/yapf) 0.29.0 - to format python code
+* [Scotch](https://gitlab.inria.fr/scotch/scotch) - to build the `ScotchLB`
+  graph partition based load balancer in charm++.
 
 ## Using Docker to obtain a SpECTRE environment
 

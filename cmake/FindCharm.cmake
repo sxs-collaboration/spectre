@@ -97,6 +97,24 @@ if("${CHARM_EVERYLB}" STREQUAL "CHARM_EVERYLB-NOTFOUND")
     "Make sure you have built the LIBS target when building charm++")
 endif()
 
+option(USE_SCOTCH_LB "Use the charm++ ScotchLB module" OFF)
+
+if (USE_SCOTCH_LB)
+   find_library(CHARM_SCOTCHLB
+     NAMES moduleScotchLB
+     HINTS ${CHARM_LIBRARIES}
+     NO_DEFAULT_PATH
+     )
+
+   if("${CHARM_SCOTCHLB}" STREQUAL "CHARM_SCOTCHLB-NOTFOUND")
+     message(SEND_ERROR "Could not find charm module ScotchLB, "
+    "but building with cmake flag USE_SCOTCH_LB. Either be sure "
+    "to build Charm++ with ScotchLB support (it is an independent "
+    "Charm++ target), or build spectre without USE_SCOTCH_LB enabled")
+endif()
+
+endif ()
+
 find_program(CHARM_COMPILER
   NAMES charmc
   PATH_SUFFIXES bin

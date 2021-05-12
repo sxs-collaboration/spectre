@@ -26,9 +26,15 @@ endif(NOT TARGET Charmxx)
 # will call your normal compiler, set at charm++ installation time internally.
 # Note: The -pthread is necessary with Charm v6.10 to get linking working
 #       with GCC
+if (USE_SCOTCH_LB)
+  set(SCOTCH_LB_FLAG "-module ScotchLB")
+else()
+  set(SCOTCH_LB_FLAG "")
+endif()
+
 string(
     REGEX REPLACE "<CMAKE_CXX_COMPILER>"
-    "${CHARM_COMPILER} -pthread -module EveryLB -no-charmrun"
+    "${CHARM_COMPILER} -pthread -module EveryLB ${SCOTCH_LB_FLAG} -no-charmrun"
     CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
 
 # When building for trace analysis the PAPI counters passed to charmc
