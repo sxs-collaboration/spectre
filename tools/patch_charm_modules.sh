@@ -21,9 +21,9 @@ DEF_PATCH_FILENAME="$PATCH_PREFIX"/$1.def.h.patch
 DECL_PATCH_FILENAME="$PATCH_PREFIX"/$1.decl.h.patch
 
 if [ -f "$DEF_PATCH_FILENAME" ]; then
-    patch -u $4/$1.def.h -i $DEF_PATCH_FILENAME
+    patch -u $4/$1.def.h -i $DEF_PATCH_FILENAME --quiet
 fi
 
 if [ -f "$DECL_PATCH_FILENAME" ]; then
-    patch -u $4/$1.decl.h -i $DECL_PATCH_FILENAME
+    patch -u $4/$1.decl.h -i $DECL_PATCH_FILENAME --quiet
 fi
