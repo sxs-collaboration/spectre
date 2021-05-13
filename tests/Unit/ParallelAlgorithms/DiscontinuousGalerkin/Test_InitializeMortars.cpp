@@ -26,13 +26,13 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -76,7 +76,8 @@ struct ElementArray {
                          tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                                     domain::Tags::InitialExtents<Dim>,
                                     ::Tags::Next<TemporalIdTag>>>,
-                     Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
+                     Actions::SetupDataBox,
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
                      Initialization::Actions::AddComputeTags<tmpl::list<
                          domain::Tags::InternalDirectionsCompute<Dim>,
                          domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,

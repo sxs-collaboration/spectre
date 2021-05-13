@@ -11,8 +11,6 @@ spectre_target_headers(
   HEADERS
   CollectDataForFluxes.hpp
   FluxCommunication.hpp
-  HasReceivedFromAllMortars.hpp
-  InitializeDomain.hpp
   InitializeInterfaces.hpp
   InitializeMortars.hpp
   )

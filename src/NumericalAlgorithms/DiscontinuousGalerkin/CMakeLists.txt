@@ -18,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Formulation.hpp
+  HasReceivedFromAllMortars.hpp
   LiftFlux.hpp
   MetricIdentityJacobian.hpp
   MortarHelpers.hpp
@@ -40,7 +41,6 @@ target_link_libraries(
   Domain
   )
 
-add_subdirectory(Actions)
 add_subdirectory(BoundarySchemes)
 add_subdirectory(NumericalFluxes)
 add_subdirectory(Tags)

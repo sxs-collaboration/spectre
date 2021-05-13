@@ -36,6 +36,7 @@ target_link_libraries(
   INTERFACE
   Boost::boost
   Convergence
+  DiscontinuousGalerkin
   Domain
   IO
   Informer
@@ -43,7 +44,6 @@ target_link_libraries(
   LinearSolver
   Options
   Parallel
-  ParallelDg
   ParallelLinearSolver
   Spectral
   )

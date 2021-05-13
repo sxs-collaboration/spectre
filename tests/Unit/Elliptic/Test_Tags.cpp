@@ -9,13 +9,10 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
-struct SomeFluxesComputer {};
 struct Dummy {};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Tags", "[Unit][Elliptic]") {
-  TestHelpers::db::test_simple_tag<
-      elliptic::Tags::FluxesComputer<SomeFluxesComputer>>("SomeFluxesComputer");
   TestHelpers::db::test_simple_tag<elliptic::Tags::Background<Dummy>>(
       "Background");
   TestHelpers::db::test_simple_tag<elliptic::Tags::InitialGuess<Dummy>>(

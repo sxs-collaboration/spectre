@@ -17,9 +17,6 @@ spectre_target_headers(
   HEADERS
   DgElementArray.hpp
   DgOperator.hpp
-  ImposeBoundaryConditions.hpp
-  ImposeInhomogeneousBoundaryConditionsOnSource.hpp
-  InitializeFirstOrderOperator.hpp
   Penalty.hpp
   Tags.hpp
   )
@@ -48,4 +45,3 @@ target_link_libraries(
   )
 
 add_subdirectory(Actions)
-add_subdirectory(NumericalFluxes)

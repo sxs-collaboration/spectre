@@ -22,6 +22,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
@@ -38,7 +39,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
@@ -308,8 +308,9 @@ template <typename Metavariables,
           typename LinearSolverType = typename Metavariables::linear_solver,
           typename PreconditionerType = typename Metavariables::preconditioner>
 using initialization_actions =
-    tmpl::list<Actions::SetupDataBox, dg::Actions::InitializeDomain<1>,
-               InitializeElement, typename LinearSolverType::initialize_element,
+    tmpl::list<Actions::SetupDataBox,
+               ::elliptic::dg::Actions::InitializeDomain<1>, InitializeElement,
+               typename LinearSolverType::initialize_element,
                ComputeOperatorAction<fields_tag>,
                helpers::detail::init_preconditioner<PreconditionerType>,
                Initialization::Actions::RemoveOptionsAndTerminatePhase>;

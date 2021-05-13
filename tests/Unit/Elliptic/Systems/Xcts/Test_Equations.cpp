@@ -14,7 +14,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/FirstOrderOperator.hpp"
 #include "Elliptic/Systems/Xcts/Equations.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"

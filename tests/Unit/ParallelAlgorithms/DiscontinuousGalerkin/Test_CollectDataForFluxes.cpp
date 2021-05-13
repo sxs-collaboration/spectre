@@ -17,6 +17,7 @@
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
@@ -25,7 +26,6 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -91,7 +91,8 @@ struct ElementArray {
                   domain::Tags::InitialRefinementLevels<volume_dim>,
                   domain::Tags::InitialExtents<volume_dim>, TemporalIdTag,
                   ::Tags::Next<TemporalIdTag>>>,
-              Actions::SetupDataBox, dg::Actions::InitializeDomain<volume_dim>,
+              Actions::SetupDataBox,
+              ::elliptic::dg::Actions::InitializeDomain<volume_dim>,
               Initialization::Actions::AddComputeTags<tmpl::list<
                   domain::Tags::InternalDirectionsCompute<volume_dim>,
                   domain::Tags::BoundaryDirectionsInteriorCompute<volume_dim>,

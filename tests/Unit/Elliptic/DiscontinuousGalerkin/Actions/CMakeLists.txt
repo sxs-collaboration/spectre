@@ -1,18 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_EllipticActions")
+set(LIBRARY "Test_EllipticDgActions")
 
 set(LIBRARY_SOURCES
-  Test_InitializeAnalyticSolution.cpp
-  Test_InitializeBackgroundFields.cpp
-  Test_InitializeFields.cpp
-  Test_InitializeFixedSources.cpp
+  Test_InitializeDomain.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Elliptic/Actions/"
+  "Elliptic/DiscontinuousGalerkin/Actions/"
   "${LIBRARY_SOURCES}"
   ""
   )
@@ -20,15 +17,13 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  AnalyticSolutions
   CoordinateMaps
   DataStructures
   Domain
   DomainCreators
   DomainStructure
-  Elliptic
   EllipticDg
-  ErrorHandling
   Parallel
+  Spectral
   Utilities
   )

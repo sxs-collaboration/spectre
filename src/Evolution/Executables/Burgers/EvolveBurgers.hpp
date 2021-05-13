@@ -49,7 +49,6 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"

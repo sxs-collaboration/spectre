@@ -12,6 +12,7 @@
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
@@ -28,7 +29,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
@@ -156,14 +156,14 @@ struct Metavariables {
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
   using initialization_actions = tmpl::list<
-      Actions::SetupDataBox, dg::Actions::InitializeDomain<volume_dim>,
+      Actions::SetupDataBox,
+      elliptic::dg::Actions::InitializeDomain<volume_dim>,
       typename linear_solver::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, analytic_solution_tag>,
       elliptic::Actions::InitializeAnalyticSolution<
-          analytic_solution_tag,
-          tmpl::append<typename system::primal_fields,
-                       typename system::primal_fluxes>>,
+          analytic_solution_tag, tmpl::append<typename system::primal_fields,
+                                              typename system::primal_fluxes>>,
       elliptic::dg::Actions::initialize_operator<system>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
           system, fixed_sources_tag>,
