@@ -14,7 +14,10 @@ spectre_target_headers(
   Jacobians.hpp
   Mesh.hpp
   NeighborData.hpp
+  OnSubcellFaces.hpp
+  OnSubcells.hpp
   SubcellOptions.hpp
+  SubcellSolver.hpp
   Tags.hpp
   TciGridHistory.hpp
   TciStatus.hpp
