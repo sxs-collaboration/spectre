@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -79,6 +80,22 @@ namespace domain::creators {
  * does not have any of these spherical shells: the "EA" and "EB"
  * blocks extend to the excision boundary and the "CA" and "CB" blocks
  * extend to the outer boundary.
+ *
+ * The Blocks are named as follows:
+ * - Each of CAFilledCylinder EAFilledCylinder, EBFilledCylinder,
+ *   MAFilledCylinder, MBFilledCylinder, and CBFilledCylinder consists
+ *   of 5 blocks, named 'Center', 'East', 'North', 'West', and
+ *   'South', so an example of a valid block name is
+ *   'CAFilledCylinderCenter'.
+ * - Each of CACylinder, EACylinder, EBCylinder, and CBCylinder
+ *   consists of 4 blocks, named 'East', 'North', 'West', and 'South',
+ *   so an example of a valid block name is 'CACylinderEast'.
+ * - The Block group called "Outer" consists of all the CA and CB blocks. They
+ *   all border the outer boundary.
+ * - The Block group called "InnerA" consists of all the EA, and MA
+ *   blocks. They all border the inner boundary "A".
+ * - The Block group called "InnerB" consists of all the EB, and MB
+ *   blocks. They all border the inner boundary "B".
  *
  * If \f$c_A\f$ and \f$c_B\f$ are the input parameters center_A and
  * center_B, \f$r_A\f$ and \f$r_B\f$ are the input parameters radius_A and
@@ -163,14 +180,28 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type = size_t;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial refinement level. Applied to each dimension."};
+        "Initial refinement level. Specify one of: a single number, a list "
+        "representing [r, theta, perp], or such a list for every block in the "
+        "domain. Here 'r' is the radial direction normal to the inner and "
+        "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
+        "the third direction."};
   };
   struct InitialGridPoints {
-    using type = size_t;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial number of grid points in each dim per element."};
+        "Initial number of grid points. Specify one of: a single number, a "
+        "list representing [r, theta, perp], or such a list for every block in "
+        "the domain. Here 'r' is the radial direction normal to the inner and "
+        "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
+        "the third direction."};
   };
 
   struct TimeDependence {
@@ -229,8 +260,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       typename CenterA::type center_A, typename CenterB::type center_B,
       typename RadiusA::type radius_A, typename RadiusB::type radius_B,
       typename OuterRadius::type outer_radius,
-      typename InitialRefinement::type initial_refinement,
-      typename InitialGridPoints::type initial_grid_points_per_dim,
+      const typename InitialRefinement::type& initial_refinement,
+      const typename InitialGridPoints::type& initial_grid_points,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -272,8 +303,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   typename RadiusA::type radius_A_{};
   typename RadiusB::type radius_B_{};
   typename OuterRadius::type outer_radius_{};
-  typename InitialRefinement::type initial_refinement_{};
-  typename InitialGridPoints::type initial_grid_points_per_dim_{};
+  typename std::vector<std::array<size_t, 3>> initial_refinement_{};
+  typename std::vector<std::array<size_t, 3>> initial_grid_points_{};
   // cut_spheres_offset_factor_ is eta in Eq. (A.9) of
   // https://arxiv.org/abs/1206.3015.  cut_spheres_offset_factor_
   // could be set to unity to simplify the equations.  Here we fix it
