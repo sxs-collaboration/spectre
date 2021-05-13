@@ -16,10 +16,10 @@
 
 namespace VariableFixing {
 
-template <size_t Dim, size_t ThermodynamicDim>
-FixToAtmosphere<Dim, ThermodynamicDim>::FixToAtmosphere(
-    const double density_of_atmosphere, const double density_cutoff,
-    const Options::Context& context)
+template <size_t Dim>
+FixToAtmosphere<Dim>::FixToAtmosphere(const double density_of_atmosphere,
+                                      const double density_cutoff,
+                                      const Options::Context& context)
     : density_of_atmosphere_(density_of_atmosphere),
       density_cutoff_(density_cutoff) {
   if (density_of_atmosphere_ > density_cutoff_) {
@@ -32,15 +32,15 @@ FixToAtmosphere<Dim, ThermodynamicDim>::FixToAtmosphere(
 }
 
 // clang-tidy: google-runtime-references
-template <size_t Dim, size_t ThermodynamicDim>
-void FixToAtmosphere<Dim, ThermodynamicDim>::pup(
-    PUP::er& p) noexcept {  // NOLINT
+template <size_t Dim>
+void FixToAtmosphere<Dim>::pup(PUP::er& p) noexcept {  // NOLINT
   p | density_of_atmosphere_;
   p | density_cutoff_;
 }
 
-template <size_t Dim, size_t ThermodynamicDim>
-void FixToAtmosphere<Dim, ThermodynamicDim>::operator()(
+template <size_t Dim>
+template <size_t ThermodynamicDim>
+void FixToAtmosphere<Dim>::call_impl(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -81,31 +81,44 @@ void FixToAtmosphere<Dim, ThermodynamicDim>::operator()(
   }
 }
 
-template <size_t Dim, size_t LocalThermodynamicDim>
-bool operator==(
-    const FixToAtmosphere<Dim, LocalThermodynamicDim>& lhs,
-    const FixToAtmosphere<Dim, LocalThermodynamicDim>& rhs) noexcept {
+template <size_t Dim>
+bool operator==(const FixToAtmosphere<Dim>& lhs,
+                const FixToAtmosphere<Dim>& rhs) noexcept {
   return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_ and
          lhs.density_cutoff_ == rhs.density_cutoff_;
 }
 
-template <size_t Dim, size_t ThermodynamicDim>
-bool operator!=(const FixToAtmosphere<Dim, ThermodynamicDim>& lhs,
-                const FixToAtmosphere<Dim, ThermodynamicDim>& rhs) noexcept {
+template <size_t Dim>
+bool operator!=(const FixToAtmosphere<Dim>& lhs,
+                const FixToAtmosphere<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                           \
-  template class FixToAtmosphere<DIM(data), THERMO_DIM(data)>;           \
-  template bool operator==(                                              \
-      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& lhs,           \
-      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& rhs) noexcept; \
-  template bool operator!=(                                              \
-      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& lhs,           \
-      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                              \
+  template class FixToAtmosphere<DIM(data)>;                                \
+  template bool operator==(const FixToAtmosphere<DIM(data)>& lhs,           \
+                           const FixToAtmosphere<DIM(data)>& rhs) noexcept; \
+  template bool operator!=(const FixToAtmosphere<DIM(data)>& lhs,           \
+                           const FixToAtmosphere<DIM(data)>& rhs) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+
+#define INSTANTIATION(r, data)                                              \
+  template void FixToAtmosphere<DIM(data)>::call_impl(                      \
+      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,           \
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,    \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*> \
+          spatial_velocity,                                                 \
+      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,              \
+      const gsl::not_null<Scalar<DataVector>*> pressure,                    \
+      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,           \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&      \
+          equation_of_state) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

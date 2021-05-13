@@ -27,3 +27,5 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   )
+
+add_subdirectory(BoundaryCorrections)

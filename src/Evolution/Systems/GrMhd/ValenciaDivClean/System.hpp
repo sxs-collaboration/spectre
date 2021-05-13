@@ -33,13 +33,10 @@ namespace grmhd {
 /// (http://iopscience.iop.org/article/10.1088/0264-9381/31/1/015005)
 namespace ValenciaDivClean {
 
-template <typename EquationOfStateType>
 struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
-  static constexpr size_t thermodynamic_dim =
-      EquationOfStateType::thermodynamic_dim;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
@@ -66,8 +63,7 @@ struct System {
   using conservative_from_primitive = ConservativeFromPrimitive;
   template <typename OrderedListOfPrimitiveRecoverySchemes>
   using primitive_from_conservative =
-      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
-                                thermodynamic_dim>;
+      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>;
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed;

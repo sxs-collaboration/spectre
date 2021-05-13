@@ -75,9 +75,7 @@ void test() {
   helpers::test_boundary_condition_with_python<
       RelativisticEuler::Valencia::BoundaryConditions::DirichletAnalytic<Dim>,
       RelativisticEuler::Valencia::BoundaryConditions::BoundaryCondition<Dim>,
-      RelativisticEuler::Valencia::System<
-          Dim, typename RelativisticEuler::Solutions::SmoothFlow<
-                   Dim>::equation_of_state_type>,
+      RelativisticEuler::Valencia::System<Dim>,
       tmpl::list<
           RelativisticEuler::Valencia::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertSmoothFlow<Dim>>>(

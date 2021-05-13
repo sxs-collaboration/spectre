@@ -88,14 +88,14 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
              std::array<double, 2>{{-0.1, 0.1}}};
 
   helpers::test_boundary_correction_conservation<
-      RelativisticEuler::Valencia::System<Dim, EosType>>(
+      RelativisticEuler::Valencia::System<Dim>>(
       gen, RelativisticEuler::Valencia::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
   helpers::test_boundary_correction_with_python<
-      RelativisticEuler::Valencia::System<Dim, EosType>,
+      RelativisticEuler::Valencia::System<Dim>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       gen,
       "Evolution.Systems.RelativisticEuler.Valencia.BoundaryCorrections."
@@ -117,7 +117,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
                           BoundaryCorrection<Dim>>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<
-      RelativisticEuler::Valencia::System<Dim, EosType>,
+      RelativisticEuler::Valencia::System<Dim>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       gen,
       "Evolution.Systems.RelativisticEuler.Valencia.BoundaryCorrections."

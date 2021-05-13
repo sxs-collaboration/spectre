@@ -43,7 +43,7 @@ namespace VariableFixing {
 /// satisfy the equation of state.  For a two-dimensional equation of state, the
 /// specific internal energy is set to zero. In addition, the spatial velocity
 /// is set to zero, and the Lorentz factor is set to one.
-template <size_t Dim, size_t ThermodynamicDim>
+template <size_t Dim>
 class FixToAtmosphere {
  public:
   /// \brief Rest mass density of the atmosphere
@@ -93,6 +93,8 @@ class FixToAtmosphere {
                  hydro::Tags::SpecificEnthalpy<DataVector>>;
   using argument_tags = tmpl::list<hydro::Tags::EquationOfStateBase>;
 
+  // for use in `db::mutate_apply`
+  template <size_t ThermodynamicDim>
   void operator()(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
@@ -102,21 +104,35 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) const noexcept;
+          equation_of_state) const noexcept {
+    call_impl(rest_mass_density, specific_internal_energy, spatial_velocity,
+              lorentz_factor, pressure, specific_enthalpy, equation_of_state);
+  }
 
  private:
-  template <size_t SpatialDim, size_t LocalThermodynamicDim>
+  template <size_t ThermodynamicDim>
+  void call_impl(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      spatial_velocity,
+      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+      equation_of_state) const noexcept;
+
+  template <size_t SpatialDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(
-      const FixToAtmosphere<SpatialDim, LocalThermodynamicDim>& lhs,
-      const FixToAtmosphere<SpatialDim, LocalThermodynamicDim>& rhs) noexcept;
+  friend bool operator==(const FixToAtmosphere<SpatialDim>& lhs,
+                         const FixToAtmosphere<SpatialDim>& rhs) noexcept;
 
   double density_of_atmosphere_{std::numeric_limits<double>::signaling_NaN()};
   double density_cutoff_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-template <size_t Dim, size_t ThermodynamicDim>
-bool operator!=(const FixToAtmosphere<Dim, ThermodynamicDim>& lhs,
-                const FixToAtmosphere<Dim, ThermodynamicDim>& rhs) noexcept;
+template <size_t Dim>
+bool operator!=(const FixToAtmosphere<Dim>& lhs,
+                const FixToAtmosphere<Dim>& rhs) noexcept;
 
 }  // namespace VariableFixing

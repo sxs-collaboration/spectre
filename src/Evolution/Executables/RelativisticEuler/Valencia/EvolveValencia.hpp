@@ -119,10 +119,7 @@ struct EvolutionMetavars {
 
   using equation_of_state_type = typename initial_data::equation_of_state_type;
 
-  using system =
-      RelativisticEuler::Valencia::System<Dim, equation_of_state_type>;
-
-  static constexpr size_t thermodynamic_dim = system::thermodynamic_dim;
+  using system = RelativisticEuler::Valencia::System<Dim>;
 
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
@@ -244,7 +241,7 @@ struct EvolutionMetavars {
           domain::Tags::Coordinates<Dim, Frame::Logical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<volume_dim, thermodynamic_dim>>,
+          VariableFixing::FixToAtmosphere<volume_dim>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<hydro::Tags::SoundSpeedSquaredCompute<DataVector>>>,
       Actions::UpdateConservatives,
@@ -276,14 +273,13 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  VariableFixing::Actions::FixVariables<
-                      VariableFixing::FixToAtmosphere<volume_dim,
-                                                      thermodynamic_dim>>,
-                  Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes,
-                                                            triggers>>>>>;
+              tmpl::list<VariableFixing::Actions::FixVariables<
+                             VariableFixing::FixToAtmosphere<volume_dim>>,
+                         Actions::UpdateConservatives,
+                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange<
+                             phase_changes, triggers>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {

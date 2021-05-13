@@ -4,6 +4,7 @@
 set(LIBRARY "Test_GhValenciaDivClean")
 
 set(LIBRARY_SOURCES
+  BoundaryCorrections/Test_ProductOfCorrections.cpp
   Test_Tags.cpp
   Test_StressEnergy.cpp
   Test_TimeDerivativeTerms.cpp

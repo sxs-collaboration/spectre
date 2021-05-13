@@ -74,8 +74,9 @@ class FunctionOfZ {
 };
 }  // namespace
 
-template <size_t ThermodynamicDim, size_t Dim>
-void PrimitiveFromConservative<ThermodynamicDim, Dim>::apply(
+template <size_t Dim>
+template <size_t ThermodynamicDim>
+void PrimitiveFromConservative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
@@ -145,7 +146,28 @@ void PrimitiveFromConservative<ThermodynamicDim, Dim>::apply(
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATION(_, data) \
-  template class PrimitiveFromConservative<THERMODIM(data), DIM(data)>;
+  template class PrimitiveFromConservative<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+
+#define INSTANTIATION(_, data)                                                \
+  template void PrimitiveFromConservative<DIM(data)>::apply<THERMODIM(data)>( \
+      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,             \
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,      \
+      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,                \
+      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,             \
+      const gsl::not_null<Scalar<DataVector>*> pressure,                      \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
+          spatial_velocity,                                                   \
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau, \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& tilde_s,         \
+      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                 \
+          inv_spatial_metric,                                                 \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
+          equation_of_state) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 
