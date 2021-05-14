@@ -31,6 +31,7 @@ spectre_target_sources(
   KerrHorizonConforming.cpp
   Rotation.cpp
   SpecialMobius.cpp
+  UniformCylindricalEndcap.cpp
   Wedge.cpp
   )
 
@@ -69,6 +70,7 @@ spectre_target_headers(
   SpecialMobius.hpp
   Tags.hpp
   TimeDependentHelpers.hpp
+  UniformCylindricalEndcap.hpp
   Wedge.hpp
   )
 
