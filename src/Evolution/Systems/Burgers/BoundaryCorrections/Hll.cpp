@@ -35,8 +35,7 @@ double Hll::dg_package_data(
     /*mesh_velocity*/,
     const std::optional<Scalar<DataVector>>&
         normal_dot_mesh_velocity) noexcept {
-  get(*packaged_char_speed) =
-      get<0>(normal_covector)[0] > 0.0 ? get(u) : -get(u);
+  get(*packaged_char_speed) = sign(get<0>(normal_covector)) * get(u);
   if (normal_dot_mesh_velocity.has_value()) {
     get(*packaged_char_speed) -= get(*normal_dot_mesh_velocity);
   }
