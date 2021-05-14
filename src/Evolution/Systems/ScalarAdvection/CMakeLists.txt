@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Fluxes.cpp
+  TimeDerivativeTerms.cpp
   )
 
 spectre_target_headers(
@@ -20,6 +21,7 @@ spectre_target_headers(
   Fluxes.hpp
   System.hpp
   Tags.hpp
+  TimeDerivativeTerms.hpp
   )
 
 target_link_libraries(
