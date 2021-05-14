@@ -18,26 +18,35 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
-using DenseTriggerBase = DenseTrigger<
-    tmpl::list<DenseTriggers::Registrars::Or,
-               TestHelpers::DenseTriggers::Registrars::TestTrigger>>;
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        DenseTrigger, tmpl::list<DenseTriggers::Or,
+                                 TestHelpers::DenseTriggers::TestTrigger>>>;
+  };
+};
 
 void check(const bool time_runs_forward, const bool expected_is_ready,
            const bool expected_is_triggered, const double expected_next_check,
            const std::string& creation_string) noexcept {
   CAPTURE(creation_string);
-  const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(
-      TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()));
+  const auto box = db::create<db::AddSimpleTags<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>,
+      Tags::TimeStepId>>(Metavariables{}, TimeStepId(time_runs_forward, 0,
+                                                     Slab(0.0, 1.0).start()));
   const auto trigger = serialize_and_deserialize(
-      TestHelpers::test_creation<std::unique_ptr<DenseTriggerBase>>(
+      TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string));
 
   CHECK(trigger->is_ready(box) == expected_is_ready);
@@ -83,7 +92,7 @@ void check_permutations(
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.DenseTriggers.Or",
                   "[Unit][Evolution]") {
-  Parallel::register_derived_classes_with_charm<DenseTriggerBase>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   check_permutations(true, false, std::numeric_limits<double>::infinity(), {},
                      {});

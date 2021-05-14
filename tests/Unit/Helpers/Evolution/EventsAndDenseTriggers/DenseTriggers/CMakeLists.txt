@@ -3,7 +3,13 @@
 
 set(LIBRARY "DenseTriggerHelpers")
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  TestTrigger.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}

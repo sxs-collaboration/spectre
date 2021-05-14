@@ -5,50 +5,42 @@
 
 #include <memory>
 #include <pup.h>
-#include <pup_stl.h>
 #include <string>
-#include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace DenseTriggers {
 /// \cond
-template <typename DenseTriggerRegistrars>
-class Filter;
+namespace Tags {
+struct DataBox;
+}  // namespace Tags
+namespace db {
+template <typename TagsList> class DataBox;
+}  // namespace db
 /// \endcond
 
-namespace Registrars {
-using Filter = Registration::Registrar<DenseTriggers::Filter>;
-}  // namespace Registrars
-
+namespace DenseTriggers {
 /// \ingroup EventsAndTriggersGroup
 /// %Filter activations of a dense trigger using a non-dense trigger.
 ///
 /// For example, to trigger every 10 starting at 100, one could use
 ///
 /// \snippet Test_Filter.cpp example
-template <typename DenseTriggerRegistrars>
-class Filter : public DenseTrigger<DenseTriggerRegistrars> {
+class Filter : public DenseTrigger {
  public:
   /// \cond
   Filter() = default;
-  explicit Filter(CkMigrateMessage* const msg) noexcept
-      : DenseTrigger<DenseTriggerRegistrars>(msg) {}
+  explicit Filter(CkMigrateMessage* const msg) noexcept : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Filter);  // NOLINT
   /// \endcond
 
-  using Result = typename DenseTrigger<DenseTriggerRegistrars>::Result;
-
   struct TriggerOption {
     static std::string name() noexcept { return "Trigger"; }
-    using type = std::unique_ptr<DenseTrigger<DenseTriggerRegistrars>>;
+    using type = std::unique_ptr<DenseTrigger>;
     static constexpr Options::String help = "Dense trigger to filter";
   };
 
@@ -62,9 +54,8 @@ class Filter : public DenseTrigger<DenseTriggerRegistrars> {
   static constexpr Options::String help =
       "Filter activations of a dense trigger using a non-dense trigger.";
 
-  explicit Filter(std::unique_ptr<DenseTrigger<DenseTriggerRegistrars>> trigger,
-                  std::unique_ptr<Trigger> filter) noexcept
-      : trigger_(std::move(trigger)), filter_(std::move(filter)) {}
+  explicit Filter(std::unique_ptr<DenseTrigger> trigger,
+                  std::unique_ptr<Trigger> filter) noexcept;
 
   using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
 
@@ -85,19 +76,10 @@ class Filter : public DenseTrigger<DenseTriggerRegistrars> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
-    DenseTrigger<DenseTriggerRegistrars>::pup(p);
-    p | trigger_;
-    p | filter_;
-  }
+  void pup(PUP::er& p) noexcept override;
 
  private:
-  std::unique_ptr<DenseTrigger<DenseTriggerRegistrars>> trigger_{};
+  std::unique_ptr<DenseTrigger> trigger_{};
   std::unique_ptr<Trigger> filter_{};
 };
-
-/// \cond
-template <typename DenseTriggerRegistrars>
-PUP::able::PUP_ID Filter<DenseTriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace DenseTriggers

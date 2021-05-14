@@ -10,30 +10,18 @@
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::DenseTriggers {
-template <typename RegistrarList>
-class TestTrigger;
-
-namespace Registrars {
-using TestTrigger =
-    Registration::Registrar<::TestHelpers::DenseTriggers::TestTrigger>;
-}  // namespace Registrars
-
-template <typename RegistrarList = tmpl::list<Registrars::TestTrigger>>
-class TestTrigger : public DenseTrigger<RegistrarList> {
+class TestTrigger : public DenseTrigger {
  public:
   /// \cond
   TestTrigger() = default;
   explicit TestTrigger(CkMigrateMessage* const msg) noexcept
-      : DenseTrigger<RegistrarList>(msg) {}
+      : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
   /// \endcond
-
-  using Result = typename DenseTrigger<RegistrarList>::Result;
 
   struct IsReady {
     using type = bool;
@@ -70,7 +58,7 @@ class TestTrigger : public DenseTrigger<RegistrarList> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
-    DenseTrigger<RegistrarList>::pup(p);
+    DenseTrigger::pup(p);
     p | is_ready_;
     p | is_triggered_;
     p | next_check_;
@@ -81,9 +69,4 @@ class TestTrigger : public DenseTrigger<RegistrarList> {
   bool is_triggered_;
   double next_check_;
 };
-
-/// \cond
-template <typename RegistrarList>
-PUP::able::PUP_ID TestTrigger<RegistrarList>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace TestHelpers::DenseTriggers

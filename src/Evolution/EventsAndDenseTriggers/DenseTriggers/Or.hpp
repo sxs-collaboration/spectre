@@ -7,11 +7,8 @@
 #include <limits>
 #include <memory>
 #include <pup.h>
-#include <pup_stl.h>
-#include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -19,46 +16,34 @@
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Tags {
+struct DataBox;
 struct TimeStepId;
 }  // namespace Tags
+namespace db {
+template <typename TagsList> class DataBox;
+}  // namespace db
 /// \endcond
 
 namespace DenseTriggers {
-/// \cond
-template <typename TriggerRegistrars>
-class Or;
-/// \endcond
-
-namespace Registrars {
-using Or = Registration::Registrar<DenseTriggers::Or>;
-}  // namespace Registrars
-
 /// \ingroup EventsAndTriggersGroup
 /// Trigger when any of a collection of DenseTriggers triggers.
-template <typename TriggerRegistrars>
-class Or : public DenseTrigger<TriggerRegistrars> {
+class Or : public DenseTrigger {
  public:
   /// \cond
   Or() = default;
-  explicit Or(CkMigrateMessage* const msg) noexcept
-      : DenseTrigger<TriggerRegistrars>(msg) {}
+  explicit Or(CkMigrateMessage* const msg) noexcept : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond
 
-  using Result = typename DenseTrigger<TriggerRegistrars>::Result;
-
   static constexpr Options::String help =
       "Trigger when any of a collection of triggers triggers.";
 
-  explicit Or(std::vector<std::unique_ptr<DenseTrigger<TriggerRegistrars>>>
-                  triggers) noexcept
-      : triggers_(std::move(triggers)) {}
+  explicit Or(std::vector<std::unique_ptr<DenseTrigger>> triggers) noexcept;
 
   using is_triggered_argument_tags =
       tmpl::list<Tags::TimeStepId, Tags::DataBox>;
@@ -90,32 +75,25 @@ class Or : public DenseTrigger<TriggerRegistrars> {
   bool is_ready(const db::DataBox<DbTags>& box) const noexcept {
     return alg::all_of(
         triggers_,
-        [&box](const std::unique_ptr<DenseTrigger<TriggerRegistrars>>&
-                   trigger) noexcept { return trigger->is_ready(box); });
+        [&box](const std::unique_ptr<DenseTrigger>& trigger) noexcept {
+          return trigger->is_ready(box);
+        });
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
-    DenseTrigger<TriggerRegistrars>::pup(p);
-    p | triggers_;
-  }
+  void pup(PUP::er& p) noexcept override;
 
  private:
-  std::vector<std::unique_ptr<DenseTrigger<TriggerRegistrars>>> triggers_{};
+  std::vector<std::unique_ptr<DenseTrigger>> triggers_{};
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID Or<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace DenseTriggers
 
-template <typename TriggerRegistrars>
-struct Options::create_from_yaml<DenseTriggers::Or<TriggerRegistrars>> {
+template <>
+struct Options::create_from_yaml<DenseTriggers::Or> {
   template <typename Metavariables>
-  static DenseTriggers::Or<TriggerRegistrars> create(const Option& options) {
-    return DenseTriggers::Or<TriggerRegistrars>(
-        options.parse_as<
-            std::vector<std::unique_ptr<DenseTrigger<TriggerRegistrars>>>>());
+  static DenseTriggers::Or create(const Option& options) {
+    return DenseTriggers::Or(
+        options.parse_as<std::vector<std::unique_ptr<DenseTrigger>>,
+                         Metavariables>());
   }
 };

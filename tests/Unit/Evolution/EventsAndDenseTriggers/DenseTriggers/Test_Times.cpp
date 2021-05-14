@@ -13,16 +13,23 @@
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Times.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
-using DenseTriggerBase =
-    DenseTrigger<tmpl::list<DenseTriggers::Registrars::Times>>;
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<DenseTriggers::Times>>>;
+  };
+};
 
 void check_one_direction(const std::vector<double>& trigger_times,
                          const double current_time,
@@ -43,12 +50,15 @@ void check_one_direction(const std::vector<double>& trigger_times,
   CAPTURE(creation_string.str());
 
   const auto trigger = serialize_and_deserialize(
-      TestHelpers::test_creation<std::unique_ptr<DenseTriggerBase>>(
-           creation_string.str()));
+      TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
+          creation_string.str()));
 
   const Slab slab(1.0e10, 2.0e10);
-  const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId, Tags::Time>>(
-      TimeStepId(time_runs_forward, 100, slab.start()), current_time);
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::TimeStepId, Tags::Time>>(
+      Metavariables{}, TimeStepId(time_runs_forward, 100, slab.start()),
+      current_time);
 
   CHECK(trigger->is_ready(box));
   const auto is_triggered = trigger->is_triggered(box);
@@ -70,7 +80,7 @@ void check_both_directions(std::vector<double> trigger_times,
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.DenseTriggers.Times",
                   "[Unit][Evolution]") {
-  Parallel::register_derived_classes_with_charm<DenseTriggerBase>();
+  Parallel::register_classes_with_charm<DenseTriggers::Times>();
   Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
   const auto infinity = std::numeric_limits<double>::infinity();
