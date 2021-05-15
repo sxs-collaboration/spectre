@@ -42,18 +42,26 @@ namespace AnalyticData {
  * magnetic braking will slow down the rotor, while dragging the magnetic field
  * lines.
  *
- * The standard test setup is done on a unit cube with the following values
- * given for the options:
+ * The standard test setup is done on a unit cube \f$[-0.5,0.5]^3\f$ with the
+ * following values given for the options:
  * -  RotorRadius: 0.1
  * -  RotorDensity: 10.0
  * -  BackgroundDensity: 1.0
  * -  Pressure: 1.0
  * -  AngularVelocity: 9.95
- * -  MagneticField: [3.54490770181103205, 0.0, 0.0]
+ * -  MagneticField: [1.0, 0.0, 0.0]
  * -  AdiabaticIndex: 1.66666666666666667
  *
- * The magnetic field in the disk should rotate by about 90 degrees by t = 0.4.
+ * Note that \cite Zanotti2016efficient uses different parameters,
+ * -  RotorRadius: 0.1
+ * -  RotorDensity: 10.0
+ * -  BackgroundDensity: 1.0
+ * -  Pressure: 1.0
+ * -  AngularVelocity: 9.3
+ * -  MagneticField: [1.0, 0.0, 0.0]
+ * -  AdiabaticIndex: 1.333333333333333
  *
+ * The magnetic field in the disk should rotate by about 90 degrees by t = 0.4.
  */
 class MagneticRotor : public MarkAsAnalyticData {
  public:
