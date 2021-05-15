@@ -214,6 +214,17 @@ struct OuterGroupedTag {
   using group = OuterGroup;
 };
 
+template <typename>
+struct TemplatedGroup {
+  static constexpr Options::String help = {"halp"};
+};
+
+struct TagWithTemplatedGroup {
+  using type = int;
+  static constexpr Options::String help = {"halp"};
+  using group = TemplatedGroup<int>;
+};
+
 void test_options_grouped() {
   {
     INFO("Option groups");
@@ -238,6 +249,14 @@ void test_options_grouped() {
     CHECK(opts.get<InnerGroupedTag>() == 3);
     CHECK(opts.get<OuterGroupedTag>() == 1);
     CHECK(opts.get<Simple>() == 2);
+  }
+  {
+    INFO("Templated option groups");
+    Options::Parser<tmpl::list<TagWithTemplatedGroup>> opts("");
+    opts.parse(
+        "TemplatedGroup:\n"
+        "  TagWithTemplatedGroup: 3");
+    CHECK(opts.get<TagWithTemplatedGroup>() == 3);
   }
 }
 }  // namespace
@@ -940,8 +959,10 @@ void test_options_format_bool() noexcept {
 void test_options_input_source() noexcept {
   Options::Parser<tmpl::list<Simple>> parser("");
   const std::string source = "Simple: 3";
+  const std::string overlay = "Simple: 4";
   parser.parse(source);
-  CHECK(parser.get<Options::InputSource>() == source);
+  parser.overlay<tmpl::list<Simple>>(overlay);
+  CHECK(parser.get<Options::InputSource>() == std::vector{source, overlay});
 }
 
 void check_for_lines(const std::string& text,
@@ -1182,6 +1203,95 @@ void test_options_alternatives() noexcept {
                    "    E:"});
   // clang-format on
 }
+
+void test_options_overlay() noexcept {
+  Options::Parser<tmpl::list<Simple, InnerGroupedTag, OuterGroupedTag>> parser(
+      "");
+  parser.parse(
+      "Simple: 1\n"
+      "OuterGroup:\n"
+      "  OuterGroupedTag: 2\n"
+      "  InnerGroup:\n"
+      "    InnerGroupedTag: 3\n");
+  CHECK(parser.get<Simple>() == 1);
+  CHECK(parser.get<OuterGroupedTag>() == 2);
+  CHECK(parser.get<InnerGroupedTag>() == 3);
+  parser.overlay<tmpl::list<Simple>>("Simple: 4");
+  CHECK(parser.get<Simple>() == 4);
+  CHECK(parser.get<OuterGroupedTag>() == 2);
+  CHECK(parser.get<InnerGroupedTag>() == 3);
+  parser.overlay<tmpl::list<Simple>>("");
+  CHECK(parser.get<Simple>() == 4);
+  CHECK(parser.get<OuterGroupedTag>() == 2);
+  CHECK(parser.get<InnerGroupedTag>() == 3);
+  parser.overlay<tmpl::list<InnerGroupedTag>>(
+      "OuterGroup:\n"
+      "  InnerGroup:\n"
+      "    InnerGroupedTag: 5\n");
+  CHECK(parser.get<Simple>() == 4);
+  CHECK(parser.get<OuterGroupedTag>() == 2);
+  CHECK(parser.get<InnerGroupedTag>() == 5);
+  parser.overlay<tmpl::list<Simple, OuterGroupedTag>>("Simple: 6\n");
+  CHECK(parser.get<Simple>() == 6);
+  CHECK(parser.get<OuterGroupedTag>() == 2);
+  CHECK(parser.get<InnerGroupedTag>() == 5);
+  parser.overlay<tmpl::list<Simple, OuterGroupedTag>>(
+      "OuterGroup:\n"
+      "  OuterGroupedTag: 7\n");
+  CHECK(parser.get<Simple>() == 6);
+  CHECK(parser.get<OuterGroupedTag>() == 7);
+  CHECK(parser.get<InnerGroupedTag>() == 5);
+  parser.overlay<tmpl::list<Simple, OuterGroupedTag>>(
+      "Simple: 8\n"
+      "OuterGroup:\n"
+      "  OuterGroupedTag: 9\n");
+  CHECK(parser.get<Simple>() == 8);
+  CHECK(parser.get<OuterGroupedTag>() == 9);
+  CHECK(parser.get<InnerGroupedTag>() == 5);
+}
+
+// [[OutputRegex, In string:.*At line 1 column 1:.Option 'NotSimple' is not a
+// valid option.]]
+SPECTRE_TEST_CASE("Unit.Options.overlay.invalid", "[Unit][Options]") {
+  ERROR_TEST();
+  Options::Parser<tmpl::list<Simple>> parser("");
+  parser.parse("Simple: 1");
+  parser.overlay<tmpl::list<Simple>>("NotSimple: 2");
+}
+
+// [[OutputRegex, In string:.*At line 1 column 1:.Option 'Simple' is not
+// overlayable.]]
+SPECTRE_TEST_CASE("Unit.Options.overlay.not_overlayable", "[Unit][Options]") {
+  ERROR_TEST();
+  Options::Parser<tmpl::list<Simple>> parser("");
+  parser.parse("Simple: 1");
+  parser.overlay<tmpl::list<>>("Simple: 2");
+}
+
+// [[OutputRegex, In string:.*At line 2 column 1:.Option 'Simple' specified
+// twice.]]
+SPECTRE_TEST_CASE("Unit.Options.overlay.duplicate", "[Unit][Options]") {
+  ERROR_TEST();
+  Options::Parser<tmpl::list<Simple>> parser("");
+  parser.parse("Simple: 1");
+  parser.overlay<tmpl::list<Simple>>(
+      "Simple: 2\n"
+      "Simple: 2");
+}
+
+// [[OutputRegex, In string:.In group OuterGroup:.At line 3 column 3:.Option
+// 'OuterGroupedTag' specified twice.]]
+SPECTRE_TEST_CASE("Unit.Options.overlay.subgroup_context", "[Unit][Options]") {
+  ERROR_TEST();
+  Options::Parser<tmpl::list<OuterGroupedTag>> parser("");
+  parser.parse(
+      "OuterGroup:\n"
+      "  OuterGroupedTag: 1");
+  parser.overlay<tmpl::list<OuterGroupedTag>>(
+      "OuterGroup:\n"
+      "  OuterGroupedTag: 2\n"
+      "  OuterGroupedTag: 2");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -1209,4 +1319,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_format_bool();
   test_options_input_source();
   test_options_alternatives();
+  test_options_overlay();
 }

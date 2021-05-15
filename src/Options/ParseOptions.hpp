@@ -34,6 +34,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
@@ -41,11 +42,11 @@
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 
 namespace Options {
-/// Option parser tag to retrieve the YAML source.  This tag can be
-/// requested without providing it as a template parameter to the
-/// Parser.
+/// Option parser tag to retrieve the YAML source and all applied
+/// overlays.  This tag can be requested without providing it as a
+/// template parameter to the Parser.
 struct InputSource {
-  using type = std::string;
+  using type = std::vector<std::string>;
 };
 
 // Defining methods as inline in a different header from the class
@@ -173,6 +174,13 @@ struct get_impl;
 /// \tparam Group the option group with a group hierarchy
 template <typename OptionList, typename Group = NoSuchType>
 class Parser {
+ private:
+  /// All top-level options and top-level groups of options. Every option in
+  /// `OptionList` is either in this list or in the hierarchy of one of the
+  /// groups in this list.
+  using tags_and_subgroups_list = tmpl::remove_duplicates<tmpl::transform<
+      OptionList, Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
+
  public:
   /// \param help_text an overall description of the options
   explicit Parser(std::string help_text) noexcept;
@@ -190,8 +198,20 @@ class Parser {
   /// \param file_name the path to the file to parse
   void parse_file(const std::string& file_name) noexcept;
 
-  /// Parse a YAML node containing options
-  void parse(const YAML::Node& node);
+  /// Overlay the options from a string or file on top of the
+  /// currently parsed options.
+  ///
+  /// Any tag included in the list passed as the template parameter
+  /// can be overridden by a new parsed value.  Newly parsed options
+  /// replace the previous values.  Any tags not appearing in the new
+  /// input are left unchanged.
+  //@{
+  template <typename OverlayOptions>
+  void overlay(std::string options) noexcept;
+
+  template <typename OverlayOptions>
+  void overlay_file(const std::string& file_name) noexcept;
+  //@}
 
   /// Get the value of the specified option
   ///
@@ -217,9 +237,12 @@ class Parser {
   decltype(auto) apply_all(F&& func) const;
 
   /// Get the help string
+  template <typename TagsAndSubgroups = tags_and_subgroups_list>
   std::string help() const noexcept;
 
  private:
+  template <typename, typename>
+  friend class Parser;
   template <typename, typename, typename>
   friend struct Options_detail::get_impl;
 
@@ -243,14 +266,18 @@ class Parser {
       "Option parser cannot handle Alternatives and options with groups "
       "simultaneously.");
 
-  /// All top-level options and top-level groups of options. Every option in
-  /// `OptionList` is either in this list or in the hierarchy of one of the
-  /// groups in this list.
-  using tags_and_subgroups_list = tmpl::remove_duplicates<tmpl::transform<
-      OptionList, Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
+  /// All top-level subgroups
+  using subgroups = tmpl::list_difference<tags_and_subgroups_list, OptionList>;
 
   // The maximum length of an option label.
   static constexpr int max_label_size_ = 70;
+
+  /// Parse a YAML node containing options
+  void parse(const YAML::Node& node);
+
+  /// Overlay data from a YAML node
+  template <typename OverlayOptions>
+  void overlay(const YAML::Node& node);
 
   /// Check that the size is not smaller than the lower bound
   ///
@@ -287,6 +314,7 @@ class Parser {
                          const Context& context) const;
 
   /// Get the help string for parsing errors
+  template <typename TagsAndSubgroups = tags_and_subgroups_list>
   std::string parsing_help(const YAML::Node& options) const noexcept;
 
   /// Error message when failed to parse an input file.
@@ -304,8 +332,22 @@ class Parser {
 
   std::string help_text_{};
   Context context_{};
-  std::string input_source_{};
+  std::vector<std::string> input_source_{};
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
+
+  template <typename Subgroup>
+  struct SubgroupParser {
+    using type = Parser<Options_detail::options_in_group<OptionList, Subgroup>,
+                        Subgroup>;
+  };
+
+  tuples::tagged_tuple_from_typelist<
+      tmpl::transform<subgroups, tmpl::bind<SubgroupParser, tmpl::_1>>>
+      subgroup_parsers_ =
+          tmpl::as_pack<subgroups>([](auto... subgroup_tags) noexcept {
+            return decltype(subgroup_parsers_)(
+                tmpl::type_from<decltype(subgroup_tags)>::help...);
+          });
 
   // The choices made for option alternatives in a depth-first order.
   // Starting from the front of the option list, when reaching the
@@ -333,30 +375,11 @@ Parser<OptionList, Group>::Parser(std::string help_text) noexcept
 }
 
 template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse_file(
-    const std::string& file_name) noexcept {
-  context_.append("In " + file_name);
-  errno = 0;
-  std::ifstream input(file_name);
-  if (not input) {
-    // There is no standard way to get an error message from an
-    // fstream, but this works on many implementations.
-    ERROR("Could not open " << file_name << ": " << strerror(errno));
-  }
-  input_source_.assign(std::istreambuf_iterator(input), {});
-  try {
-    parse(YAML::Load(input_source_));
-  } catch (const YAML::Exception& e) {
-    parser_error(e);
-  }
-}
-
-template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse(std::string options) noexcept {
   context_.append("In string");
-  input_source_ = std::move(options);
+  input_source_.push_back(std::move(options));
   try {
-    parse(YAML::Load(input_source_));
+    parse(YAML::Load(input_source_.back()));
   } catch (const YAML::Exception& e) {
     parser_error(e);
   }
@@ -366,6 +389,60 @@ template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse(const Option& options) {
   context_ = options.context();
   parse(options.node());
+}
+
+namespace Options_detail {
+inline std::ifstream open_file(const std::string& file_name) noexcept {
+  errno = 0;
+  std::ifstream input(file_name);
+  if (not input) {
+    // There is no standard way to get an error message from an
+    // fstream, but this works on many implementations.
+    ERROR("Could not open " << file_name << ": " << strerror(errno));
+  }
+  return input;
+}
+}  // namespace Options_detail
+
+template <typename OptionList, typename Group>
+void Parser<OptionList, Group>::parse_file(
+    const std::string& file_name) noexcept {
+  context_.append("In " + file_name);
+  auto input = Options_detail::open_file(file_name);
+  input_source_.push_back(std::string(std::istreambuf_iterator(input), {}));
+  try {
+    parse(YAML::Load(input_source_.back()));
+  } catch (const YAML::Exception& e) {
+    parser_error(e);
+  }
+}
+
+template <typename OptionList, typename Group>
+template <typename OverlayOptions>
+void Parser<OptionList, Group>::overlay(std::string options) noexcept {
+  context_ = Context{};
+  context_.append("In string");
+  input_source_.push_back(std::move(options));
+  try {
+    overlay<OverlayOptions>(YAML::Load(input_source_.back()));
+  } catch (const YAML::Exception& e) {
+    parser_error(e);
+  }
+}
+
+template <typename OptionList, typename Group>
+template <typename OverlayOptions>
+void Parser<OptionList, Group>::overlay_file(
+    const std::string& file_name) noexcept {
+  context_ = Context{};
+  context_.append("In " + file_name);
+  auto input = Options_detail::open_file(file_name);
+  input_source_.push_back(std::string(std::istreambuf_iterator(input), {}));
+  try {
+    overlay<OverlayOptions>(YAML::Load(input_source_.back()));
+  } catch (const YAML::Exception& e) {
+    parser_error(e);
+  }
 }
 
 namespace Options_detail {
@@ -427,97 +504,6 @@ std::pair<int, std::vector<size_t>> choose_alternatives(
 }
 }  // namespace Options_detail
 
-template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse(const YAML::Node& node) {
-  if (not(node.IsMap() or node.IsNull())) {
-    PARSE_ERROR(context_, "'" << node << "' does not look like options.\n"
-                              << help());
-  }
-
-  std::unordered_set<std::string> given_options{};
-  for (const auto& name_and_value : node) {
-    given_options.insert(name_and_value.first.as<std::string>());
-  }
-
-  alternative_choices_ =
-      Options_detail::choose_alternatives<OptionList>(given_options).second;
-  if (alg::any_of(alternative_choices_, [](const size_t x) noexcept {
-        return x == std::numeric_limits<size_t>::max();
-      })) {
-    PARSE_ERROR(context_, "Cannot decide between alternative options.\n"
-                              << parsing_help(node));
-  }
-
-  auto valid_names = call_with_chosen_alternatives([](auto option_list_v) {
-    using option_list = decltype(option_list_v);
-    using top_level_options_and_groups =
-        tmpl::remove_duplicates<tmpl::transform<
-            option_list, Options_detail::find_subgroup<tmpl::_1, Group>>>;
-    // Use an ordered container so the missing options are reported in
-    // the order they are given in the help string.
-    std::vector<std::string> result;
-    result.reserve(tmpl::size<top_level_options_and_groups>{});
-    tmpl::for_each<top_level_options_and_groups>(
-        [&result](auto opt) noexcept {
-          using Opt = tmpl::type_from<decltype(opt)>;
-          const std::string label = name<Opt>();
-          ASSERT(alg::find(result, label) == result.end(),
-                 "Duplicate option name: " << label);
-          result.push_back(label);
-        });
-    return result;
-  });
-
-  for (const auto& name_and_value : node) {
-    const auto& name = name_and_value.first.as<std::string>();
-    const auto& value = name_and_value.second;
-    auto context = context_;
-    context.line = name_and_value.first.Mark().line;
-    context.column = name_and_value.first.Mark().column;
-
-    // Check for duplicate key
-    if (0 != parsed_options_.count(name)) {
-      PARSE_ERROR(context, "Option '" << name << "' specified twice.\n"
-                                      << parsing_help(node));
-    }
-
-    // Check for invalid key
-    const auto name_it = alg::find(valid_names, name);
-    if (name_it == valid_names.end()) {
-      tmpl::for_each<all_possible_options>([this, &context, &name,
-                                            &node](auto tag) {
-        using Tag = tmpl::type_from<decltype(tag)>;
-        if (name == Options::name<Tag>()) {
-          PARSE_ERROR(context,
-                      "Option '"
-                          << name
-                          << "' is unused because of other provided options.\n"
-                          << parsing_help(node));
-        }
-      });
-      PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
-                                      << parsing_help(node));
-    }
-
-    parsed_options_.emplace(name, value);
-    valid_names.erase(name_it);
-  }
-
-  if (not valid_names.empty()) {
-    PARSE_ERROR(context_, "You did not specify the option"
-                << (valid_names.size() == 1 ? " " : "s ")
-                << (MakeString{} << valid_names) << "\n" << parsing_help(node));
-  }
-
-  // Any actual warnings will be printed by later calls to get or
-  // apply, but it is not clear how to determine in those functions
-  // whether this message should be printed.
-  if (std::is_same_v<Group, NoSuchType> and context_.top_level) {
-    Parallel::printf_error(
-        "The following options differ from their suggested values:\n");
-  }
-}
-
 namespace Options_detail {
 template <typename Tag, typename Metavariables, typename Subgroup>
 struct get_impl {
@@ -527,13 +513,10 @@ struct get_impl {
         tmpl::list_contains_v<OptionList, Tag>,
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
-    const std::string subgroup_label = name<Subgroup>();
-    Parser<options_in_group<OptionList, Subgroup>, Subgroup> subgroup_options(
-        Subgroup::help);
-    subgroup_options.context_ = opts.context_;
-    subgroup_options.context_.append("In group " + subgroup_label);
-    subgroup_options.parse(opts.parsed_options_.find(subgroup_label)->second);
-    return subgroup_options.template get<Tag, Metavariables>();
+    return tuples::get<typename Parser<
+        OptionList, Group>::template SubgroupParser<Subgroup>>(
+               opts.subgroup_parsers_)
+        .template get<Tag, Metavariables>();
   }
 };
 
@@ -650,18 +633,200 @@ decltype(auto) Parser<OptionList, Group>::apply_all(F&& func) const {
 /// \endcond
 
 template <typename OptionList, typename Group>
+template <typename TagsAndSubgroups>
 std::string Parser<OptionList, Group>::help() const noexcept {
   std::ostringstream ss;
   ss << "\n==== Description of expected options:\n" << help_text_;
-  if (tmpl::size<tags_and_subgroups_list>::value > 0) {
+  if (tmpl::size<TagsAndSubgroups>::value > 0) {
     ss << "\n\nOptions:\n"
-       << tmpl::for_each<tags_and_subgroups_list>(
-              Options_detail::print<OptionList>{})
+       << tmpl::for_each<TagsAndSubgroups>(Options_detail::print<OptionList>{})
               .value;
   } else {
     ss << "\n\n<No options>\n";
   }
   return ss.str();
+}
+
+template <typename OptionList, typename Group>
+void Parser<OptionList, Group>::parse(const YAML::Node& node) {
+  if (not(node.IsMap() or node.IsNull())) {
+    PARSE_ERROR(context_, "'" << node << "' does not look like options.\n"
+                              << help());
+  }
+
+  std::unordered_set<std::string> given_options{};
+  for (const auto& name_and_value : node) {
+    given_options.insert(name_and_value.first.as<std::string>());
+  }
+
+  alternative_choices_ =
+      Options_detail::choose_alternatives<OptionList>(given_options).second;
+  if (alg::any_of(alternative_choices_, [](const size_t x) noexcept {
+        return x == std::numeric_limits<size_t>::max();
+      })) {
+    PARSE_ERROR(context_, "Cannot decide between alternative options.\n"
+                              << parsing_help(node));
+  }
+
+  auto valid_names = call_with_chosen_alternatives([](auto option_list_v) {
+    using option_list = decltype(option_list_v);
+    using top_level_options_and_groups =
+        tmpl::remove_duplicates<tmpl::transform<
+            option_list,
+            Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
+    // Use an ordered container so the missing options are reported in
+    // the order they are given in the help string.
+    std::vector<std::string> result;
+    result.reserve(tmpl::size<top_level_options_and_groups>{});
+    tmpl::for_each<top_level_options_and_groups>(
+        [&result](auto opt) noexcept {
+          using Opt = tmpl::type_from<decltype(opt)>;
+          const std::string label = name<Opt>();
+          ASSERT(alg::find(result, label) == result.end(),
+                 "Duplicate option name: " << label);
+          result.push_back(label);
+        });
+    return result;
+  });
+
+  for (const auto& name_and_value : node) {
+    const auto& name = name_and_value.first.as<std::string>();
+    const auto& value = name_and_value.second;
+    auto context = context_;
+    context.line = name_and_value.first.Mark().line;
+    context.column = name_and_value.first.Mark().column;
+
+    // Check for duplicate key
+    if (0 != parsed_options_.count(name)) {
+      PARSE_ERROR(context, "Option '" << name << "' specified twice.\n"
+                                      << parsing_help(node));
+    }
+
+    // Check for invalid key
+    const auto name_it = alg::find(valid_names, name);
+    if (name_it == valid_names.end()) {
+      tmpl::for_each<all_possible_options>([this, &context, &name,
+                                            &node](auto tag) {
+        using Tag = tmpl::type_from<decltype(tag)>;
+        if (name == Options::name<Tag>()) {
+          PARSE_ERROR(context,
+                      "Option '"
+                          << name
+                          << "' is unused because of other provided options.\n"
+                          << parsing_help(node));
+        }
+      });
+      PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
+                                      << parsing_help(node));
+    }
+
+    parsed_options_.emplace(name, value);
+    valid_names.erase(name_it);
+  }
+
+  if (not valid_names.empty()) {
+    PARSE_ERROR(context_, "You did not specify the option"
+                << (valid_names.size() == 1 ? " " : "s ")
+                << (MakeString{} << valid_names) << "\n" << parsing_help(node));
+  }
+
+  tmpl::for_each<subgroups>([this](auto subgroup_v) {
+    using subgroup = tmpl::type_from<decltype(subgroup_v)>;
+    auto& subgroup_parser =
+        tuples::get<SubgroupParser<subgroup>>(subgroup_parsers_);
+    subgroup_parser.context_ = context_;
+    subgroup_parser.context_.append("In group " + name<subgroup>());
+    subgroup_parser.parse(parsed_options_.find(name<subgroup>())->second);
+  });
+
+  // Any actual warnings will be printed by later calls to get or
+  // apply, but it is not clear how to determine in those functions
+  // whether this message should be printed.
+  if (std::is_same_v<Group, NoSuchType> and context_.top_level) {
+    Parallel::printf_error(
+        "The following options differ from their suggested values:\n");
+  }
+}
+
+template <typename OptionList, typename Group>
+template <typename OverlayOptions>
+void Parser<OptionList, Group>::overlay(const YAML::Node& node) {
+  // This could be relaxed to allow mandatory options in a list with
+  // alternatives to be overlaid (or even any options in the chosen
+  // alternative), but overlaying is only done at top level and we
+  // don't use alternatives there (because they conflict with groups,
+  // which we do use).
+  static_assert(
+      std::is_same_v<
+          typename Options_detail::flatten_alternatives<OptionList>::type,
+          OptionList>,
+      "Cannot overlay options when using alternatives.");
+  static_assert(
+      std::is_same_v<tmpl::list_difference<OverlayOptions, OptionList>,
+                     tmpl::list<>>,
+      "Can only overlay options that were originally parsed.");
+
+  using overlayable_tags_and_subgroups_list =
+      tmpl::remove_duplicates<tmpl::transform<
+          OverlayOptions,
+          Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
+
+  if (not(node.IsMap() or node.IsNull())) {
+    PARSE_ERROR(context_, "'" << node << "' does not look like options.\n"
+                              << help<overlayable_tags_and_subgroups_list>());
+  }
+
+  std::unordered_set<std::string> overlaid_options{};
+  overlaid_options.reserve(node.size());
+
+  for (const auto& name_and_value : node) {
+    const auto& name = name_and_value.first.as<std::string>();
+    const auto& value = name_and_value.second;
+    auto context = context_;
+    context.line = name_and_value.first.Mark().line;
+    context.column = name_and_value.first.Mark().column;
+
+    if (tmpl::as_pack<tags_and_subgroups_list>([&name](auto... opts) noexcept {
+          return ((name != Options::name<tmpl::type_from<decltype(opts)>>()) and
+                  ...);
+        })) {
+      PARSE_ERROR(context,
+                  "Option '" << name << "' is not a valid option.\n"
+                  << parsing_help<overlayable_tags_and_subgroups_list>(node));
+    }
+
+    if (tmpl::as_pack<overlayable_tags_and_subgroups_list>(
+            [&name](auto... opts) noexcept {
+              return (
+                  (name != Options::name<tmpl::type_from<decltype(opts)>>()) and
+                  ...);
+            })) {
+      PARSE_ERROR(context,
+                  "Option '" << name << "' is not overlayable.\n"
+                  << parsing_help<overlayable_tags_and_subgroups_list>(node));
+    }
+
+    // Check for duplicate key
+    if (0 != overlaid_options.count(name)) {
+      PARSE_ERROR(context,
+                  "Option '" << name << "' specified twice.\n"
+                  << parsing_help<overlayable_tags_and_subgroups_list>(node));
+    }
+
+    overlaid_options.insert(name);
+    parsed_options_.at(name) = value;
+  }
+
+  tmpl::for_each<subgroups>([this, &overlaid_options](auto subgroup_v) {
+    using subgroup = tmpl::type_from<decltype(subgroup_v)>;
+    if (overlaid_options.count(Options::name<subgroup>()) == 1) {
+      auto& subgroup_parser =
+          tuples::get<SubgroupParser<subgroup>>(subgroup_parsers_);
+      subgroup_parser.template overlay<
+          Options_detail::options_in_group<OverlayOptions, subgroup>>(
+          parsed_options_.find(name<subgroup>())->second);
+    }
+  });
 }
 
 template <typename OptionList, typename Group>
@@ -733,6 +898,7 @@ inline void Parser<OptionList, Group>::check_upper_bound(
 }
 
 template <typename OptionList, typename Group>
+template <typename TagsAndSubgroups>
 std::string Parser<OptionList, Group>::parsing_help(
     const YAML::Node& options) const noexcept {
   std::ostringstream os;
@@ -743,7 +909,7 @@ std::string Parser<OptionList, Group>::parsing_help(
   if (not context_.top_level) {
     os << "\n==== Parsing the option string:\n" << options << "\n";
   }
-  os << help();
+  os << help<TagsAndSubgroups>();
   return os.str();
 }
 
