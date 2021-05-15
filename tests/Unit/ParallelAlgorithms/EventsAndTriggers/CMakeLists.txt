@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/EventsAndTriggers/"
   "${LIBRARY_SOURCES}"
-  "ErrorHandling;Utilities"
+  "EventsAndTriggers;ErrorHandling;Utilities"
   )
 
 add_dependencies(

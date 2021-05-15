@@ -75,6 +75,7 @@ target_link_libraries(
   Domain
   DomainStructure
   ErrorHandling
+  EventsAndTriggers
   GSL::gsl
   Options
   Spectral

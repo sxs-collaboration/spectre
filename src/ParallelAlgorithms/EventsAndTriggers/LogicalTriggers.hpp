@@ -4,6 +4,8 @@
 #pragma once
 
 #include <memory>
+#include <pup_stl.h>
+#include <vector>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -12,9 +14,8 @@
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
-/// Always triggers.  This trigger is automatically registered.
-template <typename TriggerRegistrars = tmpl::list<>>
-class Always : public Trigger<TriggerRegistrars> {
+/// Always triggers.
+class Always : public Trigger {
  public:
   /// \cond
   explicit Always(CkMigrateMessage* /*unused*/) noexcept {}
@@ -33,9 +34,8 @@ class Always : public Trigger<TriggerRegistrars> {
 };
 
 /// \ingroup EventsAndTriggersGroup
-/// Negates another trigger.  This trigger is automatically registered.
-template <typename TriggerRegistrars>
-class Not : public Trigger<TriggerRegistrars> {
+/// Negates another trigger.
+class Not : public Trigger {
  public:
   /// \cond
   Not() = default;
@@ -46,8 +46,7 @@ class Not : public Trigger<TriggerRegistrars> {
 
   static constexpr Options::String help = {"Negates another trigger."};
 
-  explicit Not(
-      std::unique_ptr<Trigger<TriggerRegistrars>> negated_trigger) noexcept
+  explicit Not(std::unique_ptr<Trigger> negated_trigger) noexcept
       : negated_trigger_(std::move(negated_trigger)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
@@ -63,14 +62,12 @@ class Not : public Trigger<TriggerRegistrars> {
   }
 
  private:
-  std::unique_ptr<Trigger<TriggerRegistrars>> negated_trigger_;
+  std::unique_ptr<Trigger> negated_trigger_;
 };
 
 /// \ingroup EventsAndTriggersGroup
-/// Short-circuiting logical AND of other triggers.  This trigger is
-/// automatically registered.
-template <typename TriggerRegistrars>
-class And : public Trigger<TriggerRegistrars> {
+/// Short-circuiting logical AND of other triggers.
+class And : public Trigger {
  public:
   /// \cond
   And() = default;
@@ -82,8 +79,7 @@ class And : public Trigger<TriggerRegistrars> {
   static constexpr Options::String help = {
       "Short-circuiting logical AND of other triggers."};
 
-  explicit And(std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>
-                   combined_triggers) noexcept
+  explicit And(std::vector<std::unique_ptr<Trigger>> combined_triggers) noexcept
       : combined_triggers_(std::move(combined_triggers)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
@@ -104,14 +100,12 @@ class And : public Trigger<TriggerRegistrars> {
   }
 
  private:
-  std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>> combined_triggers_;
+  std::vector<std::unique_ptr<Trigger>> combined_triggers_;
 };
 
 /// \ingroup EventsAndTriggersGroup
-/// Short-circuiting logical OR of other triggers.  This trigger is
-/// automatically registered.
-template <typename TriggerRegistrars>
-class Or : public Trigger<TriggerRegistrars> {
+/// Short-circuiting logical OR of other triggers.
+class Or : public Trigger {
  public:
   /// \cond
   Or() = default;
@@ -123,8 +117,7 @@ class Or : public Trigger<TriggerRegistrars> {
   static constexpr Options::String help = {
       "Short-circuiting logical OR of other triggers."};
 
-  explicit Or(std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>
-                  combined_triggers) noexcept
+  explicit Or(std::vector<std::unique_ptr<Trigger>> combined_triggers) noexcept
       : combined_triggers_(std::move(combined_triggers)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
@@ -145,49 +138,38 @@ class Or : public Trigger<TriggerRegistrars> {
   }
 
  private:
-  std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>> combined_triggers_;
+  std::vector<std::unique_ptr<Trigger>> combined_triggers_;
 };
 
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID Always<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID Not<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID And<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID Or<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
+/// A list of all the logical triggers.
+using logical_triggers = tmpl::list<Always, And, Not, Or>;
 }  // namespace Triggers
 
-template <typename TriggerRegistrars>
-struct Options::create_from_yaml<Triggers::Not<TriggerRegistrars>> {
+template <>
+struct Options::create_from_yaml<Triggers::Not> {
   template <typename Metavariables>
-  static Triggers::Not<TriggerRegistrars> create(
-      const Options::Option& options) {
-    return Triggers::Not<TriggerRegistrars>(
-        options.parse_as<std::unique_ptr<Trigger<TriggerRegistrars>>>());
+  static Triggers::Not create(const Options::Option& options) {
+    return Triggers::Not(
+        options.parse_as<std::unique_ptr<Trigger>, Metavariables>());
   }
 };
 
-template <typename TriggerRegistrars>
-struct Options::create_from_yaml<Triggers::And<TriggerRegistrars>> {
+template <>
+struct Options::create_from_yaml<Triggers::And> {
   template <typename Metavariables>
-  static Triggers::And<TriggerRegistrars> create(
-      const Options::Option& options) {
-    return Triggers::And<TriggerRegistrars>(
-        options.parse_as<
-            std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>>());
+  static Triggers::And create(const Options::Option& options) {
+    return Triggers::And(
+        options
+            .parse_as<std::vector<std::unique_ptr<Trigger>>, Metavariables>());
   }
 };
 
-template <typename TriggerRegistrars>
-struct Options::create_from_yaml<Triggers::Or<TriggerRegistrars>> {
+template <>
+struct Options::create_from_yaml<Triggers::Or> {
   template <typename Metavariables>
-  static Triggers::Or<TriggerRegistrars> create(
-      const Options::Option& options) {
-    return Triggers::Or<TriggerRegistrars>(
-        options.parse_as<
-            std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>>());
+  static Triggers::Or create(const Options::Option& options) {
+    return Triggers::Or(
+        options
+            .parse_as<std::vector<std::unique_ptr<Trigger>>, Metavariables>());
   }
 };

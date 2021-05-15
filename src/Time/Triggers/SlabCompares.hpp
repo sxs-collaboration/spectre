@@ -11,7 +11,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,18 +20,10 @@ struct TimeStepId;
 /// \endcond
 
 namespace Triggers {
-template <typename TriggerRegistrars>
-class SlabCompares;
-
-namespace Registrars {
-using SlabCompares = Registration::Registrar<Triggers::SlabCompares>;
-}  // namespace Registrars
-
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger based on a comparison with the slab number.
-template <typename TriggerRegistrars = tmpl::list<Registrars::SlabCompares>>
-class SlabCompares : public Trigger<TriggerRegistrars> {
+class SlabCompares : public Trigger {
  public:
   /// \cond
   SlabCompares() = default;
@@ -76,9 +67,4 @@ class SlabCompares : public Trigger<TriggerRegistrars> {
   Options::Comparator comparator_{};
   uint64_t slab_number_{};
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID SlabCompares<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Triggers

@@ -17,6 +17,7 @@
 #include "Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -25,13 +26,15 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <typename RegistrarList>
-class TestTrigger : public Trigger<RegistrarList> {
+class TestTrigger : public Trigger {
  public:
   TestTrigger() = default;
   explicit TestTrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
+#pragma GCC diagnostic pop
 
   struct Result {
     using type = bool;
@@ -48,7 +51,7 @@ class TestTrigger : public Trigger<RegistrarList> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
-    Trigger<RegistrarList>::pup(p);
+    Trigger::pup(p);
     p | result_;
   }
 
@@ -56,14 +59,19 @@ class TestTrigger : public Trigger<RegistrarList> {
   bool result_{};
 };
 
-template <typename RegistrarList>
-PUP::able::PUP_ID TestTrigger<RegistrarList>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
 
-using trigger_registrars = tmpl::list<Registration::Registrar<TestTrigger>>;
-using TriggerBase = Trigger<trigger_registrars>;
 using DenseTriggerBase = DenseTrigger<
-    tmpl::list<DenseTriggers::Registrars::Filter<trigger_registrars>,
+    tmpl::list<DenseTriggers::Registrars::Filter,
                TestHelpers::DenseTriggers::Registrars::TestTrigger>>;
+
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<TestTrigger>>>;
+  };
+};
 
 void check(const bool expected_is_ready,
            const bool expected_is_triggered,
@@ -83,10 +91,12 @@ void check(const bool expected_is_ready,
                   << "    TestTrigger:\n"
                   << "      Result: " << non_dense_is_triggered;
   CAPTURE(creation_string.str());
-  const auto box = db::create<db::AddSimpleTags<>>();
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
+      Metavariables{});
   const auto trigger = serialize_and_deserialize(
-      TestHelpers::test_creation<std::unique_ptr<DenseTriggerBase>>(
-          creation_string.str()));
+      TestHelpers::test_creation<std::unique_ptr<DenseTriggerBase>,
+                                 Metavariables>(creation_string.str()));
   CHECK(trigger->is_ready(box) == expected_is_ready);
   if (not expected_is_ready) {
     return;
@@ -95,6 +105,14 @@ void check(const bool expected_is_ready,
   CHECK(result.is_triggered == expected_is_triggered);
   CHECK(result.next_check == expected_next_check);
 }
+
+struct ExampleMetavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::TimeCompares>>>;
+  };
+};
 
 void example() noexcept {
   const std::string input = R"(
@@ -111,16 +129,16 @@ Filter:
       Value: 100
 # [example]
 )";
-  using triggers = tmpl::list<Triggers::Registrars::TimeCompares>;
-  using dense_triggers = tmpl::list<DenseTriggers::Registrars::Filter<triggers>,
+  using dense_triggers = tmpl::list<DenseTriggers::Registrars::Filter,
                                     DenseTriggers::Registrars::Times>;
   const auto trigger =
-      TestHelpers::test_creation<std::unique_ptr<DenseTrigger<dense_triggers>>>(
-          input);
+      TestHelpers::test_creation<std::unique_ptr<DenseTrigger<dense_triggers>>,
+                                 ExampleMetavariables>(input);
   const auto run_trigger = [&trigger](const double time) noexcept {
-    const auto box =
-        db::create<db::AddSimpleTags<::Tags::Time, ::Tags::TimeStepId>>(
-            time, TimeStepId(true, 0, Slab(0., 1.).start()));
+    const auto box = db::create<db::AddSimpleTags<
+        Parallel::Tags::MetavariablesImpl<ExampleMetavariables>, ::Tags::Time,
+        ::Tags::TimeStepId>>(ExampleMetavariables{}, time,
+                             TimeStepId(true, 0, Slab(0., 1.).start()));
     return trigger->is_triggered(box).is_triggered;
   };
   CHECK(not run_trigger(90.));
@@ -134,7 +152,7 @@ Filter:
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.DenseTriggers.Filter",
                   "[Unit][Evolution]") {
   Parallel::register_derived_classes_with_charm<DenseTriggerBase>();
-  Parallel::register_derived_classes_with_charm<TriggerBase>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   check(false, false, 3.5, false, false, false);
   check(false, false, 3.5, false, false,  true);

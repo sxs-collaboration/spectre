@@ -24,6 +24,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -36,6 +37,9 @@
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -52,6 +56,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -150,18 +155,24 @@ struct Metavariables {
       dg::Events::Registrars::ObserveVolumeIntegrals<
           volume_dim, linear_solver_iteration_id,
           tmpl::list<Elasticity::Tags::PotentialEnergyDensity<volume_dim>>>>;
-  using triggers = tmpl::list<elliptic::Triggers::Registrars::EveryNIterations<
-      linear_solver_iteration_id>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
       tmpl::list<background_tag, initial_guess_tag,
-                 Tags::EventsAndTriggers<events, triggers>>;
+                 Tags::EventsAndTriggers<events>>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           typename Event<events>::creatable_classes, linear_solver>>>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        Trigger, tmpl::push_back<Triggers::logical_triggers,
+                                 elliptic::Triggers::EveryNIterations<
+                                     linear_solver_iteration_id>>>>;
+  };
 
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
@@ -260,8 +271,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         metavariables::system::boundary_conditions_base>,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
-    &Parallel::register_derived_classes_with_charm<
-        Trigger<metavariables::triggers>>};
+    &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 /// \endcond

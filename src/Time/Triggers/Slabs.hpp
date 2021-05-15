@@ -15,7 +15,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -25,18 +24,10 @@ struct TimeStepId;
 /// \endcond
 
 namespace Triggers {
-template <typename TriggerRegistrars>
-class Slabs;
-
-namespace Registrars {
-using Slabs = Registration::Registrar<Triggers::Slabs>;
-}  // namespace Registrars
-
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger at specified numbers of slabs after the simulation start.
-template <typename TriggerRegistrars = tmpl::list<Registrars::Slabs>>
-class Slabs : public Trigger<TriggerRegistrars> {
+class Slabs : public Trigger {
  public:
   /// \cond
   Slabs() = default;
@@ -70,18 +61,13 @@ class Slabs : public Trigger<TriggerRegistrars> {
  private:
   std::unique_ptr<TimeSequence<uint64_t>> slabs_{};
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID Slabs<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Triggers
 
-template <typename TriggerRegistrars>
-struct Options::create_from_yaml<Triggers::Slabs<TriggerRegistrars>> {
+template <>
+struct Options::create_from_yaml<Triggers::Slabs> {
   template <typename Metavariables>
-  static Triggers::Slabs<TriggerRegistrars> create(const Option& options) {
-    return Triggers::Slabs<TriggerRegistrars>(
+  static Triggers::Slabs create(const Option& options) {
+    return Triggers::Slabs(
         options.parse_as<std::unique_ptr<TimeSequence<uint64_t>>>());
   }
 };

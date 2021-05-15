@@ -8,15 +8,24 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 struct Metavariables {
   using component_list = tmpl::list<>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
+  };
 
   enum class Phase { PhaseA, PhaseB, PhaseC};
 
@@ -42,12 +51,11 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
                      Metavariables, Metavariables::Phase::PhaseB>,
                  PhaseControl::Registrars::VisitAndReturn<
                      Metavariables, Metavariables::Phase::PhaseC>>;
-  using triggers = tmpl::list<>;
   Parallel::GlobalCache<Metavariables> cache{};
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
-      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes,
-                                                       triggers>>(
+      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes>,
+      Metavariables>(
       " - - Always:\n"
       "   - - VisitAndReturn(PhaseB):\n"
       "     - VisitAndReturn(PhaseC):");

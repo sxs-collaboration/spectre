@@ -9,28 +9,14 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elliptic {
 namespace Triggers {
-/// \cond
-template <typename IterationId, typename TriggerRegistrars>
-class EveryNIterations;
-/// \endcond
-
-namespace Registrars {
-template <typename IterationId>
-using EveryNIterations =
-    ::Registration::Registrar<Triggers::EveryNIterations, IterationId>;
-}  // namespace Registrars
-
 /// \ingroup EventsAndTriggersGroup
 /// Trigger every N iterations after a given offset.
-template <typename IterationId,
-          typename TriggerRegistrars =
-              tmpl::list<Registrars::EveryNIterations<IterationId>>>
-class EveryNIterations : public Trigger<TriggerRegistrars> {
+template <typename IterationId>
+class EveryNIterations : public Trigger {
  public:
   /// \cond
   EveryNIterations() = default;
@@ -76,9 +62,8 @@ class EveryNIterations : public Trigger<TriggerRegistrars> {
 };
 
 /// \cond
-template <typename IterationId, typename TriggerRegistrars>
-PUP::able::PUP_ID EveryNIterations<IterationId, TriggerRegistrars>::my_PUP_ID =
-    0;  // NOLINT
+template <typename IterationId>
+PUP::able::PUP_ID EveryNIterations<IterationId>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Triggers
 }  // namespace elliptic

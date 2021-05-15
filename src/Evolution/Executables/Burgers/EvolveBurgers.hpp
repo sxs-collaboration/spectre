@@ -55,7 +55,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticData/Burgers/Sinusoid.hpp"  // IWYU pragma: keep
@@ -155,7 +157,6 @@ struct EvolutionMetavars {
                                             analytic_solution_fields>,
       Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
       Events::Registrars::ChangeSlabSize<slab_choosers>>>;
-  using triggers = Triggers::time_triggers;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
@@ -163,7 +164,9 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<StepController, StepControllers::standard_step_controllers>>;
+        tmpl::pair<StepController, StepControllers::standard_step_controllers>,
+        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
+                                         Triggers::time_triggers>>>;
   };
 
   using step_actions = tmpl::flatten<tmpl::list<
@@ -198,15 +201,15 @@ struct EvolutionMetavars {
       EvolutionMetavars, Phase::LoadBalancing>>;
 
   using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes, triggers>;
+      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
 
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags = tmpl::list<
       initial_data_tag, time_stepper_tag,
-      Tags::EventsAndTriggers<events, triggers>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
+      Tags::EventsAndTriggers<events>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -251,7 +254,7 @@ struct EvolutionMetavars {
                          Actions::ChangeSlabSize, step_actions,
                          Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange<
-                             phase_changes, triggers>>>>>;
+                             phase_changes>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
@@ -278,7 +281,7 @@ struct EvolutionMetavars {
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>&
           cache_proxy) noexcept {
     const auto next_phase =
-        PhaseControl::arbitrate_phase_change<phase_changes, triggers>(
+        PhaseControl::arbitrate_phase_change<phase_changes>(
             phase_change_decision_data, current_phase,
             *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -325,8 +328,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        Trigger<metavariables::triggers>>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};

@@ -19,6 +19,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
@@ -38,6 +39,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -63,26 +65,13 @@ struct Step : db::SimpleTag {
 };
 }  // namespace Tags
 
-template <typename TriggerRegistrars>
-struct TempPhaseATrigger;
-
-template <typename TriggerRegistrars>
-struct TempPhaseBTrigger;
-
-namespace Registrars {
-using TempPhaseATrigger = Registration::Registrar<TempPhaseATrigger>;
-using TempPhaseBTrigger = Registration::Registrar<TempPhaseBTrigger>;
-}  // namespace Registrars
-
 template <typename Metavariables>
 struct ComponentAlpha;
 
 template <typename Metavariables>
 struct ComponentBeta;
 
-template <typename TriggerRegistrars =
-              tmpl::list<Registrars::TempPhaseATrigger>>
-struct TempPhaseATrigger : public Trigger<TriggerRegistrars> {
+struct TempPhaseATrigger : public Trigger {
   TempPhaseATrigger() = default;
   explicit TempPhaseATrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
@@ -99,9 +88,7 @@ struct TempPhaseATrigger : public Trigger<TriggerRegistrars> {
   }
 };
 
-template <typename TriggerRegistrars =
-              tmpl::list<Registrars::TempPhaseBTrigger>>
-struct TempPhaseBTrigger : public Trigger<TriggerRegistrars> {
+struct TempPhaseBTrigger : public Trigger {
   TempPhaseBTrigger() = default;
   explicit TempPhaseBTrigger(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
@@ -117,10 +104,8 @@ struct TempPhaseBTrigger : public Trigger<TriggerRegistrars> {
   }
 };
 
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID TempPhaseBTrigger<TriggerRegistrars>::my_PUP_ID = 0;
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID TempPhaseATrigger<TriggerRegistrars>::my_PUP_ID = 0;
+PUP::able::PUP_ID TempPhaseBTrigger::my_PUP_ID = 0;
+PUP::able::PUP_ID TempPhaseATrigger::my_PUP_ID = 0;
 
 template <typename Metavariables>
 struct ComponentAlpha {
@@ -148,8 +133,7 @@ struct ComponentAlpha {
               Actions::RecordPhaseIteration<3_st>,
               Actions::TerminateAndRestart<ComponentBeta<Metavariables>, 2_st>,
               PhaseControl::Actions::ExecutePhaseChange<
-                  typename Metavariables::phase_changes,
-                  typename Metavariables::triggers>>>>;
+                  typename Metavariables::phase_changes>>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -206,8 +190,7 @@ struct ComponentBeta {
               Actions::RecordPhaseIteration<3_st>,
               Actions::TerminateAndRestart<ComponentAlpha<Metavariables>, 3_st>,
               PhaseControl::Actions::ExecutePhaseChange<
-                  typename Metavariables::phase_changes,
-                  typename Metavariables::triggers>>>>;
+                  typename Metavariables::phase_changes>>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -378,8 +361,12 @@ struct TestMetavariables {
     Exit
   };
 
-  using triggers =
-      tmpl::list<Registrars::TempPhaseATrigger, Registrars::TempPhaseBTrigger>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<TempPhaseATrigger,
+                                                 TempPhaseBTrigger>>>;
+  };
   using phase_changes =
       tmpl::list<PhaseControl::Registrars::VisitAndReturn<TestMetavariables,
                                                           Phase::TempPhaseA>,
@@ -390,10 +377,10 @@ struct TestMetavariables {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes, triggers>;
+      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
 
   using const_global_cache_tags = tmpl::list<
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   static std::string phase_name(const Phase phase) noexcept {
     switch (phase) {
@@ -494,7 +481,7 @@ struct TestMetavariables {
       const Parallel::CProxy_GlobalCache<
           TestMetavariables>& cache_proxy) noexcept {
     const auto next_phase =
-        PhaseControl::arbitrate_phase_change<phase_changes, triggers>(
+        PhaseControl::arbitrate_phase_change<phase_changes>(
             phase_change_decision_data, current_phase,
             *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -523,9 +510,8 @@ struct TestMetavariables {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &Parallel::register_derived_classes_with_charm<
-        Trigger<TestMetavariables::triggers>>,
-    &Parallel::register_derived_classes_with_charm<
-        Trigger<TestMetavariables::phase_changes>>};
+        PhaseChange<TestMetavariables::phase_changes>>,
+    &Parallel::register_factory_classes_with_charm<TestMetavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 // [charm_init_funcs_example]

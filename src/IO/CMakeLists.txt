@@ -24,6 +24,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   ErrorHandling
+  EventsAndTriggers
   Hdf5
   Options
   Spectral

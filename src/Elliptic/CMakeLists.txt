@@ -20,6 +20,7 @@ target_link_libraries(
   INTERFACE
   DataStructures
   Domain
+  EventsAndTriggers
   LinearOperators
   Utilities
   )

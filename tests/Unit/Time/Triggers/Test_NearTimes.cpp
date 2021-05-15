@@ -11,7 +11,9 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -19,15 +21,26 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/Triggers/NearTimes.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace {
+struct Metavariables {
+  using component_list = tmpl::list<>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::NearTimes>>>;
+  };
+};
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
-  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::NearTimes>>;
-  Parallel::register_derived_classes_with_charm<TriggerType>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
-  using Direction = Triggers::NearTimes<>::Direction;
-  using Unit = Triggers::NearTimes<>::Unit;
+  using Direction = Triggers::NearTimes::Direction;
+  using Unit = Triggers::NearTimes::Unit;
 
   const auto check =
       [](const double time_in, const double range_in,
@@ -46,16 +59,17 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
         CAPTURE(static_cast<int>(direction));
         CAPTURE(time);
         CAPTURE(time_step);
-        const std::unique_ptr<TriggerType> trigger =
-            std::make_unique<Triggers::NearTimes<>>(
+        const std::unique_ptr<Trigger> trigger =
+            std::make_unique<Triggers::NearTimes>(
                 std::make_unique<TimeSequences::Specified<double>>(
                     std::move(trigger_times)),
                 range, unit, direction);
         const auto sent_trigger = serialize_and_deserialize(trigger);
 
-        const auto box =
-            db::create<db::AddSimpleTags<Tags::Time, Tags::TimeStep>>(
-                time, time_step);
+        const auto box = db::create<
+            db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                              Tags::Time, Tags::TimeStep>>(
+            Metavariables{}, time, time_step);
 
         CHECK(trigger->is_triggered(box) == expected);
         CHECK(sent_trigger->is_triggered(box) == expected);
@@ -103,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
   check(5.0, 3.0, {1.0, 9.0}, Direction::Before, false);
   check(5.0, 3.0, {1.0, 9.0}, Direction::After, false);
 
-  TestHelpers::test_creation<std::unique_ptr<TriggerType>>(
+  TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
       "NearTimes:\n"
       "  Times:\n"
       "    Specified:\n"

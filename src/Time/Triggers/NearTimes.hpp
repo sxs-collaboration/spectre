@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <pup.h>
+#include <pup_stl.h>
 #include <string>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSequence.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -27,13 +27,6 @@ struct TimeStep;
 /// \endcond
 
 namespace Triggers {
-template <typename TriggerRegistrars>
-class NearTimes;
-
-namespace Registrars {
-using NearTimes = Registration::Registrar<Triggers::NearTimes>;
-}  // namespace Registrars
-
 namespace NearTimes_enums {
 enum class Unit { Time, Slab, Step };
 enum class Direction { Before, After, Both };
@@ -47,8 +40,7 @@ enum class Direction { Before, After, Both };
 /// slabs or steps are approximate.
 ///
 /// \see Times
-template <typename TriggerRegistrars = tmpl::list<Registrars::NearTimes>>
-class NearTimes : public Trigger<TriggerRegistrars> {
+class NearTimes : public Trigger {
  public:
   /// \cond
   NearTimes() = default;
@@ -101,46 +93,10 @@ class NearTimes : public Trigger<TriggerRegistrars> {
 
   using argument_tags = tmpl::list<Tags::Time, Tags::TimeStep>;
 
-  bool operator()(const double now, const TimeDelta& time_step) const noexcept {
-    const bool time_runs_forward = time_step.is_positive();
-
-    double range_code_units = range_;
-    if (unit_ == Unit::Slab) {
-      range_code_units *= time_step.slab().duration().value();
-    } else if (unit_ == Unit::Step) {
-      range_code_units *= std::abs(time_step.value());
-    }
-
-    if (not time_runs_forward) {
-      range_code_units = -range_code_units;
-    }
-
-    // Interval around now to look for trigger times in.
-    auto trigger_range = std::make_pair(
-        direction_ == Direction::Before ? now : now - range_code_units,
-        direction_ == Direction::After ? now : now + range_code_units);
-
-    if (not time_runs_forward) {
-      std::swap(trigger_range.first, trigger_range.second);
-    }
-
-    const auto nearby_times = times_->times_near(trigger_range.first);
-    for (const auto& time : nearby_times) {
-      if (time and *time >= trigger_range.first and
-          *time <= trigger_range.second) {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool operator()(const double now, const TimeDelta& time_step) const noexcept;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
-    p | times_;
-    p | range_;
-    p | unit_;
-    p | direction_;
-  }
+  void pup(PUP::er& p) noexcept override;
 
  private:
   std::unique_ptr<TimeSequence<double>> times_{};
@@ -148,11 +104,6 @@ class NearTimes : public Trigger<TriggerRegistrars> {
   Unit unit_{};
   Direction direction_{};
 };
-
-/// \cond
-template <typename TriggerRegistrars>
-PUP::able::PUP_ID NearTimes<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Triggers
 
 template <>

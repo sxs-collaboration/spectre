@@ -14,7 +14,7 @@ add_test_library(
   ${LIBRARY}
   "Parallel/PhaseControl"
   "${LIBRARY_SOURCES}"
-  ""
+  "EventsAndTriggers"
   )
 
 target_link_libraries(

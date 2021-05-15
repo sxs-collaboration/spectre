@@ -27,7 +27,7 @@ add_test_library(
   ${LIBRARY}
   "IO"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;IO"
+  "Boost::boost;EventsAndTriggers;IO"
   )
 
 add_dependencies(

@@ -82,7 +82,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BondiHoyleAccretion.hpp"
@@ -214,8 +216,6 @@ struct EvolutionMetavars {
           3, InterpolationTargetTags, interpolator_source_vars>...>;
   using events = tmpl::append<observation_events, interpolation_events>;
 
-  using triggers = Triggers::time_triggers;
-
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
@@ -230,7 +230,9 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<StepController, StepControllers::standard_step_controllers>>;
+        tmpl::pair<StepController, StepControllers::standard_step_controllers>,
+        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
+                                         Triggers::time_triggers>>>;
   };
 
   using step_actions = tmpl::flatten<tmpl::list<
@@ -268,7 +270,7 @@ struct EvolutionMetavars {
       EvolutionMetavars, Phase::LoadBalancing>>;
 
   using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes, triggers>;
+      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
 
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<phase_changes>;
@@ -328,7 +330,7 @@ struct EvolutionMetavars {
                          Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
                          step_actions, Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange<
-                             phase_changes, triggers>>>>>;
+                             phase_changes>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
@@ -347,8 +349,8 @@ struct EvolutionMetavars {
   using const_global_cache_tags = tmpl::list<
       initial_data_tag, time_stepper_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      Tags::EventsAndTriggers<events, triggers>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes, triggers>>;
+      Tags::EventsAndTriggers<events>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   static constexpr Options::String help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "
@@ -361,10 +363,9 @@ struct EvolutionMetavars {
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>&
           cache_proxy) noexcept {
-    const auto next_phase =
-        PhaseControl::arbitrate_phase_change<phase_changes, triggers>(
-            phase_change_decision_data, current_phase,
-            *(cache_proxy.ckLocalBranch()));
+    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+        phase_change_decision_data, current_phase,
+        *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
       return next_phase.value();
     }
@@ -434,8 +435,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        Trigger<metavariables::triggers>>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};

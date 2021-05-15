@@ -10,9 +10,9 @@
 
 #include "Options/Options.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"  // IWYU pragma: keep // for option parsing
-#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"  // IWYU pragma: keep // for option parsing
 
 /// \cond
+class Trigger;
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
@@ -25,12 +25,11 @@ class DataBox;
 
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks triggers and runs events
-template <typename EventRegistrars, typename TriggerRegistrars>
+template <typename EventRegistrars>
 class EventsAndTriggers {
  public:
   using event_type = Event<EventRegistrars>;
-  using trigger_type = Trigger<TriggerRegistrars>;
-  using Storage = std::unordered_map<std::unique_ptr<trigger_type>,
+  using Storage = std::unordered_map<std::unique_ptr<Trigger>,
                                      std::vector<std::unique_ptr<event_type>>>;
 
   EventsAndTriggers() = default;
@@ -70,12 +69,11 @@ class EventsAndTriggers {
   Storage events_and_triggers_;
 };
 
-template <typename EventRegistrars, typename TriggerRegistrars>
-struct Options::create_from_yaml<
-    EventsAndTriggers<EventRegistrars, TriggerRegistrars>> {
-  using type = EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
+template <typename EventRegistrars>
+struct Options::create_from_yaml<EventsAndTriggers<EventRegistrars>> {
+  using type = EventsAndTriggers<EventRegistrars>;
   template <typename Metavariables>
   static type create(const Options::Option& options) {
-    return type(options.parse_as<typename type::Storage>());
+    return type(options.parse_as<typename type::Storage, Metavariables>());
   }
 };

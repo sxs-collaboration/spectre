@@ -3,7 +3,13 @@
 
 set(LIBRARY EventsAndTriggers)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  LogicalTriggers.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -21,8 +27,10 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   DataStructures
-  Domain
   ErrorHandling
+  PUBLIC
+  Options
+  Parallel
   Utilities
   )
 

@@ -14,7 +14,5 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// Typelist of Time triggers
 using time_triggers =
-    tmpl::list<Registrars::NearTimes, Registrars::SlabCompares,
-               Registrars::Slabs, Registrars::TimeCompares,
-               Registrars::Times>;
+    tmpl::list<NearTimes, SlabCompares, Slabs, TimeCompares, Times>;
 }  // namespace Triggers
