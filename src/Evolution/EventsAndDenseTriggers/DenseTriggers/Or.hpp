@@ -4,7 +4,6 @@
 #pragma once
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <pup.h>
 #include <vector>
@@ -52,9 +51,7 @@ class Or : public DenseTrigger {
   Result is_triggered(const TimeStepId& time_step_id,
                       const db::DataBox<DbTags>& box) const noexcept {
     const evolution_less<double> before{time_step_id.time_runs_forward()};
-    Result result{false, time_step_id.time_runs_forward()
-                             ? std::numeric_limits<double>::infinity()
-                             : -std::numeric_limits<double>::infinity()};
+    Result result{false, before.infinity()};
     for (const auto& trigger : triggers_) {
       const auto sub_result = trigger->is_triggered(box);
       if (sub_result.is_triggered) {

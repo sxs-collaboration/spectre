@@ -3,7 +3,6 @@
 
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Times.hpp"
 
-#include <limits>
 #include <optional>
 #include <pup_stl.h>
 #include <utility>
@@ -20,9 +19,7 @@ DenseTrigger::Result Times::is_triggered(const TimeStepId& time_step_id,
   const evolution_less<double> before{time_step_id.time_runs_forward()};
 
   const auto trigger_times = times_->times_near(time);
-  double next_time = time_step_id.time_runs_forward()
-                         ? std::numeric_limits<double>::infinity()
-                         : -std::numeric_limits<double>::infinity();
+  double next_time = before.infinity();
   for (const auto& trigger_time : trigger_times) {
     if (trigger_time.has_value() and before(time, *trigger_time) and
         before(*trigger_time, next_time)) {
