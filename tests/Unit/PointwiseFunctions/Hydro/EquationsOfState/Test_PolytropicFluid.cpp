@@ -5,17 +5,58 @@
 
 #include <limits>
 #include <pup.h>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
+namespace {
+// check that pressure equals energy density at upper bound of specific
+// internal energy for adiabatic index > 2
+void check_dominant_energy_condition_at_bound() noexcept {
+  const auto seed = std::random_device{}();
+  MAKE_GENERATOR(generator, seed);
+  CAPTURE(seed);
+  auto distribution = std::uniform_real_distribution<>{2.0, 3.0};
+  const double polytropic_exponent = distribution(generator);
+  const auto eos =
+      EquationsOfState::PolytropicFluid<true>{100.0, polytropic_exponent};
+  const Scalar<double> rest_mass_density{eos.rest_mass_density_upper_bound()};
+  const double specific_internal_energy =
+      get(eos.specific_internal_energy_from_density(rest_mass_density));
+  const double pressure = get(eos.pressure_from_density(
+      Scalar<double>{rest_mass_density}));
+  const double energy_density =
+      get(rest_mass_density) * (1.0 + specific_internal_energy);
+  CAPTURE(rest_mass_density);
+  CAPTURE(specific_internal_energy);
+  CHECK(approx(pressure) == energy_density);
+}
 
+template <bool IsRelativistic>
+void check_bounds() noexcept {
+  const auto eos =
+      EquationsOfState::PolytropicFluid<IsRelativistic>{100.0, 1.5};
+  CHECK(0.0 == eos.rest_mass_density_lower_bound());
+  CHECK(0.0 == eos.specific_internal_energy_lower_bound(1.0));
+  if constexpr (IsRelativistic) {
+    CHECK(1.0 == eos.specific_enthalpy_lower_bound());
+  } else {
+    CHECK(0.0 == eos.specific_enthalpy_lower_bound());
+  }
+  const double max_double = std::numeric_limits<double>::max();
+  CHECK(max_double == eos.rest_mass_density_upper_bound());
+  CHECK(max_double == eos.specific_internal_energy_upper_bound(1.0));
+}
+
+}  // namespace
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
                   "[Unit][EquationsOfState]") {
   namespace EoS = EquationsOfState;
@@ -65,4 +106,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
            "  PolytropicConstant: 117.0\n"
            "  PolytropicExponent: 1.12\n"}),
       "polytropic", dv_for_size, 117.0, 1.12);
+
+  check_bounds<true>();
+  check_bounds<false>();
+  check_dominant_energy_condition_at_bound();
 }

@@ -157,6 +157,25 @@ class EquationOfState<IsRelativistic, 1>
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> kappa_times_p_over_rho_squared_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+
+  /// The lower bound of the rest mass density that is valid for this EOS
+  virtual double rest_mass_density_lower_bound() const noexcept = 0;
+
+  /// The upper bound of the rest mass density that is valid for this EOS
+  virtual double rest_mass_density_upper_bound() const noexcept = 0;
+
+  /// The lower bound of the specific internal energy that is valid for this EOS
+  /// at the given rest mass density \f$\rho\f$
+  virtual double specific_internal_energy_lower_bound(
+      const double rest_mass_density) const noexcept = 0;
+
+  /// The upper bound of the specific internal energy that is valid for this EOS
+  /// at the given rest mass density \f$\rho\f$
+  virtual double specific_internal_energy_upper_bound(
+      const double rest_mass_density) const noexcept = 0;
+
+  /// The lower bound of the specific enthalpy that is valid for this EOS
+  virtual double specific_enthalpy_lower_bound() const noexcept = 0;
 };
 
 /*!
@@ -229,7 +248,7 @@ class EquationOfState<IsRelativistic, 2>
   // @{
   /*!
    * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
-   * density \f$\rho\f$ and the pressure \f$pn\f$.
+   * density \f$\rho\f$ and the pressure \f$p\f$.
    */
   virtual Scalar<double> specific_internal_energy_from_density_and_pressure(
       const Scalar<double>& /*rest_mass_density*/,
@@ -275,6 +294,25 @@ class EquationOfState<IsRelativistic, 2>
       const Scalar<DataVector>& /*specific_internal_energy*/) const
       noexcept = 0;
   // @}
+
+  /// The lower bound of the rest mass density that is valid for this EOS
+  virtual double rest_mass_density_lower_bound() const noexcept = 0;
+
+  /// The upper bound of the rest mass density that is valid for this EOS
+  virtual double rest_mass_density_upper_bound() const noexcept = 0;
+
+  /// The lower bound of the specific internal energy that is valid for this EOS
+  /// at the given rest mass density \f$\rho\f$
+  virtual double specific_internal_energy_lower_bound(
+      const double rest_mass_density) const noexcept = 0;
+
+  /// The upper bound of the specific internal energy that is valid for this EOS
+  /// at the given rest mass density \f$\rho\f$
+  virtual double specific_internal_energy_upper_bound(
+      const double rest_mass_density) const noexcept = 0;
+
+  /// The lower bound of the specific enthalpy that is valid for this EOS
+  virtual double specific_enthalpy_lower_bound() const noexcept = 0;
 };
 }  // namespace EquationsOfState
 

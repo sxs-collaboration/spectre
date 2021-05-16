@@ -15,8 +15,8 @@ template <bool IsRelativistic>
 DarkEnergyFluid<IsRelativistic>::DarkEnergyFluid(
     const double parameter_w) noexcept
     : parameter_w_(parameter_w) {
-  if (parameter_w_ <= 0.0) {
-    ERROR("The w(z) parameter must be positive.");
+  if (parameter_w_ <= 0.0 or parameter_w_ > 1.0) {
+    ERROR("The w(z) parameter must be positive, but less than one");
   }
 }
 

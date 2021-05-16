@@ -3,6 +3,9 @@
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 
+#include <cmath>
+#include <limits>
+
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -106,6 +109,20 @@ Scalar<DataType> PolytropicFluid<IsRelativistic>::
     kappa_times_p_over_rho_squared_from_density_impl(
         const Scalar<DataType>& rest_mass_density) const noexcept {
   return make_with_value<Scalar<DataType>>(get(rest_mass_density), 0.0);
+}
+
+template <bool IsRelativistic>
+double PolytropicFluid<IsRelativistic>::rest_mass_density_upper_bound() const
+    noexcept {
+  // this bound comes from the dominant energy condition which implies
+  // that the pressure is bounded by the total energy density,
+  // i.e. p < e = rho * (1 + eps)
+  if (IsRelativistic and polytropic_exponent_ > 2.0) {
+    return pow((polytropic_exponent_ - 1.0) /
+                   (polytropic_constant_ * (polytropic_exponent_ - 2.0)),
+               1.0 / (polytropic_exponent_ - 1.0));
+  }
+  return std::numeric_limits<double>::max();
 }
 }  // namespace EquationsOfState
 

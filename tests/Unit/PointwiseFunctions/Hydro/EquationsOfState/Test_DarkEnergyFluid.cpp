@@ -12,9 +12,20 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
+namespace {
+void check_bounds() noexcept {
+  const auto eos = EquationsOfState::DarkEnergyFluid<true>{1.0};
+  CHECK(0.0 == eos.rest_mass_density_lower_bound());
+  CHECK(-1.0 == eos.specific_internal_energy_lower_bound(1.0));
+  CHECK(0.0 == eos.specific_enthalpy_lower_bound());
+  const double max_double = std::numeric_limits<double>::max();
+  CHECK(max_double == eos.rest_mass_density_upper_bound());
+  CHECK(max_double == eos.specific_internal_energy_upper_bound(1.0));
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
                   "[Unit][EquationsOfState]") {
@@ -62,4 +73,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
           {"DarkEnergyFluid:\n"
            "  ParameterW: 0.3333333333333333\n"}),
       "dark_energy_fluid", dv_for_size, 1.0 / 3.0);
+
+  check_bounds();
 }

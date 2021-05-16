@@ -3,6 +3,8 @@
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 
+#include <limits>
+
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -104,6 +106,18 @@ Scalar<DataType> IdealFluid<IsRelativistic>::
         const Scalar<DataType>& specific_internal_energy) const noexcept {
   return Scalar<DataType>{square(adiabatic_index_ - 1.0) *
                           get(specific_internal_energy)};
+}
+
+template <bool IsRelativistic>
+double IdealFluid<IsRelativistic>::specific_internal_energy_upper_bound(
+    const double /* rest_mass_density */) const noexcept {
+  // this bound comes from the dominant energy condition which implies
+  // that the pressure is bounded by the total energy density,
+  // i.e. p < e = rho * (1 + eps)
+  if (IsRelativistic and adiabatic_index_ > 2.0) {
+    return 1.0 / (adiabatic_index_ - 2.0);
+  }
+  return std::numeric_limits<double>::max();
 }
 }  // namespace EquationsOfState
 
