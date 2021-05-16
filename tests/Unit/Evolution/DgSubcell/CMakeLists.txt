@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_ActiveGrid.cpp
   Test_CartesianFluxDivergence.cpp
   Test_ComputeBoundaryTerms.cpp
+  Test_CorrectPackagedData.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_NeighborData.cpp
