@@ -27,6 +27,7 @@ spectre_target_headers(
   Solutions.hpp
   Tov.hpp
   WrappedGr.hpp
+  WrappedGr.tpp
   )
 
 target_link_libraries(

@@ -10,6 +10,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -36,7 +37,8 @@ namespace Solutions {
  * \vec{B}(\vec{x},t) &= [0, 0, 0]^{T}
  * \f}
  */
-class SmoothFlow : virtual public MarkAsAnalyticSolution,
+class SmoothFlow : public AnalyticSolution,
+                   virtual public MarkAsAnalyticSolution,
                    private RelativisticEuler::Solutions::SmoothFlow<3> {
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;
 
@@ -94,7 +96,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
- private:
+ protected:
   friend bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept;
 };
 

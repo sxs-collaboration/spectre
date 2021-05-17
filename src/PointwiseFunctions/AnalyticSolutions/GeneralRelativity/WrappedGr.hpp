@@ -110,22 +110,16 @@ class WrappedGr : public SolutionType {
   using TagExCurvature =
       gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataVector>;
 
-#define FUNC_DECL(r, data, elem)                                            \
-  tuples::TaggedTuple<elem> variables(                                      \
-      const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,           \
-      tmpl::list<elem> /*meta*/, const IntermediateVars& intermediate_vars) \
-      const noexcept;
-
-#define MY_LIST                                                              \
-  BOOST_PP_TUPLE_TO_LIST(                                                    \
-      (gr::Tags::Lapse<DataVector>, TimeDerivLapse, DerivLapse, TagShift,    \
-       TimeDerivShift, DerivShift, TagSpatialMetric, TimeDerivSpatialMetric, \
-       DerivSpatialMetric, TagInverseSpatialMetric, TagExCurvature,          \
-       gr::Tags::SqrtDetSpatialMetric<DataVector>))
-
-  BOOST_PP_LIST_FOR_EACH(FUNC_DECL, _, MY_LIST)
-#undef MY_LIST
-#undef FUNC_DECL
+  template <
+      typename Tag,
+      Requires<tmpl::list_contains_v<
+          typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
+      tmpl::list<Tag> /*meta*/,
+      const IntermediateVars& intermediate_vars) const noexcept {
+    return {get<Tag>(intermediate_vars)};
+  }
 
   tuples::TaggedTuple<
       gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataVector>>
