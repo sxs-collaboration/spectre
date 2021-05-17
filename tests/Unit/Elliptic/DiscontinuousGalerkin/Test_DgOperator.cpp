@@ -18,8 +18,10 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
+#include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -105,23 +107,25 @@ struct ElementArray {
   // not necessarily the vars we apply the linearized operator to
   using fixed_sources_tag = ::Tags::Variables<
       db::wrap_tags_in<::Tags::FixedSource, typename System::primal_fields>>;
+  using analytic_solution_tag =
+      ::Tags::AnalyticSolution<typename metavariables::analytic_solution>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<tmpl::list<
-                  domain::Tags::InitialRefinementLevels<Dim>,
-                  domain::Tags::InitialExtents<Dim>, fixed_sources_tag>>,
-              ::Actions::SetupDataBox,
-              ::elliptic::dg::Actions::InitializeDomain<Dim>,
-              ::elliptic::Actions::InitializeAnalyticSolution<
-                  ::Tags::AnalyticSolution<
-                      typename metavariables::analytic_solution>,
-                  tmpl::append<typename System::primal_fields,
-                               typename System::primal_fluxes>>,
-              ::elliptic::dg::Actions::initialize_operator<System>,
-              ::Initialization::Actions::RemoveOptionsAndTerminatePhase>>,
+          tmpl::list<ActionTesting::InitializeDataBox<
+                         tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                                    domain::Tags::InitialExtents<Dim>>>,
+                     ::Actions::SetupDataBox,
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
+                     ::elliptic::Actions::InitializeAnalyticSolution<
+                         analytic_solution_tag,
+                         tmpl::append<typename System::primal_fields,
+                                      typename System::primal_fluxes>>,
+                     ::elliptic::Actions::InitializeFixedSources<
+                         System, analytic_solution_tag>,
+                     ::elliptic::dg::Actions::initialize_operator<System>,
+                     Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<::elliptic::dg::Actions::
@@ -151,6 +155,7 @@ template <
     typename ElementArray = typename Metavars::element_array>
 void test_dg_operator(
     const DomainCreator<Dim>& domain_creator, const double penalty_parameter,
+    const bool use_massive_dg_operator,
     const AnalyticSolution& analytic_solution,
     // NOLINTNEXTLINE(google-runtime-references)
     Approx& analytic_solution_aux_approx,
@@ -165,6 +170,9 @@ void test_dg_operator(
             ElementId<Dim>,
             typename ElementArray::operator_applied_to_vars_tag::type>>>&
         tests_data) {
+  CAPTURE(penalty_parameter);
+  CAPTURE(use_massive_dg_operator);
+
   using element_array = ElementArray;
   using vars_tag = typename element_array::vars_tag;
   using primal_fluxes_vars_tag = typename element_array::primal_fluxes_vars_tag;
@@ -174,7 +182,6 @@ void test_dg_operator(
   using Vars = typename vars_tag::type;
   using PrimalFluxesVars = typename primal_fluxes_vars_tag::type;
   using OperatorAppliedToVars = typename operator_applied_to_vars_tag::type;
-  using FixedSources = typename fixed_sources_tag::type;
 
   // Get a list of all elements in the domain
   auto domain = domain_creator.create_domain();
@@ -192,8 +199,10 @@ void test_dg_operator(
   ActionTesting::MockRuntimeSystem<Metavars> runner{
       tuples::TaggedTuple<domain::Tags::Domain<Dim>,
                           ::elliptic::dg::Tags::PenaltyParameter,
+                          ::elliptic::dg::Tags::Massive,
                           ::Tags::AnalyticSolution<AnalyticSolution>>{
-          std::move(domain), penalty_parameter, analytic_solution}};
+          std::move(domain), penalty_parameter, use_massive_dg_operator,
+          analytic_solution}};
 
   // DataBox shortcuts
   const auto get_tag = [&runner](
@@ -213,23 +222,13 @@ void test_dg_operator(
   // Initialize all elements in the domain
   for (const auto& element_id : all_element_ids) {
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {initial_ref_levs, initial_extents, FixedSources{}});
+        &runner, element_id, {initial_ref_levs, initial_extents});
     while (
         not ActionTesting::get_terminate<element_array>(runner, element_id)) {
       ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                 element_id);
     }
     set_tag(TemporalIdTag{}, 0_st, element_id);
-    const auto& mesh = get_tag(domain::Tags::Mesh<Dim>{}, element_id);
-    const size_t num_points = mesh.number_of_grid_points();
-    const auto& inertial_coords =
-        get_tag(domain::Tags::Coordinates<Dim, Frame::Inertial>{}, element_id);
-    FixedSources fixed_sources{num_points, 0.};
-    fixed_sources.assign_subset(
-        variables_from_tagged_tuple(analytic_solution.variables(
-            inertial_coords, typename fixed_sources_tag::tags_list{})));
-    set_tag(fixed_sources_tag{}, std::move(fixed_sources), element_id);
   }
   ActionTesting::set_phase(make_not_null(&runner), Metavars::Phase::Testing);
 
@@ -483,7 +482,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(3.e-2).scale(M_PI * penalty_parameter *
                                                 square(4) / 0.5);
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, analytic_solution,
+          domain_creator, penalty_parameter, false, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{left_id, std::move(vars_rnd_left)},
              {midleft_id, std::move(vars_rnd_midleft)},
@@ -511,9 +510,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI * penalty_parameter *
                                                 square(12));
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx, {});
+      for (const bool use_massive_dg_operator : {true, false}) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, use_massive_dg_operator,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, {});
+      }
     }
   }
   {
@@ -591,7 +593,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(7.e-1).scale(M_PI * penalty_parameter *
                                                 square(3));
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, analytic_solution,
+          domain_creator, penalty_parameter, false, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{northwest_id, std::move(vars_rnd_northwest)},
              {southwest_id, std::move(vars_rnd_southwest)},
@@ -614,9 +616,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI * penalty_parameter *
                                                 square(12));
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx, {});
+      for (const bool use_massive_dg_operator : {true, false}) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, use_massive_dg_operator,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, {});
+      }
     }
   }
   {
@@ -710,7 +715,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(8.e-1).scale(M_PI * penalty_parameter *
                                                 square(4) / 2.);
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, analytic_solution,
+          domain_creator, penalty_parameter, false, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{self_id, std::move(vars_rnd_self)},
              {neighbor_id_xi, std::move(vars_rnd_neighbor_xi)},
@@ -734,9 +739,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-5).scale(M_PI * penalty_parameter *
                                                 square(12) / 2.);
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx, {});
+      for (const bool use_massive_dg_operator : {true, false}) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, use_massive_dg_operator,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, {});
+      }
     }
   }
 

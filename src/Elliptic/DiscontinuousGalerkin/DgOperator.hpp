@@ -21,6 +21,7 @@
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Penalty.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
@@ -620,13 +621,15 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
           inv_jacobian,
+      const Scalar<DataVector>& det_inv_jacobian,
       const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           internal_face_normal_magnitudes,
       const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           external_face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
-      const double penalty_parameter, const TemporalId& temporal_id,
+      const double penalty_parameter, const bool massive,
+      const TemporalId& temporal_id,
       const std::tuple<SourcesArgs...>& sources_args,
       const DirectionsPredicate& directions_predicate =
           AllDirections{}) noexcept {
@@ -849,6 +852,12 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       add_slice_to_data(operator_applied_to_vars, primal_boundary_corrections,
                         mesh.extents(), direction.dimension(), slice_index);
     }  // loop over all mortars
+
+    // Apply DG mass matrix
+    if (massive) {
+      *operator_applied_to_vars /= get(det_inv_jacobian);
+      ::dg::apply_mass_matrix(operator_applied_to_vars, mesh);
+    }
   }
 
   template <typename... FixedSourcesTags, typename ApplyBoundaryCondition,
@@ -863,13 +872,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const Element<Dim>& element, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
           inv_jacobian,
+      const Scalar<DataVector>& det_inv_jacobian,
       const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
           external_face_normals,
       const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           external_face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
-      const double penalty_parameter,
+      const double penalty_parameter, const bool massive,
       const ApplyBoundaryCondition& apply_boundary_condition,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
@@ -904,18 +914,18 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     prepare_mortar_data<true>(
         make_not_null(&unused_aux_vars_buffer),
         make_not_null(&unused_aux_fluxes_buffer),
-        make_not_null(&primal_fluxes_buffer),
-        make_not_null(&all_mortar_data), zero_primal_vars, element, mesh,
-        inv_jacobian, {}, external_face_normals, {},
-        external_face_normal_magnitudes, all_mortar_meshes, all_mortar_sizes,
-        temporal_id, apply_boundary_condition, fluxes_args, sources_args,
+        make_not_null(&primal_fluxes_buffer), make_not_null(&all_mortar_data),
+        zero_primal_vars, element, mesh, inv_jacobian, {},
+        external_face_normals, {}, external_face_normal_magnitudes,
+        all_mortar_meshes, all_mortar_sizes, temporal_id,
+        apply_boundary_condition, fluxes_args, sources_args,
         fluxes_args_on_internal_faces, fluxes_args_on_external_faces);
     apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
                          make_not_null(&all_mortar_data), zero_primal_vars,
-                         primal_fluxes_buffer, mesh, inv_jacobian, {},
-                         external_face_normal_magnitudes, all_mortar_meshes,
-                         all_mortar_sizes, penalty_parameter, temporal_id,
-                         sources_args);
+                         primal_fluxes_buffer, mesh, inv_jacobian,
+                         det_inv_jacobian, {}, external_face_normal_magnitudes,
+                         all_mortar_meshes, all_mortar_sizes, penalty_parameter,
+                         massive, temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;

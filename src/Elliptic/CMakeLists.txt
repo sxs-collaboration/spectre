@@ -19,6 +19,7 @@ target_link_libraries(
   Options
   INTERFACE
   DataStructures
+  DiscontinuousGalerkin
   Domain
   EventsAndTriggers
   LinearOperators

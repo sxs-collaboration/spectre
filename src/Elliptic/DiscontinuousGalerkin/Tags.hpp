@@ -32,6 +32,15 @@ struct PenaltyParameter {
   using group = DiscontinuousGalerkin;
 };
 
+struct Massive {
+  using type = bool;
+  static constexpr Options::String help =
+      "Whether or not to multiply the DG operator with the mass matrix. "
+      "Massive DG operators can be easier to solve because they are symmetric, "
+      "or at least closer to symmetry";
+  using group = DiscontinuousGalerkin;
+};
+
 }  // namespace OptionTags
 
 /// DataBox tags related to elliptic discontinuous Galerkin schemes
@@ -49,6 +58,16 @@ struct PenaltyParameter : db::SimpleTag {
   static double create_from_options(const double value) noexcept {
     return value;
   }
+};
+
+/// Whether or not to multiply the DG operator with the mass matrix. Massive DG
+/// operators can be easier to solve because they are symmetric, or at least
+/// closer to symmetry.
+struct Massive : db::SimpleTag {
+  using type = bool;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::Massive>;
+  static bool create_from_options(const bool value) noexcept { return value; }
 };
 
 }  // namespace Tags

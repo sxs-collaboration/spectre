@@ -11,7 +11,7 @@
 #     Subfile: /ErrorNorms.dat
 #     FileGlob: ElasticHalfSpaceMirrorReductions.h5
 #     SkipColumns: [0, 1]
-#     AbsoluteTolerance: 1.e-3
+#     AbsoluteTolerance: 6.e-4
 
 Background:
   HalfSpaceMirror:
@@ -53,6 +53,7 @@ DomainCreator:
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
+    Massive: True
 
 Observers:
   VolumeFileName: "ElasticHalfSpaceMirrorVolume"
@@ -61,7 +62,7 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 22
+      MaxIterations: 34
       RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
     Verbosity: Verbose
@@ -69,7 +70,7 @@ LinearSolver:
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 22
+      Offset: 27
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveVolumeIntegrals:

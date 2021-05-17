@@ -12,6 +12,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -55,6 +57,7 @@ struct InitializeFixedSources {
       db::wrap_tags_in<::Tags::FixedSource, typename System::primal_fields>>;
 
  public:
+  using const_global_cache_tags = tmpl::list<elliptic::dg::Tags::Massive>;
   using simple_tags = tmpl::list<fixed_sources_tag>;
   using compute_tags = tmpl::list<>;
 
@@ -75,6 +78,15 @@ struct InitializeFixedSources {
     // solve.
     auto fixed_sources = variables_from_tagged_tuple(background.variables(
         inertial_coords, typename fixed_sources_tag::type::tags_list{}));
+
+    // Apply DG mass matrix to the fixed sources if the DG operator is massive
+    if (db::get<elliptic::dg::Tags::Massive>(box)) {
+      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+      const auto& det_inv_jacobian = db::get<
+          domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(box);
+      fixed_sources /= get(det_inv_jacobian);
+      ::dg::apply_mass_matrix(make_not_null(&fixed_sources), mesh);
+    }
 
     ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                  std::move(fixed_sources));

@@ -50,8 +50,8 @@ bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
 }
 
 const Matrix& projection_matrix_child_to_parent(
-    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh,
-    const ChildSize size) noexcept {
+    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh, const ChildSize size,
+    const bool operand_is_massive) noexcept {
   ASSERT(parent_mesh.basis(0) == Basis::Legendre and
              child_mesh.basis(0) == Basis::Legendre,
          "Projections only implemented on Legendre basis");
@@ -63,6 +63,31 @@ const Matrix& projection_matrix_child_to_parent(
          "Requested projection matrix from child with fewer points ("
              << child_mesh.extents(0) << ") than the parent ("
              << parent_mesh.extents(0) << ")");
+
+  if (operand_is_massive) {
+    // The restriction operator for massive quantities is just the interpolation
+    // transpose
+    const static auto cache = make_static_cache<
+        CacheEnumeration<Quadrature, Quadrature::Gauss,
+                         Quadrature::GaussLobatto>,
+        CacheRange<2_st, maximum_number_of_points<Basis::Legendre>>,
+        CacheEnumeration<Quadrature, Quadrature::Gauss,
+                         Quadrature::GaussLobatto>,
+        CacheRange<2_st, maximum_number_of_points<Basis::Legendre>>,
+        CacheEnumeration<ChildSize, ChildSize::Full, ChildSize::UpperHalf,
+                         ChildSize::LowerHalf>>(
+        [](const Quadrature child_quadrature, const size_t child_extent,
+           const Quadrature parent_quadrature, const size_t parent_extent,
+           const ChildSize local_child_size) noexcept -> Matrix {
+          const auto& prolongation_operator = projection_matrix_parent_to_child(
+              {parent_extent, Spectral::Basis::Legendre, parent_quadrature},
+              {child_extent, Spectral::Basis::Legendre, child_quadrature},
+              local_child_size);
+          return blaze::trans(prolongation_operator);
+        });
+    return cache(child_mesh.quadrature(0), child_mesh.extents(0),
+                 parent_mesh.quadrature(0), parent_mesh.extents(0), size);
+  }
 
   switch (size) {
     case ChildSize::Full: {
@@ -231,9 +256,10 @@ const Matrix& projection_matrix_child_to_parent(
 
 template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim>
-projection_matrix_child_to_parent(
-    const Mesh<Dim>& child_mesh, const Mesh<Dim>& parent_mesh,
-    const std::array<ChildSize, Dim>& child_sizes) noexcept {
+projection_matrix_child_to_parent(const Mesh<Dim>& child_mesh,
+                                  const Mesh<Dim>& parent_mesh,
+                                  const std::array<ChildSize, Dim>& child_sizes,
+                                  const bool operand_is_massive) noexcept {
   static const Matrix identity{};
   auto projection_matrix = make_array<Dim>(std::cref(identity));
   const auto child_mesh_slices = child_mesh.slices();
@@ -248,7 +274,7 @@ projection_matrix_child_to_parent(
       continue;
     }
     gsl::at(projection_matrix, d) = projection_matrix_child_to_parent(
-        child_mesh_slice, parent_mesh_slice, child_size);
+        child_mesh_slice, parent_mesh_slice, child_size, operand_is_massive);
   }
   return projection_matrix;
 }
@@ -371,7 +397,8 @@ projection_matrix_parent_to_child(
   template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
   projection_matrix_child_to_parent(                                         \
       const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh, \
-      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;         \
+      const std::array<ChildSize, DIM(data)>& child_sizes,                   \
+      bool operand_is_massive) noexcept;                                     \
   template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
   projection_matrix_parent_to_child(                                         \
       const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh, \

@@ -48,6 +48,7 @@ DomainCreator:
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
+    Massive: True
 
 Observers:
   VolumeFileName: "SchwarzschildVolume"
@@ -67,7 +68,7 @@ NonlinearSolver:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 100
+      MaxIterations: 65
       RelativeResidual: 1.e-3
       AbsoluteResidual: 1.e-12
     Verbosity: Quiet
