@@ -118,7 +118,8 @@ class FixConservatives {
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
                  gr::Tags::SqrtDetSpatialMetric<>>;
 
-  void operator()(
+  /// Returns `true` if any variables were fixed.
+  bool operator()(
       gsl::not_null<Scalar<DataVector>*> tilde_d,
       gsl::not_null<Scalar<DataVector>*> tilde_tau,
       gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,

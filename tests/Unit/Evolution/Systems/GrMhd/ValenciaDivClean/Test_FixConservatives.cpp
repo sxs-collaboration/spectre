@@ -59,8 +59,8 @@ void test_variable_fixer(
     inv_spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
   }
 
-  variable_fixer(&tilde_d, &tilde_tau, &tilde_s, tilde_b, spatial_metric,
-                 inv_spatial_metric, sqrt_det_spatial_metric);
+  CHECK(variable_fixer(&tilde_d, &tilde_tau, &tilde_s, tilde_b, spatial_metric,
+                       inv_spatial_metric, sqrt_det_spatial_metric));
 
   CHECK_ITERABLE_APPROX(tilde_d, expected_tilde_d);
   CHECK_ITERABLE_APPROX(tilde_tau, expected_tilde_tau);

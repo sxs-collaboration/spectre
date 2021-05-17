@@ -40,8 +40,12 @@ namespace ValenciaDivClean {
  * [Siegel {\em et al}, The Astrophysical Journal 859:71(2018)]
  * (http://iopscience.iop.org/article/10.3847/1538-4357/aabcc5/meta)
  * compares several inversion methods.
+ *
+ * If `ErrorOnFailure` is `false` then the returned `bool` will be `false` if
+ * recovery failed and `true` if it succeeded.
  */
-template <typename OrderedListOfPrimitiveRecoverySchemes>
+template <typename OrderedListOfPrimitiveRecoverySchemes,
+          bool ErrorOnFailure = true>
 struct PrimitiveFromConservative {
   using return_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -64,7 +68,7 @@ struct PrimitiveFromConservative {
                  hydro::Tags::EquationOfStateBase>;
 
   template <size_t ThermodynamicDim>
-  static void apply(
+  static bool apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
