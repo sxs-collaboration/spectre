@@ -70,39 +70,43 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.IdealFluid",
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<true>{5.0 / 3.0},
-                                       "ideal_fluid", d_for_size, 5.0 / 3.0);
+                                       "IdealFluid", "ideal_fluid", d_for_size,
+                                       5.0 / 3.0);
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<true>{4.0 / 3.0},
-                                       "ideal_fluid", dv_for_size, 4.0 / 3.0);
+                                       "IdealFluid", "ideal_fluid", dv_for_size,
+                                       4.0 / 3.0);
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<false>{5.0 / 3.0},
-                                       "ideal_fluid", d_for_size, 5.0 / 3.0);
+                                       "IdealFluid", "ideal_fluid", d_for_size,
+                                       5.0 / 3.0);
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<false>{4.0 / 3.0},
-                                       "ideal_fluid", dv_for_size, 4.0 / 3.0);
+                                       "IdealFluid", "ideal_fluid", dv_for_size,
+                                       4.0 / 3.0);
 
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_creation<
           std::unique_ptr<EoS::EquationOfState<true, 2>>>(
           {"IdealFluid:\n"
            "  AdiabaticIndex: 1.6666666666666667\n"}),
-      "ideal_fluid", d_for_size, 5.0 / 3.0);
+      "IdealFluid", "ideal_fluid", d_for_size, 5.0 / 3.0);
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_creation<
           std::unique_ptr<EoS::EquationOfState<true, 2>>>(
           {"IdealFluid:\n"
            "  AdiabaticIndex: 1.3333333333333333\n"}),
-      "ideal_fluid", dv_for_size, 4.0 / 3.0);
+      "IdealFluid", "ideal_fluid", dv_for_size, 4.0 / 3.0);
 
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_creation<
           std::unique_ptr<EoS::EquationOfState<false, 2>>>(
           {"IdealFluid:\n"
            "  AdiabaticIndex: 1.6666666666666667\n"}),
-      "ideal_fluid", d_for_size, 5.0 / 3.0);
+      "IdealFluid", "ideal_fluid", d_for_size, 5.0 / 3.0);
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_creation<
           std::unique_ptr<EoS::EquationOfState<false, 2>>>(
           {"IdealFluid:\n"
            "  AdiabaticIndex: 1.3333333333333333\n"}),
-      "ideal_fluid", dv_for_size, 4.0 / 3.0);
+      "IdealFluid", "ideal_fluid", dv_for_size, 4.0 / 3.0);
 
   check_bounds<true>();
   check_bounds<false>();
