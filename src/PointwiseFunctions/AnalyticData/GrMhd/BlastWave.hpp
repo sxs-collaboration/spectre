@@ -53,7 +53,7 @@ namespace AnalyticData {
  * the final time is 4.0, a good domain extends from `(x,y)=(-6.0, -6.0)` to
  * `(x,y)=(6.0, 6.0)`.
  */
-class CylindricalBlastWave : public MarkAsAnalyticData {
+class BlastWave : public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -120,42 +120,39 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   static constexpr Options::String help = {
       "Cylindrical blast wave analytic initial data."};
 
-  CylindricalBlastWave() = default;
-  CylindricalBlastWave(const CylindricalBlastWave& /*rhs*/) = delete;
-  CylindricalBlastWave& operator=(const CylindricalBlastWave& /*rhs*/) = delete;
-  CylindricalBlastWave(CylindricalBlastWave&& /*rhs*/) noexcept = default;
-  CylindricalBlastWave& operator=(CylindricalBlastWave&& /*rhs*/) noexcept =
-      default;
-  ~CylindricalBlastWave() = default;
+  BlastWave() = default;
+  BlastWave(const BlastWave& /*rhs*/) = delete;
+  BlastWave& operator=(const BlastWave& /*rhs*/) = delete;
+  BlastWave(BlastWave&& /*rhs*/) noexcept = default;
+  BlastWave& operator=(BlastWave&& /*rhs*/) noexcept = default;
+  ~BlastWave() = default;
 
-  CylindricalBlastWave(double inner_radius, double outer_radius,
-                       double inner_density, double outer_density,
-                       double inner_pressure, double outer_pressure,
-                       const std::array<double, 3>& magnetic_field,
-                       double adiabatic_index,
-                       const Options::Context& context = {});
+  BlastWave(double inner_radius, double outer_radius, double inner_density,
+            double outer_density, double inner_pressure, double outer_pressure,
+            const std::array<double, 3>& magnetic_field, double adiabatic_index,
+            const Options::Context& context = {});
 
-  explicit CylindricalBlastWave(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BlastWave(CkMigrateMessage* /*unused*/) noexcept {}
 
   // @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/)
+      const noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/)
+      const noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
@@ -164,16 +161,16 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
+      const noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
@@ -183,17 +180,17 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
       -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   // @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -230,11 +227,9 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 
-  friend bool operator==(const CylindricalBlastWave& lhs,
-                         const CylindricalBlastWave& rhs) noexcept;
+  friend bool operator==(const BlastWave& lhs, const BlastWave& rhs) noexcept;
 
-  friend bool operator!=(const CylindricalBlastWave& lhs,
-                         const CylindricalBlastWave& rhs) noexcept;
+  friend bool operator!=(const BlastWave& lhs, const BlastWave& rhs) noexcept;
 };
 
 }  // namespace AnalyticData

@@ -26,8 +26,8 @@ class KomissarovShock;
 class SmoothFlow;
 }  // namespace Solutions
 namespace AnalyticData {
+class BlastWave;
 class BondiHoyleAccretion;
-class CylindricalBlastWave;
 class MagneticFieldLoop;
 class MagneticRotor;
 class MagnetizedFmDisk;

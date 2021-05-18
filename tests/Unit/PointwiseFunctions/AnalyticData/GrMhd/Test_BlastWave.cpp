@@ -16,7 +16,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "PointwiseFunctions/AnalyticData/GrMhd/CylindricalBlastWave.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/BlastWave.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -27,8 +27,8 @@
 
 namespace {
 
-struct CylindricalBlastWaveProxy : grmhd::AnalyticData::CylindricalBlastWave {
-  using grmhd::AnalyticData::CylindricalBlastWave::CylindricalBlastWave;
+struct BlastWaveProxy : grmhd::AnalyticData::BlastWave {
+  using grmhd::AnalyticData::BlastWave::BlastWave;
 
   template <typename DataType>
   using hydro_variables_tags =
@@ -62,7 +62,7 @@ struct CylindricalBlastWaveProxy : grmhd::AnalyticData::CylindricalBlastWave {
 
 void test_create_from_options() noexcept {
   const auto cylindrical_blast_wave =
-      TestHelpers::test_creation<grmhd::AnalyticData::CylindricalBlastWave>(
+      TestHelpers::test_creation<grmhd::AnalyticData::BlastWave>(
           "InnerRadius: 0.8\n"
           "OuterRadius: 1.0\n"
           "InnerDensity: 1.0e-2\n"
@@ -71,17 +71,17 @@ void test_create_from_options() noexcept {
           "OuterPressure: 5.0e-4\n"
           "MagneticField: [0.1, 0.0, 0.0]\n"
           "AdiabaticIndex: 1.3333333333333333333");
-  CHECK(cylindrical_blast_wave == grmhd::AnalyticData::CylindricalBlastWave(
-                                      0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
-                                      std::array<double, 3>{{0.1, 0.0, 0.0}},
-                                      1.3333333333333333333));
+  CHECK(cylindrical_blast_wave ==
+        grmhd::AnalyticData::BlastWave(0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
+                                       std::array<double, 3>{{0.1, 0.0, 0.0}},
+                                       1.3333333333333333333));
 }
 
 void test_move() noexcept {
-  grmhd::AnalyticData::CylindricalBlastWave cylindrical_blast_wave(
+  grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
       0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
       std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333);
-  grmhd::AnalyticData::CylindricalBlastWave cylindrical_blast_wave_copy(
+  grmhd::AnalyticData::BlastWave cylindrical_blast_wave_copy(
       0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
       std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333);
   test_move_semantics(std::move(cylindrical_blast_wave),
@@ -89,7 +89,7 @@ void test_move() noexcept {
 }
 
 void test_serialize() noexcept {
-  grmhd::AnalyticData::CylindricalBlastWave cylindrical_blast_wave(
+  grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
       0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
       std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333);
   test_serialization(cylindrical_blast_wave);
@@ -110,7 +110,7 @@ void test_variables(const DataType& used_for_size) noexcept {
       inner_radius, outer_radius, inner_density, outer_density, inner_pressure,
       outer_pressure, magnetic_field, adiabatic_index);
 
-  CylindricalBlastWaveProxy cylindrical_blast_wave(
+  BlastWaveProxy cylindrical_blast_wave(
       inner_radius, outer_radius, inner_density, outer_density, inner_pressure,
       outer_pressure, magnetic_field, adiabatic_index);
 
@@ -118,15 +118,15 @@ void test_variables(const DataType& used_for_size) noexcept {
   // sometimes the random points are in the transition region and sometimes
   // in the fixed region.
   pypp::check_with_random_values<1>(
-      &CylindricalBlastWaveProxy::hydro_variables<DataType>,
-      cylindrical_blast_wave, "CylindricalBlastWave",
+      &BlastWaveProxy::hydro_variables<DataType>, cylindrical_blast_wave,
+      "BlastWave",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-1.1, 1.1}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<1>(
-      &CylindricalBlastWaveProxy::grmhd_variables<DataType>,
-      cylindrical_blast_wave, "CylindricalBlastWave",
+      &BlastWaveProxy::grmhd_variables<DataType>, cylindrical_blast_wave,
+      "BlastWave",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
        "divergence_cleaning_field"},
@@ -147,7 +147,7 @@ void test_density_on_and_near_boundaries() {
   const std::array<double, 3> magnetic_field{{0.1, 0.0, 0.0}};
   const double adiabatic_index = 1.3333333333333333333;
 
-  CylindricalBlastWaveProxy cylindrical_blast_wave(
+  BlastWaveProxy cylindrical_blast_wave(
       inner_radius, outer_radius, inner_density, outer_density, inner_pressure,
       outer_pressure, magnetic_field, adiabatic_index);
 
@@ -182,9 +182,8 @@ void test_density_on_and_near_boundaries() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.CylindricalBlastWave",
-    "[Unit][PointwiseFunctions]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BlastWave",
+                  "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/GrMhd"};
 
@@ -198,12 +197,12 @@ SPECTRE_TEST_CASE(
   test_density_on_and_near_boundaries();
 }
 
-// [[OutputRegex, CylindricalBlastWave expects InnerRadius < OuterRadius]]
+// [[OutputRegex, BlastWave expects InnerRadius < OuterRadius]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.CylBlastWaveInRadLess",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  grmhd::AnalyticData::CylindricalBlastWave cylindrical_blast_wave(
+  grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
       1.2, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
       std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333);
   ERROR("Failed to trigger PARSE_ERROR in a parse error test");

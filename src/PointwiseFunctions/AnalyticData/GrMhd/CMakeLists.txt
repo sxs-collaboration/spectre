@@ -8,8 +8,8 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  BlastWave.cpp
   BondiHoyleAccretion.cpp
-  CylindricalBlastWave.cpp
   MagneticFieldLoop.cpp
   MagneticRotor.cpp
   MagnetizedFmDisk.cpp
@@ -21,8 +21,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticData.hpp
+  BlastWave.hpp
   BondiHoyleAccretion.hpp
-  CylindricalBlastWave.hpp
   MagneticFieldLoop.hpp
   MagneticRotor.hpp
   MagnetizedFmDisk.hpp
