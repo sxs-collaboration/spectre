@@ -37,6 +37,7 @@ AnalyticData:
     OuterPressure: 5.0e-4
     MagneticField: [0.1, 0.0, 0.0]
     AdiabaticIndex: 1.3333333333333333333
+    Geometry: Cylindrical
 
 EvolutionSystem:
   ValenciaDivClean:

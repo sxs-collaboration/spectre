@@ -7,8 +7,10 @@
 #include <ostream>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
@@ -18,32 +20,34 @@
 
 namespace {
 template <typename DataType>
-Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
-                                   const double inner_radius,
-                                   const double outer_radius,
-                                   const double inner_value,
-                                   const double outer_value) noexcept {
-  const DataType cylindrical_radius =
-      sqrt(square(get<0>(x)) + square(get<1>(x)));
+Scalar<DataType> compute_piecewise(
+    const tnsr::I<DataType, 3>& x, const double inner_radius,
+    const double outer_radius, const double inner_value,
+    const double outer_value,
+    const grmhd::AnalyticData::BlastWave::Geometry geometry) noexcept {
+  DataType radius{};
+  if (geometry == grmhd::AnalyticData::BlastWave::Geometry::Cylindrical) {
+    radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
+  } else {
+    radius = get(magnitude(x));
+  }
   auto piecewise_scalar = make_with_value<Scalar<DataType>>(x, 0.0);
 
   // piecewise_scalar should equal inner_value for r < inner_radius,
   // should equal outer_value for r > outer_radius, and should transition
   // in between. Here, use step_function() to compute the result
   // in each region separately.
-  get(piecewise_scalar) +=
-      step_function(inner_radius - cylindrical_radius) * inner_value;
-  get(piecewise_scalar) +=
-      step_function(cylindrical_radius - outer_radius) * outer_value;
+  get(piecewise_scalar) += step_function(inner_radius - radius) * inner_value;
+  get(piecewise_scalar) += step_function(radius - outer_radius) * outer_value;
   get(piecewise_scalar) +=
       // Blaze's step_function() at 0.0 is 1.0. So to get a mask that
       // is the inverse of the masks used above for inner_radius and
       // outer_radius without double-counting points on the boundary,
       // use 1.0 - stepfunction(x) instead of stepfunction(-x) here
-      (1.0 - step_function(inner_radius - cylindrical_radius)) *
-      (1.0 - step_function(cylindrical_radius - outer_radius)) *
-      exp(((-1.0 * cylindrical_radius + inner_radius) * log(outer_value) +
-           (cylindrical_radius - outer_radius) * log(inner_value)) /
+      (1.0 - step_function(inner_radius - radius)) *
+      (1.0 - step_function(radius - outer_radius)) *
+      exp(((-1.0 * radius + inner_radius) * log(outer_value) +
+           (radius - outer_radius) * log(inner_value)) /
           (inner_radius - outer_radius));
   return piecewise_scalar;
 }
@@ -55,7 +59,7 @@ BlastWave::BlastWave(const double inner_radius, const double outer_radius,
                      const double inner_density, const double outer_density,
                      const double inner_pressure, const double outer_pressure,
                      const std::array<double, 3>& magnetic_field,
-                     const double adiabatic_index,
+                     const double adiabatic_index, const Geometry geometry,
                      const Options::Context& context)
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
@@ -65,6 +69,7 @@ BlastWave::BlastWave(const double inner_radius, const double outer_radius,
       outer_pressure_(outer_pressure),
       magnetic_field_(magnetic_field),
       adiabatic_index_(adiabatic_index),
+      geometry_(geometry),
       equation_of_state_(adiabatic_index) {
   if (inner_radius >= outer_radius) {
     PARSE_ERROR(context,
@@ -83,6 +88,7 @@ void BlastWave::pup(PUP::er& p) noexcept {
   p | outer_pressure_;
   p | magnetic_field_;
   p | adiabatic_index_;
+  p | geometry_;
   p | equation_of_state_;
   p | background_spacetime_;
 }
@@ -94,7 +100,7 @@ BlastWave::variables(
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
     const noexcept {
   return compute_piecewise(x, inner_radius_, outer_radius_, inner_density_,
-                           outer_density_);
+                           outer_density_, geometry_);
 }
 
 template <typename DataType>
@@ -124,8 +130,7 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
   return compute_piecewise(x, inner_radius_, outer_radius_, inner_pressure_,
-                           outer_pressure_);
-  ;
+                           outer_pressure_, geometry_);
 }
 
 template <typename DataType>
@@ -178,7 +183,8 @@ bool operator==(const BlastWave& lhs, const BlastWave& rhs) noexcept {
          lhs.inner_pressure_ == rhs.inner_pressure_ and
          lhs.outer_pressure_ == rhs.outer_pressure_ and
          lhs.magnetic_field_ == rhs.magnetic_field_ and
-         lhs.adiabatic_index_ == rhs.adiabatic_index_;
+         lhs.adiabatic_index_ == rhs.adiabatic_index_ and
+         lhs.geometry_ == rhs.geometry_;
 }
 
 bool operator!=(const BlastWave& lhs, const BlastWave& rhs) noexcept {
@@ -215,3 +221,20 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
 }  // namespace grmhd::AnalyticData
+
+template <>
+grmhd::AnalyticData::BlastWave::Geometry
+Options::create_from_yaml<grmhd::AnalyticData::BlastWave::Geometry>::create<
+    void>(const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  if ("Cylindrical" == type_read) {
+    return grmhd::AnalyticData::BlastWave::Geometry::Cylindrical;
+  } else if ("Spherical" == type_read) {
+    return grmhd::AnalyticData::BlastWave::Geometry::Spherical;
+  }
+  PARSE_ERROR(
+      options.context(),
+      "Failed to convert \""
+          << type_read
+          << "\" to Geometry. Must be one of Cylindrical or Spherical.");
+}

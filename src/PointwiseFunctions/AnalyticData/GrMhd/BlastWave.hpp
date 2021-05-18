@@ -23,11 +23,10 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 /*!
- * \brief Analytic initial data for a cylindrical blast wave.
+ * \brief Analytic initial data for a cylindrical or spherical blast wave.
  *
  * This class implements analytic initial data for a cylindrical blast wave,
  * as described, e.g., in \cite Kidder2016hev Sec. 6.2.3.
@@ -52,10 +51,16 @@ namespace AnalyticData {
  * at the final time. E.g., if `InnerRadius = 0.8`, `OuterRadius = 1.0`, and
  * the final time is 4.0, a good domain extends from `(x,y)=(-6.0, -6.0)` to
  * `(x,y)=(6.0, 6.0)`.
+ *
+ * An analogous problem with spherical geometry has also been used
+ * \cite CerdaDuran2007 \cite CerdaDuran2008 \cite Cipolletta2019. The magnetic
+ * field is chosen to be in the z-direction instead of the x-direction.
  */
 class BlastWave : public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
+
+  enum class Geometry { Cylindrical, Spherical };
 
   /// Inside InnerRadius, density is InnerDensity.
   struct InnerRadius {
@@ -112,13 +117,20 @@ class BlastWave : public MarkAsAnalyticData {
         "The adiabatic index of the ideal fluid."};
     static type lower_bound() noexcept { return 1.0; }
   };
+  /// The geometry of the blast wave, i.e. Cylindrical or Spherical.
+  struct GeometryOption {
+    static std::string name() noexcept { return "Geometry"; }
+    using type = Geometry;
+    static constexpr Options::String help = {
+        "The geometry of the blast wave, i.e. Cylindrical or Spherical."};
+  };
 
-  using options =
-      tmpl::list<InnerRadius, OuterRadius, InnerDensity, OuterDensity,
-                 InnerPressure, OuterPressure, MagneticField, AdiabaticIndex>;
+  using options = tmpl::list<InnerRadius, OuterRadius, InnerDensity,
+                             OuterDensity, InnerPressure, OuterPressure,
+                             MagneticField, AdiabaticIndex, GeometryOption>;
 
   static constexpr Options::String help = {
-      "Cylindrical blast wave analytic initial data."};
+      "Cylindrical or spherical blast wave analytic initial data."};
 
   BlastWave() = default;
   BlastWave(const BlastWave& /*rhs*/) = delete;
@@ -130,7 +142,7 @@ class BlastWave : public MarkAsAnalyticData {
   BlastWave(double inner_radius, double outer_radius, double inner_density,
             double outer_density, double inner_pressure, double outer_pressure,
             const std::array<double, 3>& magnetic_field, double adiabatic_index,
-            const Options::Context& context = {});
+            Geometry geometry, const Options::Context& context = {});
 
   explicit BlastWave(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -224,6 +236,7 @@ class BlastWave : public MarkAsAnalyticData {
        std::numeric_limits<double>::signaling_NaN(),
        std::numeric_limits<double>::signaling_NaN()}};
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
+  Geometry geometry_ = Geometry::Cylindrical;
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 
@@ -232,5 +245,20 @@ class BlastWave : public MarkAsAnalyticData {
   friend bool operator!=(const BlastWave& lhs, const BlastWave& rhs) noexcept;
 };
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData
+
+/// \cond
+template <>
+struct Options::create_from_yaml<grmhd::AnalyticData::BlastWave::Geometry> {
+  template <typename Metavariables>
+  static grmhd::AnalyticData::BlastWave::Geometry create(
+      const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+grmhd::AnalyticData::BlastWave::Geometry
+Options::create_from_yaml<grmhd::AnalyticData::BlastWave::Geometry>::create<
+    void>(const Options::Option& options);
+/// \endcond
