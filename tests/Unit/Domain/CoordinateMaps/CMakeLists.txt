@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_Equiangular.cpp
   Test_Frustum.cpp
   Test_Identity.cpp
+  Test_KerrHorizonConforming.cpp
   Test_ProductMaps.cpp
   Test_Rotation.cpp
   Test_SpecialMobius.cpp

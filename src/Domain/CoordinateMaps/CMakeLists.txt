@@ -26,6 +26,7 @@ spectre_target_sources(
   FocallyLiftedSide.cpp
   Frustum.cpp
   Identity.cpp
+  KerrHorizonConforming.cpp
   Rotation.cpp
   SpecialMobius.cpp
   Wedge.cpp
@@ -56,6 +57,7 @@ spectre_target_headers(
   FocallyLiftedSide.hpp
   Frustum.hpp
   Identity.hpp
+  KerrHorizonConforming.hpp
   MapInstantiationMacros.hpp
   ProductMaps.hpp
   ProductMaps.tpp
