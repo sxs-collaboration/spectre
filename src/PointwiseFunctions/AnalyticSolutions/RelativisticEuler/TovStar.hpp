@@ -83,6 +83,7 @@ class TovStar : public MarkAsAnalyticSolution {
               make_with_value<Scalar<DataType>>(radial_coordinate, 0.0)),
           specific_enthalpy(
               make_with_value<Scalar<DataType>>(radial_coordinate, 0.0)),
+          dr_pressure(make_with_value<DataType>(radial_coordinate, 0.0)),
           metric_time_potential(
               make_with_value<DataType>(radial_coordinate, 0.0)),
           dr_metric_time_potential(
@@ -100,6 +101,7 @@ class TovStar : public MarkAsAnalyticSolution {
     Scalar<DataType> pressure{};
     Scalar<DataType> specific_internal_energy{};
     Scalar<DataType> specific_enthalpy{};
+    DataType dr_pressure{};
     DataType metric_time_potential{};
     DataType dr_metric_time_potential{};
     DataType metric_radial_potential{};
