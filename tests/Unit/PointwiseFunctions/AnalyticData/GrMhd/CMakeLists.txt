@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_MagneticRotor.cpp
   Test_MagnetizedFmDisk.cpp
   Test_OrszagTangVortex.cpp
+  Test_RiemannProblem.cpp
   )
 
 add_test_library(
