@@ -11,6 +11,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  InitializationFunctions.cpp
   NodeLock.cpp
   )
 
