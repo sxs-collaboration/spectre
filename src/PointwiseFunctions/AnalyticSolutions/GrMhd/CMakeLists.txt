@@ -33,4 +33,5 @@ target_link_libraries(
   GeneralRelativitySolutions
   Hydro
   Options
+  RelativisticEulerSolutions
   )
