@@ -20,6 +20,8 @@ class DataVector;
 namespace EquationsOfState {
 template <bool IsRelativistic>
 class DarkEnergyFluid;
+template <typename ColdEquationOfState>
+class HybridEos;
 template <bool IsRelativistic>
 class IdealFluid;
 template <bool IsRelativistic>
@@ -49,12 +51,13 @@ struct DerivedClasses<false, 1> {
 
 template <>
 struct DerivedClasses<true, 2> {
-  using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>>;
+  using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>,
+                          HybridEos<PolytropicFluid<true>>>;
 };
 
 template <>
 struct DerivedClasses<false, 2> {
-  using type = tmpl::list<IdealFluid<false>>;
+  using type = tmpl::list<IdealFluid<false>, HybridEos<PolytropicFluid<false>>>;
 };
 
 }  // namespace detail

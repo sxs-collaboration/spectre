@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   DarkEnergyFluid.cpp
   Enthalpy.cpp
+  HybridEos.cpp
   IdealFluid.cpp
   PolytropicFluid.cpp
   Spectral.cpp
@@ -18,6 +19,7 @@ spectre_target_headers(
   DarkEnergyFluid.hpp
   EquationOfState.hpp
   Factory.hpp
+  HybridEos.hpp
   IdealFluid.hpp
   PolytropicFluid.hpp
   Spectral.hpp
