@@ -74,7 +74,7 @@ void TimeDerivative<Dim>::apply(
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
-  // Need guage function on external faces for gauge-constraint preservation
+  // Need gauge function on external faces for gauge-constraint preservation
   *temp_gauge_function = gauge_function;
   *temp_spacetime_deriv_gauge_function = spacetime_deriv_gauge_function;
 
