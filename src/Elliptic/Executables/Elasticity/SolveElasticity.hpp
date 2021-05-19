@@ -33,10 +33,11 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
@@ -139,40 +140,40 @@ struct Metavariables {
       ::Tags::Variables<db::wrap_tags_in<LinearSolver::Tags::Operand,
                                          typename system::primal_fluxes>>;
 
-  // Collect events and triggers
-  // (public for use by the Charm++ registration code)
   using analytic_solution_fields = typename system::primal_fields;
   using observe_fields = tmpl::append<
       analytic_solution_fields,
       tmpl::list<Elasticity::Tags::Strain<volume_dim>,
                  Elasticity::Tags::PotentialEnergyDensity<volume_dim>>>;
-  using events = tmpl::list<
-      dg::Events::Registrars::ObserveFields<
-          volume_dim, linear_solver_iteration_id, observe_fields,
-          analytic_solution_fields>,
-      dg::Events::Registrars::ObserveErrorNorms<linear_solver_iteration_id,
-                                                analytic_solution_fields>,
-      dg::Events::Registrars::ObserveVolumeIntegrals<
-          volume_dim, linear_solver_iteration_id,
-          tmpl::list<Elasticity::Tags::PotentialEnergyDensity<volume_dim>>>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<background_tag, initial_guess_tag,
-                 Tags::EventsAndTriggers<events>>;
+      tmpl::list<background_tag, initial_guess_tag, Tags::EventsAndTriggers>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, linear_solver_iteration_id,
+                           observe_fields, analytic_solution_fields>,
+                       dg::Events::ObserveVolumeIntegrals<
+                           volume_dim, linear_solver_iteration_id,
+                           tmpl::list<Elasticity::Tags::PotentialEnergyDensity<
+                               volume_dim>>>>>>,
+        tmpl::pair<Trigger,
+                   tmpl::push_back<Triggers::logical_triggers,
+                                   elliptic::Triggers::EveryNIterations<
+                                       linear_solver_iteration_id>>>>;
+  };
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
-          typename Event<events>::creatable_classes, linear_solver>>>;
-
-  struct factory_creation
-      : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        Trigger, tmpl::push_back<Triggers::logical_triggers,
-                                 elliptic::Triggers::EveryNIterations<
-                                     linear_solver_iteration_id>>>>;
-  };
+          tmpl::at<typename factory_creation::factory_classes, Event>,
+          linear_solver>>>;
 
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
@@ -269,8 +270,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         metavariables::initial_guess_tag::type::element_type>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::system::boundary_conditions_base>,
-    &Parallel::register_derived_classes_with_charm<
-        Event<metavariables::events>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

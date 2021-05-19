@@ -51,10 +51,9 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
+#include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -148,26 +147,23 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  using events = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
-                          dg::Events::Registrars::ObserveErrorNorms<
-                              Tags::Time, analytic_variables_tags>,
-                          tmpl::list<>>,
-      dg::Events::Registrars::ObserveFields<
-          Dim, Tags::Time,
-          tmpl::append<typename system::variables_tag::tags_list,
-                       typename system::primitive_variables_tag::tags_list>,
-          tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
-                              analytic_variables_tags, tmpl::list<>>>,
-      Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
-      Events::Registrars::ChangeSlabSize>>;
-
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      typename Event<events>::creatable_classes>;
-
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<
+                    volume_dim, Tags::Time,
+                    tmpl::append<
+                        typename system::variables_tag::tags_list,
+                        typename system::primitive_variables_tag::tags_list>,
+                    tmpl::conditional_t<
+                        evolution::is_analytic_solution_v<initial_data>,
+                        typename system::primitive_variables_tag::tags_list,
+                        tmpl::list<>>>,
+                Events::time_events<EvolutionMetavars>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
@@ -177,6 +173,10 @@ struct EvolutionMetavars {
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };
+
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
+          tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
@@ -283,7 +283,7 @@ struct EvolutionMetavars {
   using const_global_cache_tags = tmpl::list<
       initial_data_tag,
       tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>,
-      time_stepper_tag, Tags::EventsAndTriggers<events>,
+      time_stepper_tag, Tags::EventsAndTriggers,
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   static constexpr Options::String help{
@@ -335,8 +335,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &NewtonianEuler::BoundaryConditions::register_derived_with_charm,
     &NewtonianEuler::BoundaryCorrections::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,

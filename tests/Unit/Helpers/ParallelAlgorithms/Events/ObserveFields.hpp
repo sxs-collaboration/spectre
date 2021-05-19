@@ -23,9 +23,12 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -125,6 +128,11 @@ struct Metavariables {
   using initial_data =
       tmpl::conditional_t<HasAnalyticSolution,
                           typename System::solution_for_test, NoSuchType>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Event, tmpl::list<typename system::ObserveEvent>>>;
+  };
   enum class Phase { Initialization, Testing, Exit };
 };
 

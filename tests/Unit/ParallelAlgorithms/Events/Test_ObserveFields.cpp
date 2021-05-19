@@ -35,6 +35,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
@@ -117,13 +118,15 @@ void test_observe(
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<db::AddSimpleTags<
-      ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
+      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
+      domain::Tags::Mesh<volume_dim>,
       Tags::Variables<typename decltype(vars)::tags_list>,
       tmpl::conditional_t<
           AlwaysHasAnalyticSolutions,
           ::Tags::AnalyticSolutions<solution_variables>,
           ::Tags::AnalyticSolutionsOptional<solution_variables>>>>(
-      observation_time, mesh, vars, [&solutions, &has_analytic_solutions]() {
+      metavariables{}, observation_time, mesh, vars,
+      [&solutions, &has_analytic_solutions]() {
         if constexpr (AlwaysHasAnalyticSolutions) {
           (void)has_analytic_solutions;
           // NOLINTNEXTLINE(performance-no-automatic-move)
@@ -211,20 +214,18 @@ void test_system(
   CAPTURE(AlwaysHasAnalyticSolutions);
   CAPTURE(has_analytic_solutions);
   CAPTURE(mesh_creation_string);
+  using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
   test_observe<System, AlwaysHasAnalyticSolutions>(
       std::make_unique<typename System::ObserveEvent>(
           System::make_test_object(interpolating_mesh)),
       interpolating_mesh, has_analytic_solutions);
   INFO("create/serialize");
-  using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveFields<
-      System::volume_dim, ObservationTimeTag,
-      typename System::all_vars_for_test,
-      typename System::solution_for_test::vars_for_test>>>;
-  Parallel::register_derived_classes_with_charm<EventType>();
+  Parallel::register_factory_classes_with_charm<metavariables>();
   const std::string creation_string =
       System::creation_string_for_test + mesh_creation_string;
   const auto factory_event =
-      TestHelpers::test_creation<std::unique_ptr<EventType>>(creation_string);
+      TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
+          creation_string);
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System, AlwaysHasAnalyticSolutions>(
       std::move(serialized_event), interpolating_mesh, has_analytic_solutions);

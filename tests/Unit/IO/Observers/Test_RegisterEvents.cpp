@@ -30,12 +30,10 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
-template <typename EventRegistrars>
-class SomeEvent : public Event<EventRegistrars> {
+class SomeEvent : public Event {
  public:
   struct SubfileName {
     using type = std::string;
@@ -53,7 +51,10 @@ class SomeEvent : public Event<EventRegistrars> {
 
   explicit SomeEvent(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(SomeEvent);  // NOLINT
+#pragma GCC diagnostic pop
 
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
@@ -68,7 +69,7 @@ class SomeEvent : public Event<EventRegistrars> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | subfile_path_;
   }
 
@@ -76,15 +77,7 @@ class SomeEvent : public Event<EventRegistrars> {
   std::string subfile_path_;
 };
 
-template <typename EventRegistrars>
-PUP::able::PUP_ID SomeEvent<EventRegistrars>::my_PUP_ID = 0;  // NOLINT
-
-namespace Registrars {
-using SomeEvent = ::Registration::Registrar<SomeEvent>;
-}  // namespace Registrars
-
-using events_and_triggers_tag =
-    Tags::EventsAndTriggers<tmpl::list<Registrars::SomeEvent>>;
+PUP::able::PUP_ID SomeEvent::my_PUP_ID = 0;  // NOLINT
 
 template <typename Metavariables>
 struct Component {
@@ -92,7 +85,7 @@ struct Component {
   using component_being_mocked = void;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags = tmpl::list<events_and_triggers_tag>;
+  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Testing,
       tmpl::list<observers::Actions::RegisterEventsWithObservers>>>;
@@ -175,22 +168,18 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<Trigger, Triggers::logical_triggers>>;
+        tmpl::map<tmpl::pair<Event, tmpl::list<SomeEvent>>,
+                  tmpl::pair<Trigger, Triggers::logical_triggers>>;
   };
   enum class Phase { Initialization, Testing, Exit };
 };
 
-using EventsAndTriggersType =
-    EventsAndTriggers<tmpl::list<Registrars::SomeEvent>>;
-
 SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
   // Test pup
-  Parallel::register_derived_classes_with_charm<
-      Event<tmpl::list<Registrars::SomeEvent>>>();
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
   const auto events_and_triggers =
-      TestHelpers::test_creation<EventsAndTriggersType, Metavariables>(
+      TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
           "? Not: Always\n"
           ": - SomeEvent:\n"
           "      SubfileName: element_data\n");

@@ -47,7 +47,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -61,29 +60,13 @@ struct Inertial;
 /// \endcond
 
 namespace evolution::dg::subcell::Events {
+/// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-          typename AnalyticSolutionTensors, typename EventRegistrars,
+          typename AnalyticSolutionTensors = tmpl::list<>,
           typename NonSolutionTensors =
               tmpl::list_difference<Tensors, AnalyticSolutionTensors>>
 class ObserveFields;
-
-namespace Registrars {
-template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-          typename AnalyticSolutionTensors = tmpl::list<>>
-struct ObserveFields {
-  template <typename RegistrarList>
-  using f = Events::ObserveFields<VolumeDim, ObservationValueTag, Tensors,
-                                  AnalyticSolutionTensors, RegistrarList>;
-};
-}  // namespace Registrars
-
-template <
-    size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-    typename AnalyticSolutionTensors = tmpl::list<>,
-    typename EventRegistrars = tmpl::list<Registrars::ObserveFields<
-        VolumeDim, ObservationValueTag, Tensors, AnalyticSolutionTensors>>,
-    typename NonSolutionTensors>
-class ObserveFields;  // IWYU pragma: keep
+/// \cond
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -100,12 +83,10 @@ class ObserveFields;  // IWYU pragma: keep
  * data is interpolated.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename EventRegistrars,
-          typename... NonSolutionTensors>
+          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
 class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                    tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
-                    tmpl::list<NonSolutionTensors...>>
-    : public Event<EventRegistrars> {
+                    tmpl::list<AnalyticSolutionTensors...>,
+                    tmpl::list<NonSolutionTensors...>> : public Event {
  private:
   static_assert(
       std::is_same_v<
@@ -229,10 +210,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const auto dg_inertial_coords = grid_to_inertial_map(
           dg_grid_coordinates, observation_value, functions_of_time);
       set_analytic_soln(dg_mesh, dg_inertial_coords);
-      ::dg::Events::ObserveFields<
-          VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-          tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
-          tmpl::list<NonSolutionTensors...>>::
+      ::dg::Events::ObserveFields<VolumeDim, ObservationValueTag,
+                                  tmpl::list<Tensors...>,
+                                  tmpl::list<AnalyticSolutionTensors...>,
+                                  tmpl::list<NonSolutionTensors...>>::
           call_operator_impl(
               subfile_path_, variables_to_observe_, interpolation_mesh_,
               observation_value, dg_mesh, dg_inertial_coords,
@@ -244,10 +225,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const auto subcell_inertial_coords = grid_to_inertial_map(
           subcell_grid_coordinates, observation_value, functions_of_time);
       set_analytic_soln(subcell_mesh, subcell_inertial_coords);
-      ::dg::Events::ObserveFields<
-          VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-          tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
-          tmpl::list<NonSolutionTensors...>>::
+      ::dg::Events::ObserveFields<VolumeDim, ObservationValueTag,
+                                  tmpl::list<Tensors...>,
+                                  tmpl::list<AnalyticSolutionTensors...>,
+                                  tmpl::list<NonSolutionTensors...>>::
           call_operator_impl(
               subfile_path_, variables_to_observe_, interpolation_mesh_,
               observation_value, subcell_mesh, subcell_inertial_coords,
@@ -282,7 +263,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | subfile_path_;
     p | variables_to_observe_;
     p | interpolation_mesh_;
@@ -296,11 +277,11 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
 };
 
+/// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename EventRegistrars,
-          typename... NonSolutionTensors>
+          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
 ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-              tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
+              tmpl::list<AnalyticSolutionTensors...>,
               tmpl::list<NonSolutionTensors...>>::
     ObserveFields(const std::string& subfile_name,
                   const std::vector<std::string>& variables_to_observe,
@@ -333,14 +314,14 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         "interpolation could be added to support interpolation.");
   }
 }
+/// \endcond
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename EventRegistrars,
-          typename... NonSolutionTensors>
+          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
 PUP::able::PUP_ID
     ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                  tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
+                  tmpl::list<AnalyticSolutionTensors...>,
                   tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace evolution::dg::subcell::Events

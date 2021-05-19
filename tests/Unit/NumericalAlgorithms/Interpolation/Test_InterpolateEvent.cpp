@@ -22,12 +22,15 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -172,6 +175,15 @@ struct MockMetavariables {
       mock_interpolator<MockMetavariables>,
       mock_interpolation_target<MockMetavariables, InterpolatorTargetA>,
       mock_element<MockMetavariables>>;
+
+  using event = intrp::Events::Interpolate<volume_dim, InterpolatorTargetA,
+                                           interpolator_source_vars>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
+  };
+
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -207,13 +219,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
 
   const auto box = db::create<db::AddSimpleTags<
-      metavars::temporal_id, domain::Tags::Mesh<metavars::volume_dim>,
+      Parallel::Tags::MetavariablesImpl<metavars>, metavars::temporal_id,
+      domain::Tags::Mesh<metavars::volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
-      TimeStepId(true, 0, Slab(0., observation_time).end()), mesh, vars);
+      metavars{}, TimeStepId(true, 0, Slab(0., observation_time).end()), mesh,
+      vars);
 
-  intrp::Events::Interpolate<metavars::volume_dim,
-                             metavars::InterpolatorTargetA,
-                             metavars::interpolator_source_vars> event{};
+  metavars::event event{};
 
   CHECK(event.needs_evolved_variables());
   event.run(box, ActionTesting::cache<elem_component>(runner, array_index),

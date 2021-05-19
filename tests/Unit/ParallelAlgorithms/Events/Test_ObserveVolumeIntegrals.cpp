@@ -35,9 +35,11 @@
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -45,6 +47,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -124,13 +127,6 @@ struct MockObserverComponent {
                                         tmpl::list<>>>;
 };
 
-struct Metavariables {
-  using component_list = tmpl::list<ElementComponent<Metavariables>,
-                                    MockObserverComponent<Metavariables>>;
-  using const_global_cache_tags = tmpl::list<>;  //  unused
-  enum class Phase { Initialization, Testing, Exit };
-};
-
 struct ScalarVar : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -148,6 +144,22 @@ struct TensorVar : db::SimpleTag {
 template <size_t SpatialDim>
 using variables_for_test =
     tmpl::list<ScalarVar, VectorVar<SpatialDim>, TensorVar<SpatialDim>>;
+
+template <size_t VolumeDim>
+struct Metavariables {
+  using component_list = tmpl::list<ElementComponent<Metavariables>,
+                                    MockObserverComponent<Metavariables>>;
+  using const_global_cache_tags = tmpl::list<>;  //  unused
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        Event,
+        tmpl::list<dg::Events::ObserveVolumeIntegrals<
+            VolumeDim, ObservationTimeTag, variables_for_test<VolumeDim>>>>>;
+  };
+  enum class Phase { Initialization, Testing, Exit };
+};
 
 template <size_t SpatialDim>
 std::unique_ptr<DomainCreator<SpatialDim>> domain_creator() noexcept;
@@ -175,7 +187,7 @@ std::unique_ptr<DomainCreator<3>> domain_creator() noexcept {
 
 template <size_t VolumeDim, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
-  using metavariables = Metavariables;
+  using metavariables = Metavariables<VolumeDim>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
 
@@ -226,10 +238,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   const double observation_time = 2.0;
   const auto box = db::create<db::AddSimpleTags<
-      ObservationTimeTag, domain::Tags::Mesh<VolumeDim>,
+      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
+      domain::Tags::Mesh<VolumeDim>,
       domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
       Tags::Variables<typename decltype(vars)::tags_list>>>(
-      observation_time, mesh, det_inv_jacobian, vars);
+      metavariables{}, observation_time, mesh, det_inv_jacobian, vars);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
@@ -241,8 +254,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
                array_index, std::add_pointer_t<element_component>{});
 
   // Process the data
-  runner.invoke_queued_simple_action<observer_component>(0);
-  CHECK(runner.is_simple_action_queue_empty<observer_component>(0));
+  runner.template invoke_queued_simple_action<observer_component>(0);
+  CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
@@ -269,12 +282,10 @@ void test_observe_system() noexcept {
   }
   {
     INFO("Testing create/serialize for Dim = " << VolumeDim);
-    using EventType =
-        Event<tmpl::list<dg::Events::Registrars::ObserveVolumeIntegrals<
-            VolumeDim, ObservationTimeTag, vars_for_test>>>;
-    Parallel::register_derived_classes_with_charm<EventType>();
+    using metavariables = Metavariables<VolumeDim>;
+    Parallel::register_factory_classes_with_charm<metavariables>();
     const auto factory_event =
-        TestHelpers::test_creation<std::unique_ptr<EventType>>(
+        TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
             "ObserveVolumeIntegrals:\n"
             "  SubfileName: volume_integrals");
     auto serialized_event = serialize_and_deserialize(factory_event);
