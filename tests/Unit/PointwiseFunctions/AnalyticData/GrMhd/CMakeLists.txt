@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_MagneticFieldLoop.cpp
   Test_MagneticRotor.cpp
   Test_MagnetizedFmDisk.cpp
+  Test_MagnetizedTovStar.cpp
   Test_OrszagTangVortex.cpp
   )
 

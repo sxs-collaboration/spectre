@@ -31,6 +31,7 @@ class CylindricalBlastWave;
 class MagneticFieldLoop;
 class MagneticRotor;
 class MagnetizedFmDisk;
+class MagnetizedTovStar;
 class OrszagTangVortex;
 }  // namespace AnalyticData
 }  // namespace grmhd

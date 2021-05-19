@@ -173,11 +173,7 @@ class TovStar : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
- private:
-  template <typename LocalRadialSolution>
-  friend bool operator==(const TovStar<LocalRadialSolution>& lhs,
-                         const TovStar<LocalRadialSolution>& rhs) noexcept;
-
+ protected:
   const RadialSolution& radial_tov_solution() const noexcept;
 
   template <typename DataType>
@@ -237,6 +233,11 @@ class TovStar : public MarkAsAnalyticSolution {
   BOOST_PP_LIST_FOR_EACH(FUNC_DECL, _, MY_LIST)
 #undef MY_LIST
 #undef FUNC_DECL
+
+ private:
+  template <typename LocalRadialSolution>
+  friend bool operator==(const TovStar<LocalRadialSolution>& lhs,
+                         const TovStar<LocalRadialSolution>& rhs) noexcept;
 
   double central_rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();
