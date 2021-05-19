@@ -23,7 +23,7 @@ using field_observations = tmpl::flatten<tmpl::list<
 }  // namespace dg::Events
 
 namespace Events {
-template <typename Metavars>
+template <typename System>
 using time_events =
-    tmpl::list<Events::ObserveTimeStep<Metavars>, Events::ChangeSlabSize>;
+    tmpl::list<Events::ObserveTimeStep<System>, Events::ChangeSlabSize>;
 }  // namespace Events

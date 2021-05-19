@@ -199,7 +199,7 @@ struct EvolutionMetavars {
                     tmpl::conditional_t<
                         evolution::is_analytic_solution_v<initial_data>,
                         analytic_variables_tags, tmpl::list<>>>,
-                Events::time_events<EvolutionMetavars>,
+                Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,

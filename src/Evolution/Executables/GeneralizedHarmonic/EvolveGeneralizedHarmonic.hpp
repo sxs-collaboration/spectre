@@ -211,7 +211,7 @@ struct EvolutionMetavars {
                 dg::Events::field_observations<volume_dim, Tags::Time,
                                                observe_fields,
                                                analytic_solution_fields>,
-                Events::time_events<EvolutionMetavars>,
+                Events::time_events<system>,
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,

@@ -148,7 +148,7 @@ struct EvolutionMetavars {
                     tmpl::conditional_t<
                         evolution::is_analytic_solution_v<initial_data>,
                         analytic_variables_tags, tmpl::list<>>>,
-                Events::time_events<EvolutionMetavars>>>>,
+                Events::time_events<system>>>>,
         tmpl::pair<
             StepChooser<StepChooserUse::LtsStep>,
             StepChoosers::standard_step_choosers<system, false>>,

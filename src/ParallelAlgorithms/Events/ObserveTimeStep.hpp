@@ -104,7 +104,7 @@ struct FormatTimeOutput
  * All values are reported as positive numbers, even for backwards
  * evolutions.
  */
-template <typename Metavariables>
+template <typename System>
 class ObserveTimeStep : public Event {
  private:
   using ReductionData = Events::detail::ObserveTimeStepReductionData;
@@ -158,16 +158,15 @@ class ObserveTimeStep : public Event {
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
   using argument_tags =
-      tmpl::list<Tags::Time, Tags::TimeStep,
-                 typename Metavariables::system::variables_tag>;
+      tmpl::list<Tags::Time, Tags::TimeStep, typename System::variables_tag>;
 
-  template <typename ArrayIndex, typename ParallelComponent>
-  void operator()(
-      const double& time, const TimeDelta& time_step,
-      const typename Metavariables::system::variables_tag::type& variables,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index,
-      const ParallelComponent* const /*meta*/) const noexcept {
+  template <typename ArrayIndex, typename ParallelComponent,
+            typename Metavariables>
+  void operator()(const double& time, const TimeDelta& time_step,
+                  const typename System::variables_tag::type& variables,
+                  Parallel::GlobalCache<Metavariables>& cache,
+                  const ArrayIndex& array_index,
+                  const ParallelComponent* const /*meta*/) const noexcept {
     const size_t number_of_grid_points = variables.number_of_grid_points();
     const double slab_size = time_step.slab().duration().value();
     const double step_size = abs(time_step.value());
@@ -217,13 +216,13 @@ class ObserveTimeStep : public Event {
   bool output_time_;
 };
 
-template <typename Metavariables>
-ObserveTimeStep<Metavariables>::ObserveTimeStep(const std::string& subfile_name,
+template <typename System>
+ObserveTimeStep<System>::ObserveTimeStep(const std::string& subfile_name,
                                                 const bool output_time) noexcept
     : subfile_path_("/" + subfile_name), output_time_(output_time) {}
 
 /// \cond
-template <typename Metavariables>
-PUP::able::PUP_ID ObserveTimeStep<Metavariables>::my_PUP_ID = 0;  // NOLINT
+template <typename System>
+PUP::able::PUP_ID ObserveTimeStep<System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

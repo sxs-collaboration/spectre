@@ -164,7 +164,7 @@ struct EvolutionMetavars {
                         evolution::is_analytic_solution_v<initial_data>,
                         typename system::primitive_variables_tag::tags_list,
                         tmpl::list<>>>,
-                Events::time_events<EvolutionMetavars>>>>,
+                Events::time_events<system>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
