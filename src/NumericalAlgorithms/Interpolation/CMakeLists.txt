@@ -15,6 +15,7 @@ spectre_target_sources(
   InterpolationTargetApparentHorizon.cpp
   InterpolationTargetKerrHorizon.cpp
   InterpolationTargetLineSegment.cpp
+  InterpolationTargetSpecifiedPoints.cpp
   InterpolationTargetWedgeSectionTorus.cpp
   IrregularInterpolant.cpp
   LinearSpanInterpolator.cpp
@@ -43,6 +44,7 @@ spectre_target_headers(
   InterpolationTargetKerrHorizon.hpp
   InterpolationTargetLineSegment.hpp
   InterpolationTargetReceiveVars.hpp
+  InterpolationTargetSpecifiedPoints.hpp
   InterpolationTargetWedgeSectionTorus.hpp
   Interpolator.hpp
   InterpolatorReceivePoints.hpp
