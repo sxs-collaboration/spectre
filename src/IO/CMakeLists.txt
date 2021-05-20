@@ -38,4 +38,5 @@ target_link_libraries(
 
 add_subdirectory(H5)
 add_subdirectory(Importers)
+add_subdirectory(Logging)
 add_subdirectory(Observer)

@@ -7,8 +7,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "IO/Logging/Tags.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
-#include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"

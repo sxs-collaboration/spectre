@@ -16,7 +16,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "Informer/Verbosity.hpp"
 #include "Utilities/Gsl.hpp"
 
 /*!

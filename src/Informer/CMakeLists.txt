@@ -20,7 +20,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Informer.cpp
-  Verbosity.cpp
   ${CMAKE_BINARY_DIR}/Informer/InfoAtCompile.cpp
   )
 
@@ -30,8 +29,6 @@ spectre_target_headers(
   HEADERS
   InfoFromBuild.hpp
   Informer.hpp
-  Tags.hpp
-  Verbosity.hpp
   )
 
 # The Darwin linker is not OK with undefined symbols at link time of the
@@ -43,9 +40,6 @@ target_link_options(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC
-  Boost::boost
-  Options
   PRIVATE
   ErrorHandling
   SystemUtilities

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include "IO/Logging/Verbosity.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {

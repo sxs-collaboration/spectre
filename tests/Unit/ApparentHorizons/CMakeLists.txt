@@ -19,7 +19,19 @@ add_test_library(
   ${LIBRARY}
   "ApparentHorizons"
   "${LIBRARY_SOURCES}"
-  "ApparentHorizons;ApparentHorizonsHelpers;GeneralRelativitySolutions;Options;RootFinding;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ApparentHorizons
+  ApparentHorizonsHelpers
+  GeneralRelativitySolutions
+  Logging
+  Options
+  RootFinding
+  Utilities
   )
 
 add_dependencies(

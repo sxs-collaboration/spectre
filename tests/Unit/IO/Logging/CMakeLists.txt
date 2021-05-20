@@ -1,16 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_ParallelSchwarzActions")
+set(LIBRARY "Test_Logging")
 
 set(LIBRARY_SOURCES
-  Test_CommunicateOverlapFields.cpp
-  Test_ResetSubdomainSolver.cpp
+  Test_Tags.cpp
+  Test_Verbosity.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "ParallelAlgorithms/LinearSolver/Schwarz/Actions"
+  "IO/Logging/"
   "${LIBRARY_SOURCES}"
   ""
   )
@@ -18,10 +18,7 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  Convergence
   DataStructures
-  DomainStructure
   Logging
-  ParallelSchwarz
-  Spectral
+  Utilities
   )
