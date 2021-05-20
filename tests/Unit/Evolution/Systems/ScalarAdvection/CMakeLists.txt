@@ -4,6 +4,7 @@
 set(LIBRARY Test_ScalarAdvection)
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_Periodic.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
@@ -21,5 +22,6 @@ target_link_libraries(
   PUBLIC
   ScalarAdvection
   DataStructures
+  Domain
   Utilities
   )
