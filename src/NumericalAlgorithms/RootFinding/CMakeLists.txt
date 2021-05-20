@@ -29,4 +29,5 @@ target_link_libraries(
   Boost::boost
   ErrorHandling
   GSL::gsl
+  Logging
   )

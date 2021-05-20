@@ -13,6 +13,7 @@
 #include <ostream>
 #include <string>
 
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
@@ -126,24 +127,6 @@ int gsl_multirootfunctionfdf_wrapper_fdf(const gsl_vector* const x,
 CREATE_IS_CALLABLE(jacobian)
 CREATE_IS_CALLABLE_V(jacobian)
 }  // namespace gsl_multiroot_detail
-
-/*!
- *  \ingroup NumericalAlgorithmsGroup
- *  \brief The different options for the verbosity of gsl_multiroot.
- */
-enum class Verbosity {
-  /// Do not print anything
-  Silent,
-  /// Print only "success" or "failed" on termination
-  Quiet,
-  /// Print final functions values on termination
-  Verbose,
-  /// Print function values on every iteration
-  Debug
-};
-
-std::ostream& operator<<(std::ostream& /*os*/,
-                         const Verbosity& /*verbosity*/) noexcept;
 
 /*!
  *  \ingroup NumericalAlgorithmsGroup

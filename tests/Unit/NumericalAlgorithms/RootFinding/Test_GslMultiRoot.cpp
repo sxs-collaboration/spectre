@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/RootFinding/GslMultiRoot.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -75,7 +76,7 @@ void test_gsl_multiroot(RootFinder::StoppingCondition condition,
   const double absolute_tolerance = 1.0e-14;
   const double max_absolute_tolerance = 0.0;
   const int maximum_iterations = 20;
-  const RootFinder::Verbosity verbosity = RootFinder::Verbosity::Silent;
+  const ::Verbosity verbosity = ::Verbosity::Silent;
 
   std::vector<RootFinder::Method> methods_list{RootFinder::Method::Newton,
                                                RootFinder::Method::Hybrid,
@@ -110,10 +111,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
                      good_initial_guess);
   test_gsl_multiroot(RootFinder::StoppingCondition::Absolute, function,
                      good_initial_guess);
-  CHECK(get_output(RootFinder::Verbosity::Silent) == "Silent");
-  CHECK(get_output(RootFinder::Verbosity::Quiet) == "Quiet");
-  CHECK(get_output(RootFinder::Verbosity::Verbose) == "Verbose");
-  CHECK(get_output(RootFinder::Verbosity::Debug) == "Debug");
   CHECK(get_output(RootFinder::Method::Hybrids) == "Hybrids");
   CHECK(get_output(RootFinder::Method::Hybrid) == "Hybrid");
   CHECK(get_output(RootFinder::Method::Newton) == "Newton");
