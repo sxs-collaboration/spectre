@@ -56,6 +56,12 @@ struct TildePhi : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/// \brief Set to `true` if the variables needed fixing.
+///
+/// Used in DG-subcell hybrid scheme evolutions.
+struct VariablesNeededFixing : db::SimpleTag {
+  using type = bool;
+};
 }  // namespace Tags
 
 namespace OptionTags {
