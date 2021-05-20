@@ -14,8 +14,8 @@ add_spectre_library(${LIBRARY})
 # via the CMake function check_spectre_libs_dependencies.
 #
 # We do *not* track InfoAtLink.cpp as a library source, as it is used only to
-# inject information late in the build process. The InfoAtLink target defined
-# below determines the approriate flags for compiling InfoAtLink.cpp.
+# inject information late in the build process. But note that InfoAtLink.cpp
+# depends on Boost.
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
@@ -50,35 +50,5 @@ target_link_libraries(
   ErrorHandling
   SystemUtilities
   )
-
-# Define the `InfoAtLink` target to determine the appropriate flags for
-# compiling `InfoAtLink.cpp`. The Python script stores the flags in the file
-# `${CMAKE_BINARY_DIR}/Informer/InfoAtLink_flags.txt` so they can be used for
-# compiling `InfoAtLink.cpp` at link time (see `WrapExecutableLinker.sh`).
-configure_file(
-  ${CMAKE_SOURCE_DIR}/src/Informer/InfoAtLinkExtractFlags.py
-  ${CMAKE_BINARY_DIR}/Informer/InfoAtLinkExtractFlags.py
-  )
-set(INFO_AT_LINK_LIB InfoAtLink)
-add_library(${INFO_AT_LINK_LIB} OBJECT InfoAtLink.cpp)
-target_link_libraries(
-  ${INFO_AT_LINK_LIB}
-  PRIVATE
-  Boost::boost
-  )
-set_target_properties(
-  ${INFO_AT_LINK_LIB}
-  PROPERTIES
-  CXX_COMPILER_LAUNCHER
-  ${CMAKE_BINARY_DIR}/Informer/InfoAtLinkExtractFlags.py
-  )
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
-  set_target_properties(
-    ${INFO_AT_LINK_LIB}
-    PROPERTIES
-    ADDITIONAL_CLEAN_FILES
-    ${CMAKE_BINARY_DIR}/Informer/InfoAtLink_flags.txt
-    )
-endif()
 
 add_subdirectory(Python)
