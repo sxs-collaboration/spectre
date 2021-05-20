@@ -20,6 +20,10 @@ parser.add_argument("compiler")
 parser.add_argument("-o", required=True)
 # Strip stage selection for an object file
 parser.add_argument("-c", action='store_true')
+# Strip depfile flags
+parser.add_argument("-MD", action='store_true')
+parser.add_argument("-MT", required=False)
+parser.add_argument("-MF", required=False)
 # Strip `-Werror` so `-fuse-ld=gold` compiler warnings from clang don't disrupt
 # the linking. See issue: https://github.com/sxs-collaboration/spectre/issues/2703
 parser.add_argument("-Werror", action='store_true')
