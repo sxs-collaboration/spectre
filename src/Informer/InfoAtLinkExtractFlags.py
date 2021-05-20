@@ -27,17 +27,21 @@ parser.add_argument("-MF", required=False)
 # Strip `-Werror` so `-fuse-ld=gold` compiler warnings from clang don't disrupt
 # the linking. See issue: https://github.com/sxs-collaboration/spectre/issues/2703
 parser.add_argument("-Werror", action='store_true')
+# Strip some compiler flags that the `charmc` compiler wrapper in Charm++
+# version 6.10.2 can't handle (later versions are OK)
+parser.add_argument("-ferror-limit")
 # Parse the CLI args, discarding the arguments specified above and extracting
 # the remaining compiler flags
 args, compiler_flags = parser.parse_known_args()
 # Discard the source file name
 compiler_flags.pop()
 concatenated_compiler_flags = " ".join(compiler_flags)
-# Strip `-isystem .` flag (sometimes added with the Ninja generator) because the
-# `charmc` compiler wrapper in Charm++ version 6.10.2 can't handle it (later
-# versions are OK).
+# Work around some compiler flags that the `charmc` compiler wrapper in Charm++
+# version 6.10.2 can't handle (later versions are OK)
 concatenated_compiler_flags = concatenated_compiler_flags.replace(
     '-isystem . ', ' ')
+concatenated_compiler_flags = concatenated_compiler_flags.replace(
+    '-isystem ', '-I')
 # Write the extracted flags out to a file
 output_filename = "@CMAKE_BINARY_DIR@/Informer/InfoAtLink_flags.txt"
 with open(output_filename, "w") as output_file:
