@@ -42,9 +42,9 @@ void check(const bool time_runs_forward, const bool expected_is_ready,
            const std::string& creation_string) noexcept {
   CAPTURE(creation_string);
   const auto box = db::create<db::AddSimpleTags<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>,
-      Tags::TimeStepId>>(Metavariables{}, TimeStepId(time_runs_forward, 0,
-                                                     Slab(0.0, 1.0).start()));
+      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
+      Metavariables{},
+      TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()));
   const auto trigger = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string));
