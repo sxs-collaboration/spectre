@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/ScalarAdvection/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ScalarAdvection/Characteristics.hpp"
 #include "Evolution/Systems/ScalarAdvection/Fluxes.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
@@ -28,6 +29,8 @@ struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
+
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
 
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;
   using flux_variables = tmpl::list<Tags::U>;
