@@ -71,9 +71,6 @@ namespace Actions {
 template <typename System, typename EquationOfStateTag = NoSuchType>
 struct ConservativeSystem {
  private:
-  static_assert(System::is_in_flux_conservative_form,
-                "System is not in flux conservative form");
-
   static constexpr size_t dim = System::volume_dim;
 
   using variables_tag = typename System::variables_tag;
