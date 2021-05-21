@@ -16,6 +16,7 @@ spectre_target_headers(
 add_subdirectory(Burgers)
 add_subdirectory(CurvedWaveEquation)
 add_subdirectory(Elasticity)
+add_subdirectory(GhGrMhd)
 add_subdirectory(GrMhd)
 add_subdirectory(NewtonianEuler)
 add_subdirectory(Xcts)

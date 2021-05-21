@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
@@ -145,9 +146,9 @@ namespace grmhd::AnalyticData {
  * Note that the magnetic field strength goes as \f$A_b\f$ so any desired value
  * can be achieved by a linear scaling.
  */
-class MagnetizedTovStar : public MarkAsAnalyticData,
-                          private RelativisticEuler::Solutions::TovStar<
-                              gr::Solutions::TovSolution> {
+class MagnetizedTovStar
+    : public MarkAsAnalyticData,
+      public RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> {
  private:
   using tov_star =
       RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>;
@@ -216,6 +217,7 @@ class MagnetizedTovStar : public MarkAsAnalyticData,
   friend bool operator==(const MagnetizedTovStar& lhs,
                          const MagnetizedTovStar& rhs) noexcept;
 
+ protected:
   template <typename DataType>
   tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
   variables(const tnsr::I<DataType, 3>& coords,

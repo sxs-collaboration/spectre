@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
@@ -100,6 +101,23 @@ class MagnetizedFmDisk
     static type suggested_value() { return 255; }
     static type lower_bound() { return 4; }
   };
+
+  // Unlike the other analytic data classes, we cannot get these from the
+  // `AnalyticDataBase` because this case causes clang-tidy to believe that
+  // there is an ambiguous inheritance problem
+  static constexpr size_t volume_dim = 3_st;
+
+  template <typename DataType>
+  using tags =
+      tmpl::push_back<typename gr::AnalyticSolution<3>::template tags<DataType>,
+    hydro::Tags::RestMassDensity<DataType>,
+                      hydro::Tags::SpecificInternalEnergy<DataType>,
+                      hydro::Tags::Pressure<DataType>,
+                      hydro::Tags::SpatialVelocity<DataType, 3>,
+                      hydro::Tags::MagneticField<DataType, 3>,
+                      hydro::Tags::DivergenceCleaningField<DataType>,
+                      hydro::Tags::LorentzFactor<DataType>,
+                      hydro::Tags::SpecificEnthalpy<DataType>>;
 
   using options = tmpl::push_back<fm_disk::options, ThresholdDensity,
                                   InversePlasmaBeta, BFieldNormGridRes>;

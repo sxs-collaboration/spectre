@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
@@ -76,7 +77,7 @@ namespace AnalyticData {
  * where \f$\gamma = \text{det}(\gamma_{ij})\f$. Wald's solution reproduces a
  * uniform magnetic field far from the black hole.
  */
-class BondiHoyleAccretion : public MarkAsAnalyticData {
+class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
 

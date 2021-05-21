@@ -21,7 +21,6 @@ tuples::TaggedTuple<gr::Tags::SpacetimeMetric<
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
-    double /*t*/,
     tmpl::list<gr::Tags::SpacetimeMetric<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
         Frame::Inertial, DataVector>> /*meta*/,
@@ -44,7 +43,6 @@ tuples::TaggedTuple<GeneralizedHarmonic::Tags::Phi<
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
-    double /*t*/,
     tmpl::list<GeneralizedHarmonic::Tags::Phi<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
         Frame::Inertial>> /*meta*/,
@@ -77,7 +75,6 @@ tuples::TaggedTuple<GeneralizedHarmonic::Tags::Pi<
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
-    double /*t*/,
     tmpl::list<GeneralizedHarmonic::Tags::Pi<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
         Frame::Inertial>> /*meta*/,
@@ -127,7 +124,6 @@ WrappedGr<SolutionType>::variables(
           const tnsr::I<DataVector,                                            \
                         GeneralizedHarmonic::Solutions::WrappedGr<             \
                             WRAPPED_GR_STYPE(data)>::volume_dim>& /*x*/,       \
-          double /*t*/,                                                        \
           tmpl::list<gr::Tags::SpacetimeMetric<                                \
               GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(      \
                   data)>::volume_dim,                                          \
@@ -142,7 +138,6 @@ WrappedGr<SolutionType>::variables(
           const tnsr::I<DataVector,                                            \
                         GeneralizedHarmonic::Solutions::WrappedGr<             \
                             WRAPPED_GR_STYPE(data)>::volume_dim>& /*x*/,       \
-          double /*t*/,                                                        \
           tmpl::list<GeneralizedHarmonic::Tags::Pi<                            \
               GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(      \
                   data)>::volume_dim,                                          \
@@ -157,7 +152,6 @@ WrappedGr<SolutionType>::variables(
           const tnsr::I<DataVector,                                            \
                         GeneralizedHarmonic::Solutions::WrappedGr<             \
                             WRAPPED_GR_STYPE(data)>::volume_dim>& /*x*/,       \
-          double /*t*/,                                                        \
           tmpl::list<GeneralizedHarmonic::Tags::Phi<                           \
               GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(      \
                   data)>::volume_dim,                                          \
