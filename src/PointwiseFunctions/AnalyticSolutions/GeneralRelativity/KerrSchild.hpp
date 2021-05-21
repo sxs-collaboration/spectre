@@ -212,7 +212,8 @@ namespace Solutions {
  * Right now we use (\f$\ref{eq:sphertocartsimple}\f$), but we may
  * wish to use the other transformation in the future.
  */
-class KerrSchild : public AnalyticSolution<3_st> {
+class KerrSchild : public AnalyticSolution<3_st>,
+                   public MarkAsAnalyticSolution {
  public:
   struct Mass {
     using type = double;

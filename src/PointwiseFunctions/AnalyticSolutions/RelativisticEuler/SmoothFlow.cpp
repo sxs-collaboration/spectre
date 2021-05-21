@@ -32,6 +32,26 @@ SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg) noexcept
     : smooth_flow(msg) {}
 
 template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, Dim>>
+SmoothFlow<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<hydro::Tags::MagneticField<DataType, Dim>> /*meta*/)
+    const noexcept {
+  return make_with_value<tnsr::I<DataType, Dim>>(get<0>(x), 0.0);
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
+SmoothFlow<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
+    const noexcept {
+  return make_with_value<Scalar<DataType>>(get<0>(x), 0.0);
+}
+
+template <size_t Dim>
 void SmoothFlow<Dim>::pup(PUP::er& p) noexcept {
   hydro::Solutions::SmoothFlow<Dim, true>::pup(p);
   p | background_spacetime_;
@@ -53,6 +73,7 @@ bool operator!=(const SmoothFlow<Dim>& lhs,
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DATA_TYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE_CLASS(_, data)                                 \
   template class SmoothFlow<DIM(data)>;                            \
@@ -61,8 +82,27 @@ bool operator!=(const SmoothFlow<Dim>& lhs,
   template bool operator!=(const SmoothFlow<DIM(data)>&,           \
                            const SmoothFlow<DIM(data)>&) noexcept;
 
+#define INSTANTIATE_FUNCTIONS(_, data)                                      \
+  template tuples::TaggedTuple<                                             \
+      hydro::Tags::DivergenceCleaningField<DATA_TYPE(data)>>                \
+  SmoothFlow<DIM(data)>::variables(                                         \
+      const tnsr::I<DATA_TYPE(data), DIM(data)>& x, double /*t*/,           \
+      tmpl::list<                                                           \
+          hydro::Tags::DivergenceCleaningField<DATA_TYPE(data)>> /*meta*/)  \
+      const noexcept;                                                       \
+  template tuples::TaggedTuple<                                             \
+      hydro::Tags::MagneticField<DATA_TYPE(data), DIM(data)>>               \
+  SmoothFlow<DIM(data)>::variables(                                         \
+      const tnsr::I<DATA_TYPE(data), DIM(data)>& x, double /*t*/,           \
+      tmpl::list<                                                           \
+          hydro::Tags::MagneticField<DATA_TYPE(data), DIM(data)>> /*meta*/) \
+      const noexcept;
+
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_FUNCTIONS, (1, 2, 3), (double, DataVector))
 
 #undef INSTANTIATE_CLASS
+#undef INSTANTIATE_FUNCTIONS
 #undef DIM
+#undef DATA_TYPE
 }  // namespace RelativisticEuler::Solutions

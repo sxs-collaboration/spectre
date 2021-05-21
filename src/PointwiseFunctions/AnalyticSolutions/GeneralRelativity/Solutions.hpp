@@ -6,12 +6,13 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
 namespace gr {
 /// Base struct for properties common to all GR analytic solutions
 template <size_t Dim>
-struct AnalyticSolution : public MarkAsAnalyticSolution {
+struct AnalyticSolution {
   static constexpr size_t volume_dim = Dim;
   template <typename DataType, typename Frame = ::Frame::Inertial>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
