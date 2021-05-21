@@ -5,6 +5,7 @@ set(LIBRARY "Test_EventsAndDenseTriggers")
 
 set(LIBRARY_SOURCES
   Test_EventsAndDenseTriggers.cpp
+  Test_Tags.cpp
   )
 
 add_subdirectory(DenseTriggers)

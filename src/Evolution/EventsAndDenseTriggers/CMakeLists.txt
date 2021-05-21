@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   EventsAndDenseTriggers.cpp
+  Tags.hpp
   )
 
 spectre_target_headers(
