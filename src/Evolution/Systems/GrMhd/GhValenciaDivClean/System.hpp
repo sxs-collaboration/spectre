@@ -40,6 +40,8 @@ struct System {
   using variables_tag = ::Tags::Variables<
       tmpl::append<typename gh_system::variables_tag::tags_list,
                    typename grmhd_system::variables_tag::tags_list>>;
+  using non_conservative_variables =
+      typename gh_system::variables_tag::tags_list;
   using flux_variables = tmpl::append<typename gh_system::flux_variables,
                                       typename grmhd_system::flux_variables>;
   using gradient_variables =

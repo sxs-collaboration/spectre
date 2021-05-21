@@ -38,6 +38,7 @@ struct System {
   using flux_variables =
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
                  Tags::EnergyDensity>;
+  using non_conservative_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
   using sourced_variables =
       typename InitialDataType::source_term_type::sourced_variables;
