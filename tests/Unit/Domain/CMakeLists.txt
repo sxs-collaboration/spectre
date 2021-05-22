@@ -21,6 +21,7 @@ set(LIBRARY_SOURCES
   Test_InterfaceItems.cpp
   Test_LogicalCoordinates.cpp
   Test_MinimumGridSpacing.cpp
+  Test_Protocols.cpp
   Test_SizeOfElement.cpp
   Test_Tags.cpp
   Test_TagsCharacteristicSpeeds.cpp

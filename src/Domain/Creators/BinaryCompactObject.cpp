@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <pup.h>
@@ -23,10 +24,15 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"
 
@@ -40,34 +46,8 @@ bool BinaryCompactObject::Object::is_excised() const noexcept {
   return inner_boundary_condition.has_value();
 }
 
-BinaryCompactObject::BinaryCompactObject(
-    Object object_A, Object object_B, double radius_enveloping_cube,
-    double radius_enveloping_sphere, size_t initial_refinement,
-    size_t initial_grid_points_per_dim, bool use_projective_map,
-    bool use_logarithmic_map_outer_spherical_shell,
-    size_t addition_to_outer_layer_radial_refinement_level,
-    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dependence,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        outer_boundary_condition,
-    const Options::Context& context)
-    : object_A_(std::move(object_A)),
-      object_B_(std::move(object_B)),
-      radius_enveloping_cube_(radius_enveloping_cube),
-      radius_enveloping_sphere_(radius_enveloping_sphere),
-      initial_refinement_(initial_refinement),
-      initial_grid_points_per_dim_(initial_grid_points_per_dim),
-      use_projective_map_(use_projective_map),
-      use_logarithmic_map_outer_spherical_shell_(
-          use_logarithmic_map_outer_spherical_shell),
-      addition_to_outer_layer_radial_refinement_level_(
-          addition_to_outer_layer_radial_refinement_level),
-      time_dependence_(std::move(time_dependence)),
-      outer_boundary_condition_(std::move(outer_boundary_condition)) {
-  // Determination of parameters for domain construction:
-  translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
-  length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
-  length_outer_cube_ = 2.0 * radius_enveloping_cube_ / sqrt(3.0);
+void BinaryCompactObject::check_for_parse_errors(
+    const Options::Context& context) const {
   if (object_A_.x_coord >= 0.0) {
     PARSE_ERROR(
         context,
@@ -93,15 +73,6 @@ BinaryCompactObject::BinaryCompactObject(
   if (object_B_.outer_radius < object_B_.inner_radius) {
     PARSE_ERROR(context,
                 "ObjectB's inner radius must be less than its outer radius.");
-  }
-  if (use_projective_map_) {
-    projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
-  } else {
-    projective_scale_factor_ = 1.0;
-  }
-  if (time_dependence_ == nullptr) {
-    time_dependence_ =
-        std::make_unique<domain::creators::time_dependence::None<3>>();
   }
   if (object_A_.use_logarithmic_map and not object_A_.is_excised()) {
     PARSE_ERROR(
@@ -141,6 +112,18 @@ BinaryCompactObject::BinaryCompactObject(
         context,
         "Cannot have periodic boundary conditions with a binary domain");
   }
+}
+
+void BinaryCompactObject::initialize_calculated_member_variables() noexcept {
+  // Determination of parameters for domain construction:
+  translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
+  length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
+  length_outer_cube_ = 2.0 * radius_enveloping_cube_ / sqrt(3.0);
+  if (use_projective_map_) {
+    projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
+  } else {
+    projective_scale_factor_ = 1.0;
+  }
 
   // Calculate number of blocks
   // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
@@ -154,6 +137,102 @@ BinaryCompactObject::BinaryCompactObject(
   if (not object_B_.is_excised()) {
     number_of_blocks_++;
   }
+}
+
+// Time-independent constructor
+BinaryCompactObject::BinaryCompactObject(
+    Object object_A, Object object_B, double radius_enveloping_cube,
+    double radius_enveloping_sphere, size_t initial_refinement,
+    size_t initial_grid_points_per_dim, bool use_projective_map,
+    bool use_logarithmic_map_outer_spherical_shell,
+    size_t addition_to_outer_layer_radial_refinement_level,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        outer_boundary_condition,
+    const Options::Context& context)
+    : object_A_(std::move(object_A)),
+      object_B_(std::move(object_B)),
+      radius_enveloping_cube_(radius_enveloping_cube),
+      radius_enveloping_sphere_(radius_enveloping_sphere),
+      initial_refinement_(initial_refinement),
+      initial_grid_points_per_dim_(initial_grid_points_per_dim),
+      use_projective_map_(use_projective_map),
+      use_logarithmic_map_outer_spherical_shell_(
+          use_logarithmic_map_outer_spherical_shell),
+      addition_to_outer_layer_radial_refinement_level_(
+          addition_to_outer_layer_radial_refinement_level),
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      enable_time_dependence_(false),
+      initial_time_(std::numeric_limits<double>::signaling_NaN()),
+      initial_expiration_delta_t_(std::numeric_limits<double>::signaling_NaN()),
+      expansion_map_outer_boundary_(
+          std::numeric_limits<double>::signaling_NaN()),
+      initial_expansion_({}),
+      initial_expansion_velocity_({}),
+      expansion_function_of_time_names_({}),
+      initial_rotation_angle_(std::numeric_limits<double>::signaling_NaN()),
+      initial_angular_velocity_(std::numeric_limits<double>::signaling_NaN()),
+      rotation_about_z_axis_function_of_time_name_({}),
+      initial_size_map_values_({}),
+      initial_size_map_velocities_({}),
+      initial_size_map_accelerations_({}),
+      size_map_function_of_time_names_({}) {
+  initialize_calculated_member_variables();
+  check_for_parse_errors(context);
+}
+
+// Time-dependent constructor, with additional options for specifying
+// the time-dependent maps
+BinaryCompactObject::BinaryCompactObject(
+    double initial_time, std::optional<double> initial_expiration_delta_t,
+    double expansion_map_outer_boundary,
+    std::array<double, 2> initial_expansion,
+    std::array<double, 2> initial_expansion_velocity,
+    std::array<std::string, 2> expansion_function_of_time_names,
+    double initial_rotation_angle, double initial_angular_velocity,
+    std::string rotation_about_z_axis_function_of_time_name,
+    std::array<double, 2> initial_size_map_values,
+    std::array<double, 2> initial_size_map_velocities,
+    std::array<double, 2> initial_size_map_accelerations,
+    std::array<std::string, 2> size_map_function_of_time_names, Object object_A,
+    Object object_B, double radius_enveloping_cube,
+    double radius_enveloping_sphere, size_t initial_refinement,
+    size_t initial_grid_points_per_dim, bool use_projective_map,
+    bool use_logarithmic_map_outer_spherical_shell,
+    size_t addition_to_outer_layer_radial_refinement_level,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        outer_boundary_condition,
+    const Options::Context& context)
+    : object_A_(std::move(object_A)),
+      object_B_(std::move(object_B)),
+      radius_enveloping_cube_(radius_enveloping_cube),
+      radius_enveloping_sphere_(radius_enveloping_sphere),
+      initial_refinement_(initial_refinement),
+      initial_grid_points_per_dim_(initial_grid_points_per_dim),
+      use_projective_map_(use_projective_map),
+      use_logarithmic_map_outer_spherical_shell_(
+          use_logarithmic_map_outer_spherical_shell),
+      addition_to_outer_layer_radial_refinement_level_(
+          addition_to_outer_layer_radial_refinement_level),
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      enable_time_dependence_(true),
+      initial_time_(initial_time),
+      initial_expiration_delta_t_(initial_expiration_delta_t),
+      expansion_map_outer_boundary_(expansion_map_outer_boundary),
+      initial_expansion_(initial_expansion),
+      initial_expansion_velocity_(initial_expansion_velocity),
+      expansion_function_of_time_names_(
+          std::move(expansion_function_of_time_names)),
+      initial_rotation_angle_(initial_rotation_angle),
+      initial_angular_velocity_(initial_angular_velocity),
+      rotation_about_z_axis_function_of_time_name_(
+          std::move(rotation_about_z_axis_function_of_time_name)),
+      initial_size_map_values_(initial_size_map_values),
+      initial_size_map_velocities_(initial_size_map_velocities),
+      initial_size_map_accelerations_(initial_size_map_accelerations),
+      size_map_function_of_time_names_(
+          std::move(size_map_function_of_time_names)) {
+  initialize_calculated_member_variables();
+  check_for_parse_errors(context);
 }
 
 Domain<3> BinaryCompactObject::create_domain() const noexcept {
@@ -256,7 +335,8 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
       use_equiangular_map_, 0.0, true, 1.0,
       use_logarithmic_map_outer_spherical_shell_, ShellWedges::All, 1);
   if (outer_boundary_condition_ != nullptr) {
-    // The outer 10 wedges all have to have the outer boundary condition applied
+    // The outer 10 wedges all have to have the outer boundary condition
+    // applied
     for (size_t i = 0; i < maps_first_outer_shell.size() +
                                maps_second_outer_shell.size() - 10;
          ++i) {
@@ -349,13 +429,133 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
                                              not object_B_.is_excised()),
       {},
       std::move(boundary_conditions_all_blocks)};
-  if (not time_dependence_->is_none()) {
+
+  // Inject the hard-coded time-dependence
+  if (enable_time_dependence_) {
+    // Note on frames: Because the relevant maps will all be composed before
+    // they are used, all maps here go from Frame::Grid (the frame after the
+    // final time-independent map is applied) to Frame::Inertial
+    // (the frame after the final time-dependent map is applied).
+    using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
+    using CubicScaleMapForComposition =
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>;
+
+    using IdentityMap1D = domain::CoordinateMaps::Identity<1>;
+    using RotationMap2D = domain::CoordinateMaps::TimeDependent::Rotation<2>;
+    using RotationMap =
+        domain::CoordinateMaps::TimeDependent::ProductOf2Maps<RotationMap2D,
+                                                              IdentityMap1D>;
+    using RotationMapForComposition =
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, RotationMap>;
+
+    using CubicScaleAndRotationMapForComposition =
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
+                              RotationMap>;
+
+    using CompressionMap =
+        domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
+    using CompressionMapForComposition =
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap>;
+
+    using CompressionAndCubicScaleAndRotationMapForComposition =
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
+                              CubicScaleMap, RotationMap>;
+
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
+        block_maps{number_of_blocks_};
+
+    // Some maps (e.g. expansion, rotation) are applied to all blocks,
+    // while other maps (e.g. size) are only applied to some blocks. So
+    // there are several different distinct combinations of time-dependent
+    // maps that will be applied.
+    // Here, set the time-dependent maps for each distinct combination in
+    // a single block. Then, set the maps of the other blocks by cloning
+    // the maps from the appropriate block.
+
+    // All blocks except possibly blocks 0-5 and 12-17 get the same map, so
+    // initialize the final block with the "base" map (here a composition of an
+    // expansion and a rotation).
+    block_maps[number_of_blocks_ - 1] =
+        std::make_unique<CubicScaleAndRotationMapForComposition>(
+            domain::push_back(
+                CubicScaleMapForComposition{
+                    CubicScaleMap{expansion_map_outer_boundary_,
+                                  expansion_function_of_time_names_[0],
+                                  expansion_function_of_time_names_[1]}},
+                RotationMapForComposition{RotationMap{
+                    RotationMap2D{rotation_about_z_axis_function_of_time_name_},
+                    IdentityMap1D{}}}));
+
+    // Initialize the first block of the layer 1 blocks for each object
+    // (specifically, initialize block 0 and block 12). If excising interior
+    // A or B, the block maps for the coresponding layer 1 blocks (blocks 0-5
+    // for object A, blocks 12-17 for object B) should also include a size map.
+    // If not excising interior A or B, the layer 1 blocks for that object
+    // will have the same map as the final block.
+    if (object_A_.is_excised()) {
+      block_maps[0] = std::make_unique<
+          CompressionAndCubicScaleAndRotationMapForComposition>(
+          domain::push_back(
+              CompressionMapForComposition{
+                  CompressionMap{size_map_function_of_time_names_[0],
+                                 object_A_.inner_radius,
+                                 object_A_.outer_radius,
+                                 {{object_A_.x_coord, 0.0, 0.0}}}},
+              domain::push_back(
+                  CubicScaleMapForComposition{
+                      CubicScaleMap{expansion_map_outer_boundary_,
+                                    expansion_function_of_time_names_[0],
+                                    expansion_function_of_time_names_[1]}},
+                  RotationMapForComposition{RotationMap{
+                      RotationMap2D{
+                          rotation_about_z_axis_function_of_time_name_},
+                      IdentityMap1D{}}})));
+    } else {
+      block_maps[0] = block_maps[number_of_blocks_ - 1]->get_clone();
+    }
+    if (object_B_.is_excised()) {
+      block_maps[12] = std::make_unique<
+          CompressionAndCubicScaleAndRotationMapForComposition>(
+          domain::push_back(
+              CompressionMapForComposition{
+                  CompressionMap{size_map_function_of_time_names_[1],
+                                 object_B_.inner_radius,
+                                 object_B_.outer_radius,
+                                 {{object_B_.x_coord, 0.0, 0.0}}}},
+              domain::push_back(
+                  CubicScaleMapForComposition{
+                      CubicScaleMap{expansion_map_outer_boundary_,
+                                    expansion_function_of_time_names_[0],
+                                    expansion_function_of_time_names_[1]}},
+                  RotationMapForComposition{RotationMap{
+                      RotationMap2D{
+                          rotation_about_z_axis_function_of_time_name_},
+                      IdentityMap1D{}}})));
+    } else {
+      block_maps[12] = block_maps[number_of_blocks_ - 1]->get_clone();
+    }
+
+    // Fill in the rest of the block maps by cloning the relevant maps
+    for (size_t block = 1; block < number_of_blocks_ - 1; ++block) {
+      if (block < 6) {
+        block_maps[block] = block_maps[0]->get_clone();
+      } else if (block == 12) {
+        continue;  // block 12 already initialized
+      } else if (block > 12 and block < 18) {
+        block_maps[block] = block_maps[12]->get_clone();
+      } else {
+        block_maps[block] = block_maps[number_of_blocks_ - 1]->get_clone();
+      }
+    }
+
+    // Finally, inject the time dependent maps into the corresponding blocks
     for (size_t block = 0; block < number_of_blocks_; ++block) {
-      domain.inject_time_dependent_map_for_block(
-          block,
-          std::move(time_dependence_->block_maps(number_of_blocks_)[block]));
+      domain.inject_time_dependent_map_for_block(block,
+                                                 std::move(block_maps[block]));
     }
   }
+
   return domain;
 }
 
@@ -413,10 +613,67 @@ BinaryCompactObject::initial_refinement_levels() const noexcept {
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 BinaryCompactObject::functions_of_time() const noexcept {
-  if (time_dependence_->is_none()) {
-    return {};
-  } else {
-    return time_dependence_->functions_of_time();
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      result{};
+  if (not enable_time_dependence_) {
+    return result;
   }
+
+  const double initial_expiration_time =
+      initial_expiration_delta_t_ ? initial_time_ + *initial_expiration_delta_t_
+                                  : std::numeric_limits<double>::infinity();
+
+  // ExpansionMap FunctionOfTime for the function \f$a(t)\f$ in the
+  // domain::CoordinateMaps::TimeDependent::CubicScale map
+  result[expansion_function_of_time_names_[0]] =
+      std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+          initial_time_,
+          std::array<DataVector, 3>{{{initial_expansion_[0]},
+                                     {initial_expansion_velocity_[0]},
+                                     {0.0}}},
+          initial_expiration_time);
+
+  // ExpansionMap FunctionOfTime for the function \f$b(t)\f$ in the
+  // domain::CoordinateMaps::TimeDependent::CubicScale map
+  result[expansion_function_of_time_names_[1]] =
+      std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+          initial_time_,
+          std::array<DataVector, 3>{{{initial_expansion_[1]},
+                                     {initial_expansion_velocity_[1]},
+                                     {0.0}}},
+          initial_expiration_time);
+
+  // RotationAboutZAxisMap FunctionOfTime for the rotation angle about the z
+  // axis \f$\phi\f$.
+  result[rotation_about_z_axis_function_of_time_name_] =
+      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+          initial_time_,
+          std::array<DataVector, 4>{{{initial_rotation_angle_},
+                                     {initial_angular_velocity_},
+                                     {0.0},
+                                     {0.0}}},
+          initial_expiration_time);
+
+  // CompressionMap FunctionOfTime for object A
+  result[size_map_function_of_time_names_[0]] =
+      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+          initial_time_,
+          std::array<DataVector, 4>{{{initial_size_map_values_[0]},
+                                     {initial_size_map_velocities_[0]},
+                                     {initial_size_map_accelerations_[0]},
+                                     {0.0}}},
+          initial_expiration_time);
+  // CompressionMap FunctionOfTime for object B
+  result[size_map_function_of_time_names_[1]] =
+      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+          initial_time_,
+          std::array<DataVector, 4>{{{initial_size_map_values_[1]},
+                                     {initial_size_map_velocities_[1]},
+                                     {initial_size_map_accelerations_[1]},
+                                     {0.0}}},
+          initial_expiration_time);
+
+  return result;
 }
 }  // namespace domain::creators
