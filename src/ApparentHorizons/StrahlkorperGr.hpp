@@ -68,7 +68,8 @@ tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
 template <typename Frame>
 void grad_unit_normal_one_form(
     gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
-    const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat,
+    const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
     const tnsr::ii<DataVector, 3, Frame>& d2x_radius,
     const DataVector& one_over_one_form_magnitude,
@@ -76,7 +77,8 @@ void grad_unit_normal_one_form(
 
 template <typename Frame>
 tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
-    const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat,
+    const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
     const tnsr::ii<DataVector, 3, Frame>& d2x_radius,
     const DataVector& one_over_one_form_magnitude,
@@ -221,7 +223,7 @@ void area_element(gsl::not_null<Scalar<DataVector>*> result,
                   const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
                   const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
                   const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-                  const DataVector& radius,
+                  const Scalar<DataVector>& radius,
                   const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
 
 template <typename Frame>
@@ -229,7 +231,7 @@ Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-    const DataVector& radius,
+    const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
 //@}
 
@@ -263,14 +265,14 @@ void euclidean_area_element(
     gsl::not_null<Scalar<DataVector>*> result,
     const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-    const DataVector& radius,
+    const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
 
 template <typename Frame>
 Scalar<DataVector> euclidean_area_element(
     const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-    const DataVector& radius,
+    const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
 //@}
 
@@ -429,14 +431,24 @@ double dimensionful_spin_magnitude(
  * moment vanishes. Also note that \f$x^i - x^i_0\f$ is
  * is the product of `StrahlkorperTags::Rhat` and `StrahlkorperTags::Radius`.
  */
+
 template <typename Frame>
-std::array<double, 3> spin_vector(double spin_magnitude,
-                                  const Scalar<DataVector>& area_element,
-                                  const Scalar<DataVector>& radius,
-                                  const tnsr::i<DataVector, 3, Frame>& r_hat,
-                                  const Scalar<DataVector>& ricci_scalar,
-                                  const Scalar<DataVector>& spin_function,
-                                  const YlmSpherepack& ylm) noexcept;
+void spin_vector(const gsl::not_null<std::array<double, 3>*> result,
+                 double spin_magnitude, const Scalar<DataVector>& area_element,
+                 const Scalar<DataVector>& radius,
+                 const tnsr::i<DataVector, 3, Frame>& r_hat,
+                 const Scalar<DataVector>& ricci_scalar,
+                 const Scalar<DataVector>& spin_function,
+                 const Strahlkorper<Frame>& strahlkorper) noexcept;
+
+template <typename Frame>
+std::array<double, 3> spin_vector(
+    double spin_magnitude, const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat,
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const Strahlkorper<Frame>& strahlkorper) noexcept;
 
 /*!
  * \ingroup SurfacesGroup

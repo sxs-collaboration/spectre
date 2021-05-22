@@ -143,14 +143,14 @@ struct InvHessianCompute : InvHessian<Frame>, db::ComputeTag {
 /// point of the surface.
 template <typename Frame>
 struct Radius : db::SimpleTag {
-  using type = DataVector;
+  using type = Scalar<DataVector>;
 };
 
 template <typename Frame>
 struct RadiusCompute : Radius<Frame>, db::ComputeTag {
   using base = Radius<Frame>;
-  using return_type = DataVector;
-  static void function(gsl::not_null<DataVector*> radius,
+  using return_type = Scalar<DataVector>;
+  static void function(gsl::not_null<Scalar<DataVector>*> radius,
                        const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
@@ -171,7 +171,7 @@ struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
   using return_type = aliases::Vector<Frame>;
   static void function(gsl::not_null<aliases::Vector<Frame>*> coords,
                        const ::Strahlkorper<Frame>& strahlkorper,
-                       const DataVector& radius,
+                       const Scalar<DataVector>& radius,
                        const aliases::OneForm<Frame>& r_hat) noexcept;
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
@@ -196,7 +196,7 @@ struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
   using return_type = aliases::OneForm<Frame>;
   static void function(gsl::not_null<aliases::OneForm<Frame>*> dx_radius,
                        const ::Strahlkorper<Frame>& strahlkorper,
-                       const DataVector& radius,
+                       const Scalar<DataVector>& radius,
                        const aliases::InvJacobian<Frame>& inv_jac) noexcept;
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, InvJacobian<Frame>>;
@@ -222,7 +222,7 @@ struct D2xRadiusCompute : D2xRadius<Frame>, db::ComputeTag {
   using return_type = aliases::SecondDeriv<Frame>;
   static void function(gsl::not_null<aliases::SecondDeriv<Frame>*> d2x_radius,
                        const ::Strahlkorper<Frame>& strahlkorper,
-                       const DataVector& radius,
+                       const Scalar<DataVector>& radius,
                        const aliases::InvJacobian<Frame>& inv_jac,
                        const aliases::InvHessian<Frame>& inv_hess) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
@@ -245,7 +245,7 @@ struct LaplacianRadiusCompute : LaplacianRadius<Frame>, db::ComputeTag {
   using return_type = DataVector;
   static void function(gsl::not_null<DataVector*> lap_radius,
                        const ::Strahlkorper<Frame>& strahlkorper,
-                       const DataVector& radius,
+                       const Scalar<DataVector>& radius,
                        const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, ThetaPhi<Frame>>;
@@ -429,7 +429,7 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
   using return_type = aliases::Jacobian<Frame>;
   static void function(gsl::not_null<aliases::Jacobian<Frame>*> tangents,
                        const ::Strahlkorper<Frame>& strahlkorper,
-                       const DataVector& radius,
+                       const Scalar<DataVector>& radius,
                        const aliases::OneForm<Frame>& r_hat,
                        const aliases::Jacobian<Frame>& jac) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
@@ -453,7 +453,7 @@ struct EuclideanAreaElementCompute : EuclideanAreaElement<Frame>,
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
-      const tnsr::i<DataVector, 3, Frame>&, const DataVector&,
+      const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
       const tnsr::i<DataVector, 3, Frame>&) noexcept>(
       &::StrahlkorperGr::euclidean_area_element<Frame>);
   using argument_tags = tmpl::list<
@@ -561,7 +561,7 @@ struct AreaElementCompute : AreaElement<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, 3, Frame>&,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
-      const tnsr::i<DataVector, 3, Frame>&, const DataVector&,
+      const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
       const tnsr::i<DataVector, 3, Frame>&) noexcept>(&area_element<Frame>);
   using argument_tags = tmpl::list<
       gr::Tags::SpatialMetric<3, Frame>, StrahlkorperTags::Jacobian<Frame>,
@@ -683,6 +683,31 @@ struct DimensionfulSpinMagnitudeCompute : DimensionfulSpinMagnitude,
                  gr::Tags::SpatialMetric<3, Frame>,
                  StrahlkorperTags::Tangents<Frame>,
                  StrahlkorperTags::Strahlkorper<Frame>, AreaElement<Frame>>;
+};
+
+/// The dimensionful spin angular momentum vector.
+template <typename Frame>
+struct DimensionfulSpinVector : db::SimpleTag {
+  using type = std::array<double, 3>;
+};
+
+/// Computes the dimensionful spin angular momentum vector.
+template <typename Frame>
+struct DimensionfulSpinVectorCompute : DimensionfulSpinVector<Frame>,
+                                       db::ComputeTag {
+  using base = DimensionfulSpinVector<Frame>;
+  using return_type = std::array<double, 3>;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<std::array<double, 3>*>, double,
+      const Scalar<DataVector>&, const Scalar<DataVector>&,
+      const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
+      const Scalar<DataVector>&, const Strahlkorper<Frame>&) noexcept>(
+      &StrahlkorperGr::spin_vector);
+  using argument_tags =
+      tmpl::list<DimensionfulSpinMagnitude, AreaElement<Frame>,
+                 StrahlkorperTags::Radius<Frame>, StrahlkorperTags::Rhat<Frame>,
+                 StrahlkorperTags::RicciScalar, SpinFunction,
+                 StrahlkorperTags::Strahlkorper<Frame>>;
 };
 
 /// The Christodoulou mass, which is a function of the dimensionful spin

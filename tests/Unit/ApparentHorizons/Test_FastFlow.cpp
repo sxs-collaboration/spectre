@@ -197,7 +197,8 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
         db::AddComputeTags<
             StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
         strahlkorper);
-    const auto& rad = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+    const auto& rad =
+        get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
     const auto r_minmax = std::minmax_element(rad.begin(), rad.end());
     Approx custom_approx = Approx::custom().epsilon(1.e-11);
     CHECK(*r_minmax.first == custom_approx(2.0));

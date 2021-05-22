@@ -108,7 +108,8 @@ FastFlow::iterate_horizon_finder(
 
   // Get minimum radius.
   const auto& radius = db::get<StrahlkorperTags::Radius<Frame>>(box);
-  const auto r_minmax = std::minmax_element(radius.begin(), radius.end());
+  const auto r_minmax =
+      std::minmax_element(get(radius).begin(), get(radius).end());
   const auto r_min = *r_minmax.first;
   const auto r_max = *r_minmax.second;
 
@@ -148,7 +149,7 @@ FastFlow::iterate_horizon_finder(
     case FlowType::Fast: {
       weighted_residual *= fast_flow_weight<Frame>(
           one_form_magnitude, db::get<StrahlkorperTags::Rhat<Frame>>(box),
-          db::get<StrahlkorperTags::Radius<Frame>>(box),
+          get(db::get<StrahlkorperTags::Radius<Frame>>(box)),
           inverse_surface_metric);
     } break;
     default:  // LCOV_EXCL_LINE

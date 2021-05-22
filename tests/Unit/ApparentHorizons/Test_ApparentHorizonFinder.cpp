@@ -102,7 +102,7 @@ struct TestSchwarzschildHorizon {
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& horizon_radius =
-        get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+        get(get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
     const auto expected_radius =
         make_with_value<DataVector>(horizon_radius, 2.0);
     // We don't choose many grid points (for speed of test), so we
@@ -142,7 +142,7 @@ struct TestKerrHorizon {
         strahlkorper.ylm_spherepack().theta_phi_points(), 1.1,
         {{0.12, 0.23, 0.45}});
     const auto& horizon_radius =
-        get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+        get(get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
     // The accuracy is not great because I use only a few grid points
     // to speed up the test.
     Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);

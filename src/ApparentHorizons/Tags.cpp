@@ -142,32 +142,34 @@ void InvHessianCompute<Frame>::function(
 
 template <typename Frame>
 void RadiusCompute<Frame>::function(
-    const gsl::not_null<DataVector*> radius,
+    const gsl::not_null<Scalar<DataVector>*> radius,
     const ::Strahlkorper<Frame>& strahlkorper) noexcept {
-  radius->destructive_resize(strahlkorper.ylm_spherepack().physical_size());
-  *radius =
+  get(*radius).destructive_resize(
+      strahlkorper.ylm_spherepack().physical_size());
+  get(*radius) =
       strahlkorper.ylm_spherepack().spec_to_phys(strahlkorper.coefficients());
 }
 
 template <typename Frame>
 void CartesianCoordsCompute<Frame>::function(
     const gsl::not_null<aliases::Vector<Frame>*> coords,
-    const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
+    const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
     const aliases::OneForm<Frame>& r_hat) noexcept {
-  destructive_resize_components(coords, radius.size());
+  destructive_resize_components(coords, get(radius).size());
   for (size_t d = 0; d < 3; ++d) {
-    coords->get(d) = gsl::at(strahlkorper.center(), d) + r_hat.get(d) * radius;
+    coords->get(d) =
+        gsl::at(strahlkorper.center(), d) + r_hat.get(d) * get(radius);
   }
 }
 
 template <typename Frame>
 void DxRadiusCompute<Frame>::function(
     const gsl::not_null<aliases::OneForm<Frame>*> dx_radius,
-    const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
+    const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
     const aliases::InvJacobian<Frame>& inv_jac) noexcept {
-  destructive_resize_components(dx_radius, radius.size());
-  const DataVector one_over_r = 1.0 / radius;
-  const auto dr = strahlkorper.ylm_spherepack().gradient(radius);
+  destructive_resize_components(dx_radius, get(radius).size());
+  const DataVector one_over_r = 1.0 / get(radius);
+  const auto dr = strahlkorper.ylm_spherepack().gradient(get(radius));
   get<0>(*dx_radius) =
       (get<0, 0>(inv_jac) * get<0>(dr) + get<1, 0>(inv_jac) * get<1>(dr)) *
       one_over_r;
@@ -180,16 +182,16 @@ void DxRadiusCompute<Frame>::function(
 template <typename Frame>
 void D2xRadiusCompute<Frame>::function(
     const gsl::not_null<aliases::SecondDeriv<Frame>*> d2x_radius,
-    const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
+    const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
     const aliases::InvJacobian<Frame>& inv_jac,
     const aliases::InvHessian<Frame>& inv_hess) noexcept {
-  destructive_resize_components(d2x_radius, radius.size());
+  destructive_resize_components(d2x_radius, get(radius).size());
   for (auto& component : *d2x_radius) {
     component = 0.0;
   }
-  const DataVector one_over_r_squared = 1.0 / square(radius);
+  const DataVector one_over_r_squared = 1.0 / square(get(radius));
   const auto derivs =
-      strahlkorper.ylm_spherepack().first_and_second_derivative(radius);
+      strahlkorper.ylm_spherepack().first_and_second_derivative(get(radius));
 
   for (size_t i = 0; i < 3; ++i) {
     // Diagonal terms.  Divide by square(r) later.
@@ -221,11 +223,11 @@ void D2xRadiusCompute<Frame>::function(
 template <typename Frame>
 void LaplacianRadiusCompute<Frame>::function(
     const gsl::not_null<DataVector*> lap_radius,
-    const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
+    const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
     const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
-  lap_radius->destructive_resize(radius.size());
+  lap_radius->destructive_resize(get(radius).size());
   const auto derivs =
-      strahlkorper.ylm_spherepack().first_and_second_derivative(radius);
+      strahlkorper.ylm_spherepack().first_and_second_derivative(get(radius));
   *lap_radius = get<0, 0>(derivs.second) + get<1, 1>(derivs.second) +
                 get<0>(derivs.first) / tan(get<0>(theta_phi));
 }
@@ -244,14 +246,15 @@ void NormalOneFormCompute<Frame>::function(
 template <typename Frame>
 void TangentsCompute<Frame>::function(
     const gsl::not_null<aliases::Jacobian<Frame>*> tangents,
-    const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
+    const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
     const aliases::OneForm<Frame>& r_hat,
     const aliases::Jacobian<Frame>& jac) noexcept {
-  destructive_resize_components(tangents, radius.size());
-  const auto dr = strahlkorper.ylm_spherepack().gradient(radius);
+  destructive_resize_components(tangents, get(radius).size());
+  const auto dr = strahlkorper.ylm_spherepack().gradient(get(radius));
   for (size_t i = 0; i < 2; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      tangents->get(j, i) = dr.get(i) * r_hat.get(j) + radius * jac.get(j, i);
+      tangents->get(j, i) =
+          dr.get(i) * r_hat.get(j) + get(radius) * jac.get(j, i);
     }
   }
 }

@@ -4,8 +4,10 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <climits>
 #include <cmath>
 #include <cstddef>
+#include <random>
 #include <string>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
@@ -17,8 +19,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/ApparentHorizons/YlmTestFunctions.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -79,7 +83,7 @@ void test_radius_and_derivs() {
 
   // Test radius
   const auto& strahlkorper_radius =
-      db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+      get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
 
   // Test derivative of radius
@@ -224,7 +228,8 @@ void test_normals() {
   // Test surface_normal_one_form
   tnsr::i<DataVector, 3> expected_normal_one_form(n_pts);
   {
-    const auto& r = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+    const auto& r =
+        get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
     const DataVector one_over_r = 1.0 / r;
     const DataVector temp = 1.0 + one_over_r * amp * sin_phi * sin_theta;
     expected_normal_one_form.get(0) = cos_phi * sin_theta * temp;
@@ -246,7 +251,8 @@ void test_normals() {
   invg.get(2, 2) = 3.0;
 
   const auto expected_normal_mag = [&]() -> DataVector {
-    const auto& r = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+    const auto& r =
+        get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
 
     // Nasty expression Mark Scheel computed in Mathematica.
     const DataVector normsquared =
@@ -299,6 +305,59 @@ void test_min_ricci_scalar() {
   CHECK(expected_min == min);
 }
 
+void test_dimensionful_spin_vector_compute_tag() noexcept {
+  const double y11_amplitude = 1.0;
+  const double y11_radius = 2.0;
+  const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
+  const auto strahlkorper =
+      create_strahlkorper_y11(y11_amplitude, y11_radius, center);
+  const size_t ylm_physical_size =
+      strahlkorper.ylm_spherepack().physical_size();
+  const DataVector used_for_size(ylm_physical_size,
+                                 std::numeric_limits<double>::signaling_NaN());
+
+  // Creates a variable named generator that can be used to generate random
+  // values
+  MAKE_GENERATOR(generator);
+  // Creates a uniform distribution, which will be used to generate random
+  // numbers
+  std::uniform_real_distribution<> dist(-1., 1.);
+
+  const double dimensionful_spin_magnitude{5.0};
+  // Create the tensor arguments to spin_vector by having them contain
+  // DataVectors of size == ylm physical size, where values are random
+  const auto area_element = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), dist, used_for_size);
+  const auto radius = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), dist, used_for_size);
+  const auto r_hat =
+      make_with_random_values<tnsr::i<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), dist, used_for_size);
+  const auto ricci_scalar = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), dist, used_for_size);
+  const auto spin_function = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), dist, used_for_size);
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperGr::Tags::DimensionfulSpinMagnitude,
+                        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
+                        StrahlkorperTags::Radius<Frame::Inertial>,
+                        StrahlkorperTags::Rhat<Frame::Inertial>,
+                        StrahlkorperTags::RicciScalar,
+                        StrahlkorperGr::Tags::SpinFunction,
+                        StrahlkorperTags::Strahlkorper<Frame::Inertial>>,
+      db::AddComputeTags<StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<
+          Frame::Inertial>>>(dimensionful_spin_magnitude, area_element, radius,
+                             r_hat, ricci_scalar, spin_function, strahlkorper);
+  // LHS of the == in the CHECK is retrieving the computed dimensionful spin
+  // vector from your DimensionfulSpinVectorCompute tag and RHS of ==
+  // should be same logic as DimensionfulSpinVectorCompute::function
+  CHECK(db::get<StrahlkorperGr::Tags::DimensionfulSpinVector<Frame::Inertial>>(
+            box) ==
+        StrahlkorperGr::spin_vector<Frame::Inertial>(
+            dimensionful_spin_magnitude, area_element, radius, r_hat,
+            ricci_scalar, spin_function, strahlkorper));
+}
+
 struct SomeType {};
 struct SomeTag : db::SimpleTag {
   using type = SomeType;
@@ -313,6 +372,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   test_normals();
   test_max_ricci_scalar();
   test_min_ricci_scalar();
+  test_dimensionful_spin_vector_compute_tag();
   TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::IrreducibleMass>(
@@ -378,6 +438,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_simple_tag<
       StrahlkorperGr::Tags::SurfaceIntegral<SomeTag, Frame::Inertial>>(
       "SurfaceIntegral(SomeTag)");
+  TestHelpers::db::test_simple_tag<
+      StrahlkorperGr::Tags::DimensionfulSpinVector<Frame::Inertial>>(
+      "DimensionfulSpinVector");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::ThetaPhiCompute<Frame::Inertial>>("ThetaPhi");
   TestHelpers::db::test_compute_tag<
@@ -459,4 +522,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::ChristodoulouMassCompute<Frame::Inertial>>(
       "ChristodoulouMass");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<Frame::Inertial>>(
+      "DimensionfulSpinVector");
 }
