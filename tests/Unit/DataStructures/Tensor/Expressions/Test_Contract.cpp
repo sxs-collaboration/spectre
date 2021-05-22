@@ -3,17 +3,18 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <climits>
 #include <cstddef>
 #include <iterator>
 #include <numeric>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Expressions/Contract.hpp"
-#include "DataStructures/Tensor/Expressions/Evaluate.hpp"
-#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Requires.hpp"
 
 namespace {
 template <typename... Ts>

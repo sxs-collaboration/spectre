@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include <array>
+#include <cassert>
 #include <cstddef>
+#include <type_traits>
 
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/ForceInline.hpp"

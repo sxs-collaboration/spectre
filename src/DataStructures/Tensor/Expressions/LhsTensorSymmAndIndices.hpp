@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <iterator>
 #include <utility>
 
 #include "DataStructures/Tensor/Structure.hpp"

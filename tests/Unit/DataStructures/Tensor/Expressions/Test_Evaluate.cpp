@@ -3,9 +3,13 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <type_traits>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Symmetry.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank0TestHelpers.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank1TestHelpers.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank2TestHelpers.hpp"
