@@ -135,7 +135,7 @@ struct EvolutionMetavars {
       Limiters::Minmod<3, typename system::variables_tag::tags_list>>;
 
   using step_choosers_common = tmpl::list<
-      // StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
+      // StepChoosers::Registrars::Cfl<Frame::Inertial, system>,
       StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;

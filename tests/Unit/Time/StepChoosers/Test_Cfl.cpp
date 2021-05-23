@@ -31,6 +31,9 @@
 // IWYU pragma: no_include <pup.h>
 
 namespace {
+constexpr size_t dim = 1;
+using frame = Frame::Grid;
+
 struct CharacteristicSpeed : db::SimpleTag {
   using type = double;
 };
@@ -40,6 +43,7 @@ struct Metavariables {
   using const_global_cache_tags = tmpl::list<>;
   using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   struct system {
+    static constexpr size_t volume_dim = dim;
     struct largest_characteristic_speed : db::SimpleTag {
       using type = double;
     };
@@ -56,12 +60,9 @@ struct Metavariables {
   };
 };
 
-
-constexpr size_t dim = 1;
-using frame = Frame::Grid;
 using StepChooserType = StepChooser<tmpl::list<
-    StepChoosers::Registrars::Cfl<dim, frame, typename Metavariables::system>>>;
-using Cfl = StepChoosers::Cfl<dim, frame, typename Metavariables::system>;
+    StepChoosers::Registrars::Cfl<frame, typename Metavariables::system>>>;
+using Cfl = StepChoosers::Cfl<frame, typename Metavariables::system>;
 
 std::pair<double, bool> get_suggestion(const size_t stepper_order,
                                        const double safety_factor,

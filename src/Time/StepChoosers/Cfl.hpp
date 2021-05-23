@@ -30,22 +30,18 @@ struct MinimumGridSpacing;
 /// \endcond
 
 namespace StepChoosers {
-template <size_t Dim, typename Frame, typename System,
-          typename StepChooserRegistrars>
+template <typename Frame, typename System, typename StepChooserRegistrars>
 class Cfl;
 
 namespace Registrars {
-template <size_t Dim, typename Frame, typename System>
-struct Cfl {
-  template <typename StepChooserRegistrars>
-  using f = StepChoosers::Cfl<Dim, Frame, System, StepChooserRegistrars>;
-};
+template <typename Frame, typename System>
+using Cfl = Registration::Registrar<StepChoosers::Cfl, Frame, System>;
 }  // namespace Registrars
 
 /// Suggests a step size based on the CFL stability criterion.
-template <size_t Dim, typename Frame, typename System,
+template <typename Frame, typename System,
           typename StepChooserRegistrars =
-              tmpl::list<Registrars::Cfl<Dim, Frame, System>>>
+              tmpl::list<Registrars::Cfl<Frame, System>>>
 class Cfl : public StepChooser<StepChooserRegistrars> {
  public:
   /// \cond
@@ -71,14 +67,14 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
   static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
 
   using argument_tags =
-      tmpl::list<domain::Tags::MinimumGridSpacing<Dim, Frame>,
+      tmpl::list<domain::Tags::MinimumGridSpacing<System::volume_dim, Frame>,
                  ::Tags::TimeStepper<>,
                  typename System::compute_largest_characteristic_speed>;
   using return_tags = tmpl::list<>;
 
-  using compute_tags =
-      tmpl::list<domain::Tags::MinimumGridSpacingCompute<Dim, Frame>,
-                 typename System::compute_largest_characteristic_speed>;
+  using compute_tags = tmpl::list<
+      domain::Tags::MinimumGridSpacingCompute<System::volume_dim, Frame>,
+      typename System::compute_largest_characteristic_speed>;
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(
@@ -89,7 +85,8 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
     const double time_stepper_stability_factor = time_stepper.stable_step();
     const double step_size = safety_factor_ * time_stepper_stability_factor *
-                             minimum_grid_spacing / (speed * Dim);
+                             minimum_grid_spacing /
+                             (speed * System::volume_dim);
     // Reject the step if the CFL condition is violated.
     return std::make_pair(step_size, last_step_magnitude <= step_size);
   }
@@ -102,9 +99,8 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
 };
 
 /// \cond
-template <size_t Dim, typename Frame, typename System,
-          typename StepChooserRegistrars>
-PUP::able::PUP_ID Cfl<Dim, Frame, System, StepChooserRegistrars>::my_PUP_ID =
+template <typename Frame, typename System, typename StepChooserRegistrars>
+PUP::able::PUP_ID Cfl<Frame, System, StepChooserRegistrars>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

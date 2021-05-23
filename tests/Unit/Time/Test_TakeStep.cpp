@@ -33,6 +33,7 @@ struct EvolvedVariable : db::SimpleTag {
 struct Metavariables {
   static constexpr bool local_time_stepping = true;
   struct system {
+    static constexpr size_t volume_dim = 1;
     using variables_tag = EvolvedVariable;
     struct largest_characteristic_speed : db::SimpleTag {
       using type = double;
@@ -57,7 +58,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
   using step_chooser_list =
       tmpl::list<StepChoosers::Registrars::Increase,
-                 StepChoosers::Registrars::Cfl<1, Frame::Inertial,
+                 StepChoosers::Registrars::Cfl<Frame::Inertial,
                                                typename Metavariables::system>>;
   const Slab slab{0.0, 1.00};
   const TimeDelta time_step = slab.duration() / 4;
@@ -68,7 +69,7 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
       std::make_unique<StepChoosers::Increase<step_chooser_list>>(2.0));
   step_choosers.emplace_back(
       std::make_unique<
-          StepChoosers::Cfl<1, Frame::Inertial, typename Metavariables::system,
+          StepChoosers::Cfl<Frame::Inertial, typename Metavariables::system,
                             step_chooser_list>>(1.0));
 
   MAKE_GENERATOR(generator);

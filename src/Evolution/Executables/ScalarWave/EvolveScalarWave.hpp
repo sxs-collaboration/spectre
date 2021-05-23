@@ -123,7 +123,7 @@ struct EvolutionMetavars {
 
   using step_choosers_common = tmpl::list<
       StepChoosers::Registrars::ByBlock<volume_dim>,
-      StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
+      StepChoosers::Registrars::Cfl<Frame::Inertial, system>,
       StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
