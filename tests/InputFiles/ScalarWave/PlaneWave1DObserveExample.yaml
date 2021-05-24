@@ -64,20 +64,18 @@ SpatialDiscretization:
 #   HalfPower: 32
 
 # [observe_event_trigger]
-EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 3
-        Offset: 5
+EventsAndDenseTriggers:
+  ? Times:
+      Specified:
+        Values: [0.0, 1.0]
   : - ObserveErrorNorms:
         SubfileName: Errors
+
+EventsAndTriggers:
   ? Slabs:
       Specified:
-        Values: [0, 100]
-  : - ObserveFields:
-        SubfileName: VolumePsi0And100
-        VariablesToObserve: ["Psi"]
-        InterpolateToMesh: None
+        Values: [100]
+  : - Completion
   ? Slabs:
       EvenlySpaced:
         Interval: 50
@@ -86,13 +84,7 @@ EventsAndTriggers:
         SubfileName: VolumePsiPiPhiEvery50Slabs
         VariablesToObserve: ["Psi", "Pi", "Phi"]
         InterpolateToMesh: None
-  ? Slabs:
-      Specified:
-        Values: [100]
-  : - Completion
 # [observe_event_trigger]
-
-EventsAndDenseTriggers:
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DObserveExampleVolume"
