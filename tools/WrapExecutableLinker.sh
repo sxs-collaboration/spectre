@@ -4,7 +4,7 @@
 # See LICENSE.txt for details.
 
 temp_files=()
-trap 'rm -r "${temp_files[@]}"' EXIT
+trap 'rm -rf "${temp_files[@]}"' EXIT
 
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
 git_description="@GIT_DESCRIPTION_COMMAND@"
@@ -17,13 +17,8 @@ if [ ! -z "${git_branch}" ]; then
 fi
 popd >/dev/null
 
-# Create a copy of InfoAtLink.cpp based on the output filename.
-# When compiling an executable from a cpp file, charmc writes a
-# temporary file called ${basename}.o to the current directory, so we
-# need all the compilations that might run in parallel in one
-# directory to have different base names for cpp files.
-oindex=
 # Find the index of "-o" in the argument list
+oindex=
 for (( i=1 ; i<$# ; ++i )) ; do
     [ "${!i}" = -o ] && { oindex=$i ; break ; }
 done
@@ -33,10 +28,9 @@ if [ -z "${oindex}" ] ; then
 fi
 # Construct a filename from the next argument
 let ++oindex
-InfoAtLink_file=@CMAKE_BINARY_DIR@/tmp/\
-$(basename "${!oindex}")_InfoAtLink.cpp
-temp_files+=("${InfoAtLink_file}")
-cp @CMAKE_SOURCE_DIR@/src/Informer/InfoAtLink.cpp "${InfoAtLink_file}"
+
+# We compile the InfoAtLink.cpp file into the executable at link time
+InfoAtLink_file=@CMAKE_SOURCE_DIR@/src/Informer/InfoAtLink.cpp
 # Read the appropriate flags for compiling InfoAtLink.cpp from the generated
 # file
 InfoAtLink_flags=`cat @CMAKE_BINARY_DIR@/Informer/InfoAtLink_flags.txt`
