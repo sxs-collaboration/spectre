@@ -36,6 +36,7 @@ set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
+  EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
   Hydro

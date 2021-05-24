@@ -62,6 +62,8 @@ EventsAndTriggers:
         Values: [10]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "NewtonianEulerRiemannProblem1DVolume"
   ReductionFileName: "NewtonianEulerRiemannProblem1DReductions"

@@ -101,6 +101,8 @@ EventsAndTriggers:
               SafetyFactor: 0.2
           - PreventRapidIncrease
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "ValenciaDivCleanFishboneMoncriefDiskVolume"
   ReductionFileName: "ValenciaDivCleanFishboneMoncriefDiskReductions"

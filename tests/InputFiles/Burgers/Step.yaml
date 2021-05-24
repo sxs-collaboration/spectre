@@ -61,20 +61,8 @@ EventsAndTriggers:
               SafetyFactor: 0.5
           - Increase:
               Factor: 2.0
-  ? NearTimes:
-      Times:
-        Specified:
-          Values: [0.123456]
-      Range: 4
-      Unit: Slab
-      Direction: Before
-  : - ChangeSlabSize:
-        DelayChange: 0
-        StepChoosers:
-          - StepToTimes:
-              Times:
-                Specified:
-                  Values: [0.123456]
+
+EventsAndDenseTriggers:
   ? Times:
       Specified:
         Values: [0.123456]

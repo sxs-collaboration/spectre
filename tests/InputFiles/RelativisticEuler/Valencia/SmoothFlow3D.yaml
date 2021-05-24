@@ -67,6 +67,8 @@ EventsAndTriggers:
         Values: [10]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "ValenciaSmoothFlow3DVolume"
   ReductionFileName: "ValenciaSmoothFlow3DReductions"

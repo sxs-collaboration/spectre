@@ -114,6 +114,8 @@ EventsAndTriggers:
         Values: [3]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "GhKerrSchildVolume"
   ReductionFileName: "GhKerrSchildReductions"

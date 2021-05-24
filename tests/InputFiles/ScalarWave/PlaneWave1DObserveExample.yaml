@@ -92,6 +92,8 @@ EventsAndTriggers:
   : - Completion
 # [observe_event_trigger]
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DObserveExampleVolume"
   ReductionFileName: "ScalarWavePlaneWave1DObserveExampleReductions"

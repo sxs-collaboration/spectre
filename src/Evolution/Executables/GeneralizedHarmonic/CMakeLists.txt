@@ -28,6 +28,7 @@ set(LIBS_TO_LINK
   DiscontinuousGalerkin
   Domain
   DomainCreators
+  EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
   GeneralRelativity
