@@ -41,6 +41,7 @@ RUN apt-get update -y \
                           libgsl0-dev \
                           clang-8 clang-9 \
                           clang-10 clang-format-10 clang-tidy-10 \
+                          lld \
                           wget libncurses-dev \
                           lcov cppcheck \
                           libboost-dev libboost-program-options-dev \
@@ -81,7 +82,7 @@ RUN apt-get update -y \
 RUN add-apt-repository universe \
     && apt-get update -y \
     && apt-get install -y curl python2 python2-dev \
-    && curl https://bootstrap.pypa.io/2.7/get-pip.py --output get-pip.py \
+    && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
     && python2 get-pip.py && rm get-pip.py \
     && apt-get install -y python3-pip python-is-python3 \
     && pip3 --no-cache-dir install -U pip \
