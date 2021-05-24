@@ -74,6 +74,9 @@ class EventsAndDenseTriggers {
                   const ArrayIndex& array_index,
                   const ComponentPointer component) noexcept;
 
+  template <typename F>
+  void for_each_event(F&& f) const noexcept;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;
 
@@ -223,6 +226,15 @@ void EventsAndDenseTriggers::run_events(
   }
 
   populate_active_triggers();
+}
+
+template <typename F>
+void EventsAndDenseTriggers::for_each_event(F&& f) const noexcept {
+  for (const auto& trigger_and_events : events_and_triggers_) {
+    for (const auto& event : trigger_and_events.events) {
+      f(*event);
+    }
+  }
 }
 
 template <typename DbTags>
