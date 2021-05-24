@@ -7,13 +7,13 @@ temp_files=()
 trap 'rm -r "${temp_files[@]}"' EXIT
 
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
-git_description="@GIT_DESCRIPTION@"
-git_branch="@GIT_BRANCH@"
-if [ -z "$git_description" ]; then
-    git_description="NOT_IN_GIT_REPO"
+git_description="@GIT_DESCRIPTION_COMMAND@"
+git_branch="@GIT_BRANCH_COMMAND@"
+if [ ! -z "${git_description}" ]; then
+    git_description=`${git_description}`
 fi
-if [ -z "$git_branch" ]; then
-    git_branch="NOT_IN_GIT_REPO"
+if [ ! -z "${git_branch}" ]; then
+    git_branch=`${git_branch}`
 fi
 popd >/dev/null
 
