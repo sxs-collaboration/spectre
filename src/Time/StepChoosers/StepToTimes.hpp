@@ -30,13 +30,6 @@ struct TimeStepId;
 /// \endcond
 
 namespace StepChoosers {
-template <typename StepChooserRegistrars>
-class StepToTimes;
-
-namespace Registrars {
-using StepToTimes = Registration::Registrar<StepChoosers::StepToTimes>;
-}  // namespace Registrars
-
 /// Suggests step sizes to place steps at specific times.
 ///
 /// The suggestion provided depends on the current time, so it should
@@ -44,14 +37,7 @@ using StepToTimes = Registration::Registrar<StepChoosers::StepToTimes>;
 /// changing immediately is inefficient, it may be best to use
 /// triggers to only activate this check near (within a few slabs of)
 /// the desired time.
-/// \warning This step chooser should be used only to choose slabs, not steps in
-/// an LTS scheme. Because the times are chosen based on the current time step
-/// id, using this as a step chooser in local time stepping will act
-/// unintuitively. Further, roundoff-level fluctuations arising from taking
-/// floating-point time differences will tend to interact poorly with
-/// `StepController`s.
-template <typename StepChooserRegistrars = tmpl::list<Registrars::StepToTimes>>
-class StepToTimes : public StepChooser<StepChooserRegistrars> {
+class StepToTimes : public StepChooser<StepChooserUse::Slab> {
  public:
   /// \cond
   StepToTimes() = default;
@@ -77,8 +63,6 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
 
   explicit StepToTimes(std::unique_ptr<TimeSequence<double>> times) noexcept
       : times_(std::move(times)) {}
-
-  static constexpr UsableFor usable_for = UsableFor::OnlySlabChoice;
 
   using argument_tags = tmpl::list<::Tags::TimeStepId>;
   using return_tags = tmpl::list<>;
@@ -139,9 +123,4 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
  private:
   std::unique_ptr<TimeSequence<double>> times_;
 };
-
-/// \cond
-template <typename StepChooserRegistrars>
-PUP::able::PUP_ID StepToTimes<StepChooserRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace StepChoosers

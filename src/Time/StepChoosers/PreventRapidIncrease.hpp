@@ -25,14 +25,6 @@ class GlobalCache;
 /// \endcond
 
 namespace StepChoosers {
-template <typename StepChooserRegistrars>
-class PreventRapidIncrease;
-
-namespace Registrars {
-using PreventRapidIncrease =
-    Registration::Registrar<StepChoosers::PreventRapidIncrease>;
-}  // namespace Registrars
-
 /// Avoids instabilities due to rapid increases in the step size by
 /// preventing the step size from increasing unless all steps in the
 /// time-stepper history are the same size.  If there have been recent
@@ -42,9 +34,8 @@ using PreventRapidIncrease =
 /// Changes in step size resulting from a slab size change are not
 /// taken into account.  In practice, this should not be an issue as
 /// long as there are many steps between slab size changes.
-template <typename StepChooserRegistrars =
-              tmpl::list<Registrars::PreventRapidIncrease>>
-class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
+template <typename StepChooserUse>
+class PreventRapidIncrease : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   PreventRapidIncrease() = default;
@@ -57,8 +48,6 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
       "Prevents rapid increases in time step that can cause integrator \n"
       "instabilities."};
   using options = tmpl::list<>;
-
-  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
 
   using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
   using return_tags = tmpl::list<>;
@@ -87,8 +76,8 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
 };
 
 /// \cond
-template <typename StepChooserRegistrars>
-PUP::able::PUP_ID PreventRapidIncrease<StepChooserRegistrars>::my_PUP_ID =
+template <typename StepChooserUse>
+PUP::able::PUP_ID PreventRapidIncrease<StepChooserUse>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

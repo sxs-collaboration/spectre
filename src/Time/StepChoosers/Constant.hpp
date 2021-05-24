@@ -11,7 +11,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -22,16 +21,10 @@ class GlobalCache;
 /// \endcond
 
 namespace StepChoosers {
-template <typename StepChooserRegistrars>
-class Constant;
-
-namespace Registrars {
-using Constant = Registration::Registrar<StepChoosers::Constant>;
-}  // namespace Registrars
 
 /// Suggests a constant step size.
-template <typename StepChooserRegistrars = tmpl::list<Registrars::Constant>>
-class Constant : public StepChooser<StepChooserRegistrars> {
+template <typename StepChooserUse>
+class Constant : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   Constant() = default;
@@ -45,8 +38,6 @@ class Constant : public StepChooser<StepChooserRegistrars> {
   explicit Constant(const double value) noexcept : value_(value) {
     ASSERT(value_ > 0., "Requested step magnitude should be positive.");
   }
-
-  static constexpr UsableFor usable_for = UsableFor::AnyStepChoice;
 
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<>;
@@ -66,8 +57,8 @@ class Constant : public StepChooser<StepChooserRegistrars> {
 };
 
 /// \cond
-template <typename StepChooserRegistrars>
-PUP::able::PUP_ID Constant<StepChooserRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename StepChooserUse>
+PUP::able::PUP_ID Constant<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 namespace Constant_detail {
@@ -75,13 +66,13 @@ double parse_options(const Options::Option& options);
 }  // namespace Constant_detail
 }  // namespace StepChoosers
 
-template <typename StepChooserRegistrars>
+template <typename StepChooserUse>
 struct Options::create_from_yaml<
-    StepChoosers::Constant<StepChooserRegistrars>> {
+    StepChoosers::Constant<StepChooserUse>> {
   template <typename Metavariables>
-  static StepChoosers::Constant<StepChooserRegistrars> create(
+  static StepChoosers::Constant<StepChooserUse> create(
       const Options::Option& options) {
-    return StepChoosers::Constant<StepChooserRegistrars>(
+    return StepChoosers::Constant<StepChooserUse>(
         StepChoosers::Constant_detail::parse_options(options));
   }
 };

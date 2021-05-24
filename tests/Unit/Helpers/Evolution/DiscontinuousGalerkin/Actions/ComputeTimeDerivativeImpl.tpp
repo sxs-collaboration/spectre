@@ -54,6 +54,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -71,6 +72,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::evolution::dg::Actions {
@@ -917,7 +919,12 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::list<domain::Tags::InitialExtents<Dim>, normal_dot_numerical_flux,
                  domain::Tags::Domain<Dim>>;
-  using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        StepChooser<StepChooserUse::LtsStep>,
+        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
+  };
 
   using component_list = tmpl::list<component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
@@ -956,10 +963,9 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, use_boundary_correction,
                                  LocalTimeStepping, UseMovingMesh, HasPrims>;
-  Parallel::register_derived_classes_with_charm<
-      StepChooser<typename metavars::step_choosers>>();
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
+  Parallel::register_factory_classes_with_charm<metavars>();
 
   using system = typename metavars::system;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -1070,11 +1076,11 @@ void test_impl(const Spectral::Quadrature quadrature,
         1, grid_to_inertial_map->get_clone());
     if constexpr (use_boundary_correction == UseBoundaryCorrection::No) {
       if constexpr (metavars::local_time_stepping) {
-        std::vector<
-            std::unique_ptr<StepChooser<typename metavars::step_choosers>>>
+        std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
             step_choosers;
         step_choosers.emplace_back(
-            std::make_unique<StepChoosers::Constant<>>(0.128));
+            std::make_unique<StepChoosers::Constant<StepChooserUse::LtsStep>>(
+                0.128));
 
         return MockRuntimeSystem{
             {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
@@ -1094,11 +1100,11 @@ void test_impl(const Spectral::Quadrature quadrature,
       }
     } else {
       if constexpr (metavars::local_time_stepping) {
-        std::vector<
-            std::unique_ptr<StepChooser<typename metavars::step_choosers>>>
+        std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
             step_choosers;
         step_choosers.emplace_back(
-            std::make_unique<StepChoosers::Constant<>>(0.128));
+            std::make_unique<StepChoosers::Constant<StepChooserUse::LtsStep>>(
+                0.128));
 
         return MockRuntimeSystem{
             {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),

@@ -69,13 +69,9 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"      // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"           // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"                    // IWYU pragma: keep
-#include "Time/StepChoosers/ByBlock.hpp"               // IWYU pragma: keep
-#include "Time/StepChoosers/Cfl.hpp"                   // IWYU pragma: keep
-#include "Time/StepChoosers/Constant.hpp"              // IWYU pragma: keep
-#include "Time/StepChoosers/Increase.hpp"              // IWYU pragma: keep
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/ByBlock.hpp"
+#include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -121,24 +117,6 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  using step_choosers_common = tmpl::list<
-      StepChoosers::Registrars::ByBlock<volume_dim>,
-      StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial, system>,
-      StepChoosers::Registrars::Constant, StepChoosers::Registrars::Increase>;
-  using step_choosers_for_step_only =
-      tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
-  using step_choosers_for_slab_only =
-      tmpl::list<StepChoosers::Registrars::StepToTimes>;
-  using step_choosers = tmpl::conditional_t<
-      local_time_stepping,
-      tmpl::append<step_choosers_common, step_choosers_for_step_only>,
-      tmpl::list<>>;
-  using slab_choosers = tmpl::conditional_t<
-      local_time_stepping,
-      tmpl::append<step_choosers_common, step_choosers_for_slab_only>,
-      tmpl::append<step_choosers_common, step_choosers_for_step_only,
-                   step_choosers_for_slab_only>>;
-
   // public for use by the Charm++ registration code
   using observe_fields = typename system::variables_tag::tags_list;
   using analytic_solution_fields = observe_fields;
@@ -148,7 +126,7 @@ struct EvolutionMetavars {
                  dg::Events::Registrars::ObserveErrorNorms<
                      Tags::Time, analytic_solution_fields>,
                  Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
-                 Events::Registrars::ChangeSlabSize<slab_choosers>>;
+                 Events::Registrars::ChangeSlabSize>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
@@ -156,6 +134,16 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<
+            StepChooser<StepChooserUse::LtsStep>,
+            tmpl::push_back<
+                StepChoosers::standard_step_choosers<system>,
+                StepChoosers::ByBlock<StepChooserUse::LtsStep, volume_dim>>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::push_back<StepChoosers::standard_slab_choosers<
+                                       system, local_time_stepping>,
+                                   StepChoosers::ByBlock<StepChooserUse::Slab,
+                                                         volume_dim>>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
@@ -319,10 +307,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<
         MathFunction<1, Frame::Inertial>>,
-    &Parallel::register_derived_classes_with_charm<
-        StepChooser<metavariables::slab_choosers>>,
-    &Parallel::register_derived_classes_with_charm<
-        StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,

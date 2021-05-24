@@ -16,8 +16,10 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
@@ -25,6 +27,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -34,11 +37,18 @@
 
 namespace {
 using Frac = Time::rational_t;
-using StepChooserType =
-    StepChooser<tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>>;
-using PreventRapidIncrease = StepChoosers::PreventRapidIncrease<>;
 
 struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::PreventRapidIncrease<
+                                 StepChooserUse::LtsStep>>>,
+                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                             tmpl::list<StepChoosers::PreventRapidIncrease<
+                                 StepChooserUse::Slab>>>>;
+  };
   using component_list = tmpl::list<>;
 };
 
@@ -46,9 +56,6 @@ void check_case(const Frac& expected_frac,
                 const std::vector<Frac>& times) noexcept {
   CAPTURE(times);
   CAPTURE(expected_frac);
-  const PreventRapidIncrease relax{};
-  const std::unique_ptr<StepChooserType> relax_base =
-      std::make_unique<PreventRapidIncrease>(relax);
 
   const Parallel::GlobalCache<Metavariables> cache{};
 
@@ -101,34 +108,62 @@ void check_case(const Frac& expected_frac,
       gts_history.insert_initial(make_gts_time_id(i), nullptr, nullptr);
     }
 
-    const auto check = [&cache, &expected, &relax, &relax_base](
-                           auto box, const Time& current_time) noexcept {
+    const auto check =
+        [&cache, &expected](auto box, const Time& current_time) noexcept {
       const auto& history = db::get<history_tag>(box);
       const double current_step =
           history.size() > 0 ? abs(current_time - history.back()).value()
                              : std::numeric_limits<double>::infinity();
 
-      CHECK(relax(history, current_step, cache) ==
-            std::make_pair(expected, true));
-      CHECK(relax_base->desired_step(make_not_null(&box), current_step,
-                                     cache) == std::make_pair(expected, true));
-      CHECK(relax_base->desired_slab(current_step, box, cache) == expected);
-      CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
-            std::make_pair(expected, true));
-      CHECK(serialize_and_deserialize(relax_base)
-                ->desired_step(make_not_null(&box), current_step, cache) ==
-            std::make_pair(expected, true));
+      {
+        const StepChoosers::PreventRapidIncrease<StepChooserUse::LtsStep>
+            relax{};
+        const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>> relax_base =
+            std::make_unique<
+                StepChoosers::PreventRapidIncrease<StepChooserUse::LtsStep>>(
+                relax);
+
+        CHECK(relax(history, current_step, cache) ==
+              std::make_pair(expected, true));
+        CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
+              std::make_pair(expected, true));
+        CHECK(relax_base->desired_step(make_not_null(&box), current_step,
+                                       cache) ==
+              std::make_pair(expected, true));
+        CHECK(serialize_and_deserialize(relax_base)
+                  ->desired_step(make_not_null(&box), current_step, cache) ==
+              std::make_pair(expected, true));
+      }
+      {
+        const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
+        const std::unique_ptr<StepChooser<StepChooserUse::Slab>> relax_base =
+            std::make_unique<
+                StepChoosers::PreventRapidIncrease<StepChooserUse::Slab>>(
+                relax);
+
+        CHECK(relax(history, current_step, cache) ==
+              std::make_pair(expected, true));
+        CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
+              std::make_pair(expected, true));
+        CHECK(relax_base->desired_slab(current_step, box, cache) == expected);
+        CHECK(serialize_and_deserialize(relax_base)
+                  ->desired_slab(current_step, box, cache) == expected);
+      }
     };
 
     {
       CAPTURE(lts_history);
-      check(db::create<db::AddSimpleTags<history_tag>>(std::move(lts_history)),
+      check(db::create<db::AddSimpleTags<
+                Parallel::Tags::MetavariablesImpl<Metavariables>, history_tag>>(
+                Metavariables{}, std::move(lts_history)),
             make_time_id(0).substep_time());
     }
 
     {
       CAPTURE(gts_history);
-      check(db::create<db::AddSimpleTags<history_tag>>(std::move(gts_history)),
+      check(db::create<db::AddSimpleTags<
+                Parallel::Tags::MetavariablesImpl<Metavariables>, history_tag>>(
+                Metavariables{}, std::move(gts_history)),
             make_gts_time_id(0).substep_time());
     }
   }
@@ -137,7 +172,7 @@ void check_case(const Frac& expected_frac,
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
                   "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepChooserType>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   // -1 indicates no expected restriction
   check_case(-1, {0});
@@ -154,6 +189,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
   // Cause roundoff errors
   check_case(-1, {{1, 3}, {2, 3}, {3, 3}});
 
-  TestHelpers::test_creation<std::unique_ptr<StepChooserType>>(
+  TestHelpers::test_creation<
+      std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>, Metavariables>(
       "PreventRapidIncrease");
+  TestHelpers::test_creation<std::unique_ptr<StepChooser<StepChooserUse::Slab>>,
+                             Metavariables>("PreventRapidIncrease");
 }

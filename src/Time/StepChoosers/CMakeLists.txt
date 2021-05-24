@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Constant.cpp
+  StepToTimes.cpp
   )
 
 spectre_target_headers(
@@ -15,6 +16,7 @@ spectre_target_headers(
   Cfl.hpp
   Constant.hpp
   ErrorControl.hpp
+  Factory.hpp
   Increase.hpp
   PreventRapidIncrease.hpp
   StepChooser.hpp
