@@ -14,6 +14,7 @@ spectre_target_sources(
   MagneticRotor.cpp
   MagnetizedFmDisk.cpp
   OrszagTangVortex.cpp
+  RiemannProblem.cpp
   )
 
 spectre_target_headers(
@@ -27,6 +28,7 @@ spectre_target_headers(
   MagneticRotor.hpp
   MagnetizedFmDisk.hpp
   OrszagTangVortex.hpp
+  RiemannProblem.hpp
   )
 
 target_link_libraries(

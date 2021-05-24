@@ -32,6 +32,7 @@ class MagneticFieldLoop;
 class MagneticRotor;
 class MagnetizedFmDisk;
 class OrszagTangVortex;
+class RiemannProblem;
 }  // namespace AnalyticData
 }  // namespace grmhd
 

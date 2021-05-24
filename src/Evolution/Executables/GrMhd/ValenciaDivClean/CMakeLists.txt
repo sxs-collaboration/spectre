@@ -105,3 +105,9 @@ add_grmhd_executable(
   grmhd::AnalyticData::OrszagTangVortex
   "${LIBS_TO_LINK}"
   )
+
+add_grmhd_executable(
+  RiemannProblem
+  grmhd::AnalyticData::RiemannProblem
+  "${LIBS_TO_LINK}"
+  )
