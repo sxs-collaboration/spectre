@@ -123,17 +123,16 @@ struct RegisterEventsWithObservers {
     if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggers,
                                            db::DataBox<DbTagList>>) {
       const auto& triggers_and_events = db::get<::Tags::EventsAndTriggers>(box);
-      for (const auto& trigger_and_events :
-           triggers_and_events.events_and_triggers()) {
-        for (const auto& event : trigger_and_events.second) {
-          if (auto obs_type_and_obs_key =
-                  get_registration_observation_type_and_key(*event, box);
-              obs_type_and_obs_key.has_value()) {
-            type_of_observation_and_observation_key_pairs.push_back(
-                *obs_type_and_obs_key);
-          }
-        }
-      }
+      triggers_and_events.for_each_event(
+          [&box, &type_of_observation_and_observation_key_pairs](
+              const auto& event) noexcept {
+            if (auto obs_type_and_obs_key =
+                    get_registration_observation_type_and_key(event, box);
+                obs_type_and_obs_key.has_value()) {
+              type_of_observation_and_observation_key_pairs.push_back(
+                  *obs_type_and_obs_key);
+            }
+          });
 
       for (const auto& [type_of_observation, observation_key] :
            type_of_observation_and_observation_key_pairs) {
