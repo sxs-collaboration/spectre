@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveValenciaDivCleanCylindricalBlastWave
+# Executable: EvolveValenciaDivCleanBlastWave
 # Check: parse;execute
 
 Evolution:
@@ -28,7 +28,7 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 AnalyticData:
-  CylindricalBlastWave:
+  BlastWave:
     InnerRadius: 0.8
     OuterRadius: 1.0
     InnerDensity: 1.0e-2
@@ -37,6 +37,7 @@ AnalyticData:
     OuterPressure: 5.0e-4
     MagneticField: [0.1, 0.0, 0.0]
     AdiabaticIndex: 1.3333333333333333333
+    Geometry: Cylindrical
 
 EvolutionSystem:
   ValenciaDivClean:
@@ -61,8 +62,8 @@ VariableFixing:
     DensityCutoff: 1.0e-12
 
 Observers:
-  VolumeFileName: "ValenciaDivCleanCylindricalBlastWaveVolume"
-  ReductionFileName: "ValenciaDivCleanCylindricalBlastWaveReductions"
+  VolumeFileName: "ValenciaDivCleanBlastWaveVolume"
+  ReductionFileName: "ValenciaDivCleanBlastWaveReductions"
 
 EventsAndTriggers:
   ? Slabs:

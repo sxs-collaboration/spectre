@@ -77,8 +77,8 @@ add_grmhd_executable(
   )
 
 add_grmhd_executable(
-  CylindricalBlastWave
-  grmhd::AnalyticData::CylindricalBlastWave
+  BlastWave
+  grmhd::AnalyticData::BlastWave
   "${LIBS_TO_LINK}"
   )
 
