@@ -324,7 +324,7 @@ decltype(auto) equal(const Container& lhs, const Container2& rhs,
 
 /// Convenience wrapper around std::max_element
 template <class Container>
-decltype(auto) max_element(const Container& c) {
+constexpr decltype(auto) max_element(const Container& c) {
   using std::begin;
   using std::end;
   return std::max_element(begin(c), end(c));
@@ -332,7 +332,7 @@ decltype(auto) max_element(const Container& c) {
 
 /// Convenience wrapper around std::max_element
 template <class Container, class Compare>
-decltype(auto) max_element(const Container& c, Compare&& comp) {
+constexpr decltype(auto) max_element(const Container& c, Compare&& comp) {
   using std::begin;
   using std::end;
   return std::max_element(begin(c), end(c), std::forward<Compare>(comp));
@@ -340,7 +340,7 @@ decltype(auto) max_element(const Container& c, Compare&& comp) {
 
 /// Convenience wrapper around std::min_element
 template <class Container>
-decltype(auto) min_element(const Container& c) {
+constexpr decltype(auto) min_element(const Container& c) {
   using std::begin;
   using std::end;
   return std::min_element(begin(c), end(c));
@@ -348,7 +348,7 @@ decltype(auto) min_element(const Container& c) {
 
 /// Convenience wrapper around std::min_element
 template <class Container, class Compare>
-decltype(auto) min_element(const Container& c, Compare&& comp) {
+constexpr decltype(auto) min_element(const Container& c, Compare&& comp) {
   using std::begin;
   using std::end;
   return std::min_element(begin(c), end(c), std::forward<Compare>(comp));
