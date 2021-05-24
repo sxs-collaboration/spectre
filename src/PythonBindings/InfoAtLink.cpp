@@ -5,4 +5,8 @@
 
 #include <string>
 
-std::string info_from_build() { return "build_info"; }
+std::string link_date() { return "Unavailable in Python bindings"; }
+
+std::string git_description() { return "Unavailable in Python bindings"; }
+
+std::string git_branch() { return "Unavailable in Python bindings"; }
