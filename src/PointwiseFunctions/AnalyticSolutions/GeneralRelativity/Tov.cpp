@@ -102,6 +102,25 @@ interior_solution(
   result.specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(
           result.rest_mass_density);
+  // From the TOV equation, write radial derivative of the pressure as
+  //   - (rho(1.0+epsilon)+P)*((m/r)+4*pi r^2 P) / (r - 2 * r (m/r))
+  // where rho is the rest-mass density and epsilon the specific internal
+  // energy.
+  for (size_t i = 0; i < get_size(radius); ++i) {
+    if (get_element(radius, i) > 0.0) {
+      get_element(result.dr_pressure, i) =
+          -(get_element(get(result.rest_mass_density), i) *
+                (1.0 + get_element(get(result.specific_internal_energy), i)) +
+            get_element(get(result.pressure), i)) *
+          (get_element(mass_over_radius, i) +
+           4.0 * M_PI * get_element(get(result.pressure), i) *
+               square(get_element(radius, i))) /
+          (get_element(radius, i) *
+           (1.0 - 2.0 * get_element(mass_over_radius, i)));
+    } else {
+      get_element(result.dr_pressure, i) = 0.0;
+    }
+  }
   result.metric_time_potential =
       log_lapse_at_outer_radius - log_specific_enthalpy;
   result.dr_metric_time_potential =
@@ -131,6 +150,7 @@ vacuum_solution(const DataType& radius, const double total_mass) noexcept {
   result.pressure = make_with_value<Scalar<DataType>>(radius, 0.0);
   result.specific_internal_energy =
       make_with_value<Scalar<DataType>>(radius, 0.0);
+  result.dr_pressure = make_with_value<DataType>(radius, 0.0);
   const DataType one_minus_two_m_over_r = 1.0 - 2.0 * total_mass / radius;
   result.metric_time_potential = 0.5 * log(one_minus_two_m_over_r);
   result.dr_metric_time_potential =
@@ -260,6 +280,7 @@ TovSolution::radial_variables(
     get(result.specific_internal_energy)[i] =
         get(radial_vars_at_r.specific_internal_energy);
     get(result.specific_enthalpy)[i] = get(radial_vars_at_r.specific_enthalpy);
+    result.dr_pressure[i] = radial_vars_at_r.dr_pressure;
     result.metric_time_potential[i] = radial_vars_at_r.metric_time_potential;
     result.dr_metric_time_potential[i] =
         radial_vars_at_r.dr_metric_time_potential;

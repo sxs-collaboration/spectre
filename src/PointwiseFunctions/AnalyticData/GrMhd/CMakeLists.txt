@@ -13,6 +13,7 @@ spectre_target_sources(
   MagneticFieldLoop.cpp
   MagneticRotor.cpp
   MagnetizedFmDisk.cpp
+  MagnetizedTovStar.cpp
   OrszagTangVortex.cpp
   RiemannProblem.cpp
   )
@@ -27,6 +28,7 @@ spectre_target_headers(
   MagneticFieldLoop.hpp
   MagneticRotor.hpp
   MagnetizedFmDisk.hpp
+  MagnetizedTovStar.hpp
   OrszagTangVortex.hpp
   RiemannProblem.hpp
   )

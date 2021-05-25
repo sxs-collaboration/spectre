@@ -101,6 +101,12 @@ add_grmhd_executable(
   )
 
 add_grmhd_executable(
+  MagnetizedTovStar
+  grmhd::AnalyticData::MagnetizedTovStar
+  "${LIBS_TO_LINK}"
+  )
+
+add_grmhd_executable(
   OrszagTangVortex
   grmhd::AnalyticData::OrszagTangVortex
   "${LIBS_TO_LINK}"

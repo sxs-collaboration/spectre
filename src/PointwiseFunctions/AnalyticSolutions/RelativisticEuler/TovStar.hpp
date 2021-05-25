@@ -83,6 +83,7 @@ class TovStar : public MarkAsAnalyticSolution {
               make_with_value<Scalar<DataType>>(radial_coordinate, 0.0)),
           specific_enthalpy(
               make_with_value<Scalar<DataType>>(radial_coordinate, 0.0)),
+          dr_pressure(make_with_value<DataType>(radial_coordinate, 0.0)),
           metric_time_potential(
               make_with_value<DataType>(radial_coordinate, 0.0)),
           dr_metric_time_potential(
@@ -100,6 +101,7 @@ class TovStar : public MarkAsAnalyticSolution {
     Scalar<DataType> pressure{};
     Scalar<DataType> specific_internal_energy{};
     Scalar<DataType> specific_enthalpy{};
+    DataType dr_pressure{};
     DataType metric_time_potential{};
     DataType dr_metric_time_potential{};
     DataType metric_radial_potential{};
@@ -171,11 +173,7 @@ class TovStar : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
- private:
-  template <typename LocalRadialSolution>
-  friend bool operator==(const TovStar<LocalRadialSolution>& lhs,
-                         const TovStar<LocalRadialSolution>& rhs) noexcept;
-
+ protected:
   const RadialSolution& radial_tov_solution() const noexcept;
 
   template <typename DataType>
@@ -235,6 +233,11 @@ class TovStar : public MarkAsAnalyticSolution {
   BOOST_PP_LIST_FOR_EACH(FUNC_DECL, _, MY_LIST)
 #undef MY_LIST
 #undef FUNC_DECL
+
+ private:
+  template <typename LocalRadialSolution>
+  friend bool operator==(const TovStar<LocalRadialSolution>& lhs,
+                         const TovStar<LocalRadialSolution>& rhs) noexcept;
 
   double central_rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();

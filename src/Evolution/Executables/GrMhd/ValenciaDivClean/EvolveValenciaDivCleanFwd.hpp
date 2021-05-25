@@ -31,6 +31,7 @@ class BondiHoyleAccretion;
 class MagneticFieldLoop;
 class MagneticRotor;
 class MagnetizedFmDisk;
+class MagnetizedTovStar;
 class OrszagTangVortex;
 class RiemannProblem;
 }  // namespace AnalyticData

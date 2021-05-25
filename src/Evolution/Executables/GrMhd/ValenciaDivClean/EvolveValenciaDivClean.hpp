@@ -92,6 +92,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticRotor.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/OrszagTangVortex.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/RiemannProblem.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
