@@ -17,6 +17,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
+#include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -43,8 +44,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     typename CenterA::type center_A, typename CenterB::type center_B,
     typename RadiusA::type radius_A, typename RadiusB::type radius_B,
     typename OuterRadius::type outer_radius,
-    typename InitialRefinement::type initial_refinement,
-    typename InitialGridPoints::type initial_grid_points_per_dim,
+    const typename InitialRefinement::type& initial_refinement,
+    const typename InitialGridPoints::type& initial_grid_points,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -57,8 +58,6 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       radius_A_(radius_A),
       radius_B_(radius_B),
       outer_radius_(outer_radius),
-      initial_refinement_(initial_refinement),
-      initial_grid_points_per_dim_(initial_grid_points_per_dim),
       time_dependence_(std::move(time_dependence)),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
@@ -174,6 +173,134 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
            "future");
   }
 
+  // Create block names and groups
+  std::vector<std::string> block_names{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups{};
+
+  auto add_filled_cylinder_name = [&block_names, &block_groups](
+                                      const std::string& prefix,
+                                      const std::string& group_name) noexcept {
+    for (const std::string& where :
+         {"Center", "East", "North", "West", "South"}) {
+      const std::string name =
+          std::string(prefix).append("FilledCylinder").append(where);
+      block_names.push_back(name);
+      block_groups[group_name].insert(name);
+    }
+  };
+  auto add_cylinder_name = [&block_names, &block_groups](
+                               const std::string& prefix,
+                               const std::string& group_name) noexcept {
+    for (const std::string& where : {"East", "North", "West", "South"}) {
+      const std::string name =
+          std::string(prefix).append("Cylinder").append(where);
+      block_names.push_back(name);
+      block_groups[group_name].insert(name);
+    }
+  };
+
+  // CA Filled Cylinder
+  // 5 blocks: 0 thru 4
+  add_filled_cylinder_name("CA", "Outer");
+
+  // CA Cylinder
+  // 4 blocks: 5 thru 8
+  add_cylinder_name("CA", "Outer");
+
+  // EA Filled Cylinder
+  // 5 blocks: 9 thru 13
+  add_filled_cylinder_name("EA", "InnerA");
+
+  // EA Cylinder
+  // 4 blocks: 14 thru 17
+  add_cylinder_name("EA", "InnerA");
+
+  // EB Filled Cylinder
+  // 5 blocks: 18 thru 22
+  add_filled_cylinder_name("EB", "InnerB");
+
+  // EB Cylinder
+  // 4 blocks: 23 thru 26
+  add_cylinder_name("EB", "InnerB");
+
+  // MA Filled Cylinder
+  // 5 blocks: 27 thru 31
+  add_filled_cylinder_name("MA", "InnerA");
+
+  // MB Filled Cylinder
+  // 5 blocks: 32 thru 36
+  add_filled_cylinder_name("MB", "InnerB");
+
+  // CB Filled Cylinder
+  // 5 blocks: 37 thru 41
+  add_filled_cylinder_name("CB", "Outer");
+
+  // CB Cylinder
+  // 4 blocks: 42 thru 45
+  add_cylinder_name("CB", "Outer");
+
+  // Expand initial refinement over all blocks
+  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names,
+                                                       std::move(block_groups)};
+  try {
+    initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
+  } catch (const std::exception& error) {
+    PARSE_ERROR(context, "Invalid 'InitialRefinement': " << error.what());
+  }
+  try {
+    initial_grid_points_ = std::visit(expand_over_blocks, initial_grid_points);
+  } catch (const std::exception& error) {
+    PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
+  }
+
+  // Now we must change the initial refinement and initial grid points
+  // for certain blocks, because the [r, theta, perp] directions do
+  // not always correspond to [xi, eta, zeta].  The values in
+  // initial_refinement_ must correspond to [xi, eta, zeta].
+  //
+  // In particular, for cylinders: [xi, eta, zeta] = [r, theta, perp]
+  // but for filled cylinders: [xi, eta, zeta] = [perp, theta, r].
+
+  auto swap_refinement_and_grid_points_xi_zeta =
+      [this](const size_t block_id) noexcept {
+        size_t val = gsl::at(initial_refinement_[block_id], 0);
+        gsl::at(initial_refinement_[block_id], 0) =
+            gsl::at(initial_refinement_[block_id], 2);
+        gsl::at(initial_refinement_[block_id], 2) = val;
+        val = gsl::at(initial_grid_points_[block_id], 0);
+        gsl::at(initial_grid_points_[block_id], 0) =
+            gsl::at(initial_grid_points_[block_id], 2);
+        gsl::at(initial_grid_points_[block_id], 2) = val;
+      };
+
+  // CA Filled Cylinder
+  // 5 blocks: 0 thru 4
+  for (size_t block = 0; block < 5; ++block) {
+    swap_refinement_and_grid_points_xi_zeta(block);
+  }
+
+  // EA Filled Cylinder
+  // 5 blocks: 9 thru 13
+  for (size_t block = 9; block < 14; ++block) {
+    swap_refinement_and_grid_points_xi_zeta(block);
+  }
+
+  // EB Filled Cylinder
+  // 5 blocks: 18 thru 22
+  for (size_t block = 18; block < 23; ++block) {
+    swap_refinement_and_grid_points_xi_zeta(block);
+  }
+
+  // MA Filled Cylinder
+  // 5 blocks: 27 thru 31
+  // MB Filled Cylinder
+  // 5 blocks: 32 thru 36
+  // CB Filled Cylinder
+  // 5 blocks: 37 thru 41
+  for (size_t block = 27; block < 42; ++block) {
+    swap_refinement_and_grid_points_xi_zeta(block);
+  }
 }
 
 Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
@@ -207,8 +334,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
   // cylindered-sphere EB in Figure 20.
   //
   // radius_MB is eq. A16 or A23 in the paper (depending on whether
-  // the EE spheres exist), and is the radius of the circle where the EB sphere
-  // intersects the cutting plane.
+  // the EE spheres exist), and is the radius of the circle where the EB
+  // sphere intersects the cutting plane.
   const std::array<double, 3> center_EA = {
       0.0, 0.0, cut_spheres_offset_factor_ * center_A_[2]};
   const std::array<double, 3> center_EB = {
@@ -232,9 +359,9 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
   const double cylinder_lower_bound_z = -1.0;
   const double cylinder_upper_bound_z = 1.0;
   const auto logical_to_cylinder_center_maps =
-      cyl_wedge_coord_map_center_blocks<false>(
-          cylinder_inner_radius, cylinder_lower_bound_z,
-          cylinder_upper_bound_z);
+      cyl_wedge_coord_map_center_blocks<false>(cylinder_inner_radius,
+                                               cylinder_lower_bound_z,
+                                               cylinder_upper_bound_z);
   const auto logical_to_cylinder_surrounding_maps =
       cyl_wedge_coord_map_surrounding_blocks(
           cylinder_inner_radius, cylinder_outer_radius, cylinder_lower_bound_z,
@@ -302,12 +429,12 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
           for (size_t i = 0; i < 5; ++i) {
             BcMap bcs{};
             if (AddBoundaryCondition::outer == add_boundary_condition) {
-              if(parity_flip == CylindricalDomainParityFlip::z_direction) {
+              if (parity_flip == CylindricalDomainParityFlip::z_direction) {
                 bcs[Direction<3>::lower_zeta()] =
-                  outer_boundary_condition_->get_clone();
+                    outer_boundary_condition_->get_clone();
               } else {
                 bcs[Direction<3>::upper_zeta()] =
-                  outer_boundary_condition_->get_clone();
+                    outer_boundary_condition_->get_clone();
               }
             } else if (AddBoundaryCondition::inner == add_boundary_condition) {
               if (parity_flip == CylindricalDomainParityFlip::z_direction) {
@@ -550,12 +677,12 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
 
 std::vector<std::array<size_t, 3>>
 CylindricalBinaryCompactObject::initial_extents() const noexcept {
-  return {number_of_blocks_, make_array<3>(initial_grid_points_per_dim_)};
+  return initial_grid_points_;
 }
 
 std::vector<std::array<size_t, 3>>
 CylindricalBinaryCompactObject::initial_refinement_levels() const noexcept {
-  return {number_of_blocks_, make_array<3>(initial_refinement_)};
+  return initial_refinement_;
 }
 
 std::unordered_map<std::string,

@@ -277,8 +277,11 @@ void test_connectivity() {
   }
 }
 
-std::string create_option_string(const bool add_time_dependence,
-                                 const bool add_boundary_condition) {
+std::string create_option_string(
+    const bool add_time_dependence,
+    const bool with_additional_outer_radial_refinement,
+    const bool with_additional_grid_points,
+    const bool add_boundary_condition) {
   const std::string time_dependence{
       add_time_dependence
           ? "  TimeDependence:\n"
@@ -306,8 +309,18 @@ std::string create_option_string(const bool add_time_dependence,
          "  CenterB: [-3.0, 0.05, 0.0]\n"
          "  RadiusB: 1.0\n"
          "  OuterRadius: 25.0\n"
-         "  InitialRefinement: 1\n"
-         "  InitialGridPoints: 3\n" +
+         "  InitialRefinement:" +
+         (with_additional_outer_radial_refinement
+              ? std::string(" 1\n")
+              : std::string("\n    Outer: [2, 1, 1]"
+                            "\n    InnerA: [1, 1, 1]"
+                            "\n    InnerB: [2, 1, 1]\n")) +
+         "  InitialGridPoints:" +
+         (with_additional_grid_points
+              ? std::string(" 3\n")
+              : std::string("\n    Outer: [4, 3, 3]"
+                            "\n    InnerA: [3, 3, 3]"
+                            "\n    InnerB: [5, 3, 3]\n")) +
          time_dependence + boundary_conditions;
 }
 
@@ -318,13 +331,13 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
           domain::OptionTags::DomainCreator<3>,
           TestHelpers::domain::BoundaryConditions::
               MetavariablesWithBoundaryConditions<3>>(
-          create_option_string(true, with_boundary_conditions));
+          create_option_string(true, false, false, with_boundary_conditions));
     } else {
       return TestHelpers::test_option_tag<
           domain::OptionTags::DomainCreator<3>,
           TestHelpers::domain::BoundaryConditions::
               MetavariablesWithoutBoundaryConditions<3>>(
-          create_option_string(true, with_boundary_conditions));
+          create_option_string(true, false, false, with_boundary_conditions));
     }
   }();
   const std::array<double, 4> times_to_check{{0.0, 4.4, 7.8}};
@@ -406,58 +419,63 @@ void test_binary_factory() {
             *binary_compact_object));
   };
   for (const bool with_boundary_conds : {true, false}) {
-    check_impl(create_option_string(false, with_boundary_conds),
-               with_boundary_conds);
+    for (const bool with_additional_outer_radial_refinement : {false, true}) {
+      for (const bool with_additional_grid_points : {false, true}) {
+        check_impl(create_option_string(
+                       false, with_additional_outer_radial_refinement,
+                       with_additional_grid_points, with_boundary_conds),
+                   with_boundary_conds);
+      }
+    }
   }
 }
 
 void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, 1.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, 1.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("OuterRadius is too small"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{-2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, 25.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {{-2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, 25.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of the input CenterA is expected to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{2.0, 0.05, 0.0}}, {5.0, 0.05, 0.0}, 1.0, 0.4, 25.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {{2.0, 0.05, 0.0}}, {5.0, 0.05, 0.0}, 1.0, 0.4, 25.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of the input CenterB is expected to be negative"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, -1.0, 0.4, 25.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, -1.0, 0.4, 25.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("RadiusA and RadiusB are expected "
                                 "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, -0.4, 25.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, -0.4, 25.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("RadiusA and RadiusB are expected "
                                 "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 0.15, 0.4, 25.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "RadiusA should not be smaller than RadiusB"));
+          {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 0.15, 0.4, 25.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("RadiusA should not be smaller than RadiusB"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
-          {{2.0, 0.05, 0.0}}, {-1.0, 0.05, 0.0}, 1.0, 0.4, 25.0, 1, 3, nullptr,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          {{2.0, 0.05, 0.0}}, {-1.0, 0.05, 0.0}, 1.0, 0.4, 25.0, 1_st, 3_st,
+          nullptr, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("We expect |x_A| <= |x_B|"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
