@@ -11,8 +11,8 @@
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Informer/Tags.hpp"
-#include "Informer/Verbosity.hpp"
+#include "IO/Logging/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -38,9 +38,6 @@ template <typename Metavariables>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
-namespace Tags {
-struct Verbosity;
-}  // namespace Tags
 template <typename Frame>
 class Strahlkorper;
 /// \endcond

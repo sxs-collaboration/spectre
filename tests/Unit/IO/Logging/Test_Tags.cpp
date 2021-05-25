@@ -8,14 +8,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Informer/Tags.hpp"
+#include "IO/Logging/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
 struct TestLabel {};
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Informer.Tags", "[Unit][Informer]") {
+SPECTRE_TEST_CASE("Unit.Logging.Tags", "[Unit]") {
   TestHelpers::db::test_simple_tag<logging::Tags::Verbosity<TestLabel>>(
       "Verbosity(TestLabel)");
 }

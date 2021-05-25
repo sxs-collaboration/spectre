@@ -6,8 +6,8 @@
 #include <string>
 
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Informer/Tags.hpp"
-#include "Informer/Verbosity.hpp"
+#include "IO/Logging/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
@@ -42,13 +42,13 @@ void test_ostream() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Informer.Verbosity", "[Informer][Unit]") {
+SPECTRE_TEST_CASE("Unit.Logging.Verbosity", "[Unit]") {
   test_construct_from_options();
   test_ostream();
 }
 
 // [[OutputRegex, Failed to convert "Braggadocious" to Verbosity]]
-SPECTRE_TEST_CASE("Unit.Informer.Verbosity.Fail", "[Informer][Unit]") {
+SPECTRE_TEST_CASE("Unit.Logging.Verbosity.Fail", "[Unit]") {
   ERROR_TEST();
   test_construct_from_options_fail();
 }

@@ -14,5 +14,16 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearSolver/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DomainStructure;LinearSolver;ParallelSchwarz;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DomainStructure
+  LinearSolver
+  Logging
+  ParallelSchwarz
+  Utilities
   )

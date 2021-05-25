@@ -12,6 +12,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "IO/Logging/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -20,8 +22,6 @@
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Informer/Tags.hpp"
-#include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"

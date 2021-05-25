@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Informer/Verbosity.hpp"
+#include "IO/Logging/Verbosity.hpp"
 
 #include <ostream>
 #include <string>
@@ -23,8 +23,8 @@ Verbosity Options::create_from_yaml<Verbosity>::create<void>(
   } else if ("Debug" == type_read) {
     return Verbosity::Debug;
   }
-  PARSE_ERROR(options.context(),
-              "Failed to convert \"" << type_read
+  PARSE_ERROR(options.context(), "Failed to convert \""
+                                     << type_read
                                      << "\" to Verbosity. Must be one "
                                         "of Silent, Quiet, Verbose, or Debug.");
 }

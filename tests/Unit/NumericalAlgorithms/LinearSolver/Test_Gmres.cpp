@@ -12,7 +12,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/LinearSolver/TestHelpers.hpp"
-#include "Informer/Verbosity.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"

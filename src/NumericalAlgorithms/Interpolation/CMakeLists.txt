@@ -77,6 +77,7 @@ target_link_libraries(
   ErrorHandling
   EventsAndTriggers
   GSL::gsl
+  Logging
   Options
   Spectral
   INTERFACE

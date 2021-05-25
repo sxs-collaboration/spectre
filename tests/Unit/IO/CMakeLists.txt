@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Importers)
+add_subdirectory(Logging)
 
 set(LIBRARY "Test_IO")
 

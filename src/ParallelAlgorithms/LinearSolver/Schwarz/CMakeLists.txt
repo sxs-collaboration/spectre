@@ -39,9 +39,9 @@ target_link_libraries(
   DiscontinuousGalerkin
   Domain
   IO
-  Informer
   Initialization
   LinearSolver
+  Logging
   Options
   Parallel
   ParallelLinearSolver

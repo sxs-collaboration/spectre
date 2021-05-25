@@ -15,5 +15,14 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/RootFinding/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;RootFinding;DataStructures"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  DataStructures
+  Logging
+  RootFinding
   )

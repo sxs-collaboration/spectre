@@ -33,8 +33,8 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Informer/Tags.hpp"  // IWYU pragma: keep
-#include "Informer/Verbosity.hpp"
+#include "IO/Logging/Tags.hpp"  // IWYU pragma: keep
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep

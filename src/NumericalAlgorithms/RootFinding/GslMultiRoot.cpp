@@ -8,23 +8,6 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace RootFinder {
-std::ostream& operator<<(std::ostream& os,
-                         const Verbosity& verbosity) noexcept {
-  switch (verbosity) {
-    case Verbosity::Silent:
-      return os << "Silent";
-    case Verbosity::Quiet:
-      return os << "Quiet";
-    case Verbosity::Verbose:
-      return os << "Verbose";
-    case Verbosity::Debug:
-      return os << "Debug";
-    default:
-      ERROR("Invalid verbosity value specified.");
-  }
-  return os;
-}
-
 std::ostream& operator<<(std::ostream& os, const Method& method) noexcept {
   switch (method) {
     case Method::Hybrids:

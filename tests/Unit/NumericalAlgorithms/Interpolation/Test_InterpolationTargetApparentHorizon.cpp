@@ -20,8 +20,8 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
-#include "Informer/Tags.hpp"  // IWYU pragma: keep
-#include "Informer/Verbosity.hpp"
+#include "IO/Logging/Tags.hpp"  // IWYU pragma: keep
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"

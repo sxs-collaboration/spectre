@@ -12,8 +12,18 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/ConjugateGradient"
   "${LIBRARY_SOURCES}"
-  "Convergence;DataStructures;IO;ParallelLinearSolver"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Convergence
+  DataStructures
+  IO
+  Logging
+  ParallelLinearSolver
+)
 
 add_dependencies(
   ${LIBRARY}

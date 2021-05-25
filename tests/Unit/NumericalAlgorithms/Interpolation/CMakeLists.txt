@@ -39,7 +39,17 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Interpolation/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Interpolation;IO;MathFunctions"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  Interpolation
+  IO
+  Logging
+  MathFunctions
   )
 
 add_dependencies(
