@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_InterpolationTargetKerrHorizon.cpp
   Test_InterpolationTargetLineSegment.cpp
   Test_InterpolationTargetReceiveVars.cpp
+  Test_InterpolationTargetSpecifiedPoints.cpp
   Test_InterpolationTargetVarsFromElement.cpp
   Test_InterpolationTargetWedgeSectionTorus.cpp
   Test_InterpolatorReceivePoints.cpp
