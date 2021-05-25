@@ -16,7 +16,6 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Utilities.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
