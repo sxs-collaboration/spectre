@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   InitialDataTci.cpp
+  SwapGrTags.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
   TciOptions.cpp
@@ -16,6 +17,7 @@ spectre_target_headers(
   HEADERS
   InitialDataTci.hpp
   Subcell.hpp
+  SwapGrTags.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
   TciOptions.hpp
