@@ -13,6 +13,7 @@ spectre_target_sources(
   PRIVATE
   InitializationFunctions.cpp
   NodeLock.cpp
+  Reduction.cpp
   )
 
 spectre_target_headers(
@@ -43,6 +44,7 @@ spectre_target_headers(
   Reduction.hpp
   ReductionDeclare.hpp
   RegisterDerivedClassesWithCharm.hpp
+  Section.hpp
   Serialize.hpp
   SimpleActionVisitation.hpp
   TypeTraits.hpp
@@ -64,6 +66,7 @@ target_link_libraries(
 
 add_dependencies(
   ${LIBRARY}
+  module_GlobalCache
   module_Main          # GlobalCache module depends on Main module
   )
 

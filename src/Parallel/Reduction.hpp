@@ -8,11 +8,13 @@
 
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Section.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace Parallel {
 /// \cond
@@ -235,27 +237,80 @@ void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
 }
 /// \endcond
 
+/// Can be used instead of a `Parallel::Section` when no section is desired.
+///
+/// \see Parallel::contribute_to_reduction
+// @{
+struct NoSection {};
+NoSection& no_section() noexcept;
+// @}
+
 /*!
  * \ingroup ParallelGroup
  * \brief Perform a reduction from the `sender_component` (typically your own
  * parallel component) to the `target_component`, performing the `Action` upon
  * receiving the reduction.
+ *
+ * \par Section reductions
+ * This function supports section reductions (see `Parallel::Section`). Pass
+ * the `Parallel::Section` as the \p section argument, or pass
+ * `Parallel::no_section()` to perform a reduction over the entire parallel
+ * component (default). Here's an example of a section reduction:
+ *
+ * \snippet Test_SectionReductions.cpp section_reduction
+ *
+ * \warning Section reductions currently don't support migrating elements, i.e.
+ * either load-balancing or restoring a checkpoint to a different number of PEs.
+ * Support for migrating elements may require [updating the "section
+ * cookie"](https://charm.readthedocs.io/en/latest/charm++/manual.html#section-operations-with-migrating-elements).
+ * One possibility to update the section cookie is to broadcast a CkMulticast
+ * message to the section elements and invoke `CkGetSectionInfo` within the
+ * message.
  */
-template <class Action, class SenderProxy, class TargetProxy, class... Ts>
+template <class Action, class SenderProxy, class TargetProxy, class... Ts,
+          class SectionType = NoSection>
 void contribute_to_reduction(ReductionData<Ts...> reduction_data,
                              const SenderProxy& sender_component,
-                             const TargetProxy& target_component) noexcept {
+                             const TargetProxy& target_component,
+                             [[maybe_unused]] const gsl::not_null<SectionType*>
+                                 section = &no_section()) noexcept {
   (void)Parallel::charmxx::RegisterReducerFunction<
       &ReductionData<Ts...>::combine>::registrar;
   CkCallback callback(
       TargetProxy::index_t::template redn_wrapper_reduction_action<
           Action, std::decay_t<ReductionData<Ts...>>>(nullptr),
       target_component);
-  sender_component.ckLocal()->contribute(
-      static_cast<int>(reduction_data.size()), reduction_data.packed().get(),
+  const auto& charm_reducer_function =
       Parallel::charmxx::charm_reducer_functions.at(
           std::hash<Parallel::charmxx::ReducerFunctions>{}(
-              &ReductionData<Ts...>::combine)),
-      callback);
+              &ReductionData<Ts...>::combine));
+  if constexpr (std::is_same_v<SectionType, NoSection>) {
+    sender_component.ckLocal()->contribute(
+        static_cast<int>(reduction_data.size()), reduction_data.packed().get(),
+        charm_reducer_function, callback);
+  } else {
+    static_assert(
+        tt::is_a_v<Section, SectionType>,
+        "Either pass a 'Parallel::Section' for the 'section' argument or "
+        "'Parallel::NoSection{}'. For the latter you can just omit the "
+        "argument.");
+    using SectionProxy = typename SectionType::cproxy_section;
+    // Retrieve the section cookie that keeps track of the reduction
+    auto& section_cookie = section->cookie();
+    // Ideally we would update the section cookie here using
+    // `CkGetSectionInfo()`. However, that only works with CkMulticast messages
+    // (see
+    // https://github.com/UIUC-PPL/charm/blob/99cda7a11108f503b89dc847b58e62bc74267440/src/ck-core/ckmulticast.C#L1180).
+    // Dispatching a message to the `sender_component` doesn't help because
+    // sending a message to a single element doesn't go through CkMulticast. Not
+    // updating the section cookie seems to work, but might break when elements
+    // migrate (see
+    // https://charm.readthedocs.io/en/latest/charm++/manual.html#section-operations-with-migrating-elements).
+    // In that case we can possibly broadcast a CkMulticast message to all
+    // elements to update their section cookies.
+    SectionProxy::contribute(static_cast<int>(reduction_data.size()),
+                             reduction_data.packed().get(),
+                             charm_reducer_function, section_cookie, callback);
+  }
 }
 }  // namespace Parallel
