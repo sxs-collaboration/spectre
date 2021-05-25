@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Hll.cpp
   BoundaryCorrections/Test_Hllc.cpp
   BoundaryCorrections/Test_Rusanov.cpp
+  Subcell/Test_InitialDataTci.cpp
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_Fluxes.cpp
