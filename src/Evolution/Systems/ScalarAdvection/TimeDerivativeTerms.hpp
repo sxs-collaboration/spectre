@@ -17,7 +17,7 @@ namespace ScalarAdvection {
 /// which are just the fluxes.
 template <size_t Dim>
 struct TimeDerivativeTerms {
-  using temporary_tags = tmpl::list<>;
+  using temporary_tags = tmpl::list<Tags::VelocityField<Dim>>;
   using argument_tags = tmpl::list<Tags::U, Tags::VelocityField<Dim>>;
 
   static void apply(
@@ -25,6 +25,7 @@ struct TimeDerivativeTerms {
       // nonconservative products, so not used. All the tags in the
       // variables_tag in the system struct.
       gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_vars*/,
+      gsl::not_null<tnsr::I<DataVector, Dim>*> temp_velocity_field,
 
       // Fluxes returned by reference. Listed in the system struct as
       // flux_variables.
