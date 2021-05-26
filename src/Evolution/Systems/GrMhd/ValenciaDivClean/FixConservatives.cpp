@@ -180,25 +180,37 @@ bool FixConservatives::operator()(
     if (s_tilde_squared > one_minus_safety_factor_for_momentum_density_ *
                               simple_upper_bound_for_s_tilde_squared) {
       // Find root of Equation B.34 of Foucart
-      // NOTE: This assumes minimum specific enthalpy is 1.
-      // SpEC implements a more complicated formula (B.32) which is equivalent
-      // Bounds on root are given by Equation  B.40 of Foucart
+      // NOTE:
+      // - This assumes minimum specific enthalpy is 1.
+      // - SpEC implements a more complicated formula (B.32) which is equivalent
+      // - Bounds on root are given by Equation  B.40 of Foucart
+      // - When the lower bound is W=1., the function g(W) can be slightly
+      //   positive (1e-17), which results in the root finder failing to
+      //   converge. We handle this case explicitly because we found that
+      //   setting a lower bound of 1.-1.e-12 leads to floating point
+      //   exceptions.
       const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
           b_squared_over_d, tau_over_d, normalized_s_dot_b};
       const double upper_bound_of_lorentz_factor = 1.0 + tau_over_d;
 
       double lorentz_factor = std::numeric_limits<double>::signaling_NaN();
-      try {
-        lorentz_factor =
-            (equal_within_roundoff(lower_bound_of_lorentz_factor,
-                                   upper_bound_of_lorentz_factor)
-                 ? lower_bound_of_lorentz_factor
-                 : RootFinder::toms748(
-                       f_of_lorentz_factor, lower_bound_of_lorentz_factor,
-                       upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
-      } catch (std::exception& exception) {
-        // clang-format makes the streamed text hard to read in code...
-        // clang-format off
+      if (const double f_at_lower =
+              f_of_lorentz_factor(lower_bound_of_lorentz_factor);
+          lower_bound_of_lorentz_factor == 1.0 and f_at_lower > 0.0 and
+          f_at_lower < 1.0e-14) {
+        lorentz_factor = lower_bound_of_lorentz_factor;
+      } else {
+        try {
+          lorentz_factor =
+              (equal_within_roundoff(lower_bound_of_lorentz_factor,
+                                     upper_bound_of_lorentz_factor)
+                   ? lower_bound_of_lorentz_factor
+                   : RootFinder::toms748(
+                         f_of_lorentz_factor, lower_bound_of_lorentz_factor,
+                         upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
+        } catch (std::exception& exception) {
+          // clang-format makes the streamed text hard to read in code...
+          // clang-format off
         ERROR(
             "Failed to fix conserved variables because the root finder failed "
             "to find the lorentz factor.\n"
@@ -218,6 +230,7 @@ bool FixConservatives::operator()(
                "is:\n"
             << exception.what());
           // clang-format on
+        }
       }
 
       const double upper_bound_for_s_tilde_squared =
