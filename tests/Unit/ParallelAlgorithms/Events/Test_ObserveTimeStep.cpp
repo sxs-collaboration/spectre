@@ -64,6 +64,7 @@ struct MockContributeReductionData {
     bool formatter_is_set {};
   };
 
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static std::optional<Results> results;
 
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
@@ -102,6 +103,7 @@ struct MockContributeReductionData {
 
 template <typename Metavariables>
 std::optional<typename MockContributeReductionData<Metavariables>::Results>
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     MockContributeReductionData<Metavariables>::results{};
 
 template <typename Metavariables>
