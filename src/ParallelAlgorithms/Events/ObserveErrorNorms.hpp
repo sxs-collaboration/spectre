@@ -31,7 +31,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -44,21 +43,8 @@ struct Inertial;
 
 namespace dg {
 namespace Events {
-template <typename ObservationValueTag, typename Tensors,
-          typename EventRegistrars>
-class ObserveErrorNorms;
-
-namespace Registrars {
 template <typename ObservationValueTag, typename Tensors>
-using ObserveErrorNorms =
-    ::Registration::Registrar<Events::ObserveErrorNorms, ObservationValueTag,
-                              Tensors>;
-}  // namespace Registrars
-
-template <typename ObservationValueTag, typename Tensors,
-          typename EventRegistrars = tmpl::list<
-              Registrars::ObserveErrorNorms<ObservationValueTag, Tensors>>>
-class ObserveErrorNorms;  // IWYU pragma: keep
+class ObserveErrorNorms;
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -73,10 +59,9 @@ class ObserveErrorNorms;  // IWYU pragma: keep
  *   \text{value} - \text{analytic solution}\right]^2}\right)\f$
  *   over all points
  */
-template <typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
-class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
-                        EventRegistrars> : public Event<EventRegistrars> {
+template <typename ObservationValueTag, typename... Tensors>
+class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>
+    : public Event {
  private:
   template <typename Tag>
   struct LocalSquareError {
@@ -207,7 +192,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | subfile_path_;
   }
 
@@ -215,18 +200,16 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   std::string subfile_path_;
 };
 
-template <typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
-ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
-                  EventRegistrars>::ObserveErrorNorms(const std::string&
-                                                          subfile_name) noexcept
+template <typename ObservationValueTag, typename... Tensors>
+ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>::
+    ObserveErrorNorms(const std::string& subfile_name) noexcept
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond
-template <typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
-PUP::able::PUP_ID ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
-                                    EventRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename ObservationValueTag, typename... Tensors>
+PUP::able::PUP_ID
+    ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>::my_PUP_ID =
+        0;  // NOLINT
 /// \endcond
 }  // namespace Events
 }  // namespace dg

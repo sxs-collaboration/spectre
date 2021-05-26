@@ -7,15 +7,12 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Events {
 /// \ingroup EventsAndTriggersGroup
-/// Sets the termination flag for the code to exit.  This event is
-/// automatically registered.
-template <typename EventRegistrars = tmpl::list<>>
-class Completion : public Event<EventRegistrars> {
+/// Sets the termination flag for the code to exit.
+class Completion : public Event {
  public:
   /// \cond
   explicit Completion(CkMigrateMessage* /*unused*/) noexcept {}
@@ -43,9 +40,4 @@ class Completion : public Event<EventRegistrars> {
 
   bool needs_evolved_variables() const noexcept override { return false; }
 };
-
-/// \cond
-template <typename EventRegistrars>
-PUP::able::PUP_ID Completion<EventRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Events

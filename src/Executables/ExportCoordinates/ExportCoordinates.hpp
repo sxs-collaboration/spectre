@@ -37,6 +37,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -184,11 +185,8 @@ struct Metavariables {
   // A placeholder system for the domain creators
   struct system {};
 
-  using events = tmpl::list<>;
-
   using const_global_cache_tags =
-      tmpl::list<Tags::TimeStepper<TimeStepper>,
-                 Tags::EventsAndTriggers<events>>;
+      tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::EventsAndTriggers>;
 
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "
@@ -200,6 +198,7 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<Events::Completion>>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };
@@ -274,8 +273,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{

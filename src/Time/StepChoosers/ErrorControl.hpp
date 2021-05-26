@@ -13,7 +13,6 @@
 #include "Parallel/PupStlCpp17.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 

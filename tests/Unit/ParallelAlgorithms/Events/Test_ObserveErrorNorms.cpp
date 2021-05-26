@@ -28,9 +28,11 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
@@ -40,6 +42,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -138,6 +141,14 @@ struct Metavariables {
                                     MockObserverComponent<Metavariables>>;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        Event, tmpl::list<dg::Events::ObserveErrorNorms<
+                   ObservationTimeTag, typename System::vars_for_test>>>>;
+  };
+
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -253,11 +264,13 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<db::AddSimpleTags<
-      ObservationTimeTag, Tags::Variables<typename decltype(vars)::tags_list>,
+      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
+      Tags::Variables<typename decltype(vars)::tags_list>,
       tmpl::conditional_t<
           HasAnalyticSolutions, ::Tags::AnalyticSolutions<solution_variables>,
           ::Tags::AnalyticSolutionsOptional<solution_variables>>>>(
-      observation_time, vars, [&solutions, &has_analytic_solutions]() noexcept {
+      metavariables{}, observation_time, vars,
+      [&solutions, &has_analytic_solutions]() noexcept {
         if constexpr (HasAnalyticSolutions) {
           (void)has_analytic_solutions;
           // NOLINTNEXTLINE(performance-no-automatic-move)
@@ -338,17 +351,16 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 template <typename System, bool HasAnalyticSolutions>
 void test_system(const bool has_analytic_solutions) noexcept {
   INFO(pretty_type::get_name<System>());
+  using metavariables = Metavariables<System>;
   test_observe<System, HasAnalyticSolutions>(
       std::make_unique<dg::Events::ObserveErrorNorms<
           ObservationTimeTag, typename System::vars_for_test>>("reduction0"),
       has_analytic_solutions);
 
   INFO("create/serialize");
-  using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveErrorNorms<
-      ObservationTimeTag, typename System::vars_for_test>>>;
-  Parallel::register_derived_classes_with_charm<EventType>();
+  Parallel::register_factory_classes_with_charm<metavariables>();
   const auto factory_event =
-      TestHelpers::test_creation<std::unique_ptr<EventType>>(
+      TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
           "ObserveErrorNorms:\n"
           "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);

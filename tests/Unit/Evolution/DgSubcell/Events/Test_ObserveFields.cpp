@@ -35,6 +35,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
@@ -102,10 +103,9 @@ auto make_map() {
   }
 }
 
-template <typename System, bool AlwaysHasAnalyticSolutions,
-          typename ObserveEvent>
+template <typename System, bool AlwaysHasAnalyticSolutions>
 void test_observe(
-    const std::unique_ptr<ObserveEvent> observe,
+    const std::unique_ptr<Event> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const evolution::dg::subcell::ActiveGrid active_grid) noexcept {
   // The subcell code doesn't yet support interpolation.
@@ -187,7 +187,8 @@ void test_observe(
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<
-      db::AddSimpleTags<ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                        ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
                         evolution::dg::subcell::Tags::Mesh<volume_dim>,
                         evolution::dg::subcell::Tags::ActiveGrid,
                         dg_coordinates_tag, subcell_coordinates_tag,
@@ -195,7 +196,7 @@ void test_observe(
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             volume_dim, Frame::Grid, Frame::Inertial>,
                         ::domain::Tags::FunctionsOfTime>>(
-      observation_time, dg_mesh, subcell_mesh, active_grid,
+      metavariables{}, observation_time, dg_mesh, subcell_mesh, active_grid,
       get<dg_coordinates_tag>(dg_coords_vars),
       get<subcell_coordinates_tag>(subcell_coords_vars), vars,
       grid_to_inertial_map->get_clone(), clone_unique_ptrs(functions_of_time));
@@ -270,14 +271,14 @@ void test_observe(
   CHECK(observe->needs_evolved_variables());
 }
 
-template <template <size_t, class...> class ObservationRegistrar,
-          typename System, bool AlwaysHasAnalyticSolutions = true>
+template <typename System, bool AlwaysHasAnalyticSolutions = true>
 void test_system(const std::string& mesh_creation_string,
                  const std::optional<Mesh<System::volume_dim>>&
                      interpolating_mesh = {}) noexcept {
   INFO(pretty_type::get_name<System>());
   CAPTURE(AlwaysHasAnalyticSolutions);
   CAPTURE(mesh_creation_string);
+  using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
   for (const auto active_grid : {evolution::dg::subcell::ActiveGrid::Dg,
                                  evolution::dg::subcell::ActiveGrid::Subcell}) {
     test_observe<System, AlwaysHasAnalyticSolutions>(
@@ -286,15 +287,12 @@ void test_system(const std::string& mesh_creation_string,
         interpolating_mesh, active_grid);
   }
   INFO("create/serialize");
-  using EventType = Event<tmpl::list<
-      ObservationRegistrar<System::volume_dim, ObservationTimeTag,
-                           typename System::all_vars_for_test,
-                           typename System::solution_for_test::vars_for_test>>>;
-  Parallel::register_derived_classes_with_charm<EventType>();
+  Parallel::register_factory_classes_with_charm<metavariables>();
   const std::string creation_string =
       System::creation_string_for_test + mesh_creation_string;
   const auto factory_event =
-      TestHelpers::test_creation<std::unique_ptr<EventType>>(creation_string);
+      TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
+          creation_string);
   for (const auto active_grid : {evolution::dg::subcell::ActiveGrid::Subcell,
                                  evolution::dg::subcell::ActiveGrid::Dg}) {
     test_observe<System, AlwaysHasAnalyticSolutions>(
@@ -308,13 +306,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.ObserveFields", "[Unit][Evolution]") {
   const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
   INVOKE_TEST_FUNCTION(
       test_system, (interpolating_mesh_str, std::nullopt),
-      (evolution::dg::subcell::Events::Registrars::ObserveFields),
       (ScalarSystem<evolution::dg::subcell::Events::ObserveFields>,
        ComplicatedSystem<evolution::dg::subcell::Events::ObserveFields>),
       (true));
   INVOKE_TEST_FUNCTION(
       test_system, (interpolating_mesh_str, std::nullopt),
-      (evolution::dg::subcell::Events::Registrars::ObserveFields),
       (ScalarSystem<evolution::dg::subcell::Events::ObserveFields>,
        ComplicatedSystem<evolution::dg::subcell::Events::ObserveFields>),
       (false));

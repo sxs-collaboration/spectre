@@ -47,30 +47,15 @@ struct InterpolatorReceiveVolumeData;
 
 namespace intrp {
 namespace Events {
-template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors,
-          typename EventRegistrars>
-class Interpolate;
-
-namespace Registrars {
-template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors>
-struct Interpolate {
-  template <typename RegistrarList>
-  using f = Events::Interpolate<VolumeDim, InterpolationTargetTag, Tensors,
-                                RegistrarList>;
-};
-}  // namespace Registrars
-
 /// Does an interpolation onto InterpolationTargetTag by calling Actions on
 /// the Interpolator and InterpolationTarget components.
-template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors,
-          typename EventRegistrars = tmpl::list<Registrars::Interpolate<
-              VolumeDim, InterpolationTargetTag, Tensors>>>
-class Interpolate;  // IWYU pragma: keep
+template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors>
+class Interpolate;
 
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename... Tensors, typename EventRegistrars>
-class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
-                  EventRegistrars> : public Event<EventRegistrars> {
+          typename... Tensors>
+class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
+    : public Event {
   /// \cond
   explicit Interpolate(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
@@ -127,10 +112,9 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
 
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename... Tensors, typename EventRegistrars>
-PUP::able::PUP_ID
-    Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
-                EventRegistrars>::my_PUP_ID = 0;  // NOLINT
+          typename... Tensors>
+PUP::able::PUP_ID Interpolate<VolumeDim, InterpolationTargetTag,
+                              tmpl::list<Tensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 }  // namespace Events

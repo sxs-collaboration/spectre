@@ -6,27 +6,16 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/FakeVirtual.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace Events {
-template <typename EventRegistrars>
-class Completion;
-}  // namespace Events
-/// \endcond
-
 /// \ingroup EventsAndTriggersGroup
-namespace Events {
-/// Registrars for Events
-namespace Registrars {}
-}  // namespace Events
+namespace Events {}
 
 /// \ingroup EventsAndTriggersGroup
 /// Base class for something that can happen during a simulation (such
 /// as an observation).
-template <typename EventRegistrars>
 class Event : public PUP::able {
  protected:
   /// \cond
@@ -42,19 +31,17 @@ class Event : public PUP::able {
 
   WRAPPED_PUPable_abstract(Event);  // NOLINT
 
-  using default_events = tmpl::list<Events::Completion<EventRegistrars>>;
-
-  using creatable_classes =
-      tmpl::append<default_events, Registration::registrants<EventRegistrars>>;
-
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
   void run(const db::DataBox<DbTags>& box,
            Parallel::GlobalCache<Metavariables>& cache,
            const ArrayIndex& array_index,
            const ComponentPointer /*meta*/) const noexcept {
-    call_with_dynamic_type<void, creatable_classes>(
-        this, [&box, &cache, &array_index ](auto* const event) noexcept {
+    using factory_classes =
+        typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            box))>::factory_creation::factory_classes;
+    call_with_dynamic_type<void, tmpl::at<factory_classes, Event>>(
+        this, [&box, &cache, &array_index](auto* const event) noexcept {
           db::apply(*event, box, cache, array_index, ComponentPointer{});
         });
   }
@@ -65,5 +52,3 @@ class Event : public PUP::able {
   /// is run.
   virtual bool needs_evolved_variables() const noexcept = 0;
 };
-
-#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"

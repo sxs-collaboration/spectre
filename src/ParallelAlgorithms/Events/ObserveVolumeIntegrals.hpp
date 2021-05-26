@@ -28,7 +28,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -40,25 +39,7 @@ struct Inertial;
 
 namespace dg {
 namespace Events {
-template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-          typename EventRegistrars>
-class ObserveVolumeIntegrals;
-
-namespace Registrars {
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors>
-// Presence of size_t template argument requires to define this struct
-// instead of using Registration::Registrar alias.
-struct ObserveVolumeIntegrals {
-  template <typename RegistrarList>
-  using f = Events::ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
-                                           Tensors, RegistrarList>;
-};
-}  // namespace Registrars
-
-template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-          typename EventRegistrars =
-              tmpl::list<Registrars::ObserveVolumeIntegrals<
-                  VolumeDim, ObservationValueTag, Tensors>>>
 class ObserveVolumeIntegrals;
 
 /*!
@@ -70,11 +51,9 @@ class ObserveVolumeIntegrals;
  * - `Volume` = volume of the domain
  * - `VolumeIntegral(*)` = volume integral of the tensor
  */
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
+template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors>
 class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
-                             tmpl::list<Tensors...>, EventRegistrars>
-    : public Event<EventRegistrars> {
+                             tmpl::list<Tensors...>> : public Event {
  private:
   using VolumeIntegralDatum =
       Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>;
@@ -184,7 +163,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | subfile_path_;
   }
 
@@ -192,19 +171,15 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   std::string subfile_path_;
 };
 
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
-ObserveVolumeIntegrals<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                       EventRegistrars>::
+template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors>
+ObserveVolumeIntegrals<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>>::
     ObserveVolumeIntegrals(const std::string& subfile_name) noexcept
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond
-template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
+template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors>
 PUP::able::PUP_ID ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
-                                         tmpl::list<Tensors...>,
-                                         EventRegistrars>::my_PUP_ID =
+                                         tmpl::list<Tensors...>>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
 }  // namespace Events

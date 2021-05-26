@@ -16,9 +16,12 @@
 #include "NumericalAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -54,10 +57,7 @@ struct initialize_elements_and_queue_simple_actions {
     ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
     // Create event.
-    intrp::Events::InterpolateWithoutInterpComponent<
-        metavars::volume_dim, typename metavars::InterpolationTargetA, metavars,
-        tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>>
-        event{};
+    typename metavars::event event{};
 
     CHECK(event.needs_evolved_variables());
 
@@ -70,12 +70,13 @@ struct initialize_elements_and_queue_simple_actions {
 
       // 2. Make a box
       const auto box = db::create<
-          db::AddSimpleTags<typename metavars::temporal_id,
+          db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
+                            typename metavars::temporal_id,
                             intrp::Tags::InterpPointInfo<metavars>,
                             domain::Tags::Mesh<metavars::volume_dim>,
                             ::Tags::Variables<typename std::remove_reference_t<
                                 decltype(vars)>::tags_list>>>(
-          temporal_id, interp_point_info, mesh, vars);
+          metavars{}, temporal_id, interp_point_info, mesh, vars);
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
@@ -106,6 +107,16 @@ struct MockMetavariables {
       tmpl::list<InterpolateOnElementTestHelpers::mock_interpolation_target<
                      MockMetavariables, InterpolationTargetA>,
                  mock_element<MockMetavariables>>;
+
+  using event = intrp::Events::InterpolateWithoutInterpComponent<
+      volume_dim, InterpolationTargetA, MockMetavariables,
+      tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
+  };
+
   enum class Phase { Initialization, Testing, Exit };
 };
 

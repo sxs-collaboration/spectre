@@ -78,10 +78,9 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
+#include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -201,26 +200,18 @@ struct EvolutionMetavars {
                  GeneralizedHarmonic::Tags::Pi<volume_dim, frame>,
                  GeneralizedHarmonic::Tags::Phi<volume_dim, frame>>;
 
-  using observation_events = tmpl::list<
-      dg::Events::Registrars::ObserveErrorNorms<Tags::Time,
-                                                analytic_solution_fields>,
-      dg::Events::Registrars::ObserveFields<
-          volume_dim, Tags::Time, observe_fields, analytic_solution_fields>,
-      Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
-      Events::Registrars::ChangeSlabSize>;
-
-  // Events include the observation events and finding the horizon
-  using events = tmpl::push_back<
-      observation_events,
-      intrp::Events::Registrars::Interpolate<3, AhA, interpolator_source_vars>>;
-
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::push_back<typename Event<observation_events>::creatable_classes,
-                      typename AhA::post_horizon_find_callback>>;
-
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<volume_dim, Tags::Time,
+                                               observe_fields,
+                                               analytic_solution_fields>,
+                Events::time_events<EvolutionMetavars>,
+                intrp::Events::Interpolate<3, AhA, interpolator_source_vars>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
@@ -230,6 +221,11 @@ struct EvolutionMetavars {
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };
+
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::push_back<
+          tmpl::at<typename factory_creation::factory_classes, Event>,
+          typename AhA::post_horizon_find_callback>>;
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
@@ -270,8 +266,7 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags = tmpl::list<
-      analytic_solution_tag, time_stepper_tag,
-      Tags::EventsAndTriggers<events>,
+      analytic_solution_tag, time_stepper_tag, Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, frame>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
@@ -425,8 +420,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,

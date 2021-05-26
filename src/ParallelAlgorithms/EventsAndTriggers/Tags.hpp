@@ -32,9 +32,8 @@ namespace OptionTags {
 ///     - Event4:
 ///         OptionsForEvent4
 /// \endcode
-template <typename EventRegistrars>
 struct EventsAndTriggers {
-  using type = ::EventsAndTriggers<EventRegistrars>;
+  using type = ::EventsAndTriggers;
   static constexpr Options::String help = "Events to run at triggers";
   // When the template arguments to this struct are sufficiently
   // complicated, pretty_type::short_name() run on this struct returns
@@ -47,17 +46,11 @@ struct EventsAndTriggers {
 }  // namespace OptionTags
 
 namespace Tags {
-/// \cond
-struct EventsAndTriggersBase : db::BaseTag {};
-/// \endcond
-
 /// \ingroup EventsAndTriggersGroup
 /// Contains the events and triggers
-template <typename EventRegistrars>
-struct EventsAndTriggers : EventsAndTriggersBase, db::SimpleTag {
-  using type = ::EventsAndTriggers<EventRegistrars>;
-  using option_tags =
-      tmpl::list<::OptionTags::EventsAndTriggers<EventRegistrars>>;
+struct EventsAndTriggers : db::SimpleTag {
+  using type = ::EventsAndTriggers;
+  using option_tags = tmpl::list<::OptionTags::EventsAndTriggers>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_and_triggers) noexcept {

@@ -15,6 +15,7 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -36,17 +37,19 @@ CREATE_HAS_TYPE_ALIAS_V(observation_registration_tags)
  * `ObservationKey`, and a `get_observation_type_and_key_for_registration`
  * member function if it is to be registered automatically.
  */
-template <typename EventRegistrars, typename DbTagsList>
+template <typename DbTagsList>
 std::optional<
     std::pair<::observers::TypeOfObservation, ::observers::ObservationKey>>
 get_registration_observation_type_and_key(
-    const Event<EventRegistrars>& event,
-    const db::DataBox<DbTagsList>& box) noexcept {
+    const Event& event, const db::DataBox<DbTagsList>& box) noexcept {
   std::optional<
       std::pair<::observers::TypeOfObservation, ::observers::ObservationKey>>
       result{};
   bool already_registered = false;
-  tmpl::for_each<typename Event<EventRegistrars>::creatable_classes>(
+  using factory_classes =
+      typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+          box))>::factory_creation::factory_classes;
+  tmpl::for_each<tmpl::at<factory_classes, Event>>(
       [&already_registered, &box, &event, &result](auto event_type_v) noexcept {
         using EventType = typename decltype(event_type_v)::type;
         if constexpr (detail::has_observation_registration_tags_v<EventType>) {
@@ -117,10 +120,9 @@ struct RegisterEventsWithObservers {
     std::vector<
         std::pair<observers::TypeOfObservation, observers::ObservationKey>>
         type_of_observation_and_observation_key_pairs;
-    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggersBase,
+    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggers,
                                            db::DataBox<DbTagList>>) {
-      const auto& triggers_and_events =
-          db::get<::Tags::EventsAndTriggersBase>(box);
+      const auto& triggers_and_events = db::get<::Tags::EventsAndTriggers>(box);
       for (const auto& trigger_and_events :
            triggers_and_events.events_and_triggers()) {
         for (const auto& event : trigger_and_events.second) {
@@ -145,7 +147,7 @@ struct RegisterEventsWithObservers {
     } else {
       ERROR(
           "Cannot perform registration of events, "
-          "`::Tags::EventsAndTriggersBase` is not retrievable from the "
+          "`::Tags::EventsAndTriggers` is not retrievable from the "
           "DataBox");
     }
   }

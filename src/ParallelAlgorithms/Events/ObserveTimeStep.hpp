@@ -31,7 +31,6 @@
 #include "Time/Time.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -42,17 +41,6 @@ struct TimeStep;
 /// \endcond
 
 namespace Events {
-/// \cond
-template <typename Metavariables, typename EventRegistrars>
-class ObserveTimeStep;
-/// \endcond
-
-namespace Registrars {
-template <typename Metavariables>
-using ObserveTimeStep =
-    ::Registration::Registrar<Events::ObserveTimeStep, Metavariables>;
-}  // namespace Registrars
-
 namespace detail {
 using ObserveTimeStepReductionData = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
@@ -116,10 +104,8 @@ struct FormatTimeOutput
  * All values are reported as positive numbers, even for backwards
  * evolutions.
  */
-template <typename Metavariables,
-          typename EventRegistrars =
-              tmpl::list<Registrars::ObserveTimeStep<Metavariables>>>
-class ObserveTimeStep : public Event<EventRegistrars> {
+template <typename Metavariables>
+class ObserveTimeStep : public Event {
  private:
   using ReductionData = Events::detail::ObserveTimeStepReductionData;
 
@@ -221,7 +207,7 @@ class ObserveTimeStep : public Event<EventRegistrars> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | subfile_path_;
     p | output_time_;
   }
@@ -231,14 +217,13 @@ class ObserveTimeStep : public Event<EventRegistrars> {
   bool output_time_;
 };
 
-template <typename Metavariables, typename EventRegistrars>
-ObserveTimeStep<Metavariables, EventRegistrars>::ObserveTimeStep(
-    const std::string& subfile_name, const bool output_time) noexcept
+template <typename Metavariables>
+ObserveTimeStep<Metavariables>::ObserveTimeStep(const std::string& subfile_name,
+                                                const bool output_time) noexcept
     : subfile_path_("/" + subfile_name), output_time_(output_time) {}
 
 /// \cond
-template <typename Metavariables, typename EventRegistrars>
-PUP::able::PUP_ID ObserveTimeStep<Metavariables, EventRegistrars>::my_PUP_ID =
-    0;  // NOLINT
+template <typename Metavariables>
+PUP::able::PUP_ID ObserveTimeStep<Metavariables>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

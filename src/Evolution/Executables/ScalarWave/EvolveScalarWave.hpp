@@ -48,10 +48,9 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"      // IWYU pragma: keep
-#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
+#include "ParallelAlgorithms/Events/Factory.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -117,23 +116,18 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  // public for use by the Charm++ registration code
   using observe_fields = typename system::variables_tag::tags_list;
   using analytic_solution_fields = observe_fields;
-  using events =
-      tmpl::list<dg::Events::Registrars::ObserveFields<
-                     Dim, Tags::Time, observe_fields, analytic_solution_fields>,
-                 dg::Events::Registrars::ObserveErrorNorms<
-                     Tags::Time, analytic_solution_fields>,
-                 Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
-                 Events::Registrars::ChangeSlabSize>;
-
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      typename Event<events>::creatable_classes>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              Events::Completion,
+                              dg::Events::field_observations<
+                                  volume_dim, Tags::Time, observe_fields,
+                                  analytic_solution_fields>,
+                              Events::time_events<EvolutionMetavars>>>>,
         tmpl::pair<
             StepChooser<StepChooserUse::LtsStep>,
             tmpl::push_back<
@@ -148,6 +142,10 @@ struct EvolutionMetavars {
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };
+
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
+          tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   // The scalar wave system generally does not require filtering, except
   // possibly on certain deformed domains.  Here a filter is added in 2D for
@@ -196,10 +194,9 @@ struct EvolutionMetavars {
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<phase_changes>;
 
-  using const_global_cache_tags = tmpl::list<
-      initial_data_tag, time_stepper_tag,
-      Tags::EventsAndTriggers<events>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+  using const_global_cache_tags =
+      tmpl::list<initial_data_tag, time_stepper_tag, Tags::EventsAndTriggers,
+                 PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -303,8 +300,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &ScalarWave::BoundaryConditions::register_derived_with_charm,
     &ScalarWave::BoundaryCorrections::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<
         MathFunction<1, Frame::Inertial>>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,

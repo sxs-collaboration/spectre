@@ -26,9 +26,11 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
@@ -147,6 +149,13 @@ struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<Events::ObserveTimeStep<Metavariables>>>>;
+  };
+
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -166,7 +175,8 @@ void test_observe(const Observer& observer,
   const Slab slab(1.23, 4.56);
 
   using tag_list =
-      tmpl::list<Tags::Time, Tags::TimeStep, System::variables_tag>;
+      tmpl::list<Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Time,
+                 Tags::TimeStep, System::variables_tag>;
   std::vector<db::compute_databox_type<tag_list>> element_boxes;
 
   const auto create_element =
@@ -177,7 +187,7 @@ void test_observe(const Observer& observer,
           slab_fraction *= -1;
         }
         auto box = db::create<tag_list>(
-            observation_time, slab.duration() * slab_fraction,
+            Metavariables{}, observation_time, slab.duration() * slab_fraction,
             System::variables_tag::type(num_points));
 
         const auto ids_to_register =
@@ -242,9 +252,7 @@ void test_observe(const Observer& observer,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
-  using EventType =
-      Event<tmpl::list<Events::Registrars::ObserveTimeStep<Metavariables>>>;
-  Parallel::register_derived_classes_with_charm<EventType>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   for (const bool print_to_terminal : {true, false}) {
     const Events::ObserveTimeStep<Metavariables> observer("time_step_subfile",
@@ -255,11 +263,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
     test_observe(serialize_and_deserialize(observer), false);
     test_observe(serialize_and_deserialize(observer), true);
 
-    const auto event = TestHelpers::test_creation<std::unique_ptr<EventType>>(
-        "ObserveTimeStep:\n"
-        "  SubfileName: time_step_subfile\n"
-        "  PrintTimeToTerminal: " +
-        std::string(print_to_terminal ? "true" : "false"));
+    const auto event =
+        TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables>(
+            "ObserveTimeStep:\n"
+            "  SubfileName: time_step_subfile\n"
+            "  PrintTimeToTerminal: " +
+            std::string(print_to_terminal ? "true" : "false"));
     test_observe(*event, false);
     test_observe(*event, true);
     test_observe(*serialize_and_deserialize(event), false);

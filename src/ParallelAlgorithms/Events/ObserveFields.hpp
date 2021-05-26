@@ -38,7 +38,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -56,29 +55,13 @@ struct Time;
 
 namespace dg {
 namespace Events {
+/// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-          typename AnalyticSolutionTensors, typename EventRegistrars,
+          typename AnalyticSolutionTensors = tmpl::list<>,
           typename NonSolutionTensors =
               tmpl::list_difference<Tensors, AnalyticSolutionTensors>>
 class ObserveFields;
-
-namespace Registrars {
-template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-          typename AnalyticSolutionTensors = tmpl::list<>>
-struct ObserveFields {
-  template <typename RegistrarList>
-  using f = Events::ObserveFields<VolumeDim, ObservationValueTag, Tensors,
-                                  AnalyticSolutionTensors, RegistrarList>;
-};
-}  // namespace Registrars
-
-template <
-    size_t VolumeDim, typename ObservationValueTag, typename Tensors,
-    typename AnalyticSolutionTensors = tmpl::list<>,
-    typename EventRegistrars = tmpl::list<Registrars::ObserveFields<
-        VolumeDim, ObservationValueTag, Tensors, AnalyticSolutionTensors>>,
-    typename NonSolutionTensors>
-class ObserveFields;  // IWYU pragma: keep
+/// \endcond
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -95,12 +78,10 @@ class ObserveFields;  // IWYU pragma: keep
  * data is interpolated.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename EventRegistrars,
-          typename... NonSolutionTensors>
+          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
 class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                    tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
-                    tmpl::list<NonSolutionTensors...>>
-    : public Event<EventRegistrars> {
+                    tmpl::list<AnalyticSolutionTensors...>,
+                    tmpl::list<NonSolutionTensors...>> : public Event {
  private:
   static_assert(
       std::is_same_v<
@@ -353,7 +334,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | subfile_path_;
     p | variables_to_observe_;
     p | interpolation_mesh_;
@@ -367,11 +348,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename EventRegistrars,
-          typename... NonSolutionTensors>
+          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
 PUP::able::PUP_ID
     ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                  tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
+                  tmpl::list<AnalyticSolutionTensors...>,
                   tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

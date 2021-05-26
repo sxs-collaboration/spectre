@@ -9,6 +9,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Factory.hpp
   ObserveErrorNorms.hpp
   ObserveFields.hpp
   ObserveTimeStep.hpp
@@ -25,5 +26,6 @@ target_link_libraries(
   EventsAndTriggers
   Interpolation
   Options
+  Time
   Utilities
   )

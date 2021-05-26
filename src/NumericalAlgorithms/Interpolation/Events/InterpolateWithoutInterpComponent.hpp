@@ -41,45 +41,24 @@ class ElementId;
 namespace intrp {
 template <typename Metavariables, typename Tag>
 struct InterpolationTarget;
-namespace Registrars {
-template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename Tensors>
-struct InterpolateWithoutInterpComponent;
-}  // namespace Registrars
-namespace Events {
-template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename Tensors,
-          typename EventRegistrars =
-              tmpl::list<Registrars::InterpolateWithoutInterpComponent<
-                  VolumeDim, InterpolationTargetTag, Metavariables, Tensors>>>
-class InterpolateWithoutInterpComponent;
-}  // namespace Events
 }  // namespace intrp
 /// \endcond
 
 namespace intrp {
-
+namespace Events {
 /// \cond
-namespace Registrars {
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename Metavariables, typename Tensors>
-struct InterpolateWithoutInterpComponent {
-  template <typename RegistrarList>
-  using f = Events::InterpolateWithoutInterpComponent<
-      VolumeDim, InterpolationTargetTag, Metavariables, Tensors, RegistrarList>;
-};
-}  // namespace Registrars
+class InterpolateWithoutInterpComponent;
 /// \endcond
 
-namespace Events {
 /// Does an interpolation onto an InterpolationTargetTag by calling Actions on
 /// the InterpolationTarget component.
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename... Tensors, typename EventRegistrars>
+          typename Metavariables, typename... Tensors>
 class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
-                                        Metavariables, tmpl::list<Tensors...>,
-                                        EventRegistrars>
-    : public Event<EventRegistrars> {
+                                        Metavariables, tmpl::list<Tensors...>>
+    : public Event {
   /// \cond
   explicit InterpolateWithoutInterpComponent(
       CkMigrateMessage* /*unused*/) noexcept {}
@@ -183,10 +162,10 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename... Tensors, typename EventRegistrars>
+          typename Metavariables, typename... Tensors>
 PUP::able::PUP_ID InterpolateWithoutInterpComponent<
-    VolumeDim, InterpolationTargetTag, Metavariables, tmpl::list<Tensors...>,
-    EventRegistrars>::my_PUP_ID = 0;  // NOLINT
+    VolumeDim, InterpolationTargetTag, Metavariables,
+    tmpl::list<Tensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 }  // namespace Events

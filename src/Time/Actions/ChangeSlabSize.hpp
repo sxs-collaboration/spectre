@@ -34,7 +34,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -212,13 +211,6 @@ struct ChangeSlabSize {
 }  // namespace Actions
 
 namespace Events {
-template <typename EventRegistrars>
-class ChangeSlabSize;
-
-namespace Registrars {
-using ChangeSlabSize = Registration::Registrar<Events::ChangeSlabSize>;
-}  // namespace Registrars
-
 /// \ingroup TimeGroup
 /// %Trigger a slab size change.
 ///
@@ -233,8 +225,7 @@ using ChangeSlabSize = Registration::Registrar<Events::ChangeSlabSize>;
 /// integration.  With local time-stepping this controls the interval
 /// between times when the sequences of steps on all elements are
 /// forced to align.
-template <typename EventRegistrars = tmpl::list<Registrars::ChangeSlabSize>>
-class ChangeSlabSize : public Event<EventRegistrars> {
+class ChangeSlabSize : public Event {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<int64_t, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<double, funcl::Min<>>>;
@@ -318,7 +309,7 @@ class ChangeSlabSize : public Event<EventRegistrars> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
-    Event<EventRegistrars>::pup(p);
+    Event::pup(p);
     p | step_choosers_;
     p | delay_change_;
   }
@@ -328,9 +319,4 @@ class ChangeSlabSize : public Event<EventRegistrars> {
       step_choosers_;
   uint64_t delay_change_ = std::numeric_limits<uint64_t>::max();
 };
-
-/// \cond
-template <typename EventRegistrars>
-PUP::able::PUP_ID ChangeSlabSize<EventRegistrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Events
