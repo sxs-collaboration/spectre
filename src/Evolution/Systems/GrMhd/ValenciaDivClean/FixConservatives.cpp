@@ -197,19 +197,27 @@ bool FixConservatives::operator()(
                        f_of_lorentz_factor, lower_bound_of_lorentz_factor,
                        upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
       } catch (std::exception& exception) {
+        // clang-format makes the streamed text hard to read in code...
+        // clang-format off
         ERROR(
             "Failed to fix conserved variables because the root finder failed "
             "to find the lorentz factor.\n"
-            "  Upper bound: "
+            "  upper_bound = "
+            << std::scientific << std::setprecision(18)
             << upper_bound_of_lorentz_factor
-            << "\n  Lower bound: " << lower_bound_of_lorentz_factor
-            << "\n  s_tilde_squared: " << s_tilde_squared
-            << "\n  d_tilde: " << d_tilde << "\n  sqrt_det_g: " << sqrt_det_g
-            << "\n  tau_tilde: " << tau_tilde
-            << "\n  b_tilde_squared: " << b_tilde_squared
-            << "\n  s_tilde_squared: " << s_tilde_squared << "\n"
-            << "The message of the exception thrown by the root finder is:\n"
+            << "\n  lower_bound = " << lower_bound_of_lorentz_factor
+            << "\n  s_tilde_squared = " << s_tilde_squared
+            << "\n  d_tilde = " << d_tilde
+            << "\n  sqrt_det_g: " << sqrt_det_g
+            << "\n  tau_tilde = " << tau_tilde
+            << "\n  b_tilde_squared = " << b_tilde_squared
+            << "\n  b_squared_over_d = " << b_squared_over_d
+            << "\n  tau_over_d = " << tau_over_d
+            << "\n  normalized_s_dot_b = " << normalized_s_dot_b << "\n"
+            << "The message of the exception thrown by the root finder "
+               "is:\n"
             << exception.what());
+          // clang-format on
       }
 
       const double upper_bound_for_s_tilde_squared =
