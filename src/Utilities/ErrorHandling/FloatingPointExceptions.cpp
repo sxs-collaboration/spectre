@@ -3,7 +3,7 @@
 
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
-#include "Utilities/System/Abort.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 #include <csignal>
 
@@ -20,7 +20,7 @@ auto old_mask = _mm_getcsr();
 #endif
 
 [[noreturn]] void fpe_signal_handler(int /*signal*/) {
-  sys::abort("Floating point exception!");  // LCOV_EXCL_LINE
+  ERROR("Floating point exception!");
 }
 }  // namespace
 
