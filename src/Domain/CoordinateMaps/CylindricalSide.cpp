@@ -90,10 +90,15 @@ CylindricalSide::CylindricalSide(const std::array<double, 3>& center_one,
          "proj_center is contained inside z_lower and z_upper: "
              << z_lower << " " << proj_center[2] << " " << z_upper);
 
-  ASSERT(center_one[2] - z_lower <= 0.95 * radius_one and
-             z_upper - center_one[2] <= 0.95 * radius_one,
+  ASSERT(center_one[2] - z_lower <= 0.92 * radius_one and
+             z_upper - center_one[2] <= 0.92 * radius_one,
          "CylindricalSide: The map has been tested only when z_lower and "
          "z_upper are sufficently far from the edge of sphere_one");
+
+  ASSERT(center_one[2] - z_lower >= 0.01 * radius_one and
+             z_upper - center_one[2] >= 0.01 * radius_one,
+         "CylindricalSide: The map has been tested only when z_lower and "
+         "z_upper are sufficently far from the center of sphere_one");
 
   if (dist_spheres + radius_two < radius_one) {
     ASSERT(center_one[2] - z_lower >= 0.2 * radius_one and
