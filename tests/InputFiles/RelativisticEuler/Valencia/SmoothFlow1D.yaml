@@ -54,6 +54,8 @@ VariableFixing:
   FixToAtmosphere:
     DensityOfAtmosphere: 1.e-12
     DensityCutoff: 1.2e-12
+    TransitionDensityCutoff: 1.0e-11
+    MaxVelocityMagnitude: 1.0e-4
 
 EventsAndTriggers:
   # ? Slabs:

@@ -19,15 +19,32 @@ namespace VariableFixing {
 template <size_t Dim>
 FixToAtmosphere<Dim>::FixToAtmosphere(const double density_of_atmosphere,
                                       const double density_cutoff,
+                                      const double transition_density_cutoff,
+                                      const double max_velocity_magnitude,
                                       const Options::Context& context)
     : density_of_atmosphere_(density_of_atmosphere),
-      density_cutoff_(density_cutoff) {
+      density_cutoff_(density_cutoff),
+      transition_density_cutoff_(transition_density_cutoff),
+      max_velocity_magnitude_(max_velocity_magnitude) {
   if (density_of_atmosphere_ > density_cutoff_) {
     PARSE_ERROR(context, "The cutoff density ("
                              << density_cutoff_
                              << ") must be greater than or equal to the "
                                 "density value in the atmosphere ("
                              << density_of_atmosphere_ << ')');
+  }
+  if (transition_density_cutoff_ < density_of_atmosphere_ or
+      transition_density_cutoff_ > 10.0 * density_of_atmosphere_) {
+    PARSE_ERROR(context, "The transition density must be in ["
+                             << density_of_atmosphere_ << ", "
+                             << 10 * density_of_atmosphere_ << "], but is "
+                             << transition_density_cutoff_);
+  }
+  if (transition_density_cutoff_ <= density_cutoff_) {
+    PARSE_ERROR(context, "The transition density cutoff ("
+                             << transition_density_cutoff_
+                             << ") must be bigger than the density cutoff ("
+                             << density_cutoff_ << ")");
   }
 }
 
@@ -36,6 +53,8 @@ template <size_t Dim>
 void FixToAtmosphere<Dim>::pup(PUP::er& p) noexcept {  // NOLINT
   p | density_of_atmosphere_;
   p | density_cutoff_;
+  p | transition_density_cutoff_;
+  p | max_velocity_magnitude_;
 }
 
 template <size_t Dim>
@@ -48,6 +67,7 @@ void FixToAtmosphere<Dim>::call_impl(
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) const noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
@@ -77,6 +97,33 @@ void FixToAtmosphere<Dim>::call_impl(
             get(equation_of_state.specific_enthalpy_from_density_and_energy(
                 atmosphere_density, atmosphere_energy));
       }
+    } else if (UNLIKELY(rest_mass_density->get()[i] <
+                        transition_density_cutoff_)) {
+      double magnitude_of_velocity = 0.0;
+      for (size_t j = 0; j < Dim; ++j) {
+        magnitude_of_velocity += spatial_velocity->get(j)[i] *
+                                 spatial_velocity->get(j)[i] *
+                                 spatial_metric.get(j, j)[i];
+        for (size_t k = j + 1; k < Dim; ++k) {
+          magnitude_of_velocity += 2.0 * spatial_velocity->get(j)[i] *
+                                   spatial_velocity->get(k)[i] *
+                                   spatial_metric.get(j, k)[i];
+        }
+      }
+      magnitude_of_velocity = sqrt(magnitude_of_velocity);
+      const double scale_factor =
+          (get(*rest_mass_density)[i] - density_cutoff_) /
+          (transition_density_cutoff_ - density_cutoff_);
+      if (const double max_mag_of_velocity =
+              scale_factor * max_velocity_magnitude_;
+          magnitude_of_velocity > max_mag_of_velocity) {
+        for (size_t j = 0; j < Dim; ++j) {
+          spatial_velocity->get(j)[i] *=
+              max_mag_of_velocity / magnitude_of_velocity;
+        }
+        get(*lorentz_factor)[i] =
+            1.0 / sqrt(1.0 - max_mag_of_velocity * max_mag_of_velocity);
+      }
     }
   }
 }
@@ -85,7 +132,9 @@ template <size_t Dim>
 bool operator==(const FixToAtmosphere<Dim>& lhs,
                 const FixToAtmosphere<Dim>& rhs) noexcept {
   return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_ and
-         lhs.density_cutoff_ == rhs.density_cutoff_;
+         lhs.density_cutoff_ == rhs.density_cutoff_ and
+         lhs.transition_density_cutoff_ == rhs.transition_density_cutoff_ and
+         lhs.max_velocity_magnitude_ == rhs.max_velocity_magnitude_;
 }
 
 template <size_t Dim>
@@ -108,16 +157,17 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 
-#define INSTANTIATION(r, data)                                              \
-  template void FixToAtmosphere<DIM(data)>::call_impl(                      \
-      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,           \
-      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,    \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*> \
-          spatial_velocity,                                                 \
-      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,              \
-      const gsl::not_null<Scalar<DataVector>*> pressure,                    \
-      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,           \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&      \
+#define INSTANTIATION(r, data)                                                \
+  template void FixToAtmosphere<DIM(data)>::call_impl(                        \
+      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,             \
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,      \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
+          spatial_velocity,                                                   \
+      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,                \
+      const gsl::not_null<Scalar<DataVector>*> pressure,                      \
+      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,             \
+      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric, \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&        \
           equation_of_state) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
