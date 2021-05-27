@@ -12,6 +12,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
+#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -178,12 +179,16 @@ struct FindGlobalMinimumGridSpacing {
 };
 }  // namespace Actions
 
-template <size_t Dim>
+template <size_t Dim, bool EnableTimeDependentMaps>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = false;
   // A placeholder system for the domain creators
   struct system {};
+
+  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
+    static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
+  };
 
   using const_global_cache_tags =
       tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::EventsAndTriggers>;
@@ -217,7 +222,7 @@ struct Metavariables {
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
                       evolution::dg::Initialization::Domain<Dim>,
                       Initialization::Actions::AddComputeTags<
-                          domain::Tags::MinimumGridSpacingCompute<
+                          ::domain::Tags::MinimumGridSpacingCompute<
                               Dim, Frame::Inertial>>,
                       ::Initialization::Actions::
                           RemoveOptionsAndTerminatePhase>>,
@@ -269,7 +274,8 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &disable_openblas_multithreading,
+    &setup_error_handling,
+    &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
