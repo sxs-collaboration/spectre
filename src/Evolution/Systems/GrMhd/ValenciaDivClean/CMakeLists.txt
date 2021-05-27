@@ -12,6 +12,7 @@ spectre_target_sources(
   ConservativeFromPrimitive.cpp
   FixConservatives.cpp
   Fluxes.cpp
+  KastaunEtAl.cpp
   NewmanHamlin.cpp
   PalenzuelaEtAl.cpp
   PrimitiveFromConservative.cpp
@@ -28,6 +29,7 @@ spectre_target_headers(
   ConservativeFromPrimitive.hpp
   FixConservatives.hpp
   Fluxes.hpp
+  KastaunEtAl.hpp
   NewmanHamlin.hpp
   PalenzuelaEtAl.hpp
   PrimitiveFromConservative.hpp

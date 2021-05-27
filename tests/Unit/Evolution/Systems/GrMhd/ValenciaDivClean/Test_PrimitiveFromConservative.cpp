@@ -12,6 +12,9 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
@@ -28,6 +31,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
+class KastaunEtAl;
 class NewmanHamlin;
 class PalenzuelaEtAl;
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
@@ -236,6 +240,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>>(dv);
   test_primitive_from_conservative_known<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(dv);
+  test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(dv);
   test_primitive_from_conservative_random<
       tmpl::list<
@@ -252,5 +258,13 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   test_primitive_from_conservative_random<
       tmpl::list<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+      2>(&generator, ideal_fluid, dv);
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+      1>(&generator, polytropic_fluid, dv);
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
       2>(&generator, ideal_fluid, dv);
 }
