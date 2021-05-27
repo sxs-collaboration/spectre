@@ -157,8 +157,8 @@ struct RegisterParallelComponent : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    ckindex::__register(get_template_parameters_as_string<algorithm>().c_str(),
-                        sizeof(algorithm));
+    static const std::string parallel_component_name = name();
+    ckindex::__register(parallel_component_name.c_str(), sizeof(algorithm));
   }
 
   bool is_registering_chare() const noexcept override { return true; }
@@ -205,8 +205,8 @@ struct RegisterChare : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    CkIndex::__register(get_template_parameters_as_string<Chare>().c_str(),
-                        sizeof(Chare));
+    static const std::string chare_name = name();
+    CkIndex::__register(chare_name.c_str(), sizeof(Chare));
   }
 
   bool is_registering_chare() const noexcept override { return true; }
