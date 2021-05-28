@@ -645,6 +645,27 @@ cmakelists_hardcoded_libraries_test() {
 }
 standard_checks+=(cmakelists_hardcoded_libraries)
 
+# Check for {CHECK,REQUIRE}_THROWS
+check_throws() {
+    is_c++ "$1" && staged_grep -q -E "(CHECK|REQUIRE)_THROWS[^_]" "$1"
+}
+check_throws_report() {
+    echo "Found use of {CHECK,REQUIRE}_THROWS."
+    echo "Use one of the more specific macros, such as CHECK_THROWS_WITH."
+    pretty_grep -E "(CHECK|REQUIRE)_THROWS[^_]" "$@"
+}
+check_throws_test() {
+    test_check pass foo.hpp 'CHECK'
+    test_check fail foo.hpp 'CHECK_THROWS(foo)'
+    test_check pass foo.hpp 'CHECK_THROWS_WITH(foo, bar)'
+    test_check pass foo.txt 'CHECK_THROWS(foo)'
+    test_check pass foo.hpp 'REQUIRE'
+    test_check fail foo.hpp 'REQUIRE_THROWS(foo)'
+    test_check pass foo.hpp 'REQUIRE_THROWS_WITH(foo, bar)'
+    test_check pass foo.txt 'REQUIRE_THROWS(foo)'
+}
+standard_checks+=(check_throws)
+
 # Prevent editing RunSingleTest files. We may need to occasionally update these
 # files, but it's at least less than once a year.
 #

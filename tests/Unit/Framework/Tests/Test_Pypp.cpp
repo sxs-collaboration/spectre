@@ -84,18 +84,23 @@ struct ConvertClassForConservionTestB {
 
 void test_none() {
   pypp::call<pypp::None>("PyppPyTests", "test_none");
-  CHECK_THROWS(pypp::call<pypp::None>("PyppPyTests", "test_numeric", 1, 2));
-  CHECK_THROWS(pypp::call<std::string>("PyppPyTests", "test_none"));
+  CHECK_THROWS_WITH(pypp::call<pypp::None>("PyppPyTests", "test_numeric", 1, 2),
+                    "Cannot convert non-None type to void.");
+  CHECK_THROWS_WITH(pypp::call<std::string>("PyppPyTests", "test_none"),
+                    "Cannot convert non-string type to string.");
 }
 
 void test_std_string() {
   const auto ret = pypp::call<std::string>("PyppPyTests", "test_string",
                                            std::string("test string"));
   CHECK(ret == std::string("back test string"));
-  CHECK_THROWS(pypp::call<std::string>("PyppPyTests", "test_string",
-                                       std::string("test string_")));
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_string",
-                                  std::string("test string")));
+  // Returns "Function returned null"
+  // CHECK_THROWS_WITH(pypp::call<std::string>("PyppPyTests", "test_string",
+  //                                           std::string("test string_")),
+  //                   "Failed string test");
+  CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_string",
+                                       std::string("test string")),
+                    "Cannot convert non-double type to double.");
 }
 
 void test_int() {
@@ -103,33 +108,42 @@ void test_int() {
   const auto ret = pypp::call<long>("PyppPyTests", "test_numeric", 3, 4);
   CHECK(ret == 3 * 4);
   // [pypp_int_test]
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3, 4));
-  CHECK_THROWS(pypp::call<void*>("PyppPyTests", "test_numeric", 3, 4));
-  CHECK_THROWS(pypp::call<long>("PyppPyTests", "test_none"));
+  CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3, 4),
+                    "Cannot convert non-double type to double.");
+  CHECK_THROWS_WITH(pypp::call<void*>("PyppPyTests", "test_numeric", 3, 4),
+                    "Cannot convert non-None type to void.");
+  CHECK_THROWS_WITH(pypp::call<long>("PyppPyTests", "test_none"),
+                    "Cannot convert non-long/int type to long.");
 }
 
 void test_long() {
   const auto ret = pypp::call<long>("PyppPyTests", "test_numeric", 3L, 4L);
   CHECK(ret == 3L * 4L);
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3L, 4L));
-  CHECK_THROWS(pypp::call<long>("PyppPyTests", "test_numeric", 3.0, 3.74));
+  CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3L, 4L),
+                    "Cannot convert non-double type to double.");
+  CHECK_THROWS_WITH(pypp::call<long>("PyppPyTests", "test_numeric", 3.0, 3.74),
+                    "Cannot convert non-long/int type to long.");
 }
 
 void test_unsigned_long() {
   const auto ret =
       pypp::call<unsigned long>("PyppPyTests", "test_numeric", 3ul, 4ul);
   CHECK(ret == 3ul * 4ul);
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3ul, 4ul));
-  CHECK_THROWS(
-      pypp::call<unsigned long>("PyppPyTests", "test_numeric", 3.0, 3.74));
+  CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3ul, 4ul),
+                    "Cannot convert non-double type to double.");
+  CHECK_THROWS_WITH(
+      pypp::call<unsigned long>("PyppPyTests", "test_numeric", 3.0, 3.74),
+      "Cannot convert non-long/int type to long.");
 }
 
 void test_double() {
   const auto ret =
       pypp::call<double>("PyppPyTests", "test_numeric", 3.49582, 3);
   CHECK(ret == 3.0 * 3.49582);
-  CHECK_THROWS(pypp::call<long>("PyppPyTests", "test_numeric", 3.8, 3.9));
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3ul, 3ul));
+  CHECK_THROWS_WITH(pypp::call<long>("PyppPyTests", "test_numeric", 3.8, 3.9),
+                    "Cannot convert non-long/int type to long.");
+  CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3ul, 3ul),
+                    "Cannot convert non-double type to double.");
 }
 
 void test_std_vector() {
@@ -140,9 +154,10 @@ void test_std_vector() {
   CHECK(approx(ret[0]) == 1.3 * 4.2);
   CHECK(approx(ret[1]) == 4.9 * 6.8);
   // [pypp_vector_test]
-  CHECK_THROWS(pypp::call<std::string>("PyppPyTests", "test_vector",
-                                       std::vector<double>{1.3, 4.9},
-                                       std::vector<double>{4.2, 6.8}));
+  CHECK_THROWS_WITH(pypp::call<std::string>("PyppPyTests", "test_vector",
+                                            std::vector<double>{1.3, 4.9},
+                                            std::vector<double>{4.2, 6.8}),
+                    "Cannot convert non-string type to string.");
 }
 
 void test_std_array() {
@@ -153,9 +168,10 @@ void test_std_array() {
       std::array<double, 2>{{4.2, 6.8}});
   CHECK(approx(ret[0]) == 1.3 * 4.2);
   CHECK(approx(ret[1]) == 4.9 * 6.8);
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_vector",
-                                  std::array<double, 2>{{1.3, 4.9}},
-                                  std::array<double, 2>{{4.2, 6.8}}));
+  CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_vector",
+                                       std::array<double, 2>{{1.3, 4.9}},
+                                       std::array<double, 2>{{4.2, 6.8}}),
+                    "Cannot convert non-double type to double.");
 
   std::array<DataVector, 3> expected_array{
       {DataVector{2, 3.}, DataVector{2, 1.}, DataVector{2, 2.}}};
@@ -178,10 +194,14 @@ void test_datavector() {
       "numpy", "multiply", DataVector{1.3, 4.9}, DataVector{4.2, 6.8});
   CHECK(approx(ret[0]) == 1.3 * 4.2);
   CHECK(approx(ret[1]) == 4.9 * 6.8);
-  CHECK_THROWS(pypp::call<std::string>(
-      "numpy", "multiply", DataVector{1.3, 4.9}, DataVector{4.2, 6.8}));
-  CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "two_dim_ndarray"));
-  CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "ndarray_of_floats"));
+  CHECK_THROWS_WITH(
+      pypp::call<std::string>("numpy", "multiply", DataVector{1.3, 4.9},
+                              DataVector{4.2, 6.8}),
+      "Cannot convert non-string type to string.");
+  CHECK_THROWS_WITH(pypp::call<DataVector>("PyppPyTests", "two_dim_ndarray"),
+                    "Cannot convert array of ndim != 1 to DataVector.");
+  CHECK_THROWS_WITH(pypp::call<DataVector>("PyppPyTests", "ndarray_of_floats"),
+                    "Cannot convert array of non-double type to DataVector.");
 }
 
 void test_complex_datavector() {
@@ -194,12 +214,17 @@ void test_complex_datavector() {
       ComplexDataVector{test_value_2, test_value_3});
   CHECK_ITERABLE_APPROX(ret[0], test_value_0 * test_value_2);
   CHECK_ITERABLE_APPROX(ret[1], test_value_1 * test_value_3);
-  CHECK_THROWS(pypp::call<std::string>(
-      "numpy", "multiply", ComplexDataVector{test_value_0, test_value_1},
-      ComplexDataVector{test_value_2, test_value_3}));
-  CHECK_THROWS(pypp::call<ComplexDataVector>("PyppPyTests", "two_dim_ndarray"));
-  CHECK_THROWS(
-      pypp::call<ComplexDataVector>("PyppPyTests", "ndarray_of_floats"));
+  CHECK_THROWS_WITH(
+      pypp::call<std::string>("numpy", "multiply",
+                              ComplexDataVector{test_value_0, test_value_1},
+                              ComplexDataVector{test_value_2, test_value_3}),
+      "Cannot convert non-string type to string.");
+  CHECK_THROWS_WITH(
+      pypp::call<ComplexDataVector>("PyppPyTests", "two_dim_ndarray"),
+      "Cannot convert array of non-complex type to ComplexDataVector.");
+  CHECK_THROWS_WITH(
+      pypp::call<ComplexDataVector>("PyppPyTests", "ndarray_of_floats"),
+      "Cannot convert array of non-complex type to ComplexDataVector.");
 
   // test functionality of mixed complex and real values in tensors
   const size_t vector_size = 1;
@@ -320,13 +345,23 @@ void test_tensor_double() {
         (pypp::call<tnsr::aBcc<double, 3>>("PyppPyTests", "tnsr_aBcc")));
 
   // Check conversion throws with incorrect rank
-  CHECK_THROWS(
-      (pypp::call<tnsr::i<double, 3>>("PyppPyTests", "scalar_from_ndarray")));
-  CHECK_THROWS((pypp::call<tnsr::ij<double, 3>>("PyppPyTests", "vector")));
-  CHECK_THROWS((pypp::call<Scalar<double>>("PyppPyTests", "tnsr_AA")));
+  CHECK_THROWS_WITH(
+      (pypp::call<tnsr::i<double, 3>>("PyppPyTests", "scalar_from_ndarray")),
+      "Mismatch between ndim of numpy ndarray (0) and rank of Tensor (1)");
+  CHECK_THROWS_WITH(
+      (pypp::call<tnsr::ij<double, 3>>("PyppPyTests", "vector")),
+      "Mismatch between ndim of numpy ndarray (1) and rank of Tensor (2)");
+  CHECK_THROWS_WITH(
+      (pypp::call<Scalar<double>>("PyppPyTests", "tnsr_AA")),
+      "Mismatch between ndim of numpy ndarray (2) and rank of Tensor (0)");
   // Check conversion throws with correct rank but incorrect dimension
-  CHECK_THROWS((pypp::call<tnsr::i<double, 3>>("PyppPyTests", "vector")));
-  CHECK_THROWS((pypp::call<tnsr::iaa<double, 3>>("PyppPyTests", "tnsr_aia")));
+  CHECK_THROWS_WITH((pypp::call<tnsr::i<double, 3>>("PyppPyTests", "vector")),
+                    "Mismatch between number of components of ndarray (4) and "
+                    "Tensor of rank 1 in 0'th index with dimension 3");
+  CHECK_THROWS_WITH(
+      (pypp::call<tnsr::iaa<double, 3>>("PyppPyTests", "tnsr_aia")),
+      "Mismatch between number of components of ndarray (4) and Tensor of rank "
+      "3 in 0'th index with dimension 3");
 }
 
 void test_tensor_datavector() {
