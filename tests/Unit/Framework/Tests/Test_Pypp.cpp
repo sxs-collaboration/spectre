@@ -320,7 +320,8 @@ void test_tensor_double() {
         (pypp::call<tnsr::aBcc<double, 3>>("PyppPyTests", "tnsr_aBcc")));
 
   // Check conversion throws with incorrect rank
-  CHECK_THROWS((pypp::call<tnsr::i<double, 3>>("PyppPyTests", "scalar")));
+  CHECK_THROWS(
+      (pypp::call<tnsr::i<double, 3>>("PyppPyTests", "scalar_from_ndarray")));
   CHECK_THROWS((pypp::call<tnsr::ij<double, 3>>("PyppPyTests", "vector")));
   CHECK_THROWS((pypp::call<Scalar<double>>("PyppPyTests", "tnsr_AA")));
   // Check conversion throws with correct rank but incorrect dimension
