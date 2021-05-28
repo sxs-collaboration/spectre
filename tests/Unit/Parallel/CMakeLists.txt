@@ -34,18 +34,18 @@ function(add_algorithm_test EXECUTABLE_NAME)
   add_dependencies(unit-tests ${EXECUTABLE_NAME})
 endfunction()
 
-add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmBadBoxApply)
+add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmGlobalCache)
 add_algorithm_test(Test_AlgorithmLocalSyncAction)
 add_algorithm_test(Test_AlgorithmNestedApply1)
 add_algorithm_test(Test_AlgorithmNestedApply2)
+add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmParallel)
 add_algorithm_test(Test_AlgorithmPhaseControl)
-add_algorithm_test(Test_PhaseChangeMain)
-add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
 add_algorithm_test(Test_GlobalCache)
+add_algorithm_test(Test_PhaseChangeMain)
 add_algorithm_test(Test_SectionReductions)
 
 # Test GlobalCache
@@ -155,11 +155,11 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
   endif()
 endfunction()
 
-add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test(
   "AlgorithmBadBoxApply"
   "Cannot call apply function of 'error_size_zero' with DataBox \
 type 'db::DataBox<brigand::list<")
+add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test("AlgorithmLocalSyncAction" "")
 add_algorithm_test(
   "AlgorithmNestedApply1"
@@ -171,13 +171,14 @@ add_algorithm_test(
   "Already performing an Action and cannot execute additional Actions \
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
-add_algorithm_test("AlgorithmParallel" "")
-add_algorithm_test("PhaseChangeMain" "")
-add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
+add_algorithm_test("AlgorithmParallel" "")
+add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("GlobalCache" "")
+add_algorithm_test("PhaseChangeMain" "")
 add_algorithm_test("SectionReductions"
   "Element 0 received reduction: Counted 2 odd elements.")
+
 add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
   "AlgorithmParallel" "Objects migrating: 14")
 
