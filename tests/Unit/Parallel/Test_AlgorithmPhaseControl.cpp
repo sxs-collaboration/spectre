@@ -39,6 +39,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -508,7 +509,7 @@ struct TestMetavariables {
 
 // [charm_init_funcs_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
+    &setup_error_handling, &setup_memory_allocation_failure_reporting,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<TestMetavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<TestMetavariables>};

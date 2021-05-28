@@ -10,6 +10,7 @@
 #include "Parallel/Main.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -49,7 +50,7 @@ struct Metavariables {
 }  // namespace
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling};
+    &setup_error_handling, &setup_memory_allocation_failure_reporting};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 

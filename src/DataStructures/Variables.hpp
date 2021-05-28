@@ -13,7 +13,6 @@
 #include <blaze/math/PaddingFlag.h>
 #include <blaze/math/TransposeFlag.h>
 #include <blaze/math/Vector.h>
-#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -31,6 +30,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -72,12 +72,12 @@ class Variables;
  * performing one memory allocation for all the `Tensor`s. The advantage is that
  * memory allocations are quite expensive, especially in a parallel environment.
  *
- * `Variables` stores the data it owns in a `std::unique_ptr<double[],
- * decltype(&free)>` instead of a `std::vector` because allocating the
- * `unique_ptr` with `malloc` allows us to avoid initializing the memory
- * completely in release mode when no value is passed to the constructor.
- * Additionally, if the macro `SPECTRE_NAN_INIT` is defined, initialization with
- * `NaN`s is done even in release mode.
+ * In Debug mode, or if the macro `SPECTRE_NAN_INIT` is defined, the contents
+ * are initialized with `NaN`s.
+ *
+ * `Variables` stores the data it owns in a `std::unique_ptr<double[]>`
+ * instead of a `std::vector` because `std::vector` value-initializes its
+ * contents, which is very slow.
  */
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {
@@ -431,9 +431,7 @@ class Variables<tmpl::list<Tags...>> {
   template <class FriendTags>
   friend class Variables;
 
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  std::unique_ptr<value_type[], decltype(&free)> variable_data_impl_{nullptr,
-                                                                     &free};
+  std::unique_ptr<value_type[]> variable_data_impl_{};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
 
@@ -512,9 +510,8 @@ void Variables<tmpl::list<Tags...>>::initialize(
     number_of_grid_points_ = number_of_grid_points;
     size_ = number_of_grid_points * number_of_independent_components;
     if (size_ > 0) {
-      // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(static_cast<value_type*>(
-          malloc(size_ * sizeof(value_type))));  // NOLINT
+      variable_data_impl_ =
+          cpp20::make_unique_for_overwrite<value_type[]>(size_);
 #if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
       std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
                 make_signaling_NaN<value_type>());

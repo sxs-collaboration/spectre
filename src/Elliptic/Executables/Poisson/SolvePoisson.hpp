@@ -50,6 +50,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -242,7 +243,7 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
+    &setup_error_handling, &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<

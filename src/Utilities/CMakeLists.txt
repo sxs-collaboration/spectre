@@ -11,6 +11,7 @@ spectre_target_sources(
   Blas.cpp
   FileSystem.cpp
   Formaline.cpp
+  MemoryHelpers.cpp
   OptimizerHacks.cpp
   PrettyType.cpp
   Rational.cpp
@@ -48,6 +49,7 @@ spectre_target_headers(
   MakeVector.hpp
   MakeWithValue.hpp
   Math.hpp
+  MemoryHelpers.hpp
   NoSuchType.hpp
   Numeric.hpp
   OptimizerHacks.hpp

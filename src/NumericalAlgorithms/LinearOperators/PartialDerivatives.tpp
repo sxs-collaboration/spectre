@@ -18,6 +18,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace partial_derivatives_detail {
@@ -191,16 +192,9 @@ void partial_derivatives(
     partial_derivatives_of_u.initialize(mesh.number_of_grid_points());
   }
 
-  // Using malloc instead of new is faster because we do not need to zero the
-  // data.
-  // clang-tidy: cppcoreguidelines-no-malloc
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  std::unique_ptr<double[], decltype(&free)> logical_derivs_data(
-      static_cast<double*>(
-          malloc(Dim * u.number_of_grid_points() *  // NOLINT
-                 Variables<DerivativeTags>::number_of_independent_components *
-                 sizeof(double))),
-      &free);
+  const auto logical_derivs_data = cpp20::make_unique_for_overwrite<double[]>(
+      Dim * u.number_of_grid_points() *
+      Variables<DerivativeTags>::number_of_independent_components);
   std::array<double*, Dim> logical_derivs{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(logical_derivs, i) =

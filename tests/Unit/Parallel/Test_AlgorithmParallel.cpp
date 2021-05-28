@@ -29,6 +29,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
@@ -666,7 +667,8 @@ struct TestMetavariables {
 
 // [charm_include_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &disable_openblas_multithreading};
+    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &disable_openblas_multithreading};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 

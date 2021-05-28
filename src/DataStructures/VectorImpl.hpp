@@ -11,7 +11,6 @@
 #include <blaze/math/PaddingFlag.h>
 #include <blaze/math/TransposeFlag.h>
 #include <cstddef>
-#include <cstdlib>
 #include <cstring>
 #include <functional>  // IWYU pragma: keep  // for std::plus, etc.
 #include <initializer_list>
@@ -27,6 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"  // IWYU pragma: keep
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -118,10 +118,10 @@ class VectorImpl
   ///
   /// - `set_size` number of values
   explicit VectorImpl(size_t set_size) noexcept
-      : owned_data_(set_size > 0 ? static_cast<value_type*>(
-                                       malloc(set_size * sizeof(value_type)))
-                                 : nullptr,
-                    &free) {
+      : owned_data_(
+            set_size > 0
+                ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
+                : nullptr) {
 #if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
     std::fill(owned_data_.get(), owned_data_.get() + set_size,
               std::numeric_limits<value_type>::signaling_NaN());
@@ -134,10 +134,10 @@ class VectorImpl
   /// - `set_size` number of values
   /// - `value` the value to initialize each element
   VectorImpl(size_t set_size, T value) noexcept
-      : owned_data_(set_size > 0 ? static_cast<value_type*>(
-                                       malloc(set_size * sizeof(value_type)))
-                                 : nullptr,
-                    &free) {
+      : owned_data_(
+            set_size > 0
+                ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
+                : nullptr) {
     std::fill(owned_data_.get(), owned_data_.get() + set_size, value);
     reset_pointer_vector(set_size);
   }
@@ -149,10 +149,10 @@ class VectorImpl
   /// Create from an initializer list of `T`.
   template <class U, Requires<std::is_same_v<U, T>> = nullptr>
   VectorImpl(std::initializer_list<U> list) noexcept
-      : owned_data_(list.size() > 0 ? static_cast<value_type*>(malloc(
-                                          list.size() * sizeof(value_type)))
-                                    : nullptr,
-                    &free) {
+      : owned_data_(
+            list.size() > 0
+                ? cpp20::make_unique_for_overwrite<value_type[]>(list.size())
+                : nullptr) {
     // Note: can't use memcpy with an initializer list.
     std::copy(list.begin(), list.end(), owned_data_.get());
     reset_pointer_vector(list.size());
@@ -218,12 +218,7 @@ class VectorImpl
                  << "Attempting to resize a non-owning vector from size: "
                  << size() << " to size: " << new_size
                  << " but we may not destructively resize a non-owning vector");
-      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-      owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
-          new_size > 0
-              ? static_cast<value_type*>(malloc(new_size * sizeof(value_type)))
-              : nullptr,
-          &free};
+      owned_data_ = cpp20::make_unique_for_overwrite<value_type[]>(new_size);
       reset_pointer_vector(new_size);
     }
   }
@@ -236,8 +231,7 @@ class VectorImpl
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  protected:
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  std::unique_ptr<value_type[], decltype(&free)> owned_data_{nullptr, &free};
+  std::unique_ptr<value_type[]> owned_data_{};
   bool owning_{true};
 
   SPECTRE_ALWAYS_INLINE void reset_pointer_vector(
@@ -258,10 +252,10 @@ template <typename T, typename VectorType>
 VectorImpl<T, VectorType>::VectorImpl(
     const VectorImpl<T, VectorType>& rhs) noexcept
     : BaseType{rhs},
-      owned_data_(rhs.size() > 0 ? static_cast<value_type*>(
-                                       malloc(rhs.size() * sizeof(value_type)))
-                                 : nullptr,
-                  &free) {
+      owned_data_(
+          rhs.size() > 0
+              ? cpp20::make_unique_for_overwrite<value_type[]>(rhs.size())
+              : nullptr) {
   reset_pointer_vector(rhs.size());
   std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
 }
@@ -272,9 +266,11 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
   if (this != &rhs) {
     if (owning_) {
       if (size() != rhs.size()) {
-        owned_data_.reset(rhs.size() > 0 ? static_cast<value_type*>(malloc(
-                                               rhs.size() * sizeof(value_type)))
-                                         : nullptr);
+        owned_data_.reset();
+        if (rhs.size() > 0) {
+          owned_data_ =
+              cpp20::make_unique_for_overwrite<value_type[]>(rhs.size());
+        }
       }
       reset_pointer_vector(rhs.size());
     } else {
@@ -325,9 +321,8 @@ template <typename VT, bool VF,
 VectorImpl<T, VectorType>::VectorImpl(
     const blaze::DenseVector<VT, VF>& expression)  // NOLINT
     noexcept
-    : owned_data_(static_cast<value_type*>(
-                      malloc((*expression).size() * sizeof(value_type))),
-                  &free) {
+    : owned_data_(cpp20::make_unique_for_overwrite<value_type[]>(
+          (*expression).size())) {
   static_assert(std::is_same_v<typename VT::ResultType, VectorType>,
                 "You are attempting to assign the result of an expression "
                 "that is not consistent with the VectorImpl type you are "
@@ -345,9 +340,8 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
                 "that is not consistent with the VectorImpl type you are "
                 "assigning to.");
   if (owning_ and (*expression).size() != size()) {
-    owned_data_.reset(static_cast<value_type*>(
-        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-        malloc((*expression).size() * sizeof(value_type))));
+    owned_data_ =
+        cpp20::make_unique_for_overwrite<value_type[]>((*expression).size());
     reset_pointer_vector((*expression).size());
   } else if (not owning_) {
     ASSERT((*expression).size() == size(), "Must copy into same size, not "
@@ -378,8 +372,7 @@ void VectorImpl<T, VectorType>::pup(PUP::er& p) noexcept {  // NOLINT
   if (my_size > 0) {
     if (p.isUnpacking()) {
       owning_ = true;
-      owned_data_.reset(
-          static_cast<value_type*>(malloc(my_size * sizeof(value_type))));
+      owned_data_ = cpp20::make_unique_for_overwrite<value_type[]>(my_size);
       reset_pointer_vector(my_size);
     }
     PUParray(p, data(), size());

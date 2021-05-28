@@ -15,6 +15,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Numeric.hpp"
 
 namespace Limiters::Minmod_detail {
@@ -43,8 +44,7 @@ MinmodResult tvb_corrected_minmod(const double a, const double b,
 
 template <size_t VolumeDim>
 BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
-    : contiguous_boundary_buffer_(nullptr, &free),
-      volume_and_slice_buffer_and_indices_(
+    : volume_and_slice_buffer_and_indices_(
           ::volume_and_slice_indices(mesh.extents())),
       volume_and_slice_indices(volume_and_slice_buffer_and_indices_.second) {
   const size_t half_number_boundary_points = alg::accumulate(
@@ -52,10 +52,9 @@ BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
       [&mesh](const size_t state, const size_t d) noexcept {
         return state + mesh.slice_away(d).number_of_grid_points();
       });
-  contiguous_boundary_buffer_.reset(static_cast<double*>(
-      // clang-tidy fails to see we are assigning to an owning unique_ptr
-      // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-      malloc(sizeof(double) * half_number_boundary_points)));
+  contiguous_boundary_buffer_ =
+      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+      cpp20::make_unique_for_overwrite<double[]>(half_number_boundary_points);
   size_t alloc_offset = 0;
   for (size_t d = 0; d < VolumeDim; ++d) {
     const size_t num_points = mesh.slice_away(d).number_of_grid_points();

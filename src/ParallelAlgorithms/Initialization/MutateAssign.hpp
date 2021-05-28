@@ -19,7 +19,6 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_assign_impl(
   static_assert(sizeof...(MutateTags) == sizeof...(args),
                 "The number of arguments passed to `mutate_assign` must be "
                 "equal to the number of tags passed.");
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   db::mutate<MutateTags...>(box, [&args...](const auto... box_args) noexcept {
     // silence unused capture warnings when there are zero args.
     // This function still gets instantiated despite the `static_assert` in the

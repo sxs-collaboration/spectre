@@ -5,7 +5,6 @@
 
 #include <array>
 #include <boost/functional/hash.hpp>
-#include <cstdlib>
 #include <functional>
 #include <limits>
 #include <string>

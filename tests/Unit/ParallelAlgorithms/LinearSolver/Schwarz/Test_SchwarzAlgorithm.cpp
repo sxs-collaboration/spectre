@@ -30,6 +30,7 @@
 #include "ParallelAlgorithms/LinearSolver/Schwarz/SubdomainOperator.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -195,7 +196,8 @@ struct Metavariables {
 }  // namespace
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm,
+    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Metavariables::linear_solver::subdomain_solver>,
     &TestHelpers::domain::BoundaryConditions::register_derived_with_charm};

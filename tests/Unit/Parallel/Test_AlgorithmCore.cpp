@@ -30,6 +30,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -750,7 +751,7 @@ struct TestMetavariables {
 
 // [charm_init_funcs_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling};
+    &setup_error_handling, &setup_memory_allocation_failure_reporting};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 // [charm_init_funcs_example]

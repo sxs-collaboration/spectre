@@ -55,10 +55,8 @@ std::string get_file_name(const std::string& file_path) {
 }
 
 std::string get_absolute_path(const std::string& rel_path) {
-  // clang-tidy: do not manually manage memory
-  auto deleter = [](char* p) { free(p); }; // NOLINT
-  std::unique_ptr<char, decltype(deleter)> name(
-      realpath(rel_path.c_str(), nullptr), deleter);
+  std::unique_ptr<char, decltype(&free)> name(
+      realpath(rel_path.c_str(), nullptr), &free);
   if (nullptr == name) {
     if (ENAMETOOLONG == errno) {
       // LCOV_EXCL_START
@@ -187,9 +185,7 @@ size_t file_size(const std::string& file) {
 
 std::string cwd() {
   double wait_time = 1;
-  // clang-tidy: do not manually manage memory
-  auto deleter = [](char* p) { free(p); }; // NOLINT
-  std::unique_ptr<char, decltype(deleter)> the_cwd(nullptr, deleter);
+  std::unique_ptr<char, decltype(&free)> the_cwd(nullptr, &free);
   the_cwd.reset(getcwd(the_cwd.get(), 0));
   while (the_cwd == nullptr) {
     // It's not clear how to test this code since we can't make the file system

@@ -11,6 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Numeric.hpp"
 
 template <size_t Dim>
@@ -44,14 +45,11 @@ void SliceIterator::reset() {
 
 template <size_t VolumeDim>
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
+std::pair<std::unique_ptr<std::pair<size_t, size_t>[]>,
           std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>>
 volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)> indices_buffer(
-      nullptr, &free);
   // array over dim, pair over lower/upper, span<pair> over volume/boundary
   std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                        gsl::span<std::pair<size_t, size_t>>>,
@@ -67,10 +65,10 @@ volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
          "If you encounter this assert you've found a bug in the "
          "'volume_and_slice_indices' function. Please file an issue describing "
          "the necessary steps to reproduce this error. Thank you!");
-  // clang-tidy thinks we make size zero allocations. The ASSERT prevents that.
-  // NOLINTNEXTLINE(clang-analyzer-unix.API, cppcoreguidelines-owning-memory)
-  indices_buffer.reset(static_cast<std::pair<size_t, size_t>*>(malloc(
-      sizeof(std::pair<size_t, size_t>) * half_number_boundary_points * 2)));
+  auto indices_buffer =
+      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+      cpp20::make_unique_for_overwrite<std::pair<size_t, size_t>[]>(
+          half_number_boundary_points * 2);
   size_t alloc_offset = 0;
   for (size_t d = 0; d < VolumeDim; ++d) {
     const auto boundary_extents = extents.slice_away(d);
@@ -108,7 +106,7 @@ volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
   template SliceIterator::SliceIterator(const Index<DIM(data)>&, const size_t, \
                                         const size_t);                         \
   template std::pair<                                                          \
-      std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,           \
+      std::unique_ptr<std::pair<size_t, size_t>[]>,                            \
       std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,               \
                            gsl::span<std::pair<size_t, size_t>>>,              \
                  DIM(data)>>                                                   \

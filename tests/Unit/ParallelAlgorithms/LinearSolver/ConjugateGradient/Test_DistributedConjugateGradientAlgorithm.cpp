@@ -13,6 +13,7 @@
 #include "Parallel/Main.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ConjugateGradient.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -57,7 +58,8 @@ struct Metavariables {
 }  // namespace
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm,
+    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &domain::creators::register_derived_with_charm,
     &TestHelpers::domain::BoundaryConditions::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
