@@ -206,6 +206,14 @@ void test_boundary_correction_conservation_impl(
                          curved_background>::template f<System>>>,
       face_tags>;
 
+  // Sanity check: make sure each range tag is a `dg_package_data` argument
+  using invalid_range_tags =
+      tmpl::list_difference<tmpl::list<RangeTags...>,
+                            face_tags_with_curved_background>;
+  static_assert(std::is_same_v<tmpl::list<>, invalid_range_tags>,
+                "Received Tags::Range for Tags that aren't arguments to "
+                "dg_package_data");
+
   std::uniform_real_distribution<> dist(-1.0, 1.0);
   DataVector used_for_size{face_mesh.number_of_grid_points()};
 
@@ -483,6 +491,14 @@ void test_boundary_correction_conservation_impl(
  * \ingroup TestingFrameworkGroup
  * \brief Checks that the boundary correction is conservative and that for
  * smooth solutions the strong-form correction is zero.
+ *
+ * By default, each input tensor for `dg_package_data` is randomly generated
+ * from the interval `[-1,1)` (except the metric, which for systems with a
+ * metric is generated to be close to flat space). The argument `ranges` is a
+ * `TaggedTuple` of `TestHelpers::evolution::dg::Tags::Range<tag>` that
+ * enables the caller to pick a custom interval for generating the input
+ * `tag`. This is useful, for example, for tensors that need positive values.
+ * Each `tag` in `ranges` must be an argument of `dg_package_data`.
  */
 template <typename System, typename BoundaryCorrection, size_t FaceDim,
           typename... VolumeTags, typename... RangeTags>
@@ -542,18 +558,13 @@ void test_with_python(
                              curved_background>::template f<System>>>,
       face_tags>;
 
-  // Sanity check: we apply the same ranges to the random inputs of the
-  // `dg_package_data` function and the `dg_boundary_terms` function. So
-  // first we check that each range tag appears in at least one of these
-  // function's arguments.
-  using range_tags_list = tmpl::list<RangeTags...>;
-  using ranges_for_dg_boundary_terms_only =
-      tmpl::list_difference<range_tags_list, face_tags_with_curved_background>;
-  using ranges_unused = tmpl::list_difference<ranges_for_dg_boundary_terms_only,
-                                              dg_package_field_tags>;
-  static_assert(std::is_same_v<tmpl::list<>, ranges_unused>,
-                "Received Tags::Range for Tags that are neither arguments to "
-                "dg_package_data nor dg_boundary_terms");
+  // Sanity check: make sure each range tag is a `dg_package_data` argument
+  using invalid_range_tags =
+      tmpl::list_difference<tmpl::list<RangeTags...>,
+                            face_tags_with_curved_background>;
+  static_assert(std::is_same_v<tmpl::list<>, invalid_range_tags>,
+                "Received Tags::Range for Tags that aren't arguments to "
+                "dg_package_data");
 
   std::uniform_real_distribution<> dist(-1.0, 1.0);
   DataVector used_for_size{face_mesh.number_of_grid_points()};
@@ -850,13 +861,13 @@ void test_with_python(
  * - The arguments to the python functions for computing the boundary
  *   corrections are the same as the arguments for the C++ `dg_boundary_terms`
  *   function, excluding the `gsl::not_null` arguments.
- * - `ranges` is a `TaggedTuple` of
- *   `TestHelpers::evolution::dg::Tags::Range<tag>` specifying a custom range in
- *   which to generate the random values. This can be used for ensuring that
- *   positive quantities are randomly generated on the interval
- *   `[lower_bound,upper_bound)`, choosing `lower_bound` to be `0` or some small
- *   number. The default interval if a tag is not listed is `[-1,1)`. The range
- *   is used for setting the random inputs to `dg_package_data`.
+ * - By default, each input tensor for `dg_package_data` is randomly generated
+ *   from the interval `[-1,1)` (except the metric, which for systems with a
+ *   metric is generated to be close to flat space). The argument `ranges` is a
+ *   `TaggedTuple` of `TestHelpers::evolution::dg::Tags::Range<tag>` that
+ *   enables the caller to pick a custom interval for generating the input
+ *   `tag`. This is useful, for example, for tensors that need positive values.
+ *   Each `tag` in `ranges` must be an argument of `dg_package_data`.
  */
 template <typename System, typename ConversionClassList = tmpl::list<>,
           typename BoundaryCorrection, size_t FaceDim, typename... VolumeTags,
