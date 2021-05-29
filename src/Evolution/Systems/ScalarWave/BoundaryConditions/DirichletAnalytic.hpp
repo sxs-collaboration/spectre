@@ -43,7 +43,6 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions setting the value of Psi, Phi, "
       "and Pi to the analytic solution or analytic data."};
-  static std::string name() noexcept { return "DirichletAnalytic"; }
 
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) noexcept = default;

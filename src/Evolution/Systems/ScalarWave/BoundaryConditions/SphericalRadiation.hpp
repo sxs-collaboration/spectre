@@ -92,7 +92,6 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
       "Spherical radiation boundary conditions setting the value of Psi, Phi, "
       "and Pi either using the Sommerfeld or first-order Bayliss-Turkel "
       "method."};
-  static std::string name() noexcept { return "SphericalRadiation"; }
 
   SphericalRadiation() = default;
   SphericalRadiation(detail::SphericalRadiationType type) noexcept;

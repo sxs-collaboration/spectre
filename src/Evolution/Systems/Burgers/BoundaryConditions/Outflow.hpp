@@ -27,7 +27,6 @@ class Outflow final : public BoundaryCondition {
   static constexpr Options::String help{
       "Outflow boundary condition that only verifies the characteristic speeds "
       "are all directed out of the domain."};
-  static std::string name() noexcept { return "Outflow"; }
 
   Outflow() = default;
   Outflow(Outflow&&) noexcept = default;
