@@ -139,7 +139,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.NewtonianEuler.Rusanov", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.NewtonianEuler.BoundaryCorrections.Rusanov",
+                  "[Unit][Evolution]") {
   PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<1>);
   PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<2>);
   PUPable_reg(NewtonianEuler::BoundaryCorrections::Rusanov<3>);

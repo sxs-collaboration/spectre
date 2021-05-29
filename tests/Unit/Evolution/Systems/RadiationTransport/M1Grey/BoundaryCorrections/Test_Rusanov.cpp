@@ -70,7 +70,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Rusanov",
+SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.BoundaryCorrections.Rusanov",
                   "[Unit][Evolution]") {
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
                                       neutrinos::ElectronAntiNeutrinos<1>>;

@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
-SPECTRE_TEST_CASE("Unit.Burgers.Hll", "[Unit][Burgers]") {
+SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
   PUPable_reg(Burgers::BoundaryCorrections::Hll);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/Burgers/BoundaryCorrections"};
