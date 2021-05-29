@@ -114,17 +114,12 @@ double Rusanov<Dim>::dg_package_data(
   *packaged_tilde_tau = tilde_tau;
   *packaged_tilde_s = tilde_s;
 
-  dot_product(packaged_normal_dot_flux_tilde_d, flux_tilde_d, normal_covector);
-  dot_product(packaged_normal_dot_flux_tilde_tau, flux_tilde_tau,
-              normal_covector);
-  for (size_t i = 0; i < Dim; ++i) {
-    packaged_normal_dot_flux_tilde_s->get(i) =
-        get<0>(normal_covector) * flux_tilde_s.get(0, i);
-    for (size_t j = 1; j < Dim; ++j) {
-      packaged_normal_dot_flux_tilde_s->get(i) +=
-          normal_covector.get(j) * flux_tilde_s.get(j, i);
-    }
-  }
+  normal_dot_flux(packaged_normal_dot_flux_tilde_d, normal_covector,
+                  flux_tilde_d);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_tau, normal_covector,
+                  flux_tilde_tau);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_s, normal_covector,
+                  flux_tilde_s);
 
   return max(get(*packaged_abs_char_speed));
 }

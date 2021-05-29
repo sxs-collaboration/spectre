@@ -37,15 +37,10 @@ void dg_package_data_impl(
   *packaged_tilde_e = tilde_e;
   *packaged_tilde_s = tilde_s;
 
-  dot_product(packaged_normal_dot_flux_tilde_e, flux_tilde_e, normal_covector);
-  for (size_t i = 0; i < 3; ++i) {
-    packaged_normal_dot_flux_tilde_s->get(i) =
-        get<0>(normal_covector) * flux_tilde_s.get(0, i);
-    for (size_t j = 1; j < 3; ++j) {
-      packaged_normal_dot_flux_tilde_s->get(i) +=
-          normal_covector.get(j) * flux_tilde_s.get(j, i);
-    }
-  }
+  normal_dot_flux(packaged_normal_dot_flux_tilde_e, normal_covector,
+                  flux_tilde_e);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_s, normal_covector,
+                  flux_tilde_s);
 }
 
 void dg_boundary_terms_impl(
