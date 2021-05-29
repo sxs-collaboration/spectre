@@ -68,7 +68,7 @@ struct FormatTimeOutput
       noexcept {
     std::stringstream ss;
     ss  << "Simulation time: " << std::to_string(time)
-        << "s\n  Wall time: " << std::to_string(min_wall_time)
+        << "\n  Wall time: " << std::to_string(min_wall_time)
         << "s (min) - "
         << std::to_string(max_wall_time) << "s (max)";
     return ss.str();
