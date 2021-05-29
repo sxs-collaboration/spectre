@@ -415,9 +415,9 @@ void test_shell_boundaries() {
         grid_points_r_angular,
         use_equiangular_map,
         1.0,
-        false,
+        {},
+        {domain::CoordinateMaps::Distribution::Linear},
         ShellWedges::All,
-        1,
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
         create_inner_boundary_condition(),
         create_outer_boundary_condition()};
@@ -462,10 +462,10 @@ void test_shell_factory_equiangular() {
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: true\n"
         "  AspectRatio: 1.0\n"
-        "  UseLogarithmicMap: false\n"
+        "  RadialPartitioning: []\n"
+        "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n"
-        "  RadialBlockLayers: 1\n" +
+        "  TimeDependence: None\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
@@ -500,7 +500,8 @@ void test_shell_factory_equiangular_time_dependent() {
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: true\n"
         "  AspectRatio: 1.0\n"
-        "  UseLogarithmicMap: false\n"
+        "  RadialPartitioning: []\n"
+        "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
         "  TimeDependence:\n"
         "    UniformTranslation:\n"
@@ -509,8 +510,7 @@ void test_shell_factory_equiangular_time_dependent() {
         "      Velocity: [2.3, -0.3, 1.2]\n"
         "      FunctionOfTimeNames: [TranslationX,"
         "                            TranslationY,"
-        "                            TranslationZ]\n"
-        "  RadialBlockLayers: 1\n" +
+        "                            TranslationZ]\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
@@ -577,10 +577,10 @@ void test_shell_factory_equidistant() {
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
         "  AspectRatio: 1.0\n"
-        "  UseLogarithmicMap: false\n"
+        "  RadialPartitioning: []\n"
+        "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n"
-        "  RadialBlockLayers: 1\n" +
+        "  TimeDependence: None\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
@@ -620,9 +620,9 @@ void test_shell_boundaries_aspect_ratio() {
       grid_points_r_angular,
       false,
       aspect_ratio,
-      false,
+      {},
+      {domain::CoordinateMaps::Distribution::Linear},
       ShellWedges::All,
-      1,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
@@ -652,10 +652,10 @@ void test_shell_factory_aspect_ratio() {
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
         "  AspectRatio: 2.0        \n"
-        "  UseLogarithmicMap: false\n"
+        "  RadialPartitioning: []\n"
+        "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n"
-        "  RadialBlockLayers: 1\n" +
+        "  TimeDependence: None\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
@@ -681,10 +681,17 @@ void test_shell_boundaries_logarithmic_map() {
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.0;
   const bool use_logarithmic_map = true;
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Logarithmic};
 
-  const creators::Shell shell{
-      inner_radius, outer_radius, refinement_level,   grid_points_r_angular,
-      false,        aspect_ratio, use_logarithmic_map};
+  const creators::Shell shell{inner_radius,
+                              outer_radius,
+                              refinement_level,
+                              grid_points_r_angular,
+                              false,
+                              aspect_ratio,
+                              {},
+                              radial_distribution};
   test_physical_separation(shell.create_domain().blocks());
   test_shell_construction(
       shell, inner_radius, outer_radius, false, grid_points_r_angular,
@@ -697,9 +704,9 @@ void test_shell_boundaries_logarithmic_map() {
       grid_points_r_angular,
       false,
       aspect_ratio,
-      use_logarithmic_map,
+      {},
+      radial_distribution,
       ShellWedges::All,
-      1,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
@@ -713,7 +720,7 @@ void test_shell_boundaries_logarithmic_map() {
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-          false, aspect_ratio, use_logarithmic_map, ShellWedges::All, 1,
+          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
           std::unique_ptr<
               domain::creators::time_dependence::TimeDependence<3>>{},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
@@ -722,34 +729,34 @@ void test_shell_boundaries_logarithmic_map() {
       Catch::Matchers::Contains(
           "Cannot have periodic boundary conditions with a shell"));
   CHECK_THROWS_WITH(
-      creators::Shell(inner_radius, outer_radius, refinement_level,
-                      grid_points_r_angular, false, aspect_ratio,
-                      use_logarithmic_map, ShellWedges::All, 1,
-                      std::unique_ptr<
-                      domain::creators::time_dependence::TimeDependence<3>>{},
-                      create_inner_boundary_condition(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      Options::Context{false, {}, 1, 1}),
+      creators::Shell(
+          inner_radius, outer_radius, refinement_level, grid_points_r_angular,
+          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
+          std::unique_ptr<
+              domain::creators::time_dependence::TimeDependence<3>>{},
+          create_inner_boundary_condition(),
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Cannot have periodic boundary conditions with a shell"));
   CHECK_THROWS_WITH(
-      creators::Shell(inner_radius, outer_radius, refinement_level,
-                      grid_points_r_angular, false, aspect_ratio,
-                      use_logarithmic_map, ShellWedges::All, 1,
-                      std::unique_ptr<
-                      domain::creators::time_dependence::TimeDependence<3>>{},
-                      create_inner_boundary_condition(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>(),
-                      Options::Context{false, {}, 1, 1}),
+      creators::Shell(
+          inner_radius, outer_radius, refinement_level, grid_points_r_angular,
+          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
+          std::unique_ptr<
+              domain::creators::time_dependence::TimeDependence<3>>{},
+          create_inner_boundary_condition(),
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestNoneBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
           "an outflow boundary condition, you must use that."));
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-          false, aspect_ratio, use_logarithmic_map, ShellWedges::All, 1,
+          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
           std::unique_ptr<
               domain::creators::time_dependence::TimeDependence<3>>{},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
@@ -778,10 +785,10 @@ void test_shell_factory_logarithmic_map() {
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
         "  AspectRatio: 2.0        \n"
-        "  UseLogarithmicMap: true\n"
+        "  RadialPartitioning: []\n"
+        "  RadialDistribution: [Logarithmic]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n"
-        "  RadialBlockLayers: 1\n" +
+        "  TimeDependence: None\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
@@ -800,22 +807,22 @@ void test_shell_factory_logarithmic_map() {
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
 
   INFO("Test with multiple radial layers");
-  const auto shell = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<3>>(
-      "Shell:\n"
-      "  InnerRadius: 1\n"
-      "  OuterRadius: 3\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [2,3]\n"
-      "  UseEquiangularMap: false\n"
-      "  AspectRatio: 2.0        \n"
-      "  UseLogarithmicMap: true\n"
-      "  WhichWedges: All\n"
-      "  TimeDependence: None\n"
-      "  RadialBlockLayers: 3\n" +
-      boundary_conditions_string());
+  const auto shell =
+      TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
+                                   TestHelpers::domain::BoundaryConditions::
+                                       MetavariablesWithBoundaryConditions<3>>(
+          "Shell:\n"
+          "  InnerRadius: 1\n"
+          "  OuterRadius: 3\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3]\n"
+          "  UseEquiangularMap: false\n"
+          "  AspectRatio: 2.0        \n"
+          "  RadialPartitioning: [1.5, 2.5]\n"
+          "  RadialDistribution: [Logarithmic, Logarithmic, Logarithmic]\n"
+          "  WhichWedges: All\n"
+          "  TimeDependence: None\n" +
+          boundary_conditions_string());
   const Domain<3> multiple_layers_domain = shell->create_domain();
   const auto expected_boundary_conditions =
       create_boundary_conditions(3, ShellWedges::All);
@@ -859,10 +866,10 @@ void test_shell_factory_wedges_four_on_equator() {
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n"
       "  AspectRatio: 2.0        \n"
-      "  UseLogarithmicMap: true\n"
+      "  RadialPartitioning: []\n"
+      "  RadialDistribution: [Logarithmic]\n"
       "  WhichWedges: FourOnEquator\n"
-      "  TimeDependence: None\n"
-      "  RadialBlockLayers: 1\n");
+      "  TimeDependence: None\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -889,10 +896,10 @@ void test_shell_factory_wedges_one_along_minus_x() {
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: true\n"
       "  AspectRatio: 2.7        \n"
-      "  UseLogarithmicMap: false\n"
+      "  RadialPartitioning: []\n"
+      "  RadialDistribution: [Linear]\n"
       "  WhichWedges: OneAlongMinusX \n"
-      "  TimeDependence: None\n"
-      "  RadialBlockLayers: 1\n");
+      "  TimeDependence: None\n");
   const double inner_radius = 2.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -950,13 +957,30 @@ void test_radial_block_layers(const double inner_radius,
   }
   x_on_element_boundary[number_of_divisions] = outer_radius;
 
+  std::vector<double> radial_partitions(radial_block_layers - 1);
+  for (size_t i = 1; i < radial_block_layers; ++i) {
+    const double delta =
+        static_cast<double>(i) / static_cast<double>(radial_block_layers);
+    if (use_logarithmic_map) {
+      radial_partitions[i - 1] =
+          inner_radius * pow(outer_radius / inner_radius, delta);
+    } else {
+      radial_partitions[i - 1] =
+          inner_radius + delta * (outer_radius - inner_radius);
+    }
+  }
+
   const auto zero = make_with_value<DataVector>(x_in_block_interior, 0.0);
   tnsr::I<DataVector, 3, Frame::Inertial> interior_inertial_coords{
       {{-x_in_block_interior, zero, zero}}};
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution(
+      radial_block_layers,
+      use_logarithmic_map ? domain::CoordinateMaps::Distribution::Logarithmic
+                          : domain::CoordinateMaps::Distribution::Linear);
   const creators::Shell shell{
       inner_radius,          outer_radius,        refinement_level,
       grid_points_r_angular, use_equiangular_map, aspect_ratio,
-      use_logarithmic_map,   which_wedges,        radial_block_layers};
+      radial_partitions,     radial_distribution, which_wedges};
   auto domain = shell.create_domain();
   const auto blogical_coords =
       block_logical_coordinates(domain, interior_inertial_coords);

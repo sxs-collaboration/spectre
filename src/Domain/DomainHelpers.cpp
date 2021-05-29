@@ -606,80 +606,82 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
 template <typename TargetFrame>
 std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
-sph_wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                          const double inner_sphericity,
-                          const double outer_sphericity,
-                          const bool use_equiangular_map,
-                          const double x_coord_of_shell_center,
-                          const bool use_half_wedges, const double aspect_ratio,
-                          const bool use_logarithmic_map,
-                          const ShellWedges which_wedges,
-                          const size_t number_of_layers) noexcept {
+sph_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double inner_sphericity, const double outer_sphericity,
+    const bool use_equiangular_map, const double x_coord_of_shell_center,
+    const bool use_half_wedges, const double aspect_ratio,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        radial_distribution,
+    const ShellWedges which_wedges) noexcept {
   ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
          "If we are using half wedges we must also be using ShellWedges::All.");
-  ASSERT(number_of_layers == 1 or inner_sphericity == outer_sphericity,
-         "If we are using more than one layer the inner and outer sphericities "
-         "must match.");
+  ASSERT(
+      radial_partitioning.empty() or inner_sphericity == outer_sphericity,
+      "If we are using more than one layer the inner and outer sphericities "
+      "must match.");
+  ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
+         "Specify a radial distribution for every spherical shell. You "
+         "specified "
+             << radial_distribution.size() << " items, but the domain has "
+             << 1 + radial_partitioning.size() << " shells.");
 
   const auto wedge_orientations = orientations_for_wrappings();
 
   using Wedge3DMap = domain::CoordinateMaps::Wedge<3>;
   using Halves = Wedge3DMap::WedgeHalves;
   std::vector<Wedge3DMap> wedges_for_all_layers{};
-  const auto radial_distribution =
-      use_logarithmic_map ? domain::CoordinateMaps::Distribution::Logarithmic
-                          : domain::CoordinateMaps::Distribution::Linear;
 
-  // Set up layers:
-  const double delta_zeta = 2.0 / number_of_layers;
+  const size_t number_of_layers = 1 + radial_partitioning.size();
+  double temp_inner_radius = inner_radius;
+  double temp_outer_radius{};
   for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
-    // Linear interpolation variables in the radial direction from -1 to 1
-    const double global_zeta_inner = -1.0 + layer_i * delta_zeta;
-    const double global_zeta_outer = -1.0 + (layer_i + 1.0) * delta_zeta;
-    const double inner_radius_layer_i =
-        use_logarithmic_map
-            ? pow(inner_radius, 0.5 * (1.0 - global_zeta_inner)) *
-                  pow(outer_radius, 0.5 * (1.0 + global_zeta_inner))
-            : inner_radius * 0.5 * (1.0 - global_zeta_inner) +
-                  outer_radius * 0.5 * (1.0 + global_zeta_inner);
-    const double outer_radius_layer_i =
-        use_logarithmic_map
-            ? pow(inner_radius, 0.5 * (1.0 - global_zeta_outer)) *
-                  pow(outer_radius, 0.5 * (1.0 + global_zeta_outer))
-            : inner_radius * 0.5 * (1.0 - global_zeta_outer) +
-                  outer_radius * 0.5 * (1.0 + global_zeta_outer);
+    const auto& radial_distribution_this_layer =
+        radial_distribution.at(layer_i);
+    if (layer_i != radial_partitioning.size()) {
+      temp_outer_radius = radial_partitioning.at(layer_i);
+    } else {
+      temp_outer_radius = outer_radius;
+    }
     // Generate wedges/half-wedges a layer at a time.
     std::vector<Wedge3DMap> wedges_for_this_layer{};
     if (not use_half_wedges) {
       for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
            face_j++) {
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            temp_inner_radius, temp_outer_radius, inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, face_j),
-            use_equiangular_map, Halves::Both, radial_distribution);
+            use_equiangular_map, Halves::Both, radial_distribution_this_layer);
       }
     } else {
       for (size_t i = 0; i < 4; i++) {
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            temp_inner_radius, temp_outer_radius, inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, i),
-            use_equiangular_map, Halves::LowerOnly, radial_distribution);
+            use_equiangular_map, Halves::LowerOnly,
+            radial_distribution_this_layer);
         wedges_for_this_layer.emplace_back(
-            inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+            temp_inner_radius, temp_outer_radius, inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, i),
-            use_equiangular_map, Halves::UpperOnly, radial_distribution);
+            use_equiangular_map, Halves::UpperOnly,
+            radial_distribution_this_layer);
       }
       wedges_for_this_layer.emplace_back(
-          inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+          temp_inner_radius, temp_outer_radius, inner_sphericity,
           outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
-          Halves::Both, radial_distribution);
+          Halves::Both, radial_distribution_this_layer);
       wedges_for_this_layer.emplace_back(
-          inner_radius_layer_i, outer_radius_layer_i, inner_sphericity,
+          temp_inner_radius, temp_outer_radius, inner_sphericity,
           outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
-          Halves::Both, radial_distribution);
+          Halves::Both, radial_distribution_this_layer);
     }
     for (const auto& wedge : wedges_for_this_layer) {
       wedges_for_all_layers.push_back(wedge);
+    }
+
+    if (layer_i != radial_partitioning.size()) {
+      temp_inner_radius = radial_partitioning.at(layer_i);
     }
   }
 
@@ -1448,8 +1450,10 @@ sph_wedge_coordinate_maps(
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
     const bool use_wedge_halves, const double aspect_ratio,
-    const bool use_logarithmic_map, const ShellWedges which_wedges,
-    const size_t number_of_layers) noexcept;
+    const std::vector<double>& radial_partitioning,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        radial_distribution,
+    const ShellWedges which_wedges) noexcept;
 template std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 sph_wedge_coordinate_maps(
@@ -1457,8 +1461,10 @@ sph_wedge_coordinate_maps(
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
     const bool use_wedge_halves, const double aspect_ratio,
-    const bool use_logarithmic_map, const ShellWedges which_wedges,
-    const size_t number_of_layers) noexcept;
+    const std::vector<double>& radial_partitioning,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        radial_distribution,
+    const ShellWedges which_wedges) noexcept;
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,

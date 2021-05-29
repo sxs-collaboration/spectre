@@ -305,13 +305,13 @@ void test_wedge_map_generation_against_domain_helpers(
   const double x_coord_of_shell_center = 0.1;
   const bool use_half_wedges = true;
   const double aspect_ratio = 1.0;
-  const bool use_logarithmic_map = true;
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Logarithmic};
   const ShellWedges which_wedges = ShellWedges::FourOnEquator;
-  const size_t number_of_layers = 3;
   static_cast<void>(sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
+      aspect_ratio, {}, radial_distribution, which_wedges));
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -330,13 +330,16 @@ void test_wedge_map_generation_against_domain_helpers(
   const double x_coord_of_shell_center = 0.1;
   const bool use_half_wedges = true;
   const double aspect_ratio = 1.0;
-  const bool use_logarithmic_map = true;
+  std::vector<double> radial_partitioning{1., 1.5};
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Logarithmic,
+      domain::CoordinateMaps::Distribution::Logarithmic,
+      domain::CoordinateMaps::Distribution::Logarithmic};
   const ShellWedges which_wedges = ShellWedges::All;
-  const size_t number_of_layers = 3;
   static_cast<void>(sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
+      aspect_ratio, radial_partitioning, radial_distribution, which_wedges));
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

@@ -12,8 +12,7 @@ class TestShell(unittest.TestCase):
                       initial_refinement=1,
                       initial_number_of_grid_points=[3, 3],
                       use_equiangular_map=False,
-                      aspect_ratio=1.,
-                      use_logarithmic_map=False)
+                      aspect_ratio=1.)
         self.assertIsInstance(shell, DomainCreator3D)
 
 

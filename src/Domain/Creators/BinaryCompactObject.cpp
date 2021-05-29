@@ -246,19 +246,31 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
 
   std::vector<BcMap> boundary_conditions_all_blocks{};
 
+  const std::vector<domain::CoordinateMaps::Distribution>
+      object_A_radial_distribution{
+          object_A_.use_logarithmic_map
+              ? domain::CoordinateMaps::Distribution::Logarithmic
+              : domain::CoordinateMaps::Distribution::Linear};
+
+  const std::vector<domain::CoordinateMaps::Distribution>
+      object_B_radial_distribution{
+          object_B_.use_logarithmic_map
+              ? domain::CoordinateMaps::Distribution::Logarithmic
+              : domain::CoordinateMaps::Distribution::Linear};
+
   Maps maps{};
   // ObjectA/B is on the left/right, respectively.
   Maps maps_center_A = sph_wedge_coordinate_maps<Frame::Inertial>(
       object_A_.inner_radius, object_A_.outer_radius, inner_sphericity_A, 1.0,
-      use_equiangular_map_, object_A_.x_coord, false, 1.0,
-      object_A_.use_logarithmic_map);
+      use_equiangular_map_, object_A_.x_coord, false, 1.0, {},
+      object_A_radial_distribution);
   Maps maps_cube_A = sph_wedge_coordinate_maps<Frame::Inertial>(
       object_A_.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
       use_equiangular_map_, object_A_.x_coord, false);
   Maps maps_center_B = sph_wedge_coordinate_maps<Frame::Inertial>(
       object_B_.inner_radius, object_B_.outer_radius, inner_sphericity_B, 1.0,
-      use_equiangular_map_, object_B_.x_coord, false, 1.0,
-      object_B_.use_logarithmic_map);
+      use_equiangular_map_, object_B_.x_coord, false, 1.0, {},
+      object_B_radial_distribution);
   Maps maps_cube_B = sph_wedge_coordinate_maps<Frame::Inertial>(
       object_B_.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
       use_equiangular_map_, object_B_.x_coord, false);
@@ -327,13 +339,21 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
           : inner_radius_first_outer_shell +
                 (radius_enveloping_sphere_ - inner_radius_first_outer_shell) /
                     static_cast<double>(radial_divisions_in_outer_layers);
+
+  const std::vector<domain::CoordinateMaps::Distribution>
+      outer_spherical_shell_distribution{
+          use_logarithmic_map_outer_spherical_shell_
+              ? domain::CoordinateMaps::Distribution::Logarithmic
+              : domain::CoordinateMaps::Distribution::Linear};
+
   Maps maps_first_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_first_outer_shell, outer_radius_first_outer_shell, 0.0, 1.0,
-      use_equiangular_map_, 0.0, true, 1.0, false, ShellWedges::All, 1);
+      use_equiangular_map_, 0.0, true, 1.0, {},
+      {domain::CoordinateMaps::Distribution::Linear}, ShellWedges::All);
   Maps maps_second_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
       outer_radius_first_outer_shell, radius_enveloping_sphere_, 1.0, 1.0,
-      use_equiangular_map_, 0.0, true, 1.0,
-      use_logarithmic_map_outer_spherical_shell_, ShellWedges::All, 1);
+      use_equiangular_map_, 0.0, true, 1.0, {},
+      outer_spherical_shell_distribution, ShellWedges::All);
   if (outer_boundary_condition_ != nullptr) {
     // The outer 10 wedges all have to have the outer boundary condition
     // applied
@@ -559,8 +579,8 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   return domain;
 }
 
-std::vector<std::array<size_t, 3>> BinaryCompactObject::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 3>> BinaryCompactObject::initial_extents()
+    const noexcept {
   return {number_of_blocks_, make_array<3>(initial_grid_points_per_dim_)};
 }
 
