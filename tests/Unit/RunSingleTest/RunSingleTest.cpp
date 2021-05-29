@@ -15,13 +15,14 @@
 
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
+#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/System/Abort.hpp"
 #include "Utilities/System/Exit.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
-  std::set_terminate([]() { sys::abort("Called terminate. Aborting..."); });
+  setup_error_handling();
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
   const int result = Catch::Session().run(msg->argc, msg->argv);
