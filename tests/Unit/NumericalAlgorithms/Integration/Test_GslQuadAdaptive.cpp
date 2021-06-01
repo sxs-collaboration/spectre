@@ -9,6 +9,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Integration/GslQuadAdaptive.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 
 namespace {
 // [integrated_function]
@@ -47,9 +48,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
     // [integration_example]
     CHECK(result == custom_approx(factor * erf(upper_boundary - mean) -
                                   factor * erf(lower_boundary - mean)));
-    CHECK_THROWS(integration(
-        [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
-        lower_boundary, upper_boundary, error_causing_tolerance, 4));
+    CHECK_THROWS_AS(
+        integration([&mean, &factor](
+                        const double x) { return gaussian(x, mean, factor); },
+                    lower_boundary, upper_boundary, error_causing_tolerance, 4),
+        convergence_error);
   }
 
   {
@@ -63,9 +66,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
         [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
         absolute_tolerance);
     CHECK(result == custom_approx(2. * factor));
-    CHECK_THROWS(integration(
-        [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
-        error_causing_tolerance));
+    CHECK_THROWS_AS(
+        integration([&mean, &factor](
+                        const double x) { return gaussian(x, mean, factor); },
+                    error_causing_tolerance),
+        convergence_error);
   }
 
   {
@@ -80,9 +85,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
         [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
         lower_boundary, absolute_tolerance);
     CHECK(result == custom_approx(factor * (1. - erf(lower_boundary - mean))));
-    CHECK_THROWS(integration(
-        [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
-        lower_boundary, error_causing_tolerance));
+    CHECK_THROWS_AS(
+        integration([&mean, &factor](
+                        const double x) { return gaussian(x, mean, factor); },
+                    lower_boundary, error_causing_tolerance),
+        convergence_error);
   }
 
   {
@@ -97,9 +104,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
         [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
         upper_boundary, absolute_tolerance);
     CHECK(result == custom_approx(factor * (1. + erf(upper_boundary - mean))));
-    CHECK_THROWS(integration(
-        [&mean, &factor](const double x) { return gaussian(x, mean, factor); },
-        upper_boundary, error_causing_tolerance));
+    CHECK_THROWS_AS(
+        integration([&mean, &factor](
+                        const double x) { return gaussian(x, mean, factor); },
+                    upper_boundary, error_causing_tolerance),
+        convergence_error);
   }
 
   {
@@ -113,9 +122,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
         [&factor](const double x) { return integrable_singularity(x, factor); },
         0., upper_boundary, absolute_tolerance);
     CHECK(result == custom_approx(2. * factor * (sin(sqrt(upper_boundary)))));
-    CHECK_THROWS(integration(
-        [&factor](const double x) { return integrable_singularity(x, factor); },
-        0., upper_boundary, error_causing_tolerance));
+    CHECK_THROWS_AS(integration(
+                        [&factor](const double x) {
+                          return integrable_singularity(x, factor);
+                        },
+                        0., upper_boundary, error_causing_tolerance),
+                    convergence_error);
   }
 
   {
@@ -130,9 +142,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.Integration.GslQuadAdaptive",
         [&factor](const double x) { return integrable_singularity(x, factor); },
         points, absolute_tolerance);
     CHECK(result == custom_approx(4. * factor * sin(sqrt(upper_boundary))));
-    CHECK_THROWS(integration(
-        [&factor](const double x) { return integrable_singularity(x, factor); },
-        points, error_causing_tolerance));
+    CHECK_THROWS_AS(integration(
+                        [&factor](const double x) {
+                          return integrable_singularity(x, factor);
+                        },
+                        points, error_causing_tolerance),
+                    convergence_error);
   }
 }
 }  // namespace
