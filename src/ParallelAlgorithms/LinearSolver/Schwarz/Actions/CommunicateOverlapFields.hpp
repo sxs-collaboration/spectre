@@ -46,7 +46,10 @@ struct OverlapFieldsTag
   using temporal_id = size_t;
   using type = std::map<
       temporal_id,
-      OverlapMap<Dim, tuples::tagged_tuple_from_typelist<OverlapFields>>>;
+      OverlapMap<Dim, tmpl::conditional_t<
+                          (tmpl::size<OverlapFields>::value > 1),
+                          tuples::tagged_tuple_from_typelist<OverlapFields>,
+                          typename tmpl::front<OverlapFields>::type>>>;
 };
 }  // namespace detail
 
@@ -124,6 +127,17 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
         expand_pack((get<OverlapFields>(overlap_fields) =
                          db::get<OverlapFields>(box))...);
       }
+      // We elide the tagged tuple in the inbox tag if only a single tag is
+      // communicated. This optimization allows moving the overlap-map into the
+      // DataBox in one piece.
+      auto& collapsed_overlap_fields = [&overlap_fields]() noexcept -> auto& {
+        if constexpr (sizeof...(OverlapFields) > 1) {
+          return overlap_fields;
+        } else {
+          return get<OverlapFields...>(overlap_fields);
+        }
+      }
+      ();
       // Copy data to send to neighbors, but move it for the last one
       const auto direction_from_neighbor =
           neighbors.orientation()(direction.opposite());
@@ -136,8 +150,8 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
                 OverlapId<Dim>{direction_from_neighbor, element.id()},
                 (std::next(neighbor) == neighbors.end())
                     // NOLINTNEXTLINE(bugprone-use-after-move)
-                    ? std::move(overlap_fields)
-                    : overlap_fields));
+                    ? std::move(collapsed_overlap_fields)
+                    : collapsed_overlap_fields));
       }
     }
     return {std::move(box)};
@@ -210,9 +224,14 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
     db::mutate<Tags::Overlaps<OverlapFields, Dim, OptionsGroup>...>(
         make_not_null(&box), [&received_overlap_fields](
                                  const auto... local_overlap_fields) noexcept {
-          for (auto& [overlap_id, overlap_fields] : received_overlap_fields) {
-            expand_pack((*local_overlap_fields)[overlap_id] =
-                            std::move(get<OverlapFields>(overlap_fields))...);
+          if constexpr (sizeof...(OverlapFields) > 1) {
+            for (auto& [overlap_id, overlap_fields] : received_overlap_fields) {
+              expand_pack((*local_overlap_fields)[overlap_id] =
+                              std::move(get<OverlapFields>(overlap_fields))...);
+            }
+          } else {
+            expand_pack((*local_overlap_fields =
+                             std::move(received_overlap_fields))...);
           }
         });
 
