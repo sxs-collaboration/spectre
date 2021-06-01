@@ -24,17 +24,19 @@ void test_time_derivative(const gsl::not_null<std::mt19937*> generator,
   // create datavectors to store computed values of dudt and flux
   Scalar<DataVector> dudt{number_of_pts, 0.0};
   tnsr::I<DataVector, Dim, Frame::Inertial> flux(number_of_pts);
+  tnsr::I<DataVector, Dim, Frame::Inertial> temp_velocity_field(number_of_pts);
 
   // generate random u and velocity field
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   const auto u = make_with_random_values<Scalar<DataVector>>(
       generator, make_not_null(&distribution), dudt);
-  const auto velocity =
+  const auto velocity_field =
       make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
           generator, make_not_null(&distribution), dudt);
 
   // evaluate dudt and flux
-  ScalarAdvection::TimeDerivativeTerms<Dim>::apply(&dudt, &flux, u, velocity);
+  ScalarAdvection::TimeDerivativeTerms<Dim>::apply(&dudt, &temp_velocity_field,
+                                                   &flux, u, velocity_field);
 
   // expected values of dudt and flux. note that dudt_expected is set to be
   // equal to the original value of dudt (which is 0.0 here), since we have no
@@ -43,11 +45,12 @@ void test_time_derivative(const gsl::not_null<std::mt19937*> generator,
   const Scalar<DataVector> dudt_expected{number_of_pts, 0.0};
   const tnsr::I<DataVector, Dim, Frame::Inertial> flux_expected{
       pypp::call<tnsr::I<DataVector, Dim, Frame::Inertial>>(
-          "TestFunctions", "compute_flux", u, velocity)};
+          "TestFunctions", "compute_flux", u, velocity_field)};
 
   // check values
   CHECK_ITERABLE_APPROX(dudt, dudt_expected);
   CHECK_ITERABLE_APPROX(flux, flux_expected);
+  CHECK_ITERABLE_APPROX(temp_velocity_field, velocity_field);
 }
 }  // namespace
 

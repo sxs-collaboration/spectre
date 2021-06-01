@@ -15,9 +15,12 @@ namespace ScalarAdvection {
 
 template <size_t Dim>
 void TimeDerivativeTerms<Dim>::apply(
-    gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_vars*/,
-    gsl::not_null<tnsr::I<DataVector, Dim>*> flux, const Scalar<DataVector>& u,
+    const gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_vars*/,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> temp_velocity_field,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> flux,
+    const Scalar<DataVector>& u,
     const tnsr::I<DataVector, Dim>& velocity_field) noexcept {
+  *temp_velocity_field = velocity_field;
   Fluxes<Dim>::apply(flux, u, velocity_field);
 }
 
