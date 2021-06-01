@@ -21,14 +21,17 @@
 #include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CreateInitialElement.hpp"
+#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
@@ -260,9 +263,14 @@ struct TestResult {
 };
 
 struct InitializeElement {
+  using initialization_tags =
+      tmpl::list<domain::Tags::InitialExtents<1>,
+                 domain::Tags::InitialRefinementLevels<1>>;
   using const_global_cache_tags = tmpl::list<Source>;
-
-  using simple_tags = tmpl::list<fields_tag, sources_tag>;
+  using simple_tags =
+      tmpl::list<domain::Tags::Mesh<1>, domain::Tags::Element<1>,
+                 domain::Tags::Coordinates<1, Frame::Logical>, fields_tag,
+                 sources_tag>;
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -271,13 +279,25 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<1>& element_id, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    // Domain geometry
+    const auto& domain = db::get<domain::Tags::Domain<1>>(box);
+    const auto& initial_extents = db::get<domain::Tags::InitialExtents<1>>(box);
+    const auto& initial_refinement =
+        db::get<domain::Tags::InitialRefinementLevels<1>>(box);
+    auto mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
+    const auto& block = domain.blocks()[element_id.block_id()];
+    auto element = domain::Initialization::create_initial_element(
+        element_id, block, initial_refinement);
+    auto logical_coords = logical_coordinates(mesh);
+    // Element data
     const size_t element_index = get_index(element_id);
     const auto& source = gsl::at(get<Source>(box), element_index);
     const size_t num_points = source.size();
     ::Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), typename fields_tag::type{num_points, 0.},
+        make_not_null(&box), std::move(mesh), std::move(element),
+        std::move(logical_coords), typename fields_tag::type{num_points, 0.},
         typename sources_tag::type{source});
-
     return std::make_tuple(std::move(box));
   }
 };
@@ -308,8 +328,7 @@ template <typename Metavariables,
           typename LinearSolverType = typename Metavariables::linear_solver,
           typename PreconditionerType = typename Metavariables::preconditioner>
 using initialization_actions =
-    tmpl::list<Actions::SetupDataBox,
-               ::elliptic::dg::Actions::InitializeDomain<1>, InitializeElement,
+    tmpl::list<Actions::SetupDataBox, InitializeElement,
                typename LinearSolverType::initialize_element,
                ComputeOperatorAction<fields_tag>,
                helpers::detail::init_preconditioner<PreconditionerType>,
