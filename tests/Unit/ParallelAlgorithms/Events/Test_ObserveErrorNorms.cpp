@@ -134,7 +134,7 @@ struct MockObserverComponent {
                                         tmpl::list<>>>;
 };
 
-template <typename System>
+template <typename System, bool SubtractAnalyticSolution>
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
@@ -144,9 +144,10 @@ struct Metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        Event, tmpl::list<dg::Events::ObserveErrorNorms<
-                   ObservationTimeTag, typename System::vars_for_test>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<dg::Events::ObserveErrorNorms<
+                              ObservationTimeTag, SubtractAnalyticSolution,
+                              typename System::vars_for_test>>>>;
   };
 
   enum class Phase { Initialization, Testing, Exit };
@@ -226,11 +227,15 @@ struct ComplicatedSystem {
   };
 };
 
-template <typename System, bool HasAnalyticSolutions, typename ObserveEvent>
+template <typename System, bool HasAnalyticSolutions,
+          bool SubtractAnalyticSolution, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe,
                   const bool has_analytic_solutions) noexcept {
+  CAPTURE(SubtractAnalyticSolution);
+  CAPTURE(HasAnalyticSolutions);
+  CAPTURE(has_analytic_solutions);
   constexpr size_t volume_dim = System::volume_dim;
-  using metavariables = Metavariables<System>;
+  using metavariables = Metavariables<System, SubtractAnalyticSolution>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   using coordinates_tag =
@@ -252,9 +257,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
           get<coordinates_tag>(vars), observation_time, solution_variables{}))};
-  const Variables<solution_variables> errors =
-      vars.template extract_subset<solution_variables>() - solutions;
-
+  Variables<solution_variables> errors =
+      vars.template extract_subset<solution_variables>();
+  if constexpr (SubtractAnalyticSolution) {
+    errors -= solutions;
+  }
   ActionTesting::MockRuntimeSystem<metavariables> runner(
       tuples::TaggedTuple<
           Tags::AnalyticSolution<typename System::solution_for_test>>{
@@ -292,7 +299,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 
-  if (not HasAnalyticSolutions and not has_analytic_solutions) {
+  if (not HasAnalyticSolutions and not has_analytic_solutions and
+      SubtractAnalyticSolution) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
     return;
   }
@@ -348,13 +356,15 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   CHECK(observe->needs_evolved_variables());
 }
 
-template <typename System, bool HasAnalyticSolutions>
+template <typename System, bool HasAnalyticSolutions,
+          bool SubtractAnalyticSolution>
 void test_system(const bool has_analytic_solutions) noexcept {
   INFO(pretty_type::get_name<System>());
-  using metavariables = Metavariables<System>;
-  test_observe<System, HasAnalyticSolutions>(
+  using metavariables = Metavariables<System, SubtractAnalyticSolution>;
+  test_observe<System, HasAnalyticSolutions, SubtractAnalyticSolution>(
       std::make_unique<dg::Events::ObserveErrorNorms<
-          ObservationTimeTag, typename System::vars_for_test>>("reduction0"),
+          ObservationTimeTag, SubtractAnalyticSolution,
+          typename System::vars_for_test>>("reduction0"),
       has_analytic_solutions);
 
   INFO("create/serialize");
@@ -364,14 +374,14 @@ void test_system(const bool has_analytic_solutions) noexcept {
           "ObserveErrorNorms:\n"
           "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System, HasAnalyticSolutions>(std::move(serialized_event),
-                                             has_analytic_solutions);
+  test_observe<System, HasAnalyticSolutions, SubtractAnalyticSolution>(
+      std::move(serialized_event), has_analytic_solutions);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveErrorNorms", "[Unit][Evolution]") {
   INVOKE_TEST_FUNCTION(test_system, (true), (ScalarSystem, ComplicatedSystem),
-                       (true, false));
+                       (true, false), (true, false));
   INVOKE_TEST_FUNCTION(test_system, (false), (ScalarSystem, ComplicatedSystem),
-                       (true, false));
+                       (true, false), (true, false));
 }

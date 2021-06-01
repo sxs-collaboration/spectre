@@ -43,25 +43,33 @@ struct Inertial;
 
 namespace dg {
 namespace Events {
-template <typename ObservationValueTag, typename Tensors>
+template <typename ObservationValueTag, bool SubtractAnalyticSolution,
+          typename Tensors>
 class ObserveErrorNorms;
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
- * \brief %Observe the RMS errors in the tensors compared to their
- * analytic solution.
+ * \brief %Observe the RMS errors in the tensors. If `SubtractAnalyticSolution`
+ * is true, each error is computed as the difference between one of the
+ * `Tensors` and its corresponding analytic solution tensor. Otherwise,
+ * each error corresponds to one of the `Tensors` themselves (which might
+ * be, e.g., constraints).
  *
  * Writes reduction quantities:
  * - `ObservationValueTag`
  * - `NumberOfPoints` = total number of points in the domain
  * - `Error(*)` = RMS errors in `Tensors` =
  *   \f$\operatorname{RMS}\left(\sqrt{\sum_{\text{independent components}}\left[
- *   \text{value} - \text{analytic solution}\right]^2}\right)\f$
- *   over all points
+ *   \text{error}\right]^2}\right)\f$
+ *   over all points, where
+ *   \f$error = \text{value} - \text{analytic solution}\f$ if
+ *   `SubtractAnalyticSolution` is true and \f$error = \text{value}\f$
+ *   otherwise.
  */
-template <typename ObservationValueTag, typename... Tensors>
-class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>
-    : public Event {
+template <typename ObservationValueTag, bool SubtractAnalyticSolution,
+          typename... Tensors>
+class ObserveErrorNorms<ObservationValueTag, SubtractAnalyticSolution,
+                        tmpl::list<Tensors...>> : public Event {
  private:
   template <typename Tag>
   struct LocalSquareError {
@@ -113,8 +121,17 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<ObservationValueTag, Tensors...,
-                                   ::Tags::AnalyticSolutionsBase>;
+  // If SubtractAnalyticSolutions == true, then the final argument tag must
+  // be ::Tags::AnalyticSolutionsBase, so that the analytic solution can
+  // be retrieved and subtracted. Otherwise, this tag is not needed or used.
+  // But to avoid having to implement operator() with a variable number of
+  // argument tags, when SubtractAnalyticSolutions == false, here just
+  // pass in a tag from the DataBox, ObservationValueTag, for the final
+  // argument tag.
+  using argument_tags = tmpl::list<
+      ObservationValueTag, Tensors...,
+      tmpl::conditional_t<SubtractAnalyticSolution,
+                          ::Tags::AnalyticSolutionsBase, ObservationValueTag>>;
 
   template <typename OptionalAnalyticSolutions, typename Metavariables,
             typename ArrayIndex, typename ParallelComponent>
@@ -150,8 +167,12 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       double local_square_error = 0.0;
       for (size_t i = 0; i < tensor.size(); ++i) {
-        const auto error = tensor[i] - get<::Tags::Analytic<tensor_tag>>(
-                                           analytic_solutions)[i];
+        auto error = tensor[i];
+        if constexpr (SubtractAnalyticSolution) {
+          error -= get<::Tags::Analytic<tensor_tag>>(analytic_solutions)[i];
+        } else {
+          (void)analytic_solutions;
+        }
         local_square_error += alg::accumulate(square(error), 0.0);
       }
       get<LocalSquareError<tensor_tag>>(local_square_errors) =
@@ -200,16 +221,19 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>
   std::string subfile_path_;
 };
 
-template <typename ObservationValueTag, typename... Tensors>
-ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>::
+template <typename ObservationValueTag, bool SubtractAnalyticSolution,
+          typename... Tensors>
+ObserveErrorNorms<ObservationValueTag, SubtractAnalyticSolution,
+                  tmpl::list<Tensors...>>::
     ObserveErrorNorms(const std::string& subfile_name) noexcept
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond
-template <typename ObservationValueTag, typename... Tensors>
+template <typename ObservationValueTag, bool SubtractAnalyticSolution,
+          typename... Tensors>
 PUP::able::PUP_ID
-    ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>>::my_PUP_ID =
-        0;  // NOLINT
+    ObserveErrorNorms<ObservationValueTag, SubtractAnalyticSolution,
+                      tmpl::list<Tensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events
 }  // namespace dg

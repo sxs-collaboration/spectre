@@ -18,8 +18,8 @@ template <size_t VolumeDim, typename TimeTag, typename Fields,
 using field_observations = tmpl::flatten<tmpl::list<
     ObserveFields<VolumeDim, TimeTag, Fields, SolutionFields>,
     tmpl::conditional_t<std::is_same_v<SolutionFields, tmpl::list<>>,
-                        tmpl::list<>,
-                        ObserveErrorNorms<TimeTag, SolutionFields>>>>;
+                        ObserveErrorNorms<TimeTag, false, Fields>,
+                        ObserveErrorNorms<TimeTag, true, SolutionFields>>>>;
 }  // namespace dg::Events
 
 namespace Events {

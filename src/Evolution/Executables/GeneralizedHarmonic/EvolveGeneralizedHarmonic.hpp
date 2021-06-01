@@ -208,16 +208,18 @@ struct EvolutionMetavars {
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
-                dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields,
-                                               analytic_solution_fields>,
+                dg::Events::field_observations<
+                    volume_dim, Tags::Time, observe_fields,
+                    tmpl::conditional_t<
+                        evolution::is_numeric_initial_data_v<initial_data>,
+                        tmpl::list<>, analytic_solution_fields>>,
                 Events::time_events<EvolutionMetavars>,
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   StepChoosers::standard_slab_choosers<system,
-                                                        local_time_stepping>>,
+        tmpl::pair<
+            StepChooser<StepChooserUse::Slab>,
+            StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
