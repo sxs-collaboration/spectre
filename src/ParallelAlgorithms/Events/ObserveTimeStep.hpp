@@ -202,6 +202,15 @@ class ObserveTimeStep : public Event {
             observers::ObservationKey(subfile_path_ + ".dat")};
   }
 
+  using is_ready_argument_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/) const noexcept {
+    return true;
+  }
+
   bool needs_evolved_variables() const noexcept override { return false; }
 
   // NOLINTNEXTLINE(google-runtime-references)

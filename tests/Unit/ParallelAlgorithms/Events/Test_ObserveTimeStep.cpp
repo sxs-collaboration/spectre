@@ -216,6 +216,11 @@ void test_observe(const Observer& observer,
   const double expected_effective_step = expected_slab_size / 4.0;
 
   for (size_t index = 0; index < element_boxes.size(); ++index) {
+    CHECK(static_cast<const Event&>(observer).is_ready(
+        element_boxes[index],
+        ActionTesting::cache<element_component>(runner, index),
+        static_cast<element_component::array_index>(index),
+        std::add_pointer_t<element_component>{}));
     observer.run(element_boxes[index],
                  ActionTesting::cache<element_component>(runner, index),
                  static_cast<element_component::array_index>(index),
