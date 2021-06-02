@@ -46,12 +46,17 @@ target_link_libraries(
   PUBLIC
   DataStructures
   DgSubcell
+  Domain
   ErrorHandling
   Hydro
+  Options
+  PRIVATE
+  FiniteDifference
   )
 
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
+add_subdirectory(FiniteDifference)
 add_subdirectory(Limiters)
 add_subdirectory(NumericalFluxes)
 add_subdirectory(Sources)
