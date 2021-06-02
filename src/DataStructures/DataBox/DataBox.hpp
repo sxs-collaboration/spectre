@@ -910,6 +910,10 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   static_assert(tt::is_a_v<tmpl::list, AddMutableItemTags>,
                 "AddMutableItemTags must be a tmpl::list");
   static_assert(
+      tmpl::all<AddMutableItemTags, is_non_base_tag<tmpl::_1>>::value and
+          tmpl::all<AddImmutableItemTags, is_non_base_tag<tmpl::_1>>::value,
+      "Can only add tags derived from db::SimpleTag.");
+  static_assert(
       tmpl::all<AddMutableItemTags, is_mutable_item_tag<tmpl::_1>>::value,
       "Cannot add any ComputeTags or ReferenceTags in the AddMutableTags list, "
       "must use the AddImmutableItemTags list.");
