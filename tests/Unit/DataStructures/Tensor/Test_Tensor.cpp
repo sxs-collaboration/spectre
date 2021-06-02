@@ -55,6 +55,12 @@ static_assert(
     "Failed testing Symmetry");
 static_assert(std::is_same_v<Symmetry<4>, tmpl::integral_list<std::int32_t, 1>>,
               "Failed testing Symmetry");
+static_assert(std::is_same_v<Symmetry<1, 2, 1, 3>,
+                             tmpl::integral_list<std::int32_t, 2, 3, 2, 1>>,
+              "Failed testing Symmetry");
+static_assert(std::is_same_v<Symmetry<5, 3, 1, 1, 5>,
+                             tmpl::integral_list<std::int32_t, 1, 3, 2, 2, 1>>,
+              "Failed testing Symmetry");
 
 // Test prepend_spacetime_index and prepend_spatial_index
 static_assert(std::is_same_v<tnsr::aB<double, 3, Frame::Grid>,

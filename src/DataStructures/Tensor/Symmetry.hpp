@@ -55,6 +55,8 @@ struct SymmetryImpl;
 template <size_t... Is, std::int32_t... Ss>
 struct SymmetryImpl<std::index_sequence<Is...>,
                     tmpl::integral_list<std::int32_t, Ss...>> {
+  static_assert((... and (Ss > 0)),
+                "Symmetry values must be positive integers.");
   static constexpr cpp20::array<int, sizeof...(Is)> t =
       symmetry(std::array<int, sizeof...(Is)>{{Ss...}});
   using type = tmpl::integral_list<std::int32_t, t[Is]...>;
@@ -66,13 +68,10 @@ struct SymmetryImpl<std::index_sequence<Is...>,
 ///
 /// \details
 /// Compute the canonical symmetry typelist given a set of integers, T. The
-/// resulting typelist is in descending order of the absolute value of the
-/// integers. For example, the result of `Symmetry<1, 2, 3>` is
-/// `integral_list<int32_t, 3, 2, 1>`. Anti-symmetries can be denoted with a
-/// minus sign on either _or_ both indices. That is, `Symmetry<-1, 2, 1>` is
-/// anti-symmetric in the first and last index and is the same as `Symmetry<-1,
-/// 2, -1>`. Note: two minus signs are still anti-symmetric because it
-/// simplifies the algorithm used to compute the canonical form of the symmetry.
+/// resulting typelist is in ascending order of the integers, from right to
+/// left. For example, the result of `Symmetry<1, 2, 1, 3>` is
+/// `integral_list<int32_t, 2, 3, 2, 1>`. Anti-symmetries are not currently
+/// supported.
 ///
 /// \tparam T the integers denoting the symmetry of the Tensor
 template <std::int32_t... T>
