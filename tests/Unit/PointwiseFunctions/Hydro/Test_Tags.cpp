@@ -78,5 +78,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Logical>>(
       "LowerSpatialFourVelocity");
   TestHelpers::db::test_simple_tag<
+      hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3,
+                                                     Frame::Logical>>(
+      "LorentzFactorTimesSpatialVelocity");
+  TestHelpers::db::test_simple_tag<
       hydro::Tags::MassFlux<DataVector, 3, Frame::Logical>>("Logical_MassFlux");
 }
