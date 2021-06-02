@@ -18,6 +18,7 @@ set(LIBS_TO_LINK
   M1GreySolutions
   Options
   Parallel
+  PhaseControl
   Time
   Utilities
   )

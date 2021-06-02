@@ -29,6 +29,7 @@ set(LIBS_TO_LINK
   RelativisticEulerSolutions
   Options
   Parallel
+  PhaseControl
   Time
   Utilities
   ValenciaDivClean

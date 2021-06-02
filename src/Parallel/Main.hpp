@@ -19,7 +19,7 @@
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/TypeTraits.hpp"

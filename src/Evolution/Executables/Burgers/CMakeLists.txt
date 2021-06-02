@@ -15,6 +15,7 @@ set(LIBS_TO_LINK
   LinearOperators
   Options
   Parallel
+  PhaseControl
   Time
   Utilities
   )

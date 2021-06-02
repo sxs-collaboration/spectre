@@ -37,6 +37,7 @@ spectre_target_headers(
   MaxInlineMethodsReached.hpp
   NodeLock.hpp
   ParallelComponentHelpers.hpp
+  PhaseControlReductionHelpers.hpp
   PhaseDependentActionList.hpp
   Printf.hpp
   PupStlCpp11.hpp
@@ -55,7 +56,6 @@ target_link_libraries(
   INTERFACE
   Boost::boost
   DataStructures
-  EventsAndTriggers
   Informer
   Options
   PUBLIC

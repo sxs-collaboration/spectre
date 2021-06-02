@@ -27,6 +27,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
     Informer
     Options
     Parallel
+    PhaseControl
     SystemUtilities
     Utilities
     )

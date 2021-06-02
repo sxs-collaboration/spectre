@@ -52,6 +52,7 @@ set(LIBS_TO_LINK
   NewtonianEulerSources
   Options
   Parallel
+  PhaseControl
   Time
   Utilities
   )

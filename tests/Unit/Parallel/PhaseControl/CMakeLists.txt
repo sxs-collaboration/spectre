@@ -23,6 +23,7 @@ target_link_libraries(
   DataStructures
   Options
   Parallel
+  PhaseControl
   Time
   Utilities
   )
