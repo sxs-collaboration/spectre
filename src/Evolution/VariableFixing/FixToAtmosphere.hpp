@@ -152,26 +152,9 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) const noexcept {
-    call_impl(rest_mass_density, specific_internal_energy, spatial_velocity,
-              lorentz_factor, pressure, specific_enthalpy, spatial_metric,
-              equation_of_state);
-  }
+      equation_of_state) const noexcept;
 
  private:
-  template <size_t ThermodynamicDim>
-  void call_impl(
-      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          spatial_velocity,
-      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-      gsl::not_null<Scalar<DataVector>*> pressure,
-      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-      const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) const noexcept;
-
   template <size_t SpatialDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const FixToAtmosphere<SpatialDim>& lhs,

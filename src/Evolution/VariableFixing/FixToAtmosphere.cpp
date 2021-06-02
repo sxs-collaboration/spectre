@@ -59,7 +59,7 @@ void FixToAtmosphere<Dim>::pup(PUP::er& p) noexcept {  // NOLINT
 
 template <size_t Dim>
 template <size_t ThermodynamicDim>
-void FixToAtmosphere<Dim>::call_impl(
+void FixToAtmosphere<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -158,7 +158,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 
 #define INSTANTIATION(r, data)                                                \
-  template void FixToAtmosphere<DIM(data)>::call_impl(                        \
+  template void FixToAtmosphere<DIM(data)>::operator()(                       \
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,             \
       const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,      \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
