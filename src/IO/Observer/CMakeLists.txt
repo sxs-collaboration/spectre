@@ -14,6 +14,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ArrayComponentId.hpp
+  GetSectionObservationKey.hpp
   Helpers.hpp
   Initialize.hpp
   ObservationId.hpp
