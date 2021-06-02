@@ -155,6 +155,24 @@ class FixToAtmosphere {
       equation_of_state) const noexcept;
 
  private:
+  template <size_t ThermodynamicDim>
+  void set_density_to_atmosphere(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state,
+      size_t grid_index) const noexcept;
+
+  void set_to_magnetic_free_transition(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          spatial_velocity,
+      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
+      size_t grid_index) const noexcept;
+
   template <size_t SpatialDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const FixToAtmosphere<SpatialDim>& lhs,

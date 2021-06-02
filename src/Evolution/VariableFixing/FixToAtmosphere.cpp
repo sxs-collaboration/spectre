@@ -72,59 +72,84 @@ void FixToAtmosphere<Dim>::operator()(
         equation_of_state) const noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
     if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
-      rest_mass_density->get()[i] = density_of_atmosphere_;
+      set_density_to_atmosphere(rest_mass_density, specific_internal_energy,
+                                pressure, specific_enthalpy, equation_of_state,
+                                i);
       for (size_t d = 0; d < Dim; ++d) {
         spatial_velocity->get(d)[i] = 0.0;
       }
       lorentz_factor->get()[i] = 1.0;
-      Scalar<double> atmosphere_density{density_of_atmosphere_};
-      if constexpr (ThermodynamicDim == 1) {
-        pressure->get()[i] =
-            get(equation_of_state.pressure_from_density(atmosphere_density));
-        specific_internal_energy->get()[i] =
-            get(equation_of_state.specific_internal_energy_from_density(
-                atmosphere_density));
-        specific_enthalpy->get()[i] =
-            get(equation_of_state.specific_enthalpy_from_density(
-                atmosphere_density));
-      } else if constexpr (ThermodynamicDim == 2) {
-        Scalar<double> atmosphere_energy{0.0};
-        pressure->get()[i] =
-            get(equation_of_state.pressure_from_density_and_energy(
-                atmosphere_density, atmosphere_energy));
-        specific_internal_energy->get()[i] = get(atmosphere_energy);
-        specific_enthalpy->get()[i] =
-            get(equation_of_state.specific_enthalpy_from_density_and_energy(
-                atmosphere_density, atmosphere_energy));
-      }
     } else if (UNLIKELY(rest_mass_density->get()[i] <
                         transition_density_cutoff_)) {
-      double magnitude_of_velocity = 0.0;
-      for (size_t j = 0; j < Dim; ++j) {
-        magnitude_of_velocity += spatial_velocity->get(j)[i] *
-                                 spatial_velocity->get(j)[i] *
-                                 spatial_metric.get(j, j)[i];
-        for (size_t k = j + 1; k < Dim; ++k) {
-          magnitude_of_velocity += 2.0 * spatial_velocity->get(j)[i] *
-                                   spatial_velocity->get(k)[i] *
-                                   spatial_metric.get(j, k)[i];
-        }
-      }
-      magnitude_of_velocity = sqrt(magnitude_of_velocity);
-      const double scale_factor =
-          (get(*rest_mass_density)[i] - density_cutoff_) /
-          (transition_density_cutoff_ - density_cutoff_);
-      if (const double max_mag_of_velocity =
-              scale_factor * max_velocity_magnitude_;
-          magnitude_of_velocity > max_mag_of_velocity) {
-        for (size_t j = 0; j < Dim; ++j) {
-          spatial_velocity->get(j)[i] *=
-              max_mag_of_velocity / magnitude_of_velocity;
-        }
-        get(*lorentz_factor)[i] =
-            1.0 / sqrt(1.0 - max_mag_of_velocity * max_mag_of_velocity);
-      }
+      set_to_magnetic_free_transition(rest_mass_density, spatial_velocity,
+                                      lorentz_factor, spatial_metric, i);
     }
+  }
+}
+
+template <size_t Dim>
+template <size_t ThermodynamicDim>
+void FixToAtmosphere<Dim>::set_density_to_atmosphere(
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    const gsl::not_null<Scalar<DataVector>*> pressure,
+    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state,
+    const size_t grid_index) const noexcept {
+  rest_mass_density->get()[grid_index] = density_of_atmosphere_;
+  Scalar<double> atmosphere_density{density_of_atmosphere_};
+  if constexpr (ThermodynamicDim == 1) {
+    pressure->get()[grid_index] =
+        get(equation_of_state.pressure_from_density(atmosphere_density));
+    specific_internal_energy->get()[grid_index] =
+        get(equation_of_state.specific_internal_energy_from_density(
+            atmosphere_density));
+    specific_enthalpy->get()[grid_index] = get(
+        equation_of_state.specific_enthalpy_from_density(atmosphere_density));
+  } else if constexpr (ThermodynamicDim == 2) {
+    Scalar<double> atmosphere_energy{0.0};
+    pressure->get()[grid_index] =
+        get(equation_of_state.pressure_from_density_and_energy(
+            atmosphere_density, atmosphere_energy));
+    specific_internal_energy->get()[grid_index] = get(atmosphere_energy);
+    specific_enthalpy->get()[grid_index] =
+        get(equation_of_state.specific_enthalpy_from_density_and_energy(
+            atmosphere_density, atmosphere_energy));
+  }
+}
+
+template <size_t Dim>
+void FixToAtmosphere<Dim>::set_to_magnetic_free_transition(
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        spatial_velocity,
+    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
+    const size_t grid_index) const noexcept {
+  double magnitude_of_velocity = 0.0;
+  for (size_t j = 0; j < Dim; ++j) {
+    magnitude_of_velocity += spatial_velocity->get(j)[grid_index] *
+                             spatial_velocity->get(j)[grid_index] *
+                             spatial_metric.get(j, j)[grid_index];
+    for (size_t k = j + 1; k < Dim; ++k) {
+      magnitude_of_velocity += 2.0 * spatial_velocity->get(j)[grid_index] *
+                               spatial_velocity->get(k)[grid_index] *
+                               spatial_metric.get(j, k)[grid_index];
+    }
+  }
+  magnitude_of_velocity = sqrt(magnitude_of_velocity);
+  const double scale_factor =
+      (get(*rest_mass_density)[grid_index] - density_cutoff_) /
+      (transition_density_cutoff_ - density_cutoff_);
+  if (const double max_mag_of_velocity = scale_factor * max_velocity_magnitude_;
+      magnitude_of_velocity > max_mag_of_velocity) {
+    for (size_t j = 0; j < Dim; ++j) {
+      spatial_velocity->get(j)[grid_index] *=
+          max_mag_of_velocity / magnitude_of_velocity;
+    }
+    get(*lorentz_factor)[grid_index] =
+        1.0 / sqrt(1.0 - max_mag_of_velocity * max_mag_of_velocity);
   }
 }
 
