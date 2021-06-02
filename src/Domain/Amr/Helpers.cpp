@@ -11,7 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace amr {
+namespace domain::amr {
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels(
     const ElementId<VolumeDim>& id,
@@ -20,7 +20,7 @@ std::array<size_t, VolumeDim> desired_refinement_levels(
 
   for (size_t d = 0; d < VolumeDim; ++d) {
     ASSERT(amr::Flag::Undefined != gsl::at(flags, d),
-           "Undefined amr::Flag in dimension " << d);
+           "Undefined domain::amr::Flag in dimension " << d);
     gsl::at(result, d) = gsl::at(id.segment_ids(), d).refinement_level();
     if (amr::Flag::Join == gsl::at(flags, d)) {
       --gsl::at(result, d);
@@ -42,7 +42,7 @@ std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
   std::array<size_t, VolumeDim> result{};
   for (size_t d = 0; d < VolumeDim; ++d) {
     ASSERT(amr::Flag::Undefined != gsl::at(neighbor_flags, d),
-           "Undefined amr::Flag in dimension " << d);
+           "Undefined domain::amr::Flag in dimension " << d);
     const size_t mapped_dim = orientation(d);
     gsl::at(result, d) =
         gsl::at(neighbor_id.segment_ids(), mapped_dim).refinement_level();
@@ -81,4 +81,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-}  // namespace amr
+}  // namespace domain::amr

@@ -15,7 +15,7 @@
 template <size_t VolumeDim>
 class OrientationMap;
 
-namespace amr {
+namespace domain::amr {
 
 template <size_t VolumeDim>
 bool update_amr_decision(
@@ -116,4 +116,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
-}  // namespace amr
+}  // namespace domain::amr
