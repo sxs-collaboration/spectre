@@ -116,14 +116,11 @@ void test() noexcept {
   using vars_tag = Tags::Variables<tmpl::list<Var>>;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, vars_tag,
                                         tmpl::size_t<Dim>, Frame::Inertial>;
-  using sources_tag = db::add_tag_prefix<::Tags::Source, vars_tag>;
   // The numerical value that the vars are set to is undefined, but the number
   // of grid points must be correct.
   CHECK(ActionTesting::get_databox_tag<comp, vars_tag>(runner, 0)
             .number_of_grid_points() == mesh.number_of_grid_points());
   CHECK(ActionTesting::get_databox_tag<comp, fluxes_tag>(runner, 0)
-            .number_of_grid_points() == mesh.number_of_grid_points());
-  CHECK(ActionTesting::get_databox_tag<comp, sources_tag>(runner, 0)
             .number_of_grid_points() == mesh.number_of_grid_points());
   check_primitives<Dim>(std::integral_constant<bool, HasPrimitives>{}, runner,
                         mesh.number_of_grid_points());

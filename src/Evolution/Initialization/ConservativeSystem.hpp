@@ -79,17 +79,16 @@ struct ConservativeSystem {
   using variables_tag = typename System::variables_tag;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, variables_tag,
                                         tmpl::size_t<dim>, Frame::Inertial>;
-  using sources_tag = db::add_tag_prefix<::Tags::Source, variables_tag>;
 
   template <typename LocalSystem,
             bool = LocalSystem::has_primitive_and_conservative_vars>
   struct simple_tags_impl {
-    using type = tmpl::list<variables_tag, fluxes_tag, sources_tag>;
+    using type = tmpl::list<variables_tag, fluxes_tag>;
   };
 
   template <typename LocalSystem>
   struct simple_tags_impl<LocalSystem, true> {
-    using type = tmpl::list<variables_tag, fluxes_tag, sources_tag,
+    using type = tmpl::list<variables_tag, fluxes_tag,
                             typename System::primitive_variables_tag,
                             EquationOfStateTag>;
   };
@@ -111,7 +110,6 @@ struct ConservativeSystem {
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     typename variables_tag::type vars(num_grid_points);
     typename fluxes_tag::type fluxes(num_grid_points);
-    typename sources_tag::type sources(num_grid_points);
 
     if constexpr (System::has_primitive_and_conservative_vars) {
       using PrimitiveVars = typename System::primitive_variables_tag::type;
@@ -122,12 +120,10 @@ struct ConservativeSystem {
           db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
       Initialization::mutate_assign<simple_tags>(
           make_not_null(&box), std::move(vars), std::move(fluxes),
-          std::move(sources), std::move(primitive_vars),
-          std::move(equation_of_state));
+          std::move(primitive_vars), std::move(equation_of_state));
     } else {
       Initialization::mutate_assign<simple_tags>(
-          make_not_null(&box), std::move(vars), std::move(fluxes),
-          std::move(sources));
+          make_not_null(&box), std::move(vars), std::move(fluxes));
     }
     return std::make_tuple(std::move(box));
   }
