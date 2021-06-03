@@ -77,20 +77,18 @@ struct ConservativeSystem {
   static constexpr size_t dim = System::volume_dim;
 
   using variables_tag = typename System::variables_tag;
-  using fluxes_tag = db::add_tag_prefix<::Tags::Flux, variables_tag,
-                                        tmpl::size_t<dim>, Frame::Inertial>;
 
   template <typename LocalSystem,
             bool = LocalSystem::has_primitive_and_conservative_vars>
   struct simple_tags_impl {
-    using type = tmpl::list<variables_tag, fluxes_tag>;
+    using type = tmpl::list<variables_tag>;
   };
 
   template <typename LocalSystem>
   struct simple_tags_impl<LocalSystem, true> {
-    using type = tmpl::list<variables_tag, fluxes_tag,
-                            typename System::primitive_variables_tag,
-                            EquationOfStateTag>;
+    using type =
+        tmpl::list<variables_tag, typename System::primitive_variables_tag,
+                   EquationOfStateTag>;
   };
 
  public:
@@ -109,7 +107,6 @@ struct ConservativeSystem {
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     typename variables_tag::type vars(num_grid_points);
-    typename fluxes_tag::type fluxes(num_grid_points);
 
     if constexpr (System::has_primitive_and_conservative_vars) {
       using PrimitiveVars = typename System::primitive_variables_tag::type;
@@ -119,11 +116,11 @@ struct ConservativeSystem {
       auto equation_of_state =
           db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
       Initialization::mutate_assign<simple_tags>(
-          make_not_null(&box), std::move(vars), std::move(fluxes),
-          std::move(primitive_vars), std::move(equation_of_state));
+          make_not_null(&box), std::move(vars), std::move(primitive_vars),
+          std::move(equation_of_state));
     } else {
-      Initialization::mutate_assign<simple_tags>(
-          make_not_null(&box), std::move(vars), std::move(fluxes));
+      Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                                 std::move(vars));
     }
     return std::make_tuple(std::move(box));
   }
