@@ -368,8 +368,8 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   CHECK_H5(dataspace_id,
            "Failed to open dataspace for attribute '" << name << "'");
   // Get the size of the strings
-  hsize_t legend_dims[1];
-  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, legend_dims, nullptr),
+  std::array<hsize_t, 1> legend_dims{};
+  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, legend_dims.data(), nullptr),
            "Failed to get size of strings");
   // Read the strings as arrays of characters
   std::vector<char*> temp(legend_dims[0]);
