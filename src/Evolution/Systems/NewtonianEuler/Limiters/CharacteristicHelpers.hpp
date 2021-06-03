@@ -40,7 +40,7 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
         equation_of_state,
     const tnsr::i<double, VolumeDim>& unit_normal) noexcept;
 
-// @{
+/// @{
 /// \brief Compute characteristic fields from conserved fields
 ///
 /// Note that these functions apply the same transformation to every grid point
@@ -85,7 +85,7 @@ void characteristic_fields(
                                NewtonianEuler::Tags::MomentumDensity<VolumeDim>,
                                NewtonianEuler::Tags::EnergyDensity>>& cons_vars,
     const Matrix& left) noexcept;
-// @}
+/// @}
 
 /// \brief Compute conserved fields from characteristic fields
 ///

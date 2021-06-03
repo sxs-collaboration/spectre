@@ -107,7 +107,7 @@ struct FillWithRandomValuesImpl<Variables<tmpl::list<Tags...>>,
 /// \endcond
 }  // namespace TestHelpers_detail
 
-// {@
+/// @{
 /// \ingroup TestingFrameworkGroup
 ///
 /// \brief A uniform distribution function object which redirects appropriately
@@ -156,7 +156,7 @@ class UniformCustomDistribution<bool> {
     return static_cast<bool>(gen() % 2);
   }
 };
-// @}
+/// @}
 
 /// \ingroup TestingFrameworkGroup
 /// \brief Fill an existing data structure with random values
@@ -170,7 +170,7 @@ void fill_with_random_values(
                                                          distribution);
 }
 
-// @{
+/// @{
 /// \ingroup TestingFrameworkGroup
 /// \brief Make a data structure and fill it with random values
 ///
@@ -209,7 +209,7 @@ ReturnType make_with_random_values(
   return make_with_random_values<ReturnType>(
       generator, make_not_null(&distribution), used_for_size);
 }
-// @}
+/// @}
 
 /// \ingroup TestingFrameworkGroup
 /// \brief Make a fixed-size data structure and fill with random values

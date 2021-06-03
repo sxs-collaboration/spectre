@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes time derivative of the spatial metric.
@@ -64,7 +64,7 @@ tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

@@ -240,10 +240,10 @@ void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
 /// Can be used instead of a `Parallel::Section` when no section is desired.
 ///
 /// \see Parallel::contribute_to_reduction
-// @{
+/// @{
 struct NoSection {};
 NoSection& no_section() noexcept;
-// @}
+/// @}
 
 /*!
  * \ingroup ParallelGroup

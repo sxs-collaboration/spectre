@@ -229,7 +229,7 @@ SPECTRE_ALWAYS_INLINE auto operator*(
       TensorExpressions::OuterProduct<T1, T2>(~t1, ~t2));
 }
 
-// @{
+/// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the product of a tensor
 /// expression and a `double`
@@ -258,7 +258,7 @@ SPECTRE_ALWAYS_INLINE auto operator*(
                            ArgsList>& t) {
   return TensorExpressions::NumberAsExpression(number) * t;
 }
-// @}
+/// @}
 
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the quotient of a tensor

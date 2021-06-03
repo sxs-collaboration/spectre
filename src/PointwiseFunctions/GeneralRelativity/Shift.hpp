@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute shift from spacetime metric and inverse spatial metric.
@@ -47,7 +47,7 @@ void shift(gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
            const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
            const tnsr::II<DataType, SpatialDim, Frame>&
                inverse_spatial_metric) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

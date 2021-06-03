@@ -101,7 +101,7 @@ class VectorImpl
   using BaseType::end;
   using BaseType::size;
 
-  // @{
+  /// @{
   /// Upcast to `BaseType`
   /// \attention
   /// upcast should only be used when implementing a derived vector type, not in
@@ -110,7 +110,7 @@ class VectorImpl
     return static_cast<const BaseType&>(*this);
   }
   BaseType& operator*() noexcept { return static_cast<BaseType&>(*this); }
-  // @}
+  /// @}
 
   /// Create with the given size. In debug mode, the vector is initialized to
   /// 'NaN' by default. If not initialized to 'NaN', the memory is allocated but
@@ -182,7 +182,7 @@ class VectorImpl
 
   VectorImpl& operator=(const T& rhs) noexcept;
 
-  // @{
+  /// @{
   /// Set the VectorImpl to be a reference to another VectorImpl object
   void set_data_ref(gsl::not_null<VectorType*> rhs) noexcept {
     set_data_ref(rhs->data(), rhs->size());
@@ -197,7 +197,7 @@ class VectorImpl
     }
     owning_ = false;
   }
-  // @}
+  /// @}
 
   /*!
    * \brief A common operation for checking the size and resizing a memory
@@ -561,7 +561,7 @@ std::ostream& operator<<(std::ostream& os,
   };                                                                         \
   }  // namespace MakeWithValueImpls
 
-// {@
+/// @{
 /*!
  * \ingroup DataStructuresGroup
  * \ingroup TypeTraitsGroup
@@ -607,7 +607,7 @@ template <typename T, size_t S>
 struct get_vector_element_type<std::array<T, S>, false> {
   using type = typename get_vector_element_type<T>::type;
 };
-// @}
+/// @}
 
 template <typename T>
 using get_vector_element_type_t = typename get_vector_element_type<T>::type;

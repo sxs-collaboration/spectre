@@ -15,7 +15,7 @@ struct not_null;
 /// \endcond
 
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the propagating modes of the Weyl tensor
@@ -68,5 +68,5 @@ void weyl_propagating(
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
     const double sign) noexcept;
-// @}
+/// @}
 }  // namespace gr

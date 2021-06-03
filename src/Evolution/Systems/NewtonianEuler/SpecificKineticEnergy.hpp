@@ -14,7 +14,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace NewtonianEuler {
-//@{
+/// @{
 /*!
  * Compute the specific kinetic energy, \f$v^2/2\f$,
  * where \f$v\f$ is the magnitude of the velocity.
@@ -27,7 +27,7 @@ void specific_kinetic_energy(
 template <typename DataType, size_t Dim, typename Fr>
 Scalar<DataType> specific_kinetic_energy(
     const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the specific kinetic energy, \f$v^2/2\f$.

@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-//@{
+/// @{
 /*!
  * \brief Computes spacetime normal one-form from lapse.
  *
@@ -40,7 +40,7 @@ void spacetime_normal_one_form(
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /*!

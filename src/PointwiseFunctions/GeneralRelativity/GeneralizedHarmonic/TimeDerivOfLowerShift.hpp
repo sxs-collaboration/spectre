@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes time derivative of index lowered shift from generalized
@@ -62,5 +62,5 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
-// @}
+/// @}
 }  // namespace GeneralizedHarmonic

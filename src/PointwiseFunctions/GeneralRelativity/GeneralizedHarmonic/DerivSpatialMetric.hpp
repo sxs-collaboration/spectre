@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spatial derivatives of the spatial metric from
@@ -54,7 +54,7 @@ void deriv_spatial_metric(
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

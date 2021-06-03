@@ -34,17 +34,17 @@ class SimpleMortarData {
 
   /// These functions do nothing.  They exist for compatibility with
   /// BoundaryHistory.
-  //@{
+  /// @{
   size_t integration_order() const noexcept { return 0; }
   void integration_order(const size_t /*integration_order*/) noexcept {}
-  //@}
+  /// @}
 
   /// Add a value.  This function must be called once between calls to
   /// extract.
-  //@{
+  /// @{
   void local_insert(TemporalId temporal_id, LocalVars vars) noexcept;
   void remote_insert(TemporalId temporal_id, RemoteVars vars) noexcept;
-  //@}
+  /// @}
 
   /// Return the inserted data and reset the state to empty.
   std::pair<LocalVars, RemoteVars> extract() noexcept;

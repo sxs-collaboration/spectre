@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes extrinsic curvature from generalized harmonic variables
@@ -57,7 +57,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /*!

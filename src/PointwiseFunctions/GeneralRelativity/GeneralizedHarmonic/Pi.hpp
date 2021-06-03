@@ -30,7 +30,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the conjugate momentum \f$\Pi_{ab}\f$ of the spacetime metric
@@ -68,7 +68,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

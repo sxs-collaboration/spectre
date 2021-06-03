@@ -37,7 +37,7 @@ void raw_transpose(const gsl::not_null<T*> result, const T* const data,
   }
 }
 
-// @{
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Function to compute transposed data.
 ///
@@ -98,4 +98,4 @@ T transpose(const U& u, const size_t chunk_size,
   transpose(make_not_null(&t), u, chunk_size, number_of_chunks);
   return t;
 }
-// @}
+/// @}

@@ -14,7 +14,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace NewtonianEuler {
-//@{
+/// @{
 /*!
  * Compute the Newtonian sound speed squared
  * \f$c_s^2 = \chi + p\kappa / \rho^2\f$, where
@@ -37,7 +37,7 @@ Scalar<DataType> sound_speed_squared(
     const Scalar<DataType>& specific_internal_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the sound speed \f$c_s\f$.

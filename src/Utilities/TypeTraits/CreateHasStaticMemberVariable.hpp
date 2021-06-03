@@ -7,7 +7,7 @@
 
 #include "Utilities/NoSuchType.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Generate a type trait to check if a class has a `static constexpr`
@@ -44,4 +44,4 @@
   template <typename CheckingType, typename VariableType = NoSuchType*****> \
   static constexpr const bool has_##CONSTEXPR_NAME##_v =                    \
       has_##CONSTEXPR_NAME<CheckingType, VariableType>::value;
-// @}
+/// @}

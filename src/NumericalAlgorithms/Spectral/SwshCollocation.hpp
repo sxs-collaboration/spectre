@@ -140,7 +140,7 @@ class CollocationMetadata {
       return CollocationConstIterator(collocation_, index_--);
     }
 
-    // @{
+    /// @{
     /// (In)Equivalence checks both the object and index for the iterator
     bool operator==(const CollocationConstIterator& rhs) const noexcept {
       return index_ == rhs.index_ and collocation_ == rhs.collocation_;
@@ -148,7 +148,7 @@ class CollocationMetadata {
     bool operator!=(const CollocationConstIterator& rhs) const noexcept {
       return not(*this == rhs);
     }
-    // @}
+    /// @}
 
    private:
     size_t index_;
@@ -198,7 +198,7 @@ class CollocationMetadata {
     return (l_max_ + 1) * (2 * l_max_ + 1);
   }
 
-  // @{
+  /// @{
   /// Get a bidirectional iterator to the start of the grid. `operator*` for
   /// that iterator gives a `LibsharpCollocationPoint` with members `offset`,
   /// `theta`, and `phi`
@@ -210,8 +210,8 @@ class CollocationMetadata {
       noexcept {
     return begin();
   }
-  // @}
-  // @{
+  /// @}
+  /// @{
   /// Get a bidirectional iterator to the end of the grid. `operator*` for
   /// that iterator gives a `LibsharpCollocationPoint` with members `offset`,
   /// `theta`, and `phi`
@@ -223,7 +223,7 @@ class CollocationMetadata {
       noexcept {
     return end();
   }
-  // @}
+  /// @}
 
  private:
   // an extra pointer layer is required for the peculiar way that libsharp

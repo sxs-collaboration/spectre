@@ -62,7 +62,7 @@ class RegularGrid {
   // clang-tidy: no runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  //@{
+  /// @{
   /// \brief Interpolate a Variables onto the target points.
   template <typename TagsList>
   void interpolate(gsl::not_null<Variables<TagsList>*> result,
@@ -70,9 +70,9 @@ class RegularGrid {
   template <typename TagsList>
   Variables<TagsList> interpolate(
       const Variables<TagsList>& vars) const noexcept;
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// \brief Interpolate a DataVector onto the target points.
   ///
   /// \note When interpolating multiple tensors, the Variables interface is more
@@ -82,7 +82,7 @@ class RegularGrid {
   void interpolate(gsl::not_null<DataVector*> result,
                    const DataVector& input) const noexcept;
   DataVector interpolate(const DataVector& input) const noexcept;
-  //@}
+  /// @}
 
   /// \brief Return the internally-stored matrices that interpolate from the
   /// source grid to the target grid.

@@ -65,7 +65,7 @@ struct TwoIndexConstraint : db::SimpleTag {
   using type = tnsr::ij<DataVector, SpatialDim, Frame::Inertial>;
 };
 
-// @{
+/// @{
 /// \brief Tags corresponding to the characteristic fields of the
 /// scalar-wave system in curved spacetime.
 ///
@@ -84,7 +84,7 @@ struct VPlus : db::SimpleTag {
 struct VMinus : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-// @}
+/// @}
 
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {

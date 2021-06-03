@@ -19,7 +19,7 @@
 
 namespace domain {
 namespace CoordinateMap_detail {
-// @{
+/// @{
 /// Call the map passing in the time and FunctionsOfTime if the map is
 /// time-dependent
 template <typename T, size_t Dim, typename Map>
@@ -99,9 +99,9 @@ auto apply_map(
       "The time must not be NaN for time-dependent maps.");
   return the_map(source_points, t, functions_of_time);
 }
-// @}
+/// @}
 
-// @{
+/// @{
 template <typename T, size_t Dim, typename Map>
 auto apply_inverse_map(
     const Map& the_map, const std::array<T, Dim>& target_points,
@@ -142,9 +142,9 @@ auto apply_inverse_map(
       "The time must not be NaN for time-dependent maps.");
   return the_map.inverse(target_points, t, functions_of_time);
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// Compute the frame velocity
 template <typename T, size_t Dim, typename Map>
 auto apply_frame_velocity(
@@ -179,9 +179,9 @@ auto apply_frame_velocity(
       "The time must not be NaN for time-dependent maps.");
   return the_map.frame_velocity(source_points, t, functions_of_time);
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// Compute the Jacobian
 template <typename T, size_t Dim, typename Map>
 auto apply_jacobian(
@@ -220,9 +220,9 @@ auto apply_jacobian(
   }
   return identity<Dim>(dereference_wrapper(source_points[0]));
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// Compute the Jacobian
 template <typename T, size_t Dim, typename Map>
 auto apply_inverse_jacobian(
@@ -261,6 +261,6 @@ auto apply_inverse_jacobian(
   }
   return identity<Dim>(dereference_wrapper(source_points[0]));
 }
-// @}
+/// @}
 }  // namespace CoordinateMap_detail
 }  // namespace domain

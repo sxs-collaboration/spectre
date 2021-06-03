@@ -9,7 +9,7 @@
 #include "Utilities/StlStreamDeclarations.hpp"
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has operator<<(`S`, `T`) defined.
 ///
@@ -60,5 +60,5 @@ constexpr bool is_streamable_v = is_streamable<S, T>::value;
 /// \see is_streamable
 template <typename S, typename T>
 using is_streamable_t = typename is_streamable<S, T>::type;
-// @}
+/// @}
 }  // namespace tt

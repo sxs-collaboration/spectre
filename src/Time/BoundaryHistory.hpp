@@ -52,26 +52,26 @@ class BoundaryHistory {
 
   /// The current order of integration.  This should match the value
   /// in the History.
-  //@{
+  /// @{
   size_t integration_order() const noexcept { return integration_order_; }
   void integration_order(const size_t integration_order) noexcept {
     integration_order_ = integration_order;
   }
-  //@}
+  /// @}
 
   /// Add a new value to the end of the history of the indicated side.
-  //@{
+  /// @{
   void local_insert(const TimeStepId& time_id, LocalVars vars) noexcept {
     local_data_.emplace_back(time_id.substep_time(), std::move(vars));
   }
   void remote_insert(const TimeStepId& time_id, RemoteVars vars) noexcept {
     remote_data_.emplace_back(time_id.substep_time(), std::move(vars));
   }
-  //@}
+  /// @}
 
   /// Add a new value to the front of the history of the indicated
   /// side.  This is often convenient for setting initial data.
-  //@{
+  /// @{
   void local_insert_initial(const TimeStepId& time_id,
                             LocalVars vars) noexcept {
     local_data_.emplace_front(time_id.substep_time(), std::move(vars));
@@ -80,23 +80,23 @@ class BoundaryHistory {
                              RemoteVars vars) noexcept {
     remote_data_.emplace_front(time_id.substep_time(), std::move(vars));
   }
-  //@}
+  /// @}
 
   /// Mark all data before the passed point in history on the
   /// indicated side as unneeded so it can be removed.  Calling this
   /// directly should not often be necessary, as it is handled
   /// internally by the time steppers.
-  //@{
+  /// @{
   void local_mark_unneeded(const local_iterator& first_needed) noexcept {
     mark_unneeded<0>(make_not_null(&local_data_), first_needed);
   }
   void remote_mark_unneeded(const remote_iterator& first_needed) noexcept {
     mark_unneeded<1>(make_not_null(&remote_data_), first_needed);
   }
-  //@}
+  /// @}
 
   /// Access to the sequence of times on the indicated side.
-  //@{
+  /// @{
   local_iterator local_begin() const noexcept {
     return local_iterator(local_data_.begin(), std::get<0>);
   }
@@ -113,7 +113,7 @@ class BoundaryHistory {
 
   size_t local_size() const noexcept { return local_data_.size(); }
   size_t remote_size() const noexcept { return remote_data_.size(); }
-  //@}
+  /// @}
 
   /// Look up the stored local data at the `time_id`. It is an error to request
   /// data at a `time_id` that has not been inserted yet.

@@ -15,7 +15,7 @@
 ///
 /// This should only be used through the named aliases, but provides
 /// the documentation of the members.
-//@{
+/// @{
 template <typename T, template <typename> typename Comparator>
 struct evolution_comparator {
   bool time_runs_forward = true;
@@ -65,7 +65,7 @@ struct evolution_comparator<void, Comparator> {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept { p | time_runs_forward; }
 };
-//@}
+/// @}
 
 /// \ingroup TimeGroup
 /// Ordering functors that reverse their order when time runs

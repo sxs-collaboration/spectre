@@ -346,7 +346,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
 };
 }  // namespace determinant_and_inverse_detail
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Computes the determinant and inverse of a rank-2 Tensor.
@@ -407,9 +407,9 @@ auto determinant_and_inverse(
                                    make_not_null(&result.second), tensor);
   return result;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Computes the determinant and inverse of a rank-2 Tensor.
@@ -467,4 +467,4 @@ auto determinant_and_inverse(
                                    make_not_null(&get<InvTag>(result)), tensor);
   return result;
 }
-// @}
+/// @}

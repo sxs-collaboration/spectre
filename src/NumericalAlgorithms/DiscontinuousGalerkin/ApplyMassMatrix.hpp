@@ -47,7 +47,7 @@ void apply_mass_matrix_impl(gsl::not_null<double*> data,
  * \note The mass-lumping is exact on Legendre-Gauss meshes, but omits a
  * correction term on Legendre-Gauss-Lobatto meshes.
  */
-// @{
+/// @{
 template <size_t Dim>
 void apply_mass_matrix(const gsl::not_null<DataVector*> data,
                        const Mesh<Dim>& mesh) noexcept {
@@ -72,6 +72,6 @@ void apply_mass_matrix(const gsl::not_null<Variables<TagsList>*> data,
     detail::apply_mass_matrix_impl(data->data() + i * num_points, mesh);
   }
 }
-// @}
+/// @}
 
 }  // namespace dg

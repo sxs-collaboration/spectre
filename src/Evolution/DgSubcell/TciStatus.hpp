@@ -20,7 +20,7 @@ class not_null;
 /// \endcond
 
 namespace evolution::dg::subcell {
-// @{
+/// @{
 /// Set `status` to `1` if the cell is marked as needing subcell, otherwise set
 /// `status` to `0`. `status` has grid points on the currently active mesh.
 ///
@@ -46,5 +46,5 @@ Scalar<DataVector> tci_status(
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
     subcell::ActiveGrid active_grid,
     const std::deque<subcell::ActiveGrid>& tci_history) noexcept;
-// @}
+/// @}
 }  // namespace evolution::dg::subcell

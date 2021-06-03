@@ -48,7 +48,7 @@ namespace LinearSolver::Schwarz {
 DataVector extruding_weight(const DataVector& logical_coords, double width,
                             const Side& side) noexcept;
 
-// @{
+/// @{
 /*!
  * \brief Weights for data on the central element of an element-centered
  * subdomain
@@ -75,7 +75,7 @@ Scalar<DataVector> element_weight(
     const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
     const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
-// @}
+/// @}
 
 /*!
  * \brief Weights for the intruding solution of a neighboring element-centered
@@ -88,7 +88,7 @@ Scalar<DataVector> element_weight(
 DataVector intruding_weight(const DataVector& logical_coords, double width,
                             const Side& side) noexcept;
 
-// @{
+/// @{
 /*!
  * \brief Weights for data on overlap regions intruding into an element-centered
  * subdomain
@@ -126,6 +126,6 @@ Scalar<DataVector> intruding_weight(
     const std::array<double, Dim>& overlap_widths,
     size_t num_intruding_overlaps,
     const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
-// @}
+/// @}
 
 }  // namespace LinearSolver::Schwarz

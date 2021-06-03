@@ -14,7 +14,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the Euclidean magnitude of a rank-1 tensor
@@ -37,9 +37,9 @@ void magnitude(
   dot_product(magnitude, vector, vector);
   get(*magnitude) = sqrt(get(*magnitude));
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the magnitude of a rank-1 tensor
@@ -69,9 +69,9 @@ void magnitude(
   dot_product(magnitude, vector, vector, metric);
   get(*magnitude) = sqrt(get(*magnitude));
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup TensorGroup
 /// \brief Compute square root of the Euclidean magnitude of a rank-0 tensor
 ///
@@ -88,7 +88,7 @@ void sqrt_magnitude(const gsl::not_null<Scalar<DataType>*> sqrt_magnitude,
   destructive_resize_components(sqrt_magnitude, get_size(get(input)));
   get(*sqrt_magnitude) = sqrt(abs(get(input)));
 }
-// @}
+/// @}
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup

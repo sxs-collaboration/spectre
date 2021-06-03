@@ -46,7 +46,7 @@ struct is_bound_array<T, std::void_t<typename T::bind_to>> : std::true_type {
                 "Can only bind to an array chare");
 };
 
-// @{
+/// @{
 /// \ingroup ParallelGroup
 /// \brief Check if `T` has a `pup` member function
 ///
@@ -92,9 +92,9 @@ constexpr bool has_pup_member_v = has_pup_member<T>::value;
 /// \see has_pup_member
 template <typename T>
 using has_pup_member_t = typename has_pup_member<T>::type;
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup ParallelGroup
 /// \brief Check if type `T` has operator| defined for Charm++ serialization
 ///
@@ -140,6 +140,6 @@ constexpr bool is_pupable_v = is_pupable<T>::value;
 /// \see is_pupable
 template <typename T>
 using is_pupable_t = typename is_pupable<T>::type;
-// @}
+/// @}
 
 } // namespace Parallel

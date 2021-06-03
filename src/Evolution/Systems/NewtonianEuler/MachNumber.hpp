@@ -13,7 +13,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace NewtonianEuler {
-//@{
+/// @{
 /*!
  * Compute the local Mach number, \f$\text{Ma} = v/c_s\f$,
  * where \f$v\f$ is the magnitude of the velocity, and
@@ -27,7 +27,7 @@ void mach_number(gsl::not_null<Scalar<DataType>*> result,
 template <typename DataType, size_t Dim, typename Fr>
 Scalar<DataType> mach_number(const tnsr::I<DataType, Dim, Fr>& velocity,
                              const Scalar<DataType>& sound_speed) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the local Mach number, \f$\text{Ma}\f$.

@@ -75,7 +75,7 @@ constexpr inline void tuple_transform_impl(
 }
 }  // namespace tuple_impl_detail
 
-// @{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Perform a fold over a std::tuple
@@ -137,7 +137,7 @@ constexpr inline void tuple_counted_fold(
       tuple, std::forward<N_aryOp>(op),
       std::make_index_sequence<sizeof...(Elements)>{}, args...);
 }
-// @}
+/// @}
 
 /*!
  * \ingroup UtilitiesGroup

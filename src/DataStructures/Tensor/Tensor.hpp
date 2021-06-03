@@ -190,7 +190,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   const_reverse_iterator rend() const noexcept { return data_.rend(); }
   const_reverse_iterator crend() const noexcept { return data_.rend(); }
 
-  // @{
+  /// @{
   /// Get data entry using an array representing a tensor index
   ///
   /// \details
@@ -207,8 +207,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       const std::array<T, sizeof...(Indices)>& tensor_index) const noexcept {
     return gsl::at(data_, structure::get_storage_index(tensor_index));
   }
-  // @}
-  // @{
+  /// @}
+  /// @{
   /// Get data entry using a list of integers representing a tensor index
   ///
   /// \details
@@ -231,9 +231,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
         "the tensor");
     return gsl::at(data_, structure::get_storage_index(n...));
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Retrieve the index `N...` by computing the storage index at compile time
   // clang-tidy: redundant declaration (bug in clang-tidy)
   template <int... N, typename... Args>
@@ -244,9 +244,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   friend SPECTRE_ALWAYS_INLINE constexpr
       typename Tensor<Args...>::const_reference
       get(const Tensor<Args...>& t) noexcept;  // NOLINT
-  // @}
+                                               /// @}
 
-  // @{
+  /// @{
   /// Retrieve a TensorExpression object with the index structure passed in
   template <typename... TensorIndices>
   SPECTRE_ALWAYS_INLINE constexpr auto operator()(
@@ -271,9 +271,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                   "types of the indices in the Tensor.");
     return TensorExpressions::contract(TE<tmpl::list<TensorIndices...>>{*this});
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Return i'th component of storage vector
   constexpr reference operator[](const size_t storage_index) noexcept {
     return gsl::at(data_, storage_index);
@@ -282,7 +282,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       noexcept {
     return gsl::at(data_, storage_index);
   }
-  // @}
+  /// @}
 
   /// Return the number of independent components of the Tensor
   ///
@@ -305,7 +305,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
     return sizeof...(Indices);
   }
 
-  // @{
+  /// @{
   /// Given an iterator or storage index, get the canonical tensor index.
   /// For scalars this is defined to be std::array<int, 1>{{0}}
   SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, sizeof...(Indices)>
@@ -317,9 +317,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   get_tensor_index(const size_t storage_index) noexcept {
     return structure::get_canonical_tensor_index(storage_index);
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Get the storage index of the tensor index. Should only be used when
   /// optimizing code in which computing the storage index is a bottleneck.
   template <typename... N>
@@ -332,9 +332,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       const std::array<I, sizeof...(Indices)>& tensor_index) noexcept {
     return structure::get_storage_index(tensor_index);
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Given an iterator or storage index, get the multiplicity of an index
   ///
   /// \see TensorMetafunctions::compute_multiplicity
@@ -346,9 +346,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       const size_t storage_index) noexcept {
     return structure::multiplicity(storage_index);
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Get dimensionality of i'th tensor index
   ///
   /// \snippet Test_Tensor.cpp index_dim
@@ -360,26 +360,26 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                   "retrieve the dimensionality.");
     return gsl::at(structure::dims(), i);
   }
-  // @}
+  /// @}
 
-  //@{
+  /// @{
   /// Return an array corresponding to the ::Symmetry of the Tensor
   SPECTRE_ALWAYS_INLINE static constexpr std::array<int, sizeof...(Indices)>
   symmetries() noexcept {
     return structure::symmetries();
   }
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Return array of the ::IndexType's (spatial or spacetime)
   SPECTRE_ALWAYS_INLINE static constexpr std::array<IndexType,
                                                     sizeof...(Indices)>
   index_types() noexcept {
     return structure::index_types();
   }
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Return array of dimensionality of each index
   ///
   /// \snippet Test_Tensor.cpp index_dim
@@ -388,24 +388,24 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   index_dims() noexcept {
     return structure::dims();
   }
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Return array of the valence of each index (::UpLo)
   SPECTRE_ALWAYS_INLINE static constexpr std::array<UpLo, sizeof...(Indices)>
   index_valences() noexcept {
     return structure::index_valences();
   }
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Returns std::tuple of the ::Frame of each index
   SPECTRE_ALWAYS_INLINE static constexpr auto index_frames() noexcept {
     return Tensor_detail::Structure<Symm, Indices...>::index_frames();
   }
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// \brief Given a tensor index, get the canonical label associated with the
   /// canonical \ref SpacetimeIndex "TensorIndexType"
   ///
@@ -421,9 +421,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
           make_array<rank()>(std::string(""))) noexcept {
     return structure::component_name(tensor_index, axis_labels);
   }
-  //@}
+  /// @}
 
-  ///@{
+  /// @{
   /// \brief Suffix to append to the tensor name that indicates the component
   ///
   /// The suffix is empty for scalars, otherwise it is an underscore followed by
@@ -451,7 +451,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
           make_array<rank()>(std::string(""))) noexcept {
     return component_suffix(get_tensor_index(storage_index), axis_labels);
   }
-  ///@}
+  /// @}
 
   /// Copy tensor data into an `std::vector<X>` along with the
   /// component names into a `std::vector<std::string>`

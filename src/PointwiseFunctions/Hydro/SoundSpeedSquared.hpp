@@ -19,7 +19,7 @@ class EquationOfState;
 /// \endcond
 
 namespace hydro {
-//@{
+/// @{
 /*!
  * \ingroup EquationsOfStateGroup
  * \brief Computes the relativistic sound speed squared
@@ -48,7 +48,7 @@ Scalar<DataType> sound_speed_squared(
     const Scalar<DataType>& specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the sound speed squared \f$c_s^2\f$.

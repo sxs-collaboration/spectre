@@ -98,7 +98,7 @@ struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
 };
 
-// @{
+/// @{
 /// \brief Tags corresponding to the characteristic fields of the generalized
 /// harmonic system.
 ///
@@ -120,7 +120,7 @@ template <size_t Dim, typename Frame>
 struct VMinus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
 };
-// @}
+/// @}
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeeds : db::SimpleTag {

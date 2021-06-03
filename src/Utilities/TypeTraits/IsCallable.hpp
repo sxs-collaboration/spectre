@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if a type `T` is callable, i.e. `T(Args...)` is evaluable.
 ///
@@ -69,5 +69,5 @@ constexpr bool is_callable_v = is_callable<T, Args...>::value;
 /// \see is_callable
 template <typename T, typename... Args>
 using is_callable_t = typename is_callable<T, Args...>::type;
-// @}
+/// @}
 }  // namespace tt

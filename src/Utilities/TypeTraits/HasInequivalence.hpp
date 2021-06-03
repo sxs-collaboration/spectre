@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has operator!= defined.
 ///
@@ -54,5 +54,5 @@ constexpr bool has_inequivalence_v = has_inequivalence<T>::value;
 /// \see has_inequivalence
 template <typename T>
 using has_inequivalence_t = typename has_inequivalence<T>::type;
-// @}
+/// @}
 }  // namespace tt

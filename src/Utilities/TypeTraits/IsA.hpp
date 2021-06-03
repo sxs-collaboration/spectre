@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` is a template specialization of `U`
 ///
@@ -52,7 +52,7 @@ constexpr bool is_a_v = is_a<U, Args...>::value;
 /// \see is_a
 template <template <typename...> class U, typename... Args>
 using is_a_t = typename is_a<U, Args...>::type;
-// @}
+/// @}
 
 namespace detail {
 template <template <typename> class U>

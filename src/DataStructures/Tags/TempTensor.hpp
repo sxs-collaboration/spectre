@@ -25,7 +25,7 @@ struct TempTensor : db::SimpleTag {
   }
 };
 
-// @{
+/// @{
 /// \ingroup PeoGroup
 /// Variables Tags for temporary tensors inside a function.
 template <size_t N, typename DataType = DataVector>
@@ -124,5 +124,5 @@ using TempabC = TempTensor<N, tnsr::abC<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
 using Tempijaa = TempTensor<N, tnsr::ijaa<DataType, SpatialDim, Fr>>;
-// @}
+/// @}
 }  // namespace Tags

@@ -86,7 +86,7 @@ struct spacetime_deriv<Tag, Dim, Frame,
 
 }  // namespace Tags
 
-// @{
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the logical coordinate.
@@ -108,9 +108,9 @@ template <typename DerivativeTags, typename VariableTags, size_t Dim>
 auto logical_partial_derivatives(const Variables<VariableTags>& u,
                                  const Mesh<Dim>& mesh) noexcept
     -> std::array<Variables<DerivativeTags>, Dim>;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Computes the logical partial derivative of a tensor, prepending the
@@ -150,9 +150,9 @@ auto logical_partial_derivative(
     const Mesh<Dim>& mesh) noexcept
     -> TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo, Frame::Logical>;
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
@@ -192,7 +192,7 @@ auto partial_derivatives(
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                   tmpl::size_t<Dim>, DerivativeFrame>>;
-// @}
+/// @}
 
 namespace Tags {
 

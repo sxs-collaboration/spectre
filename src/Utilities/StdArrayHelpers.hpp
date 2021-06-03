@@ -139,7 +139,7 @@ inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,
   return result;
 }
 
-//@{
+/// @{
 /// \ingroup UtilitiesGroup
 /// \brief Euclidean magnitude of the elements of the array.
 ///
@@ -164,8 +164,8 @@ template <typename T>
 decltype(auto) magnitude(const std::array<T, 3>& a) noexcept {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
-//@}
-//@{
+/// @}
+/// @{
 /// \ingroup UtilitiesGroup
 /// \brief Dot product between two arrays
 ///
@@ -190,7 +190,7 @@ decltype(auto) dot(const std::array<T, 3>& first,
                    const std::array<R, 3>& second) {
   return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
 }
-//@}
+/// @}
 
 namespace std_array_helpers_detail {
 template <typename T, size_t Dim, typename F, size_t... Indices>

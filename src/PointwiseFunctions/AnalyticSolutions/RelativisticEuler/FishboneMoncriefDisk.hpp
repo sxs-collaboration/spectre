@@ -250,7 +250,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
     return T::value;
   }
 
-  // @{
+  /// @{
   /// The fluid variables in Cartesian Kerr-Schild coordinates at `(x, t)`
   ///
   /// \note The functions are optimized for retrieving the hydro variables
@@ -296,7 +296,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
                           std::numeric_limits<size_t>::max());
     return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
   }
-  // @}
+  /// @}
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT

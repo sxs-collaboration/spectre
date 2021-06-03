@@ -18,7 +18,7 @@ class not_null;
 /// \ingroup SpecialRelativityGroup
 /// Holds functions related to special relativity.
 namespace sr {
-// @{
+/// @{
 /*!
  * \ingroup SpecialRelativityGroup
  * \brief Computes the matrix for a Lorentz boost from a single
@@ -53,5 +53,5 @@ template <size_t SpatialDim>
 void lorentz_boost_matrix(
     gsl::not_null<tnsr::Ab<double, SpatialDim, Frame::NoFrame>*> boost_matrix,
     const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) noexcept;
-// @}
+/// @}
 }  // namespace sr

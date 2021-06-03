@@ -14,7 +14,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace NewtonianEuler {
-//@{
+/// @{
 /*!
  * Compute the kinetic energy density, \f$\rho v^2/2\f$,
  * where \f$\rho\f$ is the mass density, and \f$v\f$ is the
@@ -30,7 +30,7 @@ template <typename DataType, size_t Dim, typename Fr>
 Scalar<DataType> kinetic_energy_density(
     const Scalar<DataType>& mass_density,
     const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the kinetic energy density, \f$\rho v^2/2\f$.

@@ -133,7 +133,7 @@ class OverlapIterator {
   size_t overlap_offset_ = std::numeric_limits<size_t>::max();
 };
 
-// @{
+/// @{
 /// The part of the tensor data that lies within the overlap region
 template <size_t Dim, typename DataType, typename... TensorStructure>
 void data_on_overlap(const gsl::not_null<Tensor<DataType, TensorStructure...>*>
@@ -210,7 +210,7 @@ Variables<TagsList> data_on_overlap(const Variables<TagsList>& volume_data,
                   overlap_extent, direction);
   return overlap_data;
 }
-// @}
+/// @}
 
 namespace detail {
 template <size_t Dim>
@@ -246,7 +246,7 @@ void add_overlap_data(
                                 direction);
 }
 
-// @{
+/// @{
 /// Extend the overlap data to the full mesh by filling it with zeros outside
 /// the overlap region
 template <size_t Dim, typename ExtendedTagsList, typename OverlapTagsList>
@@ -269,6 +269,6 @@ Variables<TagsList> extended_overlap_data(
                         volume_extents, overlap_extent, direction);
   return extended_data;
 }
-// @}
+/// @}
 
 }  // namespace LinearSolver::Schwarz

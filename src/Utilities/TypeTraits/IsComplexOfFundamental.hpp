@@ -7,7 +7,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Determines if a type `T` is a `std::complex` of a fundamental type,
 /// is a `std::true_type` if so, and otherwise is a `std::false_type`
@@ -24,7 +24,7 @@ struct is_complex_of_fundamental<std::complex<T>,
                                  std::bool_constant<std::is_fundamental_v<T>>>
     : std::true_type {};
 /// \endcond
-// @}
+/// @}
 
 template <typename T>
 constexpr bool is_complex_of_fundamental_v =

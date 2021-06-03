@@ -93,7 +93,7 @@ void check_if_map_is_identity(const Map& map) noexcept {
   CHECK(map.is_identity());
 }
 
-// @{
+/// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the jacobian gives expected results
@@ -145,9 +145,9 @@ void test_jacobian(
     }
   }
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse jacobian and jacobian
@@ -218,7 +218,7 @@ void test_inv_jacobian(
     }
   }
 }
-// @}
+/// @}
 
 /*!
  * \ingroup TestingFrameworkGroup
@@ -400,7 +400,7 @@ void test_coordinate_map_argument_types(
                  args...);
 }
 
-// @{
+/// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse map gives expected results
@@ -429,7 +429,7 @@ void test_inverse_map(
   REQUIRE(expected_test_point.has_value());
   CHECK_ITERABLE_APPROX(test_point, expected_test_point.value());
 }
-// @}
+/// @}
 
 /*!
  * \ingroup TestingFrameworkGroup

@@ -14,7 +14,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace NewtonianEuler {
-//@{
+/// @{
 /*!
  * Compute the internal energy density, \f$\rho \epsilon\f$,
  * where \f$\rho\f$ is the mass density, and \f$\epsilon\f$ is the
@@ -30,7 +30,7 @@ template <typename DataType>
 Scalar<DataType> internal_energy_density(
     const Scalar<DataType>& mass_density,
     const Scalar<DataType>& specific_internal_energy) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the internal energy density, \f$\rho \epsilon\f$.

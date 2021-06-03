@@ -18,7 +18,7 @@ struct not_null;
 
 namespace gr {
 
-//@(
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the electric part of the Weyl tensor in vacuum.
@@ -46,9 +46,9 @@ void weyl_electric(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
-//@}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the scalar \f$E_{ij} E^{ij}\f$ from the electric
@@ -74,7 +74,7 @@ void weyl_electric_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /// Compute item for the electric part of the weyl tensor in vacuum

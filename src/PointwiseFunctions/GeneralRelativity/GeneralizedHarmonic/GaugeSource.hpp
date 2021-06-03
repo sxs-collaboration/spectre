@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes generalized harmonic gauge source function.
@@ -69,7 +69,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& trace_extrinsic_curvature,
     const tnsr::i<DataType, SpatialDim, Frame>&
         trace_christoffel_last_indices) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /*!

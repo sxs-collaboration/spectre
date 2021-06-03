@@ -214,7 +214,7 @@ class KhInstability : public MarkAsAnalyticData {
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
  private:
-  // @{
+  /// @{
   /// Retrieve hydro variable at `x`
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
@@ -240,7 +240,7 @@ class KhInstability : public MarkAsAnalyticData {
                  tmpl::list<Tags::Pressure<DataType>> /*meta*/
                  ) const noexcept
       -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
-  // @}
+  /// @}
 
   template <size_t SpatialDim>
   friend bool

@@ -205,13 +205,13 @@ class Parser {
   /// can be overridden by a new parsed value.  Newly parsed options
   /// replace the previous values.  Any tags not appearing in the new
   /// input are left unchanged.
-  //@{
+  /// @{
   template <typename OverlayOptions>
   void overlay(std::string options) noexcept;
 
   template <typename OverlayOptions>
   void overlay_file(const std::string& file_name) noexcept;
-  //@}
+  /// @}
 
   /// Get the value of the specified option
   ///

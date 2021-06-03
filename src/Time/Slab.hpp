@@ -93,13 +93,13 @@ bool operator!=(const Slab& a, const Slab& b) noexcept;
 /// Slab comparison operators give the time ordering.  Overlapping
 /// unequal slabs should not be compared (and will trigger an
 /// assertion).
-//@{
+/// @{
 // NOLINTNEXTLINE(readability-redundant-declaration) redeclared for docs
 bool operator<(const Slab& a, const Slab& b) noexcept;
 bool operator>(const Slab& a, const Slab& b) noexcept;
 bool operator<=(const Slab& a, const Slab& b) noexcept;
 bool operator>=(const Slab& a, const Slab& b) noexcept;
-//@}
+/// @}
 
 std::ostream& operator<<(std::ostream& os, const Slab& s) noexcept;
 

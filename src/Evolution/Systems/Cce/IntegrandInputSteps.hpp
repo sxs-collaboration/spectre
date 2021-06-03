@@ -195,7 +195,7 @@ using pre_computation_tags =
                Tags::EthEthbarRDividedByR, Tags::BondiK, Tags::OneMinusY,
                Tags::BondiR>;
 
-// @{
+/// @{
 /*!
  * \brief A typelist for the set of tags computed by the set of
  * template specializations of `ComputePreSwshDerivatives`.
@@ -221,9 +221,9 @@ struct pre_swsh_derivative_tags_to_compute_for {
 template <typename Tag>
 using pre_swsh_derivative_tags_to_compute_for_t =
     typename pre_swsh_derivative_tags_to_compute_for<Tag>::type;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief A typelist for the set of tags computed by single spin-weighted
  * differentiation using utilities from the `Swsh` namespace.
@@ -236,9 +236,9 @@ struct single_swsh_derivative_tags_to_compute_for {
 template <typename Tag>
 using single_swsh_derivative_tags_to_compute_for_t =
     typename single_swsh_derivative_tags_to_compute_for<Tag>::type;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief A typelist for the set of tags computed by multiple spin-weighted
  * differentiation using utilities from the `Swsh` namespace.
@@ -252,7 +252,7 @@ struct second_swsh_derivative_tags_to_compute_for {
 template <typename Tag>
 using second_swsh_derivative_tags_to_compute_for_t =
     typename second_swsh_derivative_tags_to_compute_for<Tag>::type;
-// @}
+/// @}
 
 /// Typelist of steps for `SwshDerivatives` mutations called on volume
 /// quantities needed for scri+ computations

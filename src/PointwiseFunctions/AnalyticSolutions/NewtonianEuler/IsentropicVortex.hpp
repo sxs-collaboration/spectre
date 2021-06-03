@@ -195,7 +195,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
  private:
-  // @{
+  /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
@@ -217,7 +217,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   auto variables(tmpl::list<Tags::Pressure<DataType>> /*meta*/,
                  const IntermediateVariables<DataType>& vars) const noexcept
       -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
-  // @}
+  /// @}
 
   // Intermediate variables needed to compute the primitives
   template <typename DataType>

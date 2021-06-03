@@ -26,7 +26,7 @@ struct not_null;
 /// \endcond
 
 namespace hydro {
-//@{
+/// @{
 /// Computes the vector \f$J^i\f$ in \f$\dot{M} = -\int J^i s_i d^2S\f$,
 /// representing the mass flux through a surface with normal \f$s_i\f$.
 ///
@@ -60,7 +60,7 @@ tnsr::I<DataType, Dim, Frame> mass_flux(
     const Scalar<DataType>& lorentz_factor, const Scalar<DataType>& lapse,
     const tnsr::I<DataType, Dim, Frame>& shift,
     const Scalar<DataType>& sqrt_det_spatial_metric) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for mass flux vector \f$J^i\f$.

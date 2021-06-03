@@ -431,7 +431,7 @@ class MockDistributedObject {
     return number_of_actions;
   }
 
-  // @{
+  /// @{
   /// Returns the DataBox with the tags set from the GlobalCache and the
   /// tags in `AdditionalTagsList`. If the DataBox type is incorrect
   /// `std::terminate` is called.
@@ -448,7 +448,7 @@ class MockDistributedObject {
         tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
     return boost::get<box_type>(box_);
   }
-  // @}
+  /// @}
 
   /// Walks through the variant of DataBoxes and retrieves the tag from the
   /// current one, if the current DataBox has the tag. If the current DataBox
@@ -468,12 +468,12 @@ class MockDistributedObject {
     return tag_is_retrievable_visitation<Tag>(box_);
   }
 
-  // @{
+  /// @{
   /// Returns the `boost::variant` of DataBoxes.
   auto& get_variant_box() noexcept { return box_; }
 
   const auto& get_variant_box() const noexcept { return box_; }
-  // @}
+  /// @}
 
   /// Force the next action invoked to be the `next_action_id`th action in the
   /// current phase.
@@ -654,7 +654,7 @@ class MockDistributedObject {
     return *global_cache_;
   }
 
-  // {@
+  /// @{
   /// Wrappers for charm++ informational functions.
 
   /// Number of processing elements
@@ -684,7 +684,7 @@ class MockDistributedObject {
 
   /// The local index for the given processing element on its node.
   int local_rank_of(int proc_index) const noexcept;
-  // @}
+  /// @}
 
  private:
   template <typename Action, typename... Args, size_t... Is>

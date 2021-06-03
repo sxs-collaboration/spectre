@@ -29,7 +29,7 @@ double minimum_grid_spacing(
 
 namespace domain {
 namespace Tags {
-// @{
+/// @{
 /// \ingroup ComputationalDomainGroup
 /// \ingroup DataBoxTagsGroup
 /// The minimum coordinate distance between grid points.
@@ -50,6 +50,6 @@ struct MinimumGridSpacingCompute : MinimumGridSpacing<Dim, Frame>,
   }
   using argument_tags = tmpl::list<Mesh<Dim>, Coordinates<Dim, Frame>>;
 };
-// @}
+/// @}
 }  // namespace Tags
 }  // namespace domain

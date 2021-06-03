@@ -16,7 +16,7 @@ struct not_null;
 /// \endcond
 
 namespace hydro {
-//@{
+/// @{
 /*!
  * \ingroup EquationsOfStateGroup
  * \brief Computes the relativistic specific enthalpy \f$h\f$ as:
@@ -36,7 +36,7 @@ Scalar<DataType> relativistic_specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& pressure) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the relativistic specific enthalpy \f$h\f$.

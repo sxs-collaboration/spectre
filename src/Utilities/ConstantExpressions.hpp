@@ -209,7 +209,7 @@ struct CompareByMagnitude {
 ///
 /// Magnitude is determined by constexpr_abs.  In case of a tie,
 /// returns the leftmost of the tied values.
-//@{
+/// @{
 template <typename T>
 constexpr const T& max_by_magnitude(const T& a, const T& b) {
   return std::max(a, b, ConstantExpressions_detail::CompareByMagnitude{});
@@ -220,14 +220,14 @@ constexpr T max_by_magnitude(std::initializer_list<T> ilist) {
   return std::max(std::move(ilist),
                   ConstantExpressions_detail::CompareByMagnitude{});
 }
-//@}
+/// @}
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Return the argument with the smallest magnitude
 ///
 /// Magnitude is determined by constexpr_abs.  In case of a tie,
 /// returns the leftmost of the tied values.
-//@{
+/// @{
 template <typename T>
 constexpr const T& min_by_magnitude(const T& a, const T& b) {
   return std::min(a, b, ConstantExpressions_detail::CompareByMagnitude{});
@@ -238,7 +238,7 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
   return std::min(std::move(ilist),
                   ConstantExpressions_detail::CompareByMagnitude{});
 }
-//@}
+/// @}
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Returns `f(ic<0>{}) + f(ic<1>{}) + ... + f(ic<NumTerms-1>{})`

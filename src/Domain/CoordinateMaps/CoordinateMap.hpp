@@ -78,7 +78,7 @@ class CoordinateMapBase : public PUP::able {
   /// Returns `true` if the Jacobian depends on time.
   virtual bool jacobian_is_time_dependent() const noexcept = 0;
 
-  // @{
+  /// @{
   /// Apply the `Maps` to the point(s) `source_point`
   virtual tnsr::I<double, Dim, TargetFrame> operator()(
       tnsr::I<double, Dim, SourceFrame> source_point,
@@ -100,9 +100,9 @@ class CoordinateMapBase : public PUP::able {
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Apply the inverse `Maps` to the point(s) `target_point`.
   /// The returned std::optional is invalid if the map is not invertible
   /// at `target_point`, or if `target_point` can be easily determined to not
@@ -122,9 +122,9 @@ class CoordinateMapBase : public PUP::able {
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Compute the inverse Jacobian of the `Maps` at the point(s)
   /// `source_point`
   virtual InverseJacobian<double, Dim, SourceFrame, TargetFrame> inv_jacobian(
@@ -148,9 +148,9 @@ class CoordinateMapBase : public PUP::able {
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Compute the Jacobian of the `Maps` at the point(s) `source_point`
   virtual Jacobian<double, Dim, SourceFrame, TargetFrame> jacobian(
       tnsr::I<double, Dim, SourceFrame> source_point,
@@ -172,9 +172,9 @@ class CoordinateMapBase : public PUP::able {
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Compute the mapped coordinates, frame velocity, Jacobian, and inverse
   /// Jacobian
   virtual std::tuple<tnsr::I<double, Dim, TargetFrame>,
@@ -205,7 +205,7 @@ class CoordinateMapBase : public PUP::able {
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
   noexcept = 0;
-  // @}
+  /// @}
 
  private:
   virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
@@ -284,7 +284,7 @@ class CoordinateMap
   /// Returns `true` if the Jacobian depends on time.
   bool jacobian_is_time_dependent() const noexcept override;
 
-  // @{
+  /// @{
   /// Apply the `Maps...` to the point(s) `source_point`
   constexpr tnsr::I<double, dim, TargetFrame> operator()(
       tnsr::I<double, dim, SourceFrame> source_point,
@@ -312,9 +312,9 @@ class CoordinateMap
     return call_impl(std::move(source_point), time, functions_of_time,
                      std::make_index_sequence<sizeof...(Maps)>{});
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Apply the inverse `Maps...` to the point(s) `target_point`
   constexpr std::optional<tnsr::I<double, dim, SourceFrame>> inverse(
       tnsr::I<double, dim, TargetFrame> target_point,
@@ -329,9 +329,9 @@ class CoordinateMap
     return inverse_impl(std::move(target_point), time, functions_of_time,
                         std::make_index_sequence<sizeof...(Maps)>{});
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Compute the inverse Jacobian of the `Maps...` at the point(s)
   /// `source_point`
   constexpr InverseJacobian<double, dim, SourceFrame, TargetFrame> inv_jacobian(
@@ -359,9 +359,9 @@ class CoordinateMap
       noexcept override {
     return inv_jacobian_impl(std::move(source_point), time, functions_of_time);
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Compute the Jacobian of the `Maps...` at the point(s) `source_point`
   constexpr Jacobian<double, dim, SourceFrame, TargetFrame> jacobian(
       tnsr::I<double, dim, SourceFrame> source_point,
@@ -387,9 +387,9 @@ class CoordinateMap
       noexcept override {
     return jacobian_impl(std::move(source_point), time, functions_of_time);
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Compute the mapped coordinates, frame velocity, Jacobian, and inverse
   /// Jacobian
   std::tuple<tnsr::I<double, dim, TargetFrame>,
@@ -426,7 +426,7 @@ class CoordinateMap
     return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
                                                 functions_of_time);
   }
-  // @}
+  /// @}
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, dim>),

@@ -22,7 +22,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \ingroup SpectralGroup
  * \brief Compute the modal coefficients from the nodal coefficients
@@ -51,9 +51,9 @@ template <size_t Dim>
 ComplexModalVector to_modal_coefficients(
     const ComplexDataVector& nodal_coefficients,
     const Mesh<Dim>& mesh) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup SpectralGroup
  * \brief Compute the nodal coefficients from the modal coefficients
@@ -81,4 +81,4 @@ template <size_t Dim>
 ComplexDataVector to_nodal_coefficients(
     const ComplexModalVector& modal_coefficients,
     const Mesh<Dim>& mesh) noexcept;
-// @}
+/// @}

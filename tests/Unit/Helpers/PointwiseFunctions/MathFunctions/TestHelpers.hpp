@@ -119,7 +119,7 @@ void check_impl(
   }
 }
 }  // namespace detail
-// @{
+/// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Test a MathFunction by comparing to python functions
@@ -160,6 +160,6 @@ void check(MathFunctionType in_math_function,
       python_function_prefix, used_for_size, random_value_bounds,
       member_args...);
 }
-// @}
+/// @}
 }  // namespace MathFunctions
 }  // namespace TestHelpers

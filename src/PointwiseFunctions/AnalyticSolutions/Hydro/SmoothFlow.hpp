@@ -110,7 +110,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
              const std::array<double, Dim>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size) noexcept;
 
-  // @{
+  /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim>& x, double t,
@@ -150,7 +150,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
       const noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  /// @}
 
   const EquationsOfState::IdealFluid<IsRelativistic>& equation_of_state()
       const noexcept {

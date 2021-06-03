@@ -135,7 +135,7 @@ void verify_solution_impl(
 /// \ingroup TestingFrameworkGroup
 /// Test that the `solution` numerically solves the `System` on the given grid
 /// for the given tolerance
-// @{
+/// @{
 template <typename System, typename SolutionType, typename... Maps,
           typename... FluxesArgs, typename... SourcesArgs>
 void verify_solution(
@@ -183,7 +183,7 @@ void verify_solution(
       tuples::apply<typename System::sources_computer::argument_tags>(
           get_items, background_fields));
 }
-// @}
+/// @}
 
 /*!
  * \ingroup TestingFrameworkGroup

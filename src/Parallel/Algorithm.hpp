@@ -285,7 +285,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
                                    std::forward<Args>(args)...);
   }
 
-  // @{
+  /// @{
   /// Call an Action on a local nodegroup requiring the Action to handle thread
   /// safety.
   ///
@@ -316,7 +316,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
         static_cast<const array_index&>(array_index_),
         make_not_null(&node_lock_));
   }
-  // @}
+  /// @}
 
   /// \brief Receive data and store it in the Inbox, and try to continue
   /// executing the algorithm
@@ -329,7 +329,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
                     ReceiveDataType&& t,
                     bool enable_if_disabled = false) noexcept;
 
-  // @{
+  /// @{
   /// Start evaluating the algorithm until it is stopped by an action.
   constexpr void perform_algorithm() noexcept;
 
@@ -339,7 +339,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
     }
     perform_algorithm();
   }
-  // @}
+  /// @}
 
   void start_phase(const PhaseType next_phase) noexcept {
     // terminate should be true since we exited a phase previously.
@@ -371,7 +371,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// Check if an algorithm should continue being evaluated
   constexpr bool get_terminate() const noexcept { return terminate_; }
 
-  // {@
+  /// @{
   /// Wrappers for charm++ informational functions.
 
   /// Number of processing elements
@@ -415,7 +415,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   inline int local_rank_of(const int proc_index) const noexcept {
     return sys::local_rank_of(proc_index);
   }
-  // @}
+  /// @}
 
  private:
   template <typename ThisVariant, typename... Variants>

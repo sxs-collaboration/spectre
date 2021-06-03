@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute lapse from shift and spacetime metric
@@ -46,7 +46,7 @@ void lapse(
     gsl::not_null<Scalar<DataType>*> lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

@@ -115,7 +115,7 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
   return t;
 }
 
-// @{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Retrieve a entry from a container, with checks in Debug mode that
@@ -140,7 +140,7 @@ SPECTRE_ALWAYS_INLINE constexpr const T& at(std::initializer_list<T> cont,
   Expects(index >= 0 and index < narrow_cast<Size>(cont.size()));
   return *(cont.begin() + index);
 }
-// @}
+/// @}
 
 namespace detail {
 template <class T>
@@ -794,7 +794,7 @@ constexpr bool operator>=(span<ElementType, Extent> l,
   return !(l < r);
 }
 
-// @{
+/// @{
 /// \ingroup UtilitiesGroup
 /// Utility function for creating spans
 template <class ElementType>
@@ -835,7 +835,7 @@ template <class Ptr>
 constexpr span<typename Ptr::element_type> make_span(Ptr& cont) {
   return span<typename Ptr::element_type>(cont);
 }
-// @}
+/// @}
 
 // Specialization of gsl::at for span
 template <class ElementType, std::ptrdiff_t Extent>

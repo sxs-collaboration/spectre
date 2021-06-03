@@ -148,7 +148,7 @@ class Variables<tmpl::list<Tags...>> {
   Variables(const Variables& rhs) noexcept;
   Variables& operator=(const Variables& rhs) noexcept;
 
-  // @{
+  /// @{
   /// Copy and move semantics for wrapped variables
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same<
@@ -172,20 +172,20 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
   Variables& operator=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
-  // @}
+  /// @}
 
   /// \cond HIDDEN_SYMBOLS
   ~Variables() noexcept = default;
   /// \endcond
 
-  // @{
+  /// @{
   /// Initialize a Variables to the state it would have after calling
   /// the constructor with the same arguments.
   // this should be updated if we ever use a variables which has a `value_type`
   // larger than ~2 doubles in size.
   void initialize(size_t number_of_grid_points) noexcept;
   void initialize(size_t number_of_grid_points, value_type value) noexcept;
-  // @}
+  /// @}
 
   constexpr SPECTRE_ALWAYS_INLINE size_t
   number_of_grid_points() const noexcept {
@@ -197,11 +197,11 @@ class Variables<tmpl::list<Tags...>> {
     return size_;
   }
 
-  //{@
+  /// @{
   /// Access pointer to underlying data
   pointer data() noexcept { return variable_data_.data(); }
   const_pointer data() const noexcept { return variable_data_.data(); }
-  //@}
+  /// @}
 
   /// \cond HIDDEN_SYMBOLS
   /// Needed because of limitations and inconsistency between compiler
@@ -222,7 +222,7 @@ class Variables<tmpl::list<Tags...>> {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  // @{
+  /// @{
   /// \brief Assign a subset of the `Tensor`s from another Variables or a
   /// tuples::TaggedTuple
   ///
@@ -245,7 +245,7 @@ class Variables<tmpl::list<Tags...>> {
     EXPAND_PACK_LEFT_TO_RIGHT(
         (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars)));
   }
-  // @}
+  /// @}
 
   /// Create a Variables from a subset of the `Tensor`s in this
   /// Variables
@@ -389,7 +389,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
  private:
-  //{@
+  /// @{
   /*!
    * \brief Subscript operator
    *
@@ -408,7 +408,7 @@ class Variables<tmpl::list<Tags...>> {
       const size_type i) const noexcept {
     return variable_data_[i];
   }
-  //@}
+  /// @}
 
   void add_reference_variable_data() noexcept;
 
@@ -646,7 +646,7 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
 }
 /// \endcond
 
-// {@
+/// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Return Tag::type pointing into the contiguous array
@@ -671,7 +671,7 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
                 "what Tags are available.");
   return tuples::get<Tag>(v.reference_variable_data_);
 }
-// @}
+/// @}
 
 template <typename... Tags>
 template <typename VT, bool VF>

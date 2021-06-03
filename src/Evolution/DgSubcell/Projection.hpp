@@ -26,7 +26,7 @@ void project_impl(gsl::span<double> subcell_u, gsl::span<const double> dg_u,
                   const Index<Dim>& subcell_extents) noexcept;
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \ingroup DgSubcellGroup
  * \brief Project the variable `dg_u` onto the subcell grid with extents
@@ -74,5 +74,5 @@ Variables<TagList> project(const Variables<TagList>& dg_u,
   project(make_not_null(&subcell_u), dg_u, dg_mesh, subcell_extents);
   return subcell_u;
 }
-// @}
+/// @}
 }  // namespace evolution::dg::subcell::fd

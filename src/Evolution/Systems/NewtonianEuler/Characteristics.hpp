@@ -32,7 +32,7 @@ class DataVector;
 
 namespace NewtonianEuler {
 
-// @{
+/// @{
 /*!
  * \brief Compute the characteristic speeds of NewtonianEuler system
  *
@@ -61,9 +61,9 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed,
     const tnsr::i<DataVector, Dim>& normal) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Compute the transform matrices between the conserved variables and
  * the characteristic variables of the NewtonianEuler system.
@@ -112,7 +112,7 @@ Matrix left_eigenvectors(const tnsr::I<double, Dim>& velocity,
                          const Scalar<double>& specific_enthalpy,
                          const Scalar<double>& kappa_over_density,
                          const tnsr::i<double, Dim>& unit_normal) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 

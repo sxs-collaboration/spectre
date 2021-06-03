@@ -16,7 +16,7 @@
 
 namespace Spectral {
 namespace Swsh {
-// @{
+/// @{
 /*!
  * \ingroup SwshGroup
  * \brief Filter a volume collocation set in the form of consecutive
@@ -53,8 +53,8 @@ void filter_swsh_volume_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
     size_t l_max, size_t limit_l, double exponential_alpha,
     size_t exponential_half_power) noexcept;
-// @}
-// @{
+/// @}
+/// @{
 /*!
  * \ingroup SwshGroup
  * \brief Filter a libsharp-compatible set of collocation points on a spherical
@@ -75,6 +75,6 @@ template <int Spin>
 void filter_swsh_boundary_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
     size_t l_max, size_t limit_l) noexcept;
-// @}
+/// @}
 }  // namespace Swsh
 }  // namespace Spectral

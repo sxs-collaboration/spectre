@@ -519,7 +519,7 @@ struct tuple_size<const volatile TaggedTuple<Tags...>>
     : tuple_size<TaggedTuple<Tags...>> {};
 
 // C++17 Draft 23.5.3.7 Element access
-// @{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Retrieve the element of `Tag` in the TaggedTuple
@@ -568,7 +568,7 @@ inline constexpr typename Tag::type&& get(TaggedTuple<Tags...>&& t) noexcept {
   return static_cast<typename Tag::type&&>(
       static_cast<tuples_detail::TaggedTupleLeaf<Tag>&&>(t).get());
 }
-// @}
+/// @}
 
 // C++17 Draft 23.5.3.8 Relational operators
 namespace tuples_detail {
@@ -785,7 +785,7 @@ constexpr decltype(auto) apply_impl(F&& f, const TaggedTuple<Tags...>& t,
 
 }  // namespace TaggedTuple_detail
 
-// @{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Invoke `f` with the `ApplyTags` taken from `t` expanded in a parameter
@@ -813,6 +813,6 @@ constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {
   return TaggedTuple_detail::apply_impl(
       std::forward<F>(f), t, typename TaggedTuple<Tags...>::tags_list{});
 }
-// @}
+/// @}
 
 }  // namespace tuples

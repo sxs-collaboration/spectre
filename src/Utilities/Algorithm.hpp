@@ -284,7 +284,7 @@ constexpr bool found_if_not(const Container& c,
          end(c);
 }
 
-// @{
+/// @{
 /// Convenience wrapper around std::for_each, returns the result of
 /// `std::for_each(begin(c), end(c), f)`.
 template <class Container, class UnaryFunction>
@@ -300,7 +300,7 @@ decltype(auto) for_each(Container& c, UnaryFunction&& f) {
   using std::end;
   return std::for_each(begin(c), end(c), std::forward<UnaryFunction>(f));
 }
-// @}
+/// @}
 
 /// Convenience wrapper around std::equal, assumes containers `lhs` has at least
 /// as many elements as `rhs`.

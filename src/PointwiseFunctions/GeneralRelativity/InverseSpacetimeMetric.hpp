@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute inverse spacetime metric from inverse spatial metric, lapse
@@ -53,7 +53,7 @@ tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /*!

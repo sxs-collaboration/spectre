@@ -25,7 +25,7 @@ void reconstruct_impl(gsl::span<double> dg_u,
                       const Index<Dim>& subcell_extents) noexcept;
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \ingroup DgSubcellGroup
  * \brief reconstruct the variable `subcell_u_times_projected_det_jac` onto the
@@ -81,5 +81,5 @@ Variables<TagList> reconstruct(const Variables<TagList>& subcell_u,
   reconstruct(make_not_null(&dg_u), subcell_u, dg_mesh, subcell_extents);
   return dg_u;
 }
-// @}
+/// @}
 }  // namespace evolution::dg::subcell::fd

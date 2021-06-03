@@ -147,7 +147,7 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
 
   explicit BlastWave(CkMigrateMessage* /*unused*/) noexcept {}
 
-  // @{
+  /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
@@ -197,7 +197,7 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
       const noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>

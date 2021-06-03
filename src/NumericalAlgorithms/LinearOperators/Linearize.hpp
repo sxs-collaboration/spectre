@@ -18,7 +18,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Truncate u to a linear function in each dimension.
@@ -33,9 +33,9 @@ void linearize(gsl::not_null<DataVector*> result, const DataVector& u,
                const Mesh<Dim>& mesh) noexcept;
 template <size_t Dim>
 DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Truncate u to a linear function in the given dimension.
@@ -55,4 +55,4 @@ void linearize(gsl::not_null<DataVector*> result, const DataVector& u,
 template <size_t Dim>
 DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh,
                      size_t d) noexcept;
-// @}
+/// @}

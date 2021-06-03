@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spacetime derivatives of the norm of the shift vector.
@@ -64,5 +64,5 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
-// @}
+/// @}
 }  // namespace GeneralizedHarmonic

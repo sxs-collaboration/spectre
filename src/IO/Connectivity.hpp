@@ -46,7 +46,7 @@ struct CellInTopology {
   std::vector<size_t> bounding_indices{};
 };
 
-// @{
+/// @{
 /*!
  * \brief Compute the cells in the element.
  *
@@ -64,6 +64,6 @@ std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) noexcept;
 
 std::vector<CellInTopology> compute_cells(
     const std::vector<size_t>& extents) noexcept;
-// @}
+/// @}
 }  // namespace detail
 }  // namespace vis

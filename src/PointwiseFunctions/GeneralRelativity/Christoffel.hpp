@@ -24,7 +24,7 @@ class not_null;
 /// \endcond
 
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes Christoffel symbol of the first kind from derivative of
@@ -43,9 +43,9 @@ void christoffel_first_kind(
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes Christoffel symbol of the second kind from derivative of
@@ -72,7 +72,7 @@ auto christoffel_second_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) noexcept
     -> tnsr::Abb<DataType, SpatialDim, Frame, Index>;
-// @}
+/// @}
 
 namespace Tags {
 /// Compute item for spatial Christoffel symbols of the first kind

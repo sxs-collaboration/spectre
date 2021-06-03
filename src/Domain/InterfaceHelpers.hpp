@@ -235,7 +235,7 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
 
 }  // namespace InterfaceHelpers_detail
 
-// @{
+/// @{
 /*!
  * \brief Apply an invokable to the `box` on all interfaces given by the
  * `DirectionsTag`.
@@ -296,4 +296,4 @@ SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
                          get_volume_tags<InterfaceInvokable>>(
       InterfaceInvokable{}, box, std::forward<ExtraArgs>(extra_args)...);
 }
-// @}
+/// @}

@@ -55,7 +55,7 @@ class Direction {
   static const std::array<Direction<VolumeDim>, 2 * VolumeDim>&
   all_directions() noexcept;
 
-  // {@
+  /// @{
   /// Helper functions for creating specific Directions.
   /// These are labeled by the logical-coordinate names (Xi,Eta,Zeta).
   // Note: these are functions because they contain static_assert.
@@ -65,7 +65,7 @@ class Direction {
   static Direction<VolumeDim> upper_eta() noexcept;
   static Direction<VolumeDim> lower_zeta() noexcept;
   static Direction<VolumeDim> upper_zeta() noexcept;
-  // @}
+  /// @}
 
   /// Serialization for Charm++
   void pup(PUP::er& p) noexcept;  // NOLINT

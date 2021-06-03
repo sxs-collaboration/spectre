@@ -36,7 +36,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the outward grid normal on a face of an Element
@@ -101,7 +101,7 @@ tnsr::i<DataVector, VolumeDim, Frame::Inertial> unnormalized_face_normal(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const Direction<VolumeDim>& direction) noexcept;
-// @}
+/// @}
 
 namespace domain {
 namespace Tags {

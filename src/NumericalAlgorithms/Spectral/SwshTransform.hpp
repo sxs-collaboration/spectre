@@ -728,7 +728,7 @@ struct make_inverse_transform_list_impl<MinSpin, Representation, TagList,
 };
 }  // namespace detail
 
-// @{
+/// @{
 /// \ingroup SwshGroup
 /// \brief Assemble a `tmpl::list` of `SwshTransform`s or
 /// `InverseSwshTransform`s given a list of tags `TagList` that need to be
@@ -753,7 +753,7 @@ using make_inverse_transform_list =
     typename detail::make_inverse_transform_list_impl<
         -2, Representation, TagList,
         decltype(std::make_integer_sequence<int, 5>{})>::type;
-// @}
+/// @}
 
 /// \ingroup SwshGroup
 /// \brief Assemble a `tmpl::list` of `SwshTransform`s given a list of

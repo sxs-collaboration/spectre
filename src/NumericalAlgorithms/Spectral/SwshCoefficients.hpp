@@ -254,7 +254,7 @@ class CoefficientsMetadata {
       return pre_decrement;
     }
 
-    // @{
+    /// @{
     /// (In)Equivalence checks the object as well as the l and m current
     /// position.
     bool operator==(const CoefficientsIndexIterator& rhs) const noexcept {
@@ -263,7 +263,7 @@ class CoefficientsMetadata {
     bool operator!=(const CoefficientsIndexIterator& rhs) const noexcept {
       return not(*this == rhs);
     }
-    // @}
+    /// @}
 
    private:
     size_t m_;
@@ -293,7 +293,7 @@ class CoefficientsMetadata {
     return size_of_libsharp_coefficient_vector(l_max_);
   }
 
-  // @{
+  /// @{
   /// \brief Get a bidirectional iterator to the start of the series of modes.
   CoefficientsMetadata::CoefficientsIndexIterator begin() const noexcept {
     return CoefficientsIndexIterator(l_max_, 0, 0);
@@ -301,9 +301,9 @@ class CoefficientsMetadata {
   CoefficientsMetadata::CoefficientsIndexIterator cbegin() const noexcept {
     return begin();
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// \brief Get a bidirectional iterator to the end of the series of modes.
   CoefficientsMetadata::CoefficientsIndexIterator end() const noexcept {
     return CoefficientsIndexIterator(l_max_, l_max_ + 1, l_max_ + 1);
@@ -311,7 +311,7 @@ class CoefficientsMetadata {
   CoefficientsMetadata::CoefficientsIndexIterator cend() const noexcept {
     return end();
   }
-  // @}
+  /// @}
 
  private:
   std::unique_ptr<sharp_alm_info, detail::DestroySharpAlm> alm_info_;
@@ -331,7 +331,7 @@ class CoefficientsMetadata {
  */
 const CoefficientsMetadata& cached_coefficients_metadata(size_t l_max) noexcept;
 
-// @{
+/// @{
 /*!
  * \ingroup SwshGroup
  * \brief Compute the mode coefficient for the convention of
@@ -363,7 +363,7 @@ std::complex<double> libsharp_mode_to_goldberg_minus_m(
     const LibsharpCoefficientInfo& coefficient_info,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
     size_t radial_offset) noexcept;
-// @}
+/// @}
 
 /*!
  * \ingroup SwshGroup
@@ -441,7 +441,7 @@ void goldberg_modes_to_libsharp_modes_single_pair(
     size_t radial_offset, std::complex<double> goldberg_plus_m_mode_value,
     std::complex<double> goldberg_minus_m_mode_value) noexcept;
 
-// @{
+/// @{
 /*!
  * \ingroup SwshGroup
  * \brief Compute the set of Goldberg Spin-weighted spherical harmonic modes (in
@@ -461,9 +461,9 @@ template <int Spin>
 SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
     size_t l_max) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup SwshGroup
  * \brief Compute the set of libsharp-compatible spin-weighted spherical
@@ -486,7 +486,7 @@ template <int Spin>
 SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
     const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
     size_t l_max) noexcept;
-// @}
+/// @}
 
 /*!
  * \ingroup SwshGroup

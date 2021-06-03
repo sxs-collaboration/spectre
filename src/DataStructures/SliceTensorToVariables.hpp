@@ -14,7 +14,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Slices volume `Tensor`s into a `Variables`
@@ -64,4 +64,4 @@ Variables<tmpl::list<TagsToSlice...>> data_on_slice(
                                 sliced_dim, fixed_index, tensors...);
   return interface_vars;
 }
-// @}
+/// @}

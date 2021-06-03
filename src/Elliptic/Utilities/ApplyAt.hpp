@@ -82,7 +82,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) apply_at(
 
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \brief Apply the invokable `f` with arguments from maps in the DataBox
  *
@@ -123,7 +123,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) apply_at(F&& f, const TaggedContainer& box,
       std::forward<F>(f), box, std::forward_as_tuple(map_key), ArgumentTags{},
       PassthroughArgumentTags{}, std::forward<Args>(args)...);
 }
-// @}
+/// @}
 
 namespace detail {
 
@@ -163,7 +163,7 @@ SPECTRE_ALWAYS_INLINE void mutate_apply_at(
 
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \brief Apply the invokable `f` to mutate items in maps in the DataBox
  *
@@ -204,6 +204,6 @@ SPECTRE_ALWAYS_INLINE void mutate_apply_at(
       std::forward<F>(f), box, std::forward_as_tuple(map_key), MutateTags{},
       ArgumentTags{}, PassthroughTags{}, std::forward<Args>(args)...);
 }
-// @}
+/// @}
 
 }  // namespace elliptic::util

@@ -42,7 +42,7 @@ void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
       [](std::ostream& os, const ForwardIt& it) noexcept { os << *it; });
 }
 
-//@{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * Like sequence_print_helper, but sorts the string representations.
@@ -67,4 +67,4 @@ void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
       out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
       [](std::ostream& os, const ForwardIt& it) noexcept { os << *it; });
 }
-//@}
+/// @}

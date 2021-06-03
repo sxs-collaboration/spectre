@@ -21,7 +21,7 @@ struct not_null;
 
 namespace gr {
 
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes Ricci tensor from the (spatial or spacetime)
@@ -45,7 +45,7 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for spatial Ricci tensor \f$R_{ij}\f$

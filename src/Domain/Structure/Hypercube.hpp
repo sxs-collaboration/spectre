@@ -57,16 +57,16 @@ struct HypercubeElement {
   HypercubeElement(size_t dim_in_parent,
                    std::array<Side, HypercubeDim - 1> index) noexcept;
 
-  // @{
+  /// @{
   /// The parent hypercube's dimensions that this element shares
   const std::array<size_t, ElementDim>& dimensions_in_parent() const noexcept;
 
   template <size_t LocalElementDim = ElementDim,
             Requires<LocalElementDim == 1> = nullptr>
   size_t dimension_in_parent() const noexcept;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Whether this element is located on the lower or upper side in those
   /// dimensions that it does not share with its parent hypercube
   const std::array<Side, HypercubeDim - ElementDim>& index() const noexcept;
@@ -78,7 +78,7 @@ struct HypercubeElement {
   const Side& side() const noexcept {
     return index_[0];
   }
-  // @}
+  /// @}
 
   bool operator==(const HypercubeElement& rhs) const noexcept {
     return dimensions_in_parent_ == rhs.dimensions_in_parent_ and

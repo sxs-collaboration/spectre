@@ -65,7 +65,7 @@ inline double ddot_(const size_t& N, const double* X, const size_t& INCX,
                             gsl::narrow_cast<int>(INCY));
 }
 
-// @{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Perform a matrix-matrix multiplication
@@ -143,9 +143,9 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
                 C, &ldc);
 }
 #endif  // ifndef SPECTRE_DEBUG
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Perform a matrix-vector multiplication
@@ -186,4 +186,4 @@ inline void dgemv_(const char& TRANS, const size_t& M, const size_t& N,
                       gsl::narrow_cast<int>(INCX), BETA, Y,
                       gsl::narrow_cast<int>(INCY));
 }
-//@}
+/// @}

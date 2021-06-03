@@ -29,7 +29,7 @@ class DataVector;
 
 namespace ah {
 namespace Tags {
-// @{
+/// @{
 /// These ComputeItems are different from those used in
 /// GeneralizedHarmonic evolution because these live only on the
 /// intrp::Actions::ApparentHorizon DataBox, not in the volume
@@ -92,6 +92,6 @@ struct SpatialChristoffelSecondKindCompute
                                    gr::Tags::InverseSpatialMetric<Dim, Frame>>;
   using base = ::gr::Tags::SpatialChristoffelSecondKind<Dim, Frame>;
 };
-// }@
+/// @}
 }  // namespace Tags
 }  // namespace ah

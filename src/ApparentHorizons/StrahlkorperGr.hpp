@@ -26,7 +26,7 @@ struct not_null;
 /// Contains functions that depend both on a Strahlkorper and a metric.
 namespace StrahlkorperGr {
 
-//@{
+/// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes normalized unit normal one-form to a Strahlkorper.
 ///
@@ -45,9 +45,9 @@ template <typename Frame>
 tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& one_over_one_form_magnitude) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes 3-covariant gradient \f$D_i S_j\f$ of a
 /// Strahlkorper's normal.
@@ -83,9 +83,9 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
     const tnsr::ii<DataVector, 3, Frame>& d2x_radius,
     const DataVector& one_over_one_form_magnitude,
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes inverse 2-metric \f$g^{ij}-S^i S^j\f$ of a Strahlkorper.
 ///
@@ -107,9 +107,9 @@ template <typename Frame>
 tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /// \ingroup SurfacesGroup
 /// \brief Expansion of a `Strahlkorper`. Should be zero on apparent horizons.
 ///
@@ -129,9 +129,9 @@ Scalar<DataVector> expansion(
     const tnsr::ii<DataVector, 3, Frame>& grad_normal,
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /*!
  * \ingroup SurfacesGroup
  * \brief Extrinsic curvature of a 2D `Strahlkorper` embedded in a 3D space.
@@ -162,9 +162,9 @@ tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
     const tnsr::ii<DataVector, 3, Frame>& grad_normal,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /// \ingroup SurfacesGroup
 /// \brief Intrinsic Ricci scalar of a 2D `Strahlkorper`.
 ///
@@ -194,9 +194,9 @@ Scalar<DataVector> ricci_scalar(
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /*!
  * \ingroup SurfacesGroup
  * \brief Area element of a 2D `Strahlkorper`.
@@ -233,9 +233,9 @@ Scalar<DataVector> area_element(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
-//@}
+/// @}
 
-//@{
+/// @{
 /*!
  * \ingroup SurfacesGroup
  * \brief Euclidean area element of a 2D `Strahlkorper`.
@@ -274,7 +274,7 @@ Scalar<DataVector> euclidean_area_element(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
-//@}
+/// @}
 
 /*!
  * \ingroup SurfacesGroup
@@ -310,7 +310,7 @@ double euclidean_surface_integral_of_vector(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Strahlkorper<Frame>& strahlkorper) noexcept;
 
-//@{
+/// @{
 /*!
  * \ingroup SurfacesGroup
  * \brief Spin function of a 2D `Strahlkorper`.
@@ -360,7 +360,7 @@ Scalar<DataVector> spin_function(
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
-//@}
+/// @}
 
 /*!
  * \ingroup SurfacesGroup

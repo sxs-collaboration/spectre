@@ -6,7 +6,7 @@
 #include "Utilities/Blaze.hpp"
 #include "Utilities/Gsl.hpp"
 
-// @{
+/// @{
 /// \ingroup UtilitiesGroup
 /// \brief Computes the outer product between two vectors.
 /// \details For vectors \f$A\f$ and \f$B\f$, the resulting outer product is
@@ -35,9 +35,9 @@ ResultVectorType outer_product(const LhsVectorType& lhs,
   outer_product(make_not_null(&result), lhs, rhs);
   return result;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup UtilitiesGroup
 /// \brief Creates or fills a vector with data from `to_repeat` copied
 /// `times_to_repeat`  times in sequence.
@@ -71,4 +71,4 @@ VectorType create_vector_of_n_copies(
   fill_with_n_copies(make_not_null(&result), to_copy, times_to_copy);
   return result;
 }
-// @}
+/// @}

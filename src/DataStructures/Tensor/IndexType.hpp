@@ -201,7 +201,7 @@ using SpacetimeIndex =
     Tensor_detail::TensorIndexType<SpatialDim, Ul, Fr, IndexType::Spacetime>;
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TensorGroup TypeTraitsGroup
 /// Inherits from std::true_type if T is a \ref SpacetimeIndex
 /// "TensorIndexType"
@@ -217,7 +217,7 @@ struct is_tensor_index_type<
 /// \see is_tensor_index_type
 template <typename T>
 using is_tensor_index_type_t = typename is_tensor_index_type<T>::type;
-// @}
+/// @}
 }  // namespace tt
 
 /// \ingroup TensorGroup

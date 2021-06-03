@@ -26,7 +26,7 @@ class not_null;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \brief Computes the generalized-harmonic 3-index constraint.
  *
@@ -44,9 +44,9 @@ void three_index_constraint(
     gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes the generalized-harmonic gauge constraint.
  *
@@ -84,9 +84,9 @@ void gauge_constraint(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes the generalized-harmonic 2-index constraint.
  *
@@ -151,9 +151,9 @@ void two_index_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>&
         three_index_constraint) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes the generalized-harmonic 4-index constraint.
  *
@@ -187,9 +187,9 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void four_index_constraint(
     gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes the generalized-harmonic F constraint.
  *
@@ -275,9 +275,9 @@ void f_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>&
         three_index_constraint) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes the generalized-harmonic (unnormalized) constraint energy.
  *
@@ -492,7 +492,7 @@ void constraint_energy(
     double two_index_constraint_multiplier = 1.0,
     double three_index_constraint_multiplier = 1.0,
     double four_index_constraint_multiplier = 1.0) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

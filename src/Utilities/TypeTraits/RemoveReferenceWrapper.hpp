@@ -8,7 +8,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace tt {
-// @{
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Gets the underlying type if the type is a std::reference_wrapper,
@@ -55,9 +55,9 @@ struct remove_reference_wrapper<const volatile std::reference_wrapper<T>> {
 
 template <typename T>
 using remove_reference_wrapper_t = typename remove_reference_wrapper<T>::type;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Removes std::reference_wrapper, references, and cv qualifiers.
@@ -73,5 +73,5 @@ struct remove_cvref_wrap {
 
 template <typename T>
 using remove_cvref_wrap_t = typename remove_cvref_wrap<T>::type;
-// @}
+/// @}
 }  // namespace tt

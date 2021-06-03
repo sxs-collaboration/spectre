@@ -5,7 +5,7 @@
 
 #include <limits>
 
-// @{
+/// @{
 /// \ingroup UtilitiesGroup
 /// \brief Returns an appropriate signaling NaN for fundamantal or multi-field
 /// types (such as `std::complex`).
@@ -24,4 +24,4 @@ template <typename T>
 T make_signaling_NaN() noexcept {
   return make_signaling_NaN(static_cast<T>(0));
 }
-// @}
+/// @}

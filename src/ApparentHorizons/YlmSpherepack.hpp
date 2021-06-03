@@ -103,7 +103,7 @@ class YlmSpherepack {
   /// the Ylm expansion.
   YlmSpherepack(size_t l_max, size_t m_max) noexcept;
 
-  ///@{
+  /// @{
   /// Static functions to return the correct sizes of vectors of
   /// collocation points and spectral coefficients for a given l_max
   /// and m_max.  Useful for allocating space without having to create
@@ -122,21 +122,21 @@ class YlmSpherepack {
       const size_t l_max, const size_t m_max) noexcept {
     return 2 * (l_max + 1) * (m_max + 1);
   }
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Sizes in physical and spectral space for this instance.
   size_t l_max() const noexcept { return l_max_; }
   size_t m_max() const noexcept { return m_max_; }
   size_t physical_size() const noexcept { return n_theta_ * n_phi_; }
   size_t spectral_size() const noexcept { return spectral_size_; }
-  ///@}
+  /// @}
 
   std::array<size_t, 2> physical_extents() const noexcept {
     return {{n_theta_, n_phi_}};
   }
 
-  ///@{
+  /// @{
   /// Collocation points theta and phi.
   ///
   /// The phi points are uniform in phi, with the first point
@@ -147,9 +147,9 @@ class YlmSpherepack {
   const std::vector<double>& theta_points() const noexcept;
   const std::vector<double>& phi_points() const noexcept;
   std::array<DataVector, 2> theta_phi_points() const noexcept;
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Spectral transformations.
   /// To act on a slice of the input and output arrays, specify strides
   /// and offsets.
@@ -169,9 +169,9 @@ class YlmSpherepack {
     spec_to_phys_impl(collocation_values, spectral_coefs, spectral_stride,
                       spectral_offset, physical_stride, physical_offset, false);
   };
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Spectral transformations where `collocation_values` and
   /// `spectral_coefs` are assumed to point to 3-dimensional arrays
   /// (I1 x S2 topology), and the transformations are done for all
@@ -190,9 +190,9 @@ class YlmSpherepack {
     spec_to_phys_impl(collocation_values, spectral_coefs, stride, 0, stride, 0,
                       true);
   };
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Simpler, less general interfaces to `phys_to_spec` and `spec_to_phys`.
   /// Acts on a slice of the input and returns a unit-stride result.
   DataVector phys_to_spec(const DataVector& collocation_values,
@@ -201,9 +201,9 @@ class YlmSpherepack {
   DataVector spec_to_phys(const DataVector& spectral_coefs,
                           size_t spectral_stride = 1,
                           size_t spectral_offset = 0) const noexcept;
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Simpler, less general interfaces to `phys_to_spec_all_offsets`
   /// and `spec_to_phys_all_offsets`.  Result has the same stride as
   /// the input.
@@ -211,7 +211,7 @@ class YlmSpherepack {
                                       size_t stride) const noexcept;
   DataVector spec_to_phys_all_offsets(const DataVector& spectral_coefs,
                                       size_t stride) const noexcept;
-  ///@}
+  /// @}
 
   /// Computes Pfaffian derivative (df/dtheta, csc(theta) df/dphi) at
   /// the collocation values.
@@ -239,7 +239,7 @@ class YlmSpherepack {
                              false);
   }
 
-  ///@{
+  /// @{
   /// Same as `gradient` but pointers are assumed to point to
   /// 3-dimensional arrays (I1 x S2 topology), and the gradient is
   /// done for all 'radial' points at once by internally looping
@@ -254,9 +254,9 @@ class YlmSpherepack {
       size_t stride = 1) const noexcept {
     gradient_from_coefs_impl(df, spectral_coefs, stride, 0, stride, 0, true);
   }
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Simpler, less general interfaces to `gradient`.
   /// Acts on a slice of the input and returns a unit-stride result.
   FirstDeriv gradient(const DataVector& collocation_values,
@@ -265,16 +265,16 @@ class YlmSpherepack {
   FirstDeriv gradient_from_coefs(const DataVector& spectral_coefs,
                                  size_t spectral_stride = 1,
                                  size_t spectral_offset = 0) const noexcept;
-  ///@}
+  /// @}
 
-  ///@{
+  /// @{
   /// Simpler, less general interfaces to `gradient_all_offsets`.
   /// Result has the same stride as the input.
   FirstDeriv gradient_all_offsets(const DataVector& collocation_values,
                                   size_t stride = 1) const noexcept;
   FirstDeriv gradient_from_coefs_all_offsets(const DataVector& spectral_coefs,
                                              size_t stride = 1) const noexcept;
-  ///@}
+  /// @}
 
   /// Computes Laplacian in physical space.
   /// To act on a slice of the input and output arrays, specify stride
@@ -297,7 +297,7 @@ class YlmSpherepack {
                                    size_t physical_stride = 1,
                                    size_t physical_offset = 0) const noexcept;
 
-  ///@{
+  /// @{
   /// Simpler, less general interfaces to `scalar_laplacian`.
   /// Acts on a slice of the input and returns a unit-stride result.
   DataVector scalar_laplacian(const DataVector& collocation_values,
@@ -306,7 +306,7 @@ class YlmSpherepack {
   DataVector scalar_laplacian_from_coefs(
       const DataVector& spectral_coefs, size_t spectral_stride = 1,
       size_t spectral_offset = 0) const noexcept;
-  ///@}
+  /// @}
 
   /// Computes Pfaffian first and second derivative in physical space.
   /// The first derivative is \f$df(i) = d_i f\f$, and the

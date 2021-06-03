@@ -187,7 +187,7 @@ void emplace_nodegroup_component_and_initialize(
       initial_values, std::forward<Options>(opts)...);
 }
 
-// @{
+/// @{
 /// Retrieves the DataBox with tags `TagsList` (omitting the `GlobalCache`
 /// and `add_from_options` tags) from the parallel component `Component` with
 /// index `array_index`.
@@ -207,7 +207,7 @@ auto& get_databox(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
       .at(array_index)
       .template get_databox<TagsList>();
 }
-// @}
+/// @}
 
 /// Get the index in the action list of the next action.
 template <typename Component, typename Metavariables>
@@ -229,7 +229,7 @@ const auto& get_databox_tag(
       .template get_databox_tag<Tag>();
 }
 
-// @{
+/// @{
 /// Returns the `InboxTag` from the parallel component `Component` with array
 /// index `array_index`.
 template <typename Component, typename InboxTag, typename Metavariables>
@@ -247,7 +247,7 @@ auto& get_inbox_tag(
   return tuples::get<InboxTag>(
       runner->template inboxes<Component>().at(array_index));
 }
-// @}
+/// @}
 
 /// Returns `true` if the current DataBox of `Component` with index
 /// `array_index` contains the tag `Tag`. If the tag is not contained, returns
