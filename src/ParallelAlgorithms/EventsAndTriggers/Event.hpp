@@ -28,6 +28,7 @@ class Event : public PUP::able {
 
  public:
   ~Event() override = default;
+  explicit Event(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(Event);  // NOLINT
 
