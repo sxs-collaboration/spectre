@@ -4,6 +4,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -36,6 +37,45 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
   christoffel_first_kind(make_not_null(&christoffel), d_metric);
   return christoffel;
 }
+
+template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
+void christoffel_second_kind(
+    const gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame, Index>*>
+        christoffel,
+    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame, Index>&
+        inverse_metric) noexcept {
+  destructive_resize_components(christoffel, get_size(*d_metric.begin()));
+  constexpr auto dimensionality =
+      Index == IndexType::Spatial ? SpatialDim : SpatialDim + 1;
+  for (size_t d = 0; d < dimensionality; ++d) {
+    for (size_t a = 0; a < dimensionality; ++a) {
+      for (size_t b = a; b < dimensionality; ++b) {
+        christoffel->get(d, a, b) =
+            0.5 * inverse_metric.get(0, d) *
+            (d_metric.get(a, b, 0) + d_metric.get(b, a, 0) -
+             d_metric.get(0, a, b));
+        for (size_t c = 1; c < dimensionality; ++c) {
+          christoffel->get(d, a, b) +=
+              0.5 * inverse_metric.get(c, d) *
+              (d_metric.get(a, b, c) + d_metric.get(b, a, c) -
+               d_metric.get(c, a, b));
+        }
+      }
+    }
+  }
+}
+template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
+auto christoffel_second_kind(
+    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) noexcept
+    -> tnsr::Abb<DataType, SpatialDim, Frame, Index> {
+  tnsr::Abb<DataType, SpatialDim, Frame, Index> christoffel(
+      get_size(get<0, 0, 0>(d_metric)));
+  christoffel_second_kind(make_not_null(&christoffel), d_metric,
+                          inverse_metric);
+  return christoffel;
+}
 }  // namespace gr
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -43,8 +83,6 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define INDEXTYPE(data) BOOST_PP_TUPLE_ELEM(3, data)
 
-// The not_null versions are instantiated during instantiation of the
-// return-by-value versions.
 #define INSTANTIATE(_, data)                                                 \
   template tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>   \
   gr::christoffel_first_kind(                                                \
@@ -55,7 +93,21 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
           tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>*>  \
           christoffel,                                                       \
       const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
-          d_metric) noexcept;
+          d_metric) noexcept;                                                \
+  template tnsr::Abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>   \
+  gr::christoffel_second_kind(                                               \
+      const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
+          d_metric,                                                          \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
+          inverse_metric) noexcept;                                          \
+  template void gr::christoffel_second_kind(                                 \
+      const gsl::not_null<                                                   \
+          tnsr::Abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>*>  \
+          christoffel,                                                       \
+      const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
+          d_metric,                                                          \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
+          inverse_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial,
