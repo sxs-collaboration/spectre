@@ -41,10 +41,13 @@ void test_cylindrical_endcap_sphere_two_small() {
 
   // First pick the radius of the larger sphere to be large enough
   // that the centers of both spheres are reasonably well inside.
-  // Note that choosing 6.0 means that center_two[2]-center_one[2] is
-  // less than radius_one/6, so that center_two[2] will be less than
+  // Also, if dist_between_spheres is really small, then make radius_one
+  // larger.
+  // Note that choosing 7.0 means that center_two[2]-center_one[2] is
+  // less than radius_one/7, so that center_two[2] will be less than
   // z_plane below.
-  const double radius_one = 6.0 * (unit_dis(gen) + 1.0) * dist_between_spheres;
+  const double radius_one =
+      7.0 * (unit_dis(gen) + 1.0) * std::max(dist_between_spheres, 0.05);
   CAPTURE(radius_one);
 
   // Make sure z_plane intersects sphere_one on the +z side of the
@@ -58,8 +61,10 @@ void test_cylindrical_endcap_sphere_two_small() {
   const double radius_two = [&radius_one, &dist_between_spheres, &unit_dis,
                              &gen]() noexcept {
     // Choose radius_two to be small enough that the space between the
-    // two spheres is not too cramped.
-    const double max_radius_two = 0.85 * (radius_one - dist_between_spheres);
+    // two spheres is not too cramped. If dist_between_spheres is too
+    // small, then limit it as we did when computing radius_one.
+    const double max_radius_two =
+        0.85 * (radius_one - std::max(dist_between_spheres, 0.05));
 
     // Choose radius_two to be not too small compared to radius_one.
     const double min_radius_two = 0.1 * radius_one;
@@ -69,9 +74,13 @@ void test_cylindrical_endcap_sphere_two_small() {
   CAPTURE(radius_two);
 
   // Now choose projection point to be very near the center of sphere_two.
+  // And make sure that projection point is less than z_plane.
   const auto proj_center =
-      [&center_two, &radius_two, &angle_dis, &unit_dis, &gen]() noexcept {
-        const double radius = 0.1 * radius_two * unit_dis(gen);
+      [&center_two, &radius_two, &z_plane, &angle_dis, &unit_dis,
+       &gen]() noexcept {
+        const double radius =
+            std::min(0.1 * radius_two, 0.999 * (z_plane - center_two[2])) *
+            unit_dis(gen);
         const double theta = 0.5 * angle_dis(gen);
         const double phi = angle_dis(gen);
         return std::array<double, 3>{
