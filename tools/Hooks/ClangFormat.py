@@ -65,6 +65,9 @@ if (int(clang_format_version.group(1)) < 4
 output = subprocess.check_output([git_executable, clang_format,
                                   "--diff"]).decode('ascii')
 
+ansi_color_code = re.compile(r'\x1B\[[0-9;]*m')
+output = ansi_color_code.sub('', output)
+
 if output not in [
         '\n', '', 'no modified files to format\n',
         'clang-format did not modify any files\n'
