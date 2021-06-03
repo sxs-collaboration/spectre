@@ -3,6 +3,7 @@
 
 #include "Domain/Creators/Shell.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -84,14 +85,14 @@ Shell::Shell(
     PARSE_ERROR(context,
                 "Cannot have periodic boundary conditions with a shell");
   }
-  if (not std::is_sorted(radial_partitioning_.begin(),
-                         radial_partitioning_.end())) {
-    PARSE_ERROR(context,
-                "Specify radial partitioning in ascending order. Specified "
-                "radial partitioning is: "
-                    << get_output(radial_partitioning_));
-  }
   if (not radial_partitioning_.empty()) {
+    if (not std::is_sorted(radial_partitioning_.begin(),
+                           radial_partitioning_.end())) {
+      PARSE_ERROR(context,
+                  "Specify radial partitioning in ascending order. Specified "
+                  "radial partitioning is: "
+                      << get_output(radial_partitioning_));
+    }
     if (radial_partitioning_.front() <= inner_radius_) {
       PARSE_ERROR(
           context,
@@ -103,6 +104,12 @@ Shell::Shell(
           context,
           "Last radial partition must be smaller than outer radius, but is: "
               << outer_radius_);
+    }
+    const auto duplicate = std::adjacent_find(radial_partitioning_.begin(),
+                                              radial_partitioning_.end());
+    if (duplicate != radial_partitioning_.end()) {
+      PARSE_ERROR(context, "Radial partitioning contains duplicate element: "
+                               << *duplicate);
     }
   }
   if (radial_distribution_.size() != number_of_layers_) {
