@@ -133,27 +133,15 @@ struct create_compute_tag_argument_edges {
                  tmpl::pin<ComputeTag>>>;
 };
 
-template <typename Tag>
-struct create_subitem_reverse_edge {
-  // This edge records that the value of a subitem of a compute
-  // item depend on the value of the compute item itself.
-  using type = tmpl::edge<typename Tag::parent_tag, Tag>;
-};
-
 template <typename TagsList, typename ComputeTagsList>
 struct create_dependency_graph {
-  using compute_tag_argument_edges =
-      tmpl::join<tmpl::transform<ComputeTagsList,
-                                 detail::create_compute_tag_argument_edges<
-                                     tmpl::pin<TagsList>, tmpl::_1>>>;
-  using subitems_that_need_reverse_edges = tmpl::transform<
-      tmpl::filter<compute_tag_argument_edges,
-                   db::is_reference_tag<tmpl::get_source<tmpl::_1>>>,
-      tmpl::get_source<tmpl::_1>>;
-  using subitem_reverse_edges =
-      tmpl::transform<subitems_that_need_reverse_edges,
-                      create_subitem_reverse_edge<tmpl::_1>>;
-  using type = tmpl::append<compute_tag_argument_edges, subitem_reverse_edges>;
+  using reference_tags_list =
+      tmpl::filter<TagsList, db::is_reference_tag<tmpl::_1>>;
+  using compute_tag_argument_edges = tmpl::join<
+      tmpl::transform<tmpl::append<ComputeTagsList, reference_tags_list>,
+                      detail::create_compute_tag_argument_edges<
+                          tmpl::pin<TagsList>, tmpl::_1>>>;
+  using type = compute_tag_argument_edges;
 };
 }  // namespace detail
 
@@ -282,6 +270,12 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename ComputeTag, typename... ArgumentTags>
   void evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const
       noexcept;
+
+  // retrieves the reference of the ReferenceTag passing along items fetched via
+  // ArgumentTags
+  template <typename ReferenceTag, typename... ArgumentTags>
+  const auto& get_reference_item(
+      tmpl::list<ArgumentTags...> /*meta*/) const noexcept;
 
   // get a constant reference to the item corresponding to Tag
   template <typename Tag>
@@ -730,6 +724,13 @@ void DataBox<tmpl::list<Tags...>>::evaluate_compute_item(
 }
 
 template <typename... Tags>
+template <typename ReferenceTag, typename... ArgumentTags>
+const auto& DataBox<tmpl::list<Tags...>>::get_reference_item(
+    tmpl::list<ArgumentTags...> /*meta*/) const noexcept {
+  return ReferenceTag::get(get<ArgumentTags>()...);
+}
+
+template <typename... Tags>
 template <typename Tag>
 const auto& DataBox<tmpl::list<Tags...>>::get() const noexcept {
   if constexpr (std::is_same_v<Tag, ::Tags::DataBox>) {
@@ -761,7 +762,7 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const noexcept {
     }
     if constexpr (detail::Item<item_tag>::item_type ==
                   detail::ItemType::Reference) {
-      return item_tag::get(get<typename item_tag::parent_tag>());
+      return get_reference_item<item_tag>(typename item_tag::argument_tags{});
     } else {
       if constexpr (detail::Item<item_tag>::item_type ==
                     detail::ItemType::Compute) {

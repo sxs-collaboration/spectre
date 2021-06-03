@@ -2639,13 +2639,11 @@ struct TaggedTuple : db::SimpleTag {
 template <typename Tag, typename ParentTag>
 struct FromTaggedTuple : Tag, db::ReferenceTag {
   using base = Tag;
-  using parent_tag = ParentTag;
+  using argument_tags = tmpl::list<ParentTag>;
 
-  static const auto& get(const typename parent_tag::type& tagged_tuple) {
+  static const auto& get(const typename ParentTag::type& tagged_tuple) {
     return tuples::get<Tag>(tagged_tuple);
   }
-
-  using argument_tags = tmpl::list<parent_tag>;
 };
 // [databox_reference_tag_example]
 }  // namespace test_databox_tags

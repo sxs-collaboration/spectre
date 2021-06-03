@@ -31,7 +31,6 @@ template <size_t Dim, typename ProviderTag>
 struct ConstitutiveRelationReference : ConstitutiveRelation<Dim>,
                                        db::ReferenceTag {
   using base = ConstitutiveRelation<Dim>;
-  using parent_tag = ProviderTag;
   using argument_tags = tmpl::list<ProviderTag>;
   template <typename Provider>
   static const ConstitutiveRelations::ConstitutiveRelation<Dim>& get(

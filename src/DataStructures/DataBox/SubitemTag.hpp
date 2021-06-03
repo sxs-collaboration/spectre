@@ -21,12 +21,11 @@ struct Subitem;
 template <typename Tag, typename ParentTag>
 struct Subitem : Tag, db::ReferenceTag {
   using base = Tag;
-  using parent_tag = ParentTag;
+  using argument_tags = tmpl::list<ParentTag>;
   static const auto& get(
-      const typename parent_tag::type& parent_value) noexcept {
-    return ::db::Subitems<parent_tag>::template create_compute_item<base>(
+      const typename ParentTag::type& parent_value) noexcept {
+    return ::db::Subitems<ParentTag>::template create_compute_item<base>(
         parent_value);
   }
-  using argument_tags = tmpl::list<parent_tag>;
 };
 }  // namespace Tags

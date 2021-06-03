@@ -168,11 +168,9 @@ struct ComputeTag {};
  * \derivedrequires
  * - type alias `base` that is the simple tag from which the reference tag is
  *   derived
- * - type alias `parent_tag` that is the tag for the item from which the
- *   reference item is retrieved
- * - static function `get` that, given the item fetched by `parent_tag`, returns
- *   a const reference to the sub-item
- * - type alias `argument_tags` that is `tmpl::list<parent_tag>`
+ * - type alias `argument_tags` that lists tags needed to evaluate `get`
+ * - static function `get` that, given the item fetched by `argument_tags`,
+ *   returns a const reference to the sub-item
  *
  * A reference tag may optionally specify a static `std::string name()` method
  * to override the default name produced by db::tag_name.

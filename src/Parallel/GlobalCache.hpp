@@ -676,15 +676,13 @@ template <class CacheTag>
 struct FromGlobalCache : CacheTag, db::ReferenceTag {
   static_assert(db::is_simple_tag_v<CacheTag>);
   using base = CacheTag;
-  using parent_tag = GlobalCache;
+  using argument_tags = tmpl::list<GlobalCache>;
 
   template <class Metavariables>
   static const auto& get(
       const Parallel::GlobalCache<Metavariables>* const& cache) {
     return Parallel::get<CacheTag>(*cache);
   }
-
-  using argument_tags = tmpl::list<parent_tag>;
 };
 }  // namespace Tags
 }  // namespace Parallel
