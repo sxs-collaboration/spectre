@@ -480,15 +480,11 @@ ComputeTimeDerivative<Metavariables>::apply(
                 primitive_vars,
                 typename DerivedCorrection::dg_package_data_volume_tags{});
 
-            if constexpr (detail::has_boundary_conditions_base_v<system>) {
-              detail::apply_boundary_conditions_on_all_external_faces<
-                  system, volume_dim>(
-                  make_not_null(&box),
-                  dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                  temporaries, volume_fluxes, partial_derivs, primitive_vars);
-            } else {
-              (void)partial_derivs;
-            }
+            detail::apply_boundary_conditions_on_all_external_faces<system,
+                                                                    volume_dim>(
+                make_not_null(&box),
+                dynamic_cast<const DerivedCorrection&>(boundary_correction),
+                temporaries, volume_fluxes, partial_derivs, primitive_vars);
           }
         });
   } else {
