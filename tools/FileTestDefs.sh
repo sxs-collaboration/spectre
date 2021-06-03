@@ -666,6 +666,33 @@ check_throws_test() {
 }
 standard_checks+=(check_throws)
 
+# Check for typos similar to Doxygen groups
+check_dox_groups() {
+    is_c++ "$1" && staged_grep -E "^\s*//+\s*[\{\}\(\)]*@[\{\}\(\)]*" "$1" \
+            | grep -v -E "(^\s*/// @\{|^\s*/// @\})"
+}
+check_dox_groups_report() {
+    echo "Found a likely typo similar to a valid doxygen grouping"
+    echo "Use balanced /// @{ and /// @} (on their own lines) to"\
+         " create doxygen groups"
+    pretty_grep -E "^\s*//+\s*[\{\}\(\)]*@[\{\}\(\)]*" "$1" | \
+        grep -v -E "(/// @{|/// @})"
+}
+check_dox_groups_test() {
+    test_check pass foo.hpp '/// @{'
+    test_check pass foo.hpp '/// @}'
+    test_check pass foo.txt '// @('
+    test_check fail foo.hpp '// @{'
+    test_check fail foo.hpp '// @}'
+    test_check fail foo.hpp '//@{'
+    test_check fail foo.hpp '//@}'
+    test_check fail foo.hpp '// {@'
+    test_check fail foo.hpp '// }@'
+    test_check fail foo.hpp '///@('
+    test_check fail foo.hpp '///@)'
+}
+standard_checks+=(check_dox_groups)
+
 # Prevent editing RunSingleTest files. We may need to occasionally update these
 # files, but it's at least less than once a year.
 #
