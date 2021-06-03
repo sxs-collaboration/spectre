@@ -233,7 +233,7 @@ void test() {
     // file, find the data which was written by the grid whose extents are
     // found at position `grid_index` in the vector of extents.
     const auto get_grid_data = [&element_num_points, &read_points_by_element](
-                                   DataVector all_data,
+                                   const DataVector& all_data,
                                    const size_t grid_index) {
       DataType result(element_num_points[grid_index]);
       // clang-tidy: do not use pointer arithmetic
