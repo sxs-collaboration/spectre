@@ -6,9 +6,6 @@ set(LIBRARY "EvolutionDgActionsHelpers")
 # We split the instantiations across multiple files to allow better
 # parallelization of the build.
 set(LIBRARY_SOURCES
-  InstantiateBcOld1d.cpp
-  InstantiateBcOld2d.cpp
-  InstantiateBcOld3d.cpp
   InstantiateCons1d.cpp
   InstantiateCons2d.cpp
   InstantiateCons3d.cpp

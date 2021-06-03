@@ -43,7 +43,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TakeStep.hpp"
@@ -286,31 +285,12 @@ namespace evolution::dg::Actions {
  */
 template <typename Metavariables>
 struct ComputeTimeDerivative {
- private:
-  template <typename LocalMetaVars, typename = std::void_t<>>
-  struct GetFluxInboxTag {
-    using type = tmpl::list<>;
-  };
-
-  template <typename LocalMetaVars>
-  struct GetFluxInboxTag<LocalMetaVars,
-                         std::void_t<typename LocalMetaVars::boundary_scheme>> {
-    using type = tmpl::list<
-        ::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>>;
-  };
-
- public:
-  using inbox_tags = tmpl::append<
-      typename GetFluxInboxTag<Metavariables>::type,
+  using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Metavariables::volume_dim>>>;
+          Metavariables::volume_dim>>;
   using const_global_cache_tags = tmpl::append<
-      tmpl::conditional_t<detail::has_boundary_correction_base_v<
-                              typename Metavariables::system>,
-                          tmpl::list<::dg::Tags::Formulation,
-                                     evolution::Tags::BoundaryCorrection<
-                                         typename Metavariables::system>>,
-                          tmpl::list<::dg::Tags::Formulation>>,
+      tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection<
+                                              typename Metavariables::system>>,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
           tmpl::list<::Tags::StepChoosers, ::Tags::StepController,
@@ -445,75 +425,47 @@ ComputeTimeDerivative<Metavariables>::apply(
       },
       make_not_null(&box));
 
-  if constexpr (detail::has_boundary_correction_base_v<system>) {
-    const auto& boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<system>>(box);
-    using derived_boundary_corrections =
-        typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+  const auto& boundary_correction =
+      db::get<evolution::Tags::BoundaryCorrection<system>>(box);
+  using derived_boundary_corrections =
+      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
 
-    const Variables<detail::get_primitive_vars_tags_from_system<system>>*
-        primitive_vars{nullptr};
-    if constexpr (system::has_primitive_and_conservative_vars) {
-      primitive_vars = &db::get<typename system::primitive_variables_tag>(box);
-    }
-
-    static_assert(
-        tmpl::all<derived_boundary_corrections, std::is_final<tmpl::_1>>::value,
-        "All createable classes for boundary corrections must be marked "
-        "final.");
-    tmpl::for_each<derived_boundary_corrections>(
-        [&boundary_correction, &box, &partial_derivs, &primitive_vars,
-         &temporaries, &volume_fluxes](auto derived_correction_v) noexcept {
-          using DerivedCorrection =
-              tmpl::type_from<decltype(derived_correction_v)>;
-          if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
-            // Compute internal boundary quantities on the mortar for sides
-            // of the element that have neighbors, i.e. they are not an
-            // external side.
-            // Note: this call mutates:
-            //  - evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
-            //  - evolution::dg::Tags::MortarData<Dim>
-            detail::internal_mortar_data<system, volume_dim>(
-                make_not_null(&box),
-                dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                db::get<variables_tag>(box), volume_fluxes, temporaries,
-                primitive_vars,
-                typename DerivedCorrection::dg_package_data_volume_tags{});
-
-            detail::apply_boundary_conditions_on_all_external_faces<system,
-                                                                    volume_dim>(
-                make_not_null(&box),
-                dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                temporaries, volume_fluxes, partial_derivs, primitive_vars);
-          }
-        });
-  } else {
-    // The below if-else and fill_mortar_data_for_internal_boundaries are for
-    // compatibility with the current boundary schemes. Once the current
-    // boundary schemes are removed the code will be refactored to reflect that
-    // change.
-    if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
-      using flux_variables_tag = ::Tags::Variables<flux_variables>;
-      using fluxes_tag =
-          db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
-                             tmpl::size_t<Metavariables::volume_dim>,
-                             Frame::Inertial>;
-
-      // We currently set the fluxes in the DataBox to interface with the
-      // boundary correction communication code.
-      db::mutate<fluxes_tag>(make_not_null(&box),
-                             [&volume_fluxes](const auto fluxes_ptr) noexcept {
-                               *fluxes_ptr = volume_fluxes;
-                             });
-    } else {
-      boundary_terms_nonconservative_products(make_not_null(&box));
-    }
-
-    // Compute internal boundary quantities
-    fill_mortar_data_for_internal_boundaries<
-        volume_dim, typename Metavariables::boundary_scheme>(
-        make_not_null(&box));
+  const Variables<detail::get_primitive_vars_tags_from_system<system>>*
+      primitive_vars{nullptr};
+  if constexpr (system::has_primitive_and_conservative_vars) {
+    primitive_vars = &db::get<typename system::primitive_variables_tag>(box);
   }
+
+  static_assert(
+      tmpl::all<derived_boundary_corrections, std::is_final<tmpl::_1>>::value,
+      "All createable classes for boundary corrections must be marked "
+      "final.");
+  tmpl::for_each<derived_boundary_corrections>(
+      [&boundary_correction, &box, &partial_derivs, &primitive_vars,
+       &temporaries, &volume_fluxes](auto derived_correction_v) noexcept {
+        using DerivedCorrection =
+            tmpl::type_from<decltype(derived_correction_v)>;
+        if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
+          // Compute internal boundary quantities on the mortar for sides
+          // of the element that have neighbors, i.e. they are not an
+          // external side.
+          // Note: this call mutates:
+          //  - evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
+          //  - evolution::dg::Tags::MortarData<Dim>
+          detail::internal_mortar_data<system, volume_dim>(
+              make_not_null(&box),
+              dynamic_cast<const DerivedCorrection&>(boundary_correction),
+              db::get<variables_tag>(box), volume_fluxes, temporaries,
+              primitive_vars,
+              typename DerivedCorrection::dg_package_data_volume_tags{});
+
+          detail::apply_boundary_conditions_on_all_external_faces<system,
+                                                                  volume_dim>(
+              make_not_null(&box),
+              dynamic_cast<const DerivedCorrection&>(boundary_correction),
+              temporaries, volume_fluxes, partial_derivs, primitive_vars);
+        }
+      });
 
   if constexpr (Metavariables::local_time_stepping) {
     take_step(make_not_null(&box), cache);
@@ -525,110 +477,15 @@ ComputeTimeDerivative<Metavariables>::apply(
 }
 
 template <typename Metavariables>
-template <typename DbTagsList>
-void ComputeTimeDerivative<Metavariables>::
-    boundary_terms_nonconservative_products(
-        const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
-  using system = typename Metavariables::system;
-  using variables_tag = typename system::variables_tag;
-  using DirectionsTag =
-      domain::Tags::InternalDirections<Metavariables::volume_dim>;
-
-  using interface_normal_dot_fluxes_tag = domain::Tags::Interface<
-      DirectionsTag, db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>;
-
-  using interface_compute_item_argument_tags = tmpl::transform<
-      typename Metavariables::system::normal_dot_fluxes::argument_tags,
-      tmpl::bind<domain::Tags::Interface, DirectionsTag, tmpl::_1>>;
-
-  db::mutate_apply<
-      tmpl::list<interface_normal_dot_fluxes_tag>,
-      tmpl::push_front<interface_compute_item_argument_tags, DirectionsTag>>(
-      [](const auto boundary_fluxes_ptr,
-         const std::unordered_set<Direction<Metavariables::volume_dim>>&
-             internal_directions,
-         const auto&... tensors) noexcept {
-        for (const auto& direction : internal_directions) {
-          apply_flux(make_not_null(&boundary_fluxes_ptr->at(direction)),
-                     tensors.at(direction)...);
-        }
-      },
-      box);
-}
-
-template <typename Metavariables>
-template <size_t VolumeDim, typename BoundaryScheme, typename DbTagsList>
-void ComputeTimeDerivative<Metavariables>::
-    fill_mortar_data_for_internal_boundaries(
-        const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
-  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
-  using all_mortar_data_tag =
-      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, VolumeDim>;
-  using boundary_data_computer =
-      typename BoundaryScheme::boundary_data_computer;
-
-  // Collect data on element interfaces
-  auto boundary_data_on_interfaces =
-      interface_apply<domain::Tags::InternalDirections<VolumeDim>,
-                      boundary_data_computer>(*box);
-
-  // Project collected data to all internal mortars and store in DataBox
-  const auto& element = db::get<domain::Tags::Element<VolumeDim>>(*box);
-  const auto& face_meshes =
-      get<domain::Tags::Interface<domain::Tags::InternalDirections<VolumeDim>,
-                                  domain::Tags::Mesh<VolumeDim - 1>>>(*box);
-  const auto& mortar_meshes =
-      get<::Tags::Mortars<domain::Tags::Mesh<VolumeDim - 1>, VolumeDim>>(*box);
-  const auto& mortar_sizes =
-      get<::Tags::Mortars<::Tags::MortarSize<VolumeDim - 1>, VolumeDim>>(*box);
-  const auto& temporal_id = get<temporal_id_tag>(*box);
-  const auto integration_order =
-      db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
-  for (const auto& [direction, neighbors] : element.neighbors()) {
-    const auto& face_mesh = face_meshes.at(direction);
-    for (const auto& neighbor : neighbors) {
-      const auto mortar_id = std::make_pair(direction, neighbor);
-      const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-      const auto& mortar_size = mortar_sizes.at(mortar_id);
-
-      // Project the data from the face to the mortar.
-      // Where no projection is necessary we `std::move` the data directly to
-      // avoid a copy. We can't move the data or modify it in-place when
-      // projecting, because in that case the face may touch more than one
-      // mortar so we need to keep the data around.
-      auto boundary_data_on_mortar =
-          Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
-              ? boundary_data_on_interfaces.at(direction).project_to_mortar(
-                    face_mesh, mortar_mesh, mortar_size)
-              : std::move(boundary_data_on_interfaces.at(direction));
-
-      // Store the boundary data on this side of the mortar
-      db::mutate<all_mortar_data_tag>(
-          box, [&mortar_id, &temporal_id, &boundary_data_on_mortar,
-                &integration_order](
-                   const gsl::not_null<typename all_mortar_data_tag::type*>
-                       all_mortar_data) noexcept {
-              auto& mortar_data = all_mortar_data->at(mortar_id);
-              mortar_data.integration_order(integration_order);
-              mortar_data.local_insert(temporal_id,
-                                       std::move(boundary_data_on_mortar));
-          });
-    }
-  }
-}
-
-template <typename Metavariables>
 template <typename ParallelComponent, typename DbTagsList>
 void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
-  using system = typename Metavariables::system;
   constexpr size_t volume_dim = Metavariables::volume_dim;
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
 
-  if constexpr (detail::has_boundary_correction_base_v<system>) {
     const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
     const auto& all_mortar_data =
         db::get<evolution::dg::Tags::MortarData<volume_dim>>(*box);
@@ -824,60 +681,6 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
           db::get<domain::Tags::Mesh<volume_dim>>(*box),
           db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
               *box));
-    }
-  } else {
-    using BoundaryScheme = typename Metavariables::boundary_scheme;
-    using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
-    using receive_temporal_id_tag =
-        typename BoundaryScheme::receive_temporal_id_tag;
-    using fluxes_inbox_tag = ::dg::FluxesInboxTag<BoundaryScheme>;
-    using all_mortar_data_tag =
-        ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
-
-    const auto& all_mortar_data = get<all_mortar_data_tag>(*box);
-    const auto& temporal_id = db::get<temporal_id_tag>(*box);
-    const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(*box);
-    const auto& mortar_meshes = db::get<
-        ::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(*box);
-
-    // Iterate over neighbors
-    for (const auto& direction_and_neighbors : element.neighbors()) {
-      const auto& direction = direction_and_neighbors.first;
-      const size_t dimension = direction.dimension();
-      const auto& neighbors_in_direction = direction_and_neighbors.second;
-      const auto& orientation = neighbors_in_direction.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
-
-      for (const auto& neighbor : neighbors_in_direction) {
-        const ::dg::MortarId<volume_dim> mortar_id{direction, neighbor};
-
-        // Make a copy of the local boundary data on the mortar to send to the
-        // neighbor
-        ASSERT(all_mortar_data.find(mortar_id) != all_mortar_data.end(),
-               "Mortar data on mortar "
-                   << mortar_id
-                   << " not available for sending. Did you forget to collect "
-                      "the data on mortars?");
-        auto neighbor_boundary_data_on_mortar =
-            all_mortar_data.at(mortar_id).local_data(temporal_id);
-
-        // Reorient the data to the neighbor orientation if necessary
-        if (not orientation.is_aligned()) {
-          neighbor_boundary_data_on_mortar.orient_on_slice(
-              mortar_meshes.at(mortar_id).extents(), dimension, orientation);
-        }
-
-        // Send mortar data (named 'neighbor_boundary_data_on_mortar') to
-        // neighbor
-        Parallel::receive_data<fluxes_inbox_tag>(
-            receiver_proxy[neighbor], temporal_id,
-            std::make_pair(
-                ::dg::MortarId<volume_dim>{direction_from_neighbor,
-                                           element.id()},
-                std::make_pair(receive_temporal_id,
-                               std::move(neighbor_boundary_data_on_mortar))));
-      }
-    }
   }
 }
 }  // namespace evolution::dg::Actions
