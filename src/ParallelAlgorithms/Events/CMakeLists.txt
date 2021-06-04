@@ -12,6 +12,7 @@ spectre_target_headers(
   Factory.hpp
   ObserveErrorNorms.hpp
   ObserveFields.hpp
+  ObserveNorms.hpp
   ObserveTimeStep.hpp
   ObserveVolumeIntegrals.hpp
   )
