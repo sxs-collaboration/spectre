@@ -410,7 +410,9 @@ void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) noexcept {
   INFO("Test inverse map");
   CAPTURE(test_point);
-  CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).value());
+  const auto expected_test_point = map.inverse(map(test_point));
+  REQUIRE(expected_test_point.has_value());
+  CHECK_ITERABLE_APPROX(test_point, expected_test_point.value());
 }
 
 template <typename Map, typename T>
@@ -420,10 +422,12 @@ void test_inverse_map(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) noexcept {
-  CHECK_ITERABLE_APPROX(
-      test_point, map.inverse(map(test_point, time, functions_of_time), time,
-                              functions_of_time)
-                      .value());
+  INFO("Test inverse map time dependent");
+  CAPTURE(test_point);
+  const auto expected_test_point = map.inverse(
+      map(test_point, time, functions_of_time), time, functions_of_time);
+  REQUIRE(expected_test_point.has_value());
+  CHECK_ITERABLE_APPROX(test_point, expected_test_point.value());
 }
 // @}
 

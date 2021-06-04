@@ -49,12 +49,13 @@ void test_cylindrical_side_sphere_two_encloses_sphere_one() {
   const std::array<double, 2> z_planes =
       [&gen, &unit_dis, &center_one, &radius_one ]() noexcept {
     // Make sure each z_plane intersects sphere_one in two locations;
-    // to do this, ensure that each plane is no closer than 5% of the
-    // radius to the min/max z-extents of sphere_one.
+    // to do this, ensure that each plane is no closer than 8% of the
+    // radius to the min/max z-extents of sphere_one and no closer than
+    // 1% of the radius to the center.
     const double z_plane_1 =
-        center_one[2] - (0.95 * unit_dis(gen)) * radius_one;
+        center_one[2] - (0.01 + 0.91 * unit_dis(gen)) * radius_one;
     const double z_plane_2 =
-        center_one[2] + (0.95 * unit_dis(gen)) * radius_one;
+        center_one[2] + (0.01 + 0.91 * unit_dis(gen)) * radius_one;
     return std::array<double, 2>{z_plane_1, z_plane_2};
   }
   ();
@@ -102,7 +103,7 @@ void test_cylindrical_side_sphere_one_encloses_sphere_two() {
   CAPTURE(radius_one);
 
   // Make sure each z_plane intersects sphere_one in two locations;
-  // to do this, ensure that each plane is no closer than 5% of the
+  // to do this, ensure that each plane is no closer than 8% of the
   // radius to the min/max z-extents of sphere_one.
   // Also make sure that each z_plane is not more than 20% away from
   // the center of sphere_one (because we need to fit sphere_two between
@@ -110,9 +111,9 @@ void test_cylindrical_side_sphere_one_encloses_sphere_two() {
   const std::array<double, 2> z_planes =
       [&gen, &unit_dis, &center_one, &radius_one ]() noexcept {
     const double z_plane_1 =
-        center_one[2] - (0.2 + 0.75 * unit_dis(gen)) * radius_one;
+        center_one[2] - (0.2 + 0.72 * unit_dis(gen)) * radius_one;
     const double z_plane_2 =
-        center_one[2] + (0.2 + 0.75 * unit_dis(gen)) * radius_one;
+        center_one[2] + (0.2 + 0.72 * unit_dis(gen)) * radius_one;
     return std::array<double, 2>{z_plane_1, z_plane_2};
   }
   ();
