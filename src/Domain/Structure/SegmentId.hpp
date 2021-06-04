@@ -14,11 +14,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
-/// \cond
-template <size_t>
-class ElementId;
-/// \endcond
-
 /*!
  *  \ingroup ComputationalDomainGroup
  *  \brief A SegmentId labels a segment of the interval [-1,1] and is used to
@@ -47,31 +42,9 @@ class ElementId;
  * a segment can only abut its `sibling` or `abutting nibling`, while on the
  * opposite side, it can abut a segment on its level, the next-lower, or the
  * next-higher level.
- *
- * \details
- * Because `ElementId` is built up of `VolumeDim` `SegmentId`s, and `ElementId`
- * is used as a Charm++ index, `ElementId` has the following restrictions:
- * - `ElementId` must satisfy `std::is_pod`
- * - `ElementId` must not be larger than the size of three `int`s, i.e.
- *   `sizeof(ElementId) <= 3 * sizeof(int)`
- * which means `SegmentId` must be the size of an `int` and satisfy
- * `std::is_pod`. In order to satisfy the size requirement, we use bitfields
- * internally in `SegmentId` with `ASSERT`s in the constructors to check for
- * potential overflows.
  */
 class SegmentId {
  public:
-  static constexpr size_t block_id_bits = 7;
-  static constexpr size_t refinement_bits = 4;
-  static constexpr size_t max_refinement_level = 16;
-  static constexpr size_t grid_index_bits = 5;
-  static_assert(block_id_bits + refinement_bits + max_refinement_level +
-                        grid_index_bits ==
-                    8 * sizeof(int),
-                "Bit representation requires padding or is too large");
-  static_assert(two_to_the(refinement_bits) >= max_refinement_level,
-                "Not enough bits to represent all refinement levels");
-
   /// Default constructor needed for Charm++ serialization.
   SegmentId() noexcept = default;
   SegmentId(const SegmentId& segment_id) noexcept = default;
@@ -115,44 +88,14 @@ class SegmentId {
   /// Does the segment overlap with another?
   bool overlaps(const SegmentId& other) const noexcept;
 
+  // NOLINTNEXTLINE
+  void pup(PUP::er& p) noexcept;
+
  private:
-  template <size_t VolumeDim>
-  friend class ElementId;
-
-  /// Construct a SegmentId that stores a block ID and a grid index in addition
-  /// to the index within a block. Storing the data here makes it easier for
-  /// ElementId to satisfy the size requirements, because it just has to store
-  /// `VolumeDim` SegmentIds. ElementId is responsible for managing the block ID
-  /// and the grid index of its SegmentIds.
-  ///
-  /// \see ElementId
-  SegmentId(size_t block_id, size_t refinement_level, size_t index,
-            size_t grid_index) noexcept;
-  size_t block_id() const noexcept { return block_id_; }
-  void set_block_id(const size_t block_id) noexcept {
-    ASSERT(block_id < two_to_the(block_id_bits),
-           "Block id out of bounds: " << block_id << "\nMaximum value is: "
-                                      << two_to_the(block_id_bits) - 1);
-    block_id_ = block_id;
-  }
-  size_t grid_index() const noexcept { return grid_index_; }
-  void set_grid_index(const size_t grid_index) noexcept {
-    ASSERT(grid_index < two_to_the(grid_index_bits),
-           "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
-                                        << two_to_the(grid_index_bits) - 1);
-    grid_index_ = grid_index;
-  }
-
-  unsigned block_id_ : block_id_bits;
-  unsigned refinement_level_ : refinement_bits;
-  unsigned index_ : max_refinement_level;
-  unsigned grid_index_ : grid_index_bits;
+  static constexpr size_t max_refinement_level = 16;
+  size_t refinement_level_;
+  size_t index_;
 };
-
-/// \cond
-// macro that generate the pup operator for SegmentId
-PUPbytes(SegmentId)  // NOLINT
-/// \endcond
 
 /// Output operator for SegmentId.
 std::ostream& operator<<(std::ostream& os, const SegmentId& id) noexcept;
