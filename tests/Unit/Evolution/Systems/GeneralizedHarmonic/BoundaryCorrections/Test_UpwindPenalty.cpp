@@ -72,7 +72,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.GeneralizedHarmonic.UpwindPenalty",
+SPECTRE_TEST_CASE("Unit.GeneralizedHarmonic.BoundaryCorrections.UpwindPenalty",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections"};

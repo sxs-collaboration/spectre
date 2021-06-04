@@ -98,18 +98,12 @@ double Hll<Dim>::dg_package_data(
   *packaged_momentum_density = momentum_density;
   *packaged_energy_density = energy_density;
 
-  dot_product(packaged_normal_dot_flux_mass_density, flux_mass_density,
-              normal_covector);
-  for (size_t i = 0; i < Dim; ++i) {
-    packaged_normal_dot_flux_momentum_density->get(i) =
-        get<0>(normal_covector) * flux_momentum_density.get(0, i);
-    for (size_t j = 1; j < Dim; ++j) {
-      packaged_normal_dot_flux_momentum_density->get(i) +=
-          normal_covector.get(j) * flux_momentum_density.get(j, i);
-    }
-  }
-  dot_product(packaged_normal_dot_flux_energy_density, flux_energy_density,
-              normal_covector);
+  normal_dot_flux(packaged_normal_dot_flux_mass_density, normal_covector,
+                  flux_mass_density);
+  normal_dot_flux(packaged_normal_dot_flux_momentum_density, normal_covector,
+                  flux_momentum_density);
+  normal_dot_flux(packaged_normal_dot_flux_energy_density, normal_covector,
+                  flux_energy_density);
 
   return fmax(max(get(*packaged_largest_outgoing_char_speed)),
               -min(get(*packaged_largest_ingoing_char_speed)));

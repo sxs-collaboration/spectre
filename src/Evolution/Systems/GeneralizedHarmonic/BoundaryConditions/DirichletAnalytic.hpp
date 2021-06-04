@@ -46,7 +46,6 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       "DirichletAnalytic boundary conditions setting the value of the "
       "spacetime metric and its derivatives Phi and Pi to the analytic "
       "solution or analytic data."};
-  static std::string name() noexcept { return "DirichletAnalytic"; }
 
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) noexcept = default;

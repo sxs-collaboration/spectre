@@ -19,7 +19,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Rusanov", "[Unit][GrMhd]") {
+SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Rusanov",
+                  "[Unit][GrMhd]") {
   PUPable_reg(grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections"};

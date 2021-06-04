@@ -28,7 +28,7 @@
  *
  * \details
  * Returns \f$n_i F^i_{j\ldots}\f$, where the flux tensor \f$F\f$ must have an
- * upper spatial first index and may have arbitray extra indices.
+ * upper spatial first index and may have arbitrary extra indices.
  */
 template <size_t VolumeDim, typename Fr, typename Symm,
           typename... RemainingIndices,

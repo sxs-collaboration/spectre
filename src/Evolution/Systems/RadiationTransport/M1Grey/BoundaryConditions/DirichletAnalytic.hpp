@@ -55,7 +55,6 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions using either analytic solution or "
       "analytic data."};
-  static std::string name() noexcept { return "DirichletAnalytic"; }
 
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) noexcept = default;

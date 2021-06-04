@@ -84,23 +84,16 @@ double Rusanov::dg_package_data(
   *packaged_tilde_b = tilde_b;
   *packaged_tilde_phi = tilde_phi;
 
-  dot_product(packaged_normal_dot_flux_tilde_d, flux_tilde_d, normal_covector);
-  dot_product(packaged_normal_dot_flux_tilde_tau, flux_tilde_tau,
-              normal_covector);
-  dot_product(packaged_normal_dot_flux_tilde_phi, flux_tilde_phi,
-              normal_covector);
-  for (size_t i = 0; i < 3; ++i) {
-    packaged_normal_dot_flux_tilde_s->get(i) =
-        get<0>(normal_covector) * flux_tilde_s.get(0, i);
-    packaged_normal_dot_flux_tilde_b->get(i) =
-        get<0>(normal_covector) * flux_tilde_b.get(0, i);
-    for (size_t j = 1; j < 3; ++j) {
-      packaged_normal_dot_flux_tilde_s->get(i) +=
-          normal_covector.get(j) * flux_tilde_s.get(j, i);
-      packaged_normal_dot_flux_tilde_b->get(i) +=
-          normal_covector.get(j) * flux_tilde_b.get(j, i);
-    }
-  }
+  normal_dot_flux(packaged_normal_dot_flux_tilde_d, normal_covector,
+                  flux_tilde_d);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_tau, normal_covector,
+                  flux_tilde_tau);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_s, normal_covector,
+                  flux_tilde_s);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_b, normal_covector,
+                  flux_tilde_b);
+  normal_dot_flux(packaged_normal_dot_flux_tilde_phi, normal_covector,
+                  flux_tilde_phi);
 
   return max(get(*packaged_abs_char_speed));
 }

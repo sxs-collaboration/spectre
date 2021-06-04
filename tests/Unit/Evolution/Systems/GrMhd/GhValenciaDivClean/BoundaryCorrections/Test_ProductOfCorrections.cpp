@@ -262,7 +262,7 @@ void test_boundary_correction_combination(
 }  // namespace
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GhValenciaDivClean.ProductOfCorrections",
+    "Unit.GhValenciaDivClean.BoundaryCorrections.ProductOfCorrections",
     "[Unit][Evolution]") {
   // scoped to separate out each product combination
   {

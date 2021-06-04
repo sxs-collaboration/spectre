@@ -45,7 +45,6 @@ class DirichletAnalytic final : public BoundaryCondition {
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions using either analytic solution or "
       "analytic data."};
-  static std::string name() noexcept { return "DirichletAnalytic"; }
 
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) noexcept = default;
