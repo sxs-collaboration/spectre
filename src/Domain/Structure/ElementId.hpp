@@ -49,6 +49,20 @@ class er;
 template <size_t VolumeDim>
 class ElementId {
  public:
+  static constexpr size_t block_id_bits = 24;
+  static constexpr size_t grid_index_bits = 8;
+  static constexpr size_t refinement_bits = 4;
+  static constexpr size_t max_refinement_level = 16;
+  // We need some padding to ensure bit fields align with type boundaries,
+  // otherwise the size of `ElementId` is too large.
+  static constexpr size_t padding = 4;
+  static_assert(block_id_bits + 3 * (refinement_bits + max_refinement_level) +
+                        grid_index_bits + padding ==
+                    3 * 8 * sizeof(int),
+                "Bit representation requires padding or is too large");
+  static_assert(two_to_the(refinement_bits) >= max_refinement_level,
+                "Not enough bits to represent all refinement levels");
+
   static constexpr size_t volume_dim = VolumeDim;
 
   /// Default constructor needed for Charm++ serialization.
@@ -70,42 +84,45 @@ class ElementId {
 
   ElementId<VolumeDim> id_of_parent(size_t dim) const noexcept;
 
-  size_t block_id() const noexcept {
-    ASSERT(
-        alg::all_of(
-            segment_ids_,
-            [this](const SegmentId& current_id) noexcept {
-              return current_id.block_id() == segment_ids_[0].block_id();
-            }),
-        "Not all of the `SegmentId`s inside `ElementId` have same `BlockId`.");
-    return segment_ids_[0].block_id();
-  }
+  size_t block_id() const noexcept { return block_id_; }
 
-  size_t grid_index() const noexcept {
-    ASSERT(alg::all_of(segment_ids_,
-                       [this](const SegmentId& local_id) noexcept {
-                         return local_id.grid_index() ==
-                                segment_ids_[0].grid_index();
-                       }),
-           "Not all of the `SegmentId`s inside `ElementId` have the same "
-           "`grid_index`.");
-    return segment_ids_[0].grid_index();
-  }
+  size_t grid_index() const noexcept { return grid_index_; }
 
-  const std::array<SegmentId, VolumeDim>& segment_ids() const noexcept {
-    return segment_ids_;
+  std::array<SegmentId, VolumeDim> segment_ids() const noexcept {
+    if constexpr (VolumeDim == 1) {
+      return {{SegmentId{refinement_level_xi_, index_xi_}}};
+    } else if constexpr (VolumeDim == 2) {
+      return {{SegmentId{refinement_level_xi_, index_xi_},
+               SegmentId{refinement_level_eta_, index_eta_}}};
+    } else if constexpr (VolumeDim == 3) {
+      return {{SegmentId{refinement_level_xi_, index_xi_},
+               SegmentId{refinement_level_eta_, index_eta_},
+               SegmentId{refinement_level_zeta_, index_zeta_}}};
+    }
   }
-
-  /// Serialization for Charm++
-  void pup(PUP::er& p) noexcept;  // NOLINT
 
   /// Returns an ElementId meant for identifying data on external boundaries,
   /// which should never correspond to the Id of an actual element.
   static ElementId<VolumeDim> external_boundary_id() noexcept;
 
  private:
-  std::array<SegmentId, VolumeDim> segment_ids_;
+  uint32_t block_id_ : block_id_bits;
+  uint32_t grid_index_ : grid_index_bits;  // end first 32 bits
+  uint32_t index_xi_ : max_refinement_level;
+  uint32_t index_eta_ : max_refinement_level;
+  uint32_t index_zeta_ : max_refinement_level;
+  uint32_t empty_ : padding;
+  uint32_t refinement_level_xi_ : refinement_bits;  // end second 32 bits
+  uint32_t refinement_level_eta_ : refinement_bits;
+  uint32_t refinement_level_zeta_ : refinement_bits;  // end third 32 bits
 };
+
+/// \cond
+// macro that generate the pup operator for SegmentId
+PUPbytes(ElementId<1>)      // NOLINT
+PUPbytes(ElementId<2>)  // NOLINT
+PUPbytes(ElementId<3>)  // NOLINT
+/// \endcond
 
 /// Output operator for ElementId.
 template <size_t VolumeDim>

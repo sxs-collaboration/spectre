@@ -25,9 +25,9 @@ static_assert(std::is_pod<ElementId<1>>::value, "ElementId is not POD");
 static_assert(std::is_pod<ElementId<2>>::value, "ElementId is not POD");
 static_assert(std::is_pod<ElementId<3>>::value, "ElementId is not POD");
 
-static_assert(sizeof(ElementId<1>) == 1 * sizeof(int),
+static_assert(sizeof(ElementId<1>) == 3 * sizeof(int),
               "Wrong size for ElementId<1>");
-static_assert(sizeof(ElementId<2>) == 2 * sizeof(int),
+static_assert(sizeof(ElementId<2>) == 3 * sizeof(int),
               "Wrong size for ElementId<2>");
 static_assert(sizeof(ElementId<3>) == 3 * sizeof(int),
               "Wrong size for ElementId<3>");
@@ -35,17 +35,50 @@ static_assert(sizeof(ElementId<3>) == 3 * sizeof(int),
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id,
                                 const size_t grid_index) noexcept
-    : segment_ids_(
-          make_array<VolumeDim>(SegmentId(block_id, 0, 0, grid_index))) {}
+    : block_id_(block_id),
+      grid_index_(grid_index),
+      index_xi_{0},
+      index_eta_{0},
+      index_zeta_{0},
+      empty_{0},
+      refinement_level_xi_{0},
+      refinement_level_eta_{0},
+      refinement_level_zeta_{0} {
+  ASSERT(block_id < two_to_the(block_id_bits),
+         "Block id out of bounds: " << block_id << "\nMaximum value is: "
+                                    << two_to_the(block_id_bits) - 1);
+  ASSERT(grid_index < two_to_the(grid_index_bits),
+         "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
+                                      << two_to_the(grid_index_bits) - 1);
+}
 
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id,
                                 std::array<SegmentId, VolumeDim> segment_ids,
                                 const size_t grid_index) noexcept
-    : segment_ids_(segment_ids) {
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    gsl::at(segment_ids_, d).set_block_id(block_id);
-    gsl::at(segment_ids_, d).set_grid_index(grid_index);
+    : block_id_(block_id), grid_index_(grid_index) {
+  ASSERT(block_id < two_to_the(block_id_bits),
+         "Block id out of bounds: " << block_id << "\nMaximum value is: "
+                                    << two_to_the(block_id_bits) - 1);
+  ASSERT(grid_index < two_to_the(grid_index_bits),
+         "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
+                                      << two_to_the(grid_index_bits) - 1);
+  empty_ = 0;
+  index_xi_ = segment_ids[0].index();
+  refinement_level_xi_ = segment_ids[0].refinement_level();
+  if constexpr (VolumeDim > 1) {
+    index_eta_ = segment_ids[1].index();
+    refinement_level_eta_ = segment_ids[1].refinement_level();
+  } else {
+    index_eta_ = 0;
+    refinement_level_eta_ = 0;
+  }
+  if constexpr (VolumeDim > 2) {
+    index_zeta_ = segment_ids[2].index();
+    refinement_level_zeta_ = segment_ids[2].refinement_level();
+  } else {
+    index_zeta_ = 0;
+    refinement_level_zeta_ = 0;
   }
 }
 
@@ -53,7 +86,7 @@ template <size_t VolumeDim>
 ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
                                                        const Side side) const
     noexcept {
-  std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
+  std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids();
   gsl::at(new_segment_ids, dim) =
       gsl::at(new_segment_ids, dim).id_of_child(side);
   return {block_id(), new_segment_ids, grid_index()};
@@ -62,14 +95,9 @@ ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
 template <size_t VolumeDim>
 ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(const size_t dim) const
     noexcept {
-  std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
+  std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids();
   gsl::at(new_segment_ids, dim) = gsl::at(new_segment_ids, dim).id_of_parent();
   return {block_id(), new_segment_ids, grid_index()};
-}
-
-template <size_t VolumeDim>
-void ElementId<VolumeDim>::pup(PUP::er& p) noexcept {
-  p | segment_ids_;
 }
 
 template <size_t VolumeDim>
@@ -80,8 +108,8 @@ ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
   // refinement level in the largest block (by id), in practice it is very
   // unlikely we will ever get to that large of a refinement.
   return ElementId<VolumeDim>(
-      two_to_the(SegmentId::block_id_bits) - 1,
-      make_array<VolumeDim>(SegmentId(SegmentId::max_refinement_level, 0)));
+      two_to_the(ElementId::block_id_bits) - 1,
+      make_array<VolumeDim>(SegmentId(ElementId::max_refinement_level, 0)));
 }
 
 template <size_t VolumeDim>
