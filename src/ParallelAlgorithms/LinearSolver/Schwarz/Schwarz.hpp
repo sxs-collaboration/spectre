@@ -168,7 +168,6 @@ struct Schwarz {
   using solve = tmpl::list<
       async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label>,
       detail::SendOverlapData<FieldsTag, OptionsGroup, SubdomainOperator>,
-      detail::ReceiveOverlapData<FieldsTag, OptionsGroup, SubdomainOperator>,
       detail::SolveSubdomain<FieldsTag, OptionsGroup, SubdomainOperator>,
       detail::ReceiveOverlapSolution<FieldsTag, OptionsGroup,
                                      SubdomainOperator>,

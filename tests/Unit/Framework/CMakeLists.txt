@@ -15,18 +15,18 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   Boost::boost
-  DataStructures
   DataStructuresHelpers
   Options
   Parallel
   SystemUtilities
-  Utilities
 
   PRIVATE
   Informer
 
   PUBLIC
+  DataStructures
   ErrorHandling
   Python::NumPy
   Python::Python
+  Utilities
   )

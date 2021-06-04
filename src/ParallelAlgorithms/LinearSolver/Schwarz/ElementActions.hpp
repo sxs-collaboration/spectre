@@ -15,7 +15,6 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Index.hpp"
-#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -46,10 +45,10 @@
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp"
-#include "ParallelAlgorithms/LinearSolver/Schwarz/ComputeTags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/Weighting.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -179,23 +178,12 @@ struct InitializeElement {
   using const_global_cache_tags = tmpl::list<Tags::MaxOverlap<OptionsGroup>>;
 
   using simple_tags =
-      tmpl::list<Tags::Overlaps<residual_tag, Dim, OptionsGroup>,
+      tmpl::list<Tags::IntrudingExtents<Dim, OptionsGroup>,
+                 Tags::Weight<OptionsGroup>,
+                 domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
+                                         Tags::Weight<OptionsGroup>>,
                  SubdomainDataBufferTag<SubdomainData, OptionsGroup>>;
-  using compute_tags = tmpl::list<
-      domain::Tags::InternalDirectionsCompute<Dim>,
-      domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
-      domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<Dim>,
-                                     domain::Tags::Direction<Dim>>,
-      domain::Tags::InterfaceCompute<
-          domain::Tags::BoundaryDirectionsInterior<Dim>,
-          domain::Tags::Direction<Dim>>,
-      Tags::IntrudingExtentsCompute<Dim, OptionsGroup>,
-      Tags::IntrudingOverlapWidthsCompute<Dim, OptionsGroup>,
-      domain::Tags::LogicalCoordinates<Dim>,
-      Tags::ElementWeightCompute<Dim, OptionsGroup>,
-      domain::Tags::InterfaceCompute<
-          domain::Tags::InternalDirections<Dim>,
-          Tags::IntrudingOverlapWeightCompute<Dim, OptionsGroup>>>;
+  using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -204,11 +192,59 @@ struct InitializeElement {
                     const ElementId<Dim>& /*element_id*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& element_mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-    const size_t element_num_points = element_mesh.number_of_grid_points();
-    Initialization::mutate_assign<
-        tmpl::list<SubdomainDataBufferTag<SubdomainData, OptionsGroup>>>(
-        make_not_null(&box), SubdomainData{element_num_points});
+    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
+    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+    const size_t num_points = mesh.number_of_grid_points();
+    const auto& logical_coords =
+        db::get<domain::Tags::Coordinates<Dim, Frame::Logical>>(box);
+    const size_t max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
+
+    // Intruding overlaps
+    std::array<size_t, Dim> intruding_extents{};
+    std::array<double, Dim> intruding_overlap_widths{};
+    for (size_t d = 0; d < Dim; ++d) {
+      gsl::at(intruding_extents, d) =
+          LinearSolver::Schwarz::overlap_extent(mesh.extents(d), max_overlap);
+      const auto& collocation_points =
+          Spectral::collocation_points(mesh.slice_through(d));
+      gsl::at(intruding_overlap_widths, d) =
+          LinearSolver::Schwarz::overlap_width(gsl::at(intruding_extents, d),
+                                               collocation_points);
+    }
+
+    // Element weight
+    Scalar<DataVector> element_weight{num_points, 1.};
+    // For max_overlap > 0 all overlaps will have non-zero extents on an LGL
+    // mesh (because it has at least 2 points per dimension), so we don't need
+    // to check their extents are non-zero individually
+    if (LIKELY(max_overlap > 0)) {
+      LinearSolver::Schwarz::element_weight(
+          make_not_null(&element_weight), logical_coords,
+          intruding_overlap_widths, element.external_boundaries());
+    }
+
+    // Intruding overlap weights
+    std::unordered_map<Direction<Dim>, Scalar<DataVector>>
+        intruding_overlap_weights{};
+    for (const auto& direction : element.internal_boundaries()) {
+      const size_t dim = direction.dimension();
+      if (gsl::at(intruding_extents, dim) > 0) {
+        const auto intruding_logical_coords =
+            LinearSolver::Schwarz::data_on_overlap(
+                logical_coords, mesh.extents(), gsl::at(intruding_extents, dim),
+                direction);
+        intruding_overlap_weights[direction] =
+            LinearSolver::Schwarz::intruding_weight(
+                intruding_logical_coords, direction, intruding_overlap_widths,
+                element.neighbors().at(direction).size(),
+                element.external_boundaries());
+      }
+    }
+
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), std::move(intruding_extents),
+        std::move(element_weight), std::move(intruding_overlap_weights),
+        SubdomainData{num_points});
     return std::make_tuple(std::move(box));
   }
 };
@@ -220,14 +256,6 @@ using SendOverlapData = LinearSolver::Schwarz::Actions::SendOverlapFields<
     tmpl::list<db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>,
     OptionsGroup, true>;
 
-// Wait for the residual data on regions of this element's subdomain that
-// overlap with other elements.
-template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator>
-using ReceiveOverlapData = LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
-    SubdomainOperator::volume_dim,
-    tmpl::list<db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>,
-    OptionsGroup>;
-
 template <size_t Dim, typename OptionsGroup, typename OverlapSolution>
 struct OverlapSolutionInboxTag
     : public Parallel::InboxInserters::Map<
@@ -236,10 +264,11 @@ struct OverlapSolutionInboxTag
   using type = std::map<temporal_id, OverlapMap<Dim, OverlapSolution>>;
 };
 
-// Once the residual data is available on all overlaps, solve the restricted
-// problem for this element-centered subdomain. Apply the weighted solution on
-// this element directly and send the solution on overlap regions to the
-// neighbors that they overlap with.
+// Wait for the residual data on regions of this element's subdomain that
+// overlap with other elements. Once the residual data is available on all
+// overlaps, solve the restricted problem for this element-centered subdomain.
+// Apply the weighted solution on this element directly and send the solution on
+// overlap regions to the neighbors that they overlap with.
 template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator>
 struct SolveSubdomain {
  private:
@@ -247,6 +276,9 @@ struct SolveSubdomain {
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
   static constexpr size_t Dim = SubdomainOperator::volume_dim;
+  using overlap_residuals_inbox_tag =
+      Actions::detail::OverlapFieldsTag<Dim, tmpl::list<residual_tag>,
+                                        OptionsGroup>;
   using SubdomainData =
       ElementCenteredSubdomainData<Dim, typename residual_tag::tags_list>;
   using OverlapData = typename SubdomainData::OverlapData;
@@ -257,17 +289,29 @@ struct SolveSubdomain {
   using const_global_cache_tags =
       tmpl::list<Tags::MaxOverlap<OptionsGroup>,
                  logging::Tags::Verbosity<OptionsGroup>>;
+  using inbox_tags = tmpl::list<overlap_residuals_inbox_tag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const ElementId<Dim>& element_id, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
+    const size_t max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
+
+    // Wait for communicated overlap data
+    const bool has_overlap_data =
+        max_overlap > 0 and element.number_of_neighbors() > 0;
+    if (LIKELY(has_overlap_data) and
+        not dg::has_received_from_all_mortars<overlap_residuals_inbox_tag>(
+            iteration_id, element, inboxes)) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
 
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -276,21 +320,20 @@ struct SolveSubdomain {
                        Options::name<OptionsGroup>(), iteration_id);
     }
 
-    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
-    const size_t max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
-
     // Assemble the subdomain data from the data on the element and the
     // communicated overlap data
-    db::mutate<SubdomainDataBufferTag<SubdomainData, OptionsGroup>,
-               Tags::Overlaps<residual_tag, Dim, OptionsGroup>>(
+    db::mutate<SubdomainDataBufferTag<SubdomainData, OptionsGroup>>(
         make_not_null(&box),
-        [max_overlap, &element](
+        [&inboxes, &iteration_id, &has_overlap_data](
             const gsl::not_null<SubdomainData*> subdomain_data,
-            const auto overlap_residuals, const auto& residual) noexcept {
+            const auto& residual) noexcept {
           subdomain_data->element_data = residual;
           // Nothing was communicated if the overlaps are empty
-          if (LIKELY(max_overlap > 0 and element.number_of_neighbors() > 0)) {
-            subdomain_data->overlap_data = std::move(*overlap_residuals);
+          if (LIKELY(has_overlap_data)) {
+            subdomain_data->overlap_data =
+                std::move(tuples::get<overlap_residuals_inbox_tag>(inboxes)
+                              .extract(iteration_id)
+                              .mapped());
           }
         },
         db::get<residual_tag>(box));
@@ -380,7 +423,7 @@ struct SolveSubdomain {
                 std::move(overlap_solution)));
       }
     }
-    return {std::move(box)};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
 
