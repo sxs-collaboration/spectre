@@ -162,7 +162,6 @@ void test_boundary_condition_combination(
                  evolution::dg::Actions::detail::NormalVector<3_st>>,
       typename product_condition_type::dg_interior_evolved_variables_tags,
       typename product_condition_type::dg_interior_primitive_variables_tags,
-      typename product_condition_type::dg_interior_primitive_variables_tags,
       typename product_condition_type::dg_interior_temporary_tags,
       typename product_condition_type::dg_interior_dt_vars_tags,
       typename product_condition_type::dg_interior_deriv_vars_tags>;
@@ -202,6 +201,15 @@ void test_boundary_condition_combination(
               make_not_null(&gen), make_not_null(&dist), element_size);
     }
   });
+  if constexpr (tmpl::list_contains_v<product_arg_tags,
+                                      gr::Tags::SpacetimeMetric<3_st>>) {
+    get<0, 0>(tuples::get<gr::Tags::SpacetimeMetric<3_st>>(
+        argument_variables)) += -2.0;
+    for (size_t i = 0; i < 3; ++i) {
+      tuples::get<gr::Tags::SpacetimeMetric<3_st>>(argument_variables)
+          .get(i + 1, 0) *= 0.01;
+    }
+  }
 
   using gh_bc_helper = ComputeBoundaryConditionHelper<
       DerivedGhCondition,
@@ -221,55 +229,6 @@ void test_boundary_condition_combination(
   static constexpr evolution::BoundaryConditions::Type bc_type =
       product_condition_type::bc_type;
 
-  if constexpr (bc_type == evolution::BoundaryConditions::Type::Ghost or
-                bc_type == evolution::BoundaryConditions::Type::
-                               GhostAndTimeDerivative) {
-    auto gh_result = gh_bc_helper::dg_ghost(
-        make_not_null(&expected_mutable_variables), argument_variables,
-        gridless_box, derived_gh_condition);
-    auto valencia_result = valencia_bc_helper::dg_ghost(
-        make_not_null(&expected_mutable_variables), argument_variables,
-        gridless_box, derived_valencia_condition);
-    auto product_result = product_bc_helper::dg_ghost(
-        make_not_null(&mutable_variables), argument_variables, gridless_box,
-        derived_product_condition);
-    if (gh_result.has_value()) {
-      if (valencia_result.has_value()) {
-        CHECK((product_result.value() ==
-               gh_result.value() + ";" + valencia_result.value()));
-      } else {
-        CHECK(product_result == gh_result);
-      }
-    } else {
-      CHECK(product_result == valencia_result);
-    }
-    CHECK_VARIABLES_APPROX(mutable_variables, expected_mutable_variables);
-  }
-  if constexpr (bc_type ==
-                    evolution::BoundaryConditions::Type::TimeDerivative or
-                bc_type == evolution::BoundaryConditions::Type::
-                               GhostAndTimeDerivative) {
-    auto gh_result = gh_bc_helper::dg_time_derivative(
-        make_not_null(&expected_mutable_variables), argument_variables,
-        gridless_box, derived_gh_condition);
-    auto valencia_result = valencia_bc_helper::dg_time_derivative(
-        make_not_null(&expected_mutable_variables), argument_variables,
-        gridless_box, derived_valencia_condition);
-    auto product_result = product_bc_helper::dg_time_derivative(
-        make_not_null(&mutable_variables), argument_variables, gridless_box,
-        derived_product_condition);
-    if (gh_result.has_value()) {
-      if (valencia_result.has_value()) {
-        CHECK((product_result.value() ==
-               gh_result.value() + ";" + valencia_result.value()));
-      } else {
-        CHECK(product_result == gh_result);
-      }
-    } else {
-      CHECK(product_result == valencia_result);
-    }
-    CHECK_VARIABLES_APPROX(mutable_variables, expected_mutable_variables);
-  }
   if constexpr (bc_type == evolution::BoundaryConditions::Type::Outflow) {
     auto gh_result = gh_bc_helper::dg_outflow(
         make_not_null(&expected_mutable_variables), argument_variables,
@@ -290,7 +249,145 @@ void test_boundary_condition_combination(
     } else {
       CHECK(product_result == valencia_result);
     }
+    return;
   }
+  std::optional<std::string> gh_result_ghost;
+  std::optional<std::string> valencia_result_ghost;
+  std::optional<std::string> product_result_ghost;
+
+  std::optional<std::string> gh_result_time_derivative;
+  std::optional<std::string> valencia_result_time_derivative;
+  std::optional<std::string> product_result_time_derivative;
+
+  if constexpr (DerivedGhCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::TimeDerivative or
+                DerivedGhCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::
+                        GhostAndTimeDerivative) {
+    gh_result_time_derivative = gh_bc_helper::dg_time_derivative(
+        make_not_null(&expected_mutable_variables), argument_variables,
+        gridless_box, derived_gh_condition);
+  }
+
+  if constexpr (DerivedValenciaCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::TimeDerivative or
+                DerivedValenciaCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::
+                        GhostAndTimeDerivative) {
+    valencia_result_time_derivative = valencia_bc_helper::dg_time_derivative(
+        make_not_null(&expected_mutable_variables), argument_variables,
+        gridless_box, derived_valencia_condition);
+  }
+
+  if constexpr (DerivedGhCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::Ghost or
+                DerivedGhCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::
+                        GhostAndTimeDerivative) {
+    gh_result_ghost = gh_bc_helper::dg_ghost(
+        make_not_null(&expected_mutable_variables), argument_variables,
+        gridless_box, derived_gh_condition);
+  } else {
+    // copy the needed tags, verifying the application of the `do nothing' ghost
+    // condition
+    tmpl::for_each<tmpl::push_back<
+        typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list,
+        ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+        ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>>(
+        [&expected_mutable_variables,
+         &argument_variables](auto tag_v) noexcept {
+          using tag = typename decltype(tag_v)::type;
+          get<tag>(expected_mutable_variables) = get<tag>(argument_variables);
+        });
+    const auto& spacetime_metric =
+        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
+            argument_variables);
+    const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+    const auto inv_spatial_metric =
+        determinant_and_inverse(spatial_metric).second;
+    auto& shift =
+        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(mutable_variables);
+    gr::shift(make_not_null(&shift), spacetime_metric, inv_spatial_metric);
+    gr::lapse(
+        make_not_null(&get<gr::Tags::Lapse<DataVector>>(mutable_variables)),
+        shift, spacetime_metric);
+  }
+
+  if constexpr (DerivedValenciaCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::Ghost or
+                DerivedValenciaCondition::bc_type ==
+                    evolution::BoundaryConditions::Type::
+                        GhostAndTimeDerivative) {
+    valencia_result_ghost = valencia_bc_helper::dg_ghost(
+        make_not_null(&expected_mutable_variables), argument_variables,
+        gridless_box, derived_valencia_condition);
+  } else {
+    tmpl::for_each<tmpl::append<
+        typename grmhd::ValenciaDivClean::System::variables_tag::tags_list,
+        db::wrap_tags_in<
+            ::Tags::Flux,
+            typename grmhd::ValenciaDivClean::System::flux_variables,
+            tmpl::size_t<3_st>, Frame::Inertial>>>(
+        [&expected_mutable_variables,
+         &argument_variables](auto tag_v) noexcept {
+          using tag = typename decltype(tag_v)::type;
+          get<tag>(expected_mutable_variables) = get<tag>(argument_variables);
+        });
+    const auto& spacetime_metric =
+        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
+            argument_variables);
+    const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+    const auto inv_spatial_metric =
+        determinant_and_inverse(spatial_metric).second;
+    auto& shift =
+        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(mutable_variables);
+    gr::shift(make_not_null(&shift), spacetime_metric, inv_spatial_metric);
+    gr::lapse(
+        make_not_null(&get<gr::Tags::Lapse<DataVector>>(mutable_variables)),
+        shift, spacetime_metric);
+  }
+
+  if constexpr (bc_type ==
+                    evolution::BoundaryConditions::Type::TimeDerivative or
+                bc_type == evolution::BoundaryConditions::Type::
+                               GhostAndTimeDerivative) {
+    product_result_time_derivative = product_bc_helper::dg_time_derivative(
+        make_not_null(&mutable_variables), argument_variables, gridless_box,
+        derived_product_condition);
+  }
+
+  if constexpr (bc_type == evolution::BoundaryConditions::Type::Ghost or
+                bc_type == evolution::BoundaryConditions::Type::
+                               GhostAndTimeDerivative) {
+    product_result_ghost = product_bc_helper::dg_ghost(
+        make_not_null(&mutable_variables), argument_variables, gridless_box,
+        derived_product_condition);
+  }
+
+  if (gh_result_ghost.has_value()) {
+    if (valencia_result_ghost.has_value()) {
+      CHECK((product_result_ghost.value() ==
+             gh_result_ghost.value() + ";" + valencia_result_ghost.value()));
+    } else {
+      CHECK(product_result_ghost == gh_result_ghost);
+    }
+  } else {
+    CHECK(product_result_ghost == valencia_result_ghost);
+  }
+
+  if (gh_result_time_derivative.has_value()) {
+    if (valencia_result_time_derivative.has_value()) {
+      CHECK((product_result_time_derivative.value() ==
+             gh_result_time_derivative.value() + ";" +
+                 valencia_result_time_derivative.value()));
+    } else {
+      CHECK(product_result_time_derivative == gh_result_time_derivative);
+    }
+  } else {
+    CHECK(product_result_time_derivative == valencia_result_time_derivative);
+  }
+
+  CHECK_VARIABLES_APPROX(mutable_variables, expected_mutable_variables);
 }
 }  // namespace
 
@@ -328,6 +425,48 @@ SPECTRE_TEST_CASE(
         grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov::
             dg_package_data_temporary_tags,
         GeneralizedHarmonic::BoundaryConditions::DirichletAnalytic<3_st>,
+        grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>(
+        gh_condition, valencia_condition, serialized_and_deserialized_condition,
+        gridless_box);
+  }
+  {
+    INFO(
+        "Product condition of ValenciaDivClean DirichletAnalytic and "
+        "GeneralizedHarmonic Bjorhus");
+    const grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic
+        valencia_condition{};
+    const GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<
+        3_st>
+        gh_condition{
+            GeneralizedHarmonic::BoundaryConditions::detail::
+                ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};
+    const auto product_boundary_condition =
+        TestHelpers::test_creation<std::unique_ptr<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>>(
+            "ProductConstraintPreservingBjorhusAndDirichletAnalytic:\n"
+            "  GeneralizedHarmonicConstraintPreservingBjorhus:\n"
+            "    Type: ConstraintPreservingPhysical\n"
+            "  ValenciaDirichletAnalytic:");
+    const auto gridless_box =
+        db::create<db::AddSimpleTags<::Tags::Time, DummyAnalyticSolutionTag>>(
+            0.5, GeneralizedHarmonic::Solutions::WrappedGr<
+                     grmhd::Solutions::BondiMichel>{1.0, 4.0, 0.1, 2.0, 0.01});
+    auto serialized_and_deserialized_condition = serialize_and_deserialize(
+        *dynamic_cast<
+            grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
+                GeneralizedHarmonic::BoundaryConditions::
+                    ConstraintPreservingBjorhus<3_st>,
+                grmhd::ValenciaDivClean::BoundaryConditions::
+                    DirichletAnalytic>*>(product_boundary_condition.get()));
+    // Bjorhus method does not use dg_ghost, so does not populate the temp tags
+    // for boundary corrections
+    test_boundary_condition_combination<
+        GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<
+            3_st>::dg_package_data_temporary_tags,
+        grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov::
+            dg_package_data_temporary_tags,
+        GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<
+            3_st>,
         grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>(
         gh_condition, valencia_condition, serialized_and_deserialized_condition,
         gridless_box);

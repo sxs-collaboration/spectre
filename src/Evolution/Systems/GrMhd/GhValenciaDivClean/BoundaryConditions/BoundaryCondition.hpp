@@ -25,9 +25,12 @@ class ProductOfConditions;
 namespace detail {
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 using ProductOfConditionsIfConsistent = tmpl::conditional_t<
-    DerivedGhCondition::bc_type == DerivedValenciaCondition::bc_type,
-    ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>,
-    tmpl::list<>>;
+    (DerivedGhCondition::bc_type ==
+     evolution::BoundaryConditions::Type::Outflow) xor
+        (DerivedValenciaCondition::bc_type ==
+         evolution::BoundaryConditions::Type::Outflow),
+    tmpl::list<>,
+    ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>>;
 
 template <typename GhList, typename ValenciaList>
 struct AllProductConditions;
