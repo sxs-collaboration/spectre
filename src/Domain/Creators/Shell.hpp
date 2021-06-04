@@ -94,18 +94,18 @@ class Shell : public DomainCreator<3> {
     using type = std::vector<double>;
     static constexpr Options::String help = {
         "Radial coordinates of the boundaries splitting the shell "
-        "between InnerRadius and OuterRadius. This should be used if "
-        "boundaries need to be set at specific radii. If the number but not "
-        "the specific locations of the boundaries are important, use "
-        "InitialRefinement instead."};
+        "between InnerRadius and OuterRadius. They must be given in ascending "
+        "order. This should be used if boundaries need to be set at specific "
+        "radii. If the number but not the specific locations of the boundaries "
+        "are important, use InitialRefinement instead."};
   };
 
   struct RadialDistribution {
     using type = std::vector<domain::CoordinateMaps::Distribution>;
     static constexpr Options::String help = {
         "Select the radial distribution of grid points in each spherical "
-        "shell. The 'RadialPartitioning' determines the "
-        "number of shells."};
+        "shell. The possible values are `Linear` and `Logarithmic`. There must "
+        "be N+1 radial distributions specified for N radial partitions."};
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
