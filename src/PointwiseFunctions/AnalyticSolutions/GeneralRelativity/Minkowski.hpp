@@ -9,6 +9,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // for tags
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -35,12 +36,11 @@ namespace Solutions {
  * and the identity as the spatial metric: \f$g_{ii} = 1 \f$
  */
 template <size_t Dim>
-class Minkowski : public MarkAsAnalyticSolution {
+class Minkowski : public AnalyticSolution<Dim> {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Minkowski solution to Einstein's Equations"};
-  static constexpr size_t volume_dim = Dim;
 
   Minkowski() = default;
   Minkowski(const Minkowski& /*rhs*/) noexcept = default;
