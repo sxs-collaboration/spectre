@@ -490,7 +490,7 @@ void check_dense_output(const TimeStepper& stepper) noexcept {
     };
     const double with_error = impl(true);
     const double without_error = impl(false);
-    CHECK(with_error == without_error);
+    CHECK(with_error == approx(without_error));
     return without_error;
   };
 
