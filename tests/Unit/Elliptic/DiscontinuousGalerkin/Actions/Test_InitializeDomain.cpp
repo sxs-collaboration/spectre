@@ -49,13 +49,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<Actions::SetupDataBox,
-                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
-                     // Remove options so that dependencies for
-                     // `InitializeDomain` are no longer fulfilled in following
-                     // iterations of the action list. Else `merge_into_databox`
-                     // would not compile since the added `Tags::ElementMap` is
-                     // not comparable.
-                     Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>>>>;
 };
 
 template <size_t Dim>
@@ -63,26 +57,6 @@ struct Metavariables {
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
 };
-
-template <size_t Dim>
-void check_compute_items(
-    const ActionTesting::MockRuntimeSystem<Metavariables<Dim>>& runner,
-    const ElementId<Dim>& element_id) {
-  // The compute items themselves are tested elsewhere, so just check if they
-  // were indeed added by the initializer
-  const auto tag_is_retrievable = [&runner,
-                                   &element_id](auto tag_v) -> decltype(auto) {
-    using tag = std::decay_t<decltype(tag_v)>;
-    return ActionTesting::tag_is_retrievable<
-        ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
-  };
-  CHECK(tag_is_retrievable(domain::Tags::Coordinates<Dim, Frame::Logical>{}));
-  CHECK(tag_is_retrievable(domain::Tags::Coordinates<Dim, Frame::Inertial>{}));
-  CHECK(tag_is_retrievable(
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>{}));
-  CHECK(tag_is_retrievable(
-      domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>{}));
-}
 
 }  // namespace
 
@@ -117,8 +91,6 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
                                                                 element_id);
     };
-
-    check_compute_items(runner, element_id);
 
     CHECK(get_tag(domain::Tags::Mesh<1>{}) ==
           Mesh<1>{4, Spectral::Basis::Legendre,
@@ -188,8 +160,6 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
                                                                 element_id);
     };
-
-    check_compute_items(runner, element_id);
 
     CHECK(get_tag(domain::Tags::Mesh<2>{}) ==
           Mesh<2>{{{4, 3}},
@@ -262,8 +232,6 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
                                                                 element_id);
     };
-
-    check_compute_items(runner, element_id);
 
     CHECK(get_tag(domain::Tags::Mesh<3>{}) ==
           Mesh<3>{{{4, 3, 2}},

@@ -14,7 +14,7 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;DataStructures;Domain;DiscontinuousGalerkin;ErrorHandling;Utilities"
+  "CoordinateMaps;DataStructures;Domain;DiscontinuousGalerkin;EllipticDg;ErrorHandling;Utilities"
   )
 
 add_dependencies(

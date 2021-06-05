@@ -14,17 +14,17 @@
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/InterfaceHelpers.hpp"
-#include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
+#include "Elliptic/Utilities/ApplyAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -33,7 +33,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
-#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -63,76 +62,34 @@ struct MortarDataInboxTag
 };
 
 // Initializes all quantities the DG operator needs on internal and external
-// faces, as well as the mortars between neighboring elements.
-template <typename System>
-struct InitializeFacesAndMortars {
+// faces, as well as the mortars between neighboring elements. Also initializes
+// the variable-independent background fields in the PDEs.
+template <typename System, typename BackgroundTag>
+struct InitializeFacesMortarsAndBackground {
  private:
   static constexpr size_t Dim = System::volume_dim;
+  static constexpr bool has_background_fields =
+      not std::is_same_v<typename System::background_fields, tmpl::list<>>;
+  static_assert(
+      not(has_background_fields and std::is_same_v<BackgroundTag, void>),
+      "The system has background fields that need initialization. Supply a "
+      "'BackgroundTag' to 'elliptic::dg::Actions::initialize_operator'.");
 
-  // The DG operator needs these background fields on faces:
-  // - The `inv_metric_tag` on internal and external faces to normalize face
-  //   normals (should be included in background fields)
-  // - The background fields in the `System::fluxes_computer::argument_tags` on
-  //   internal and external faces to compute fluxes
-  // - All background fields on external faces to impose boundary conditions
-  using slice_tags_to_faces = tmpl::conditional_t<
-      std::is_same_v<typename System::background_fields, tmpl::list<>>,
-      tmpl::list<>,
-      tmpl::list<
-          // Possible optimization: Only the background fields in the
-          // System::fluxes_computer::argument_tags are needed on internal faces
-          ::Tags::Variables<typename System::background_fields>>>;
-  using face_compute_tags = tmpl::list<
-      // For boundary conditions. Possible optimization: Not all systems need
-      // the coordinates on internal faces. Adding the compute item shouldn't
-      // incur a runtime overhead though since it's lazily evaluated.
-      domain::Tags::BoundaryCoordinates<System::volume_dim>>;
-
-  template <typename TagToSlice, typename DirectionsTag>
-  struct make_slice_tag {
-    using type = domain::Tags::Slice<DirectionsTag, TagToSlice>;
-  };
-
-  template <typename ComputeTag, typename DirectionsTag>
-  struct make_face_compute_tag {
-    using type = domain::Tags::InterfaceCompute<DirectionsTag, ComputeTag>;
-  };
-
-  template <typename DirectionsTag>
-  using face_tags = tmpl::flatten<tmpl::list<
-      domain::Tags::InterfaceCompute<DirectionsTag,
-                                     domain::Tags::Direction<Dim>>,
-      domain::Tags::InterfaceCompute<DirectionsTag,
-                                     domain::Tags::InterfaceMesh<Dim>>,
-      tmpl::transform<slice_tags_to_faces,
-                      make_slice_tag<tmpl::_1, tmpl::pin<DirectionsTag>>>,
-      domain::Tags::InterfaceCompute<
-          DirectionsTag, domain::Tags::UnnormalizedFaceNormalCompute<Dim>>,
-      domain::Tags::InterfaceCompute<
-          DirectionsTag,
-          tmpl::conditional_t<
-              std::is_same_v<typename System::inv_metric_tag, void>,
-              ::Tags::EuclideanMagnitude<
-                  domain::Tags::UnnormalizedFaceNormal<Dim>>,
-              ::Tags::NonEuclideanMagnitude<
-                  domain::Tags::UnnormalizedFaceNormal<Dim>,
-                  typename System::inv_metric_tag>>>,
-      domain::Tags::InterfaceCompute<
-          DirectionsTag,
-          ::Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      tmpl::transform<
-          face_compute_tags,
-          make_face_compute_tag<tmpl::_1, tmpl::pin<DirectionsTag>>>>>;
+  using InitializeFacesAndMortars =
+      elliptic::dg::InitializeFacesAndMortars<Dim>;
+  using InitializeBackground =
+      elliptic::dg::InitializeBackground<Dim,
+                                         typename System::background_fields>;
+  using NormalizeFaceNormal =
+      elliptic::dg::NormalizeFaceNormal<Dim, typename System::inv_metric_tag>;
 
  public:
-  using simple_tags =
-      tmpl::list<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
-                 ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
-  using compute_tags = tmpl::append<
-      tmpl::list<domain::Tags::InternalDirectionsCompute<Dim>,
-                 domain::Tags::BoundaryDirectionsInteriorCompute<Dim>>,
-      face_tags<domain::Tags::InternalDirections<Dim>>,
-      face_tags<domain::Tags::BoundaryDirectionsInterior<Dim>>>;
+  using simple_tags = tmpl::append<
+      typename InitializeFacesAndMortars::return_tags,
+      tmpl::conditional_t<has_background_fields,
+                          typename InitializeBackground::return_tags,
+                          tmpl::list<>>>;
+  using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -143,34 +100,40 @@ struct InitializeFacesAndMortars {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
-    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-    const auto& initial_extents =
-        db::get<domain::Tags::InitialExtents<Dim>>(box);
-
-    // Setup initial mortars at interfaces to neighbors
-    ::dg::MortarMap<Dim, Mesh<Dim - 1>> all_mortar_meshes{};
-    ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>> all_mortar_sizes{};
-    for (const auto& [direction, neighbors] : element.neighbors()) {
-      const auto face_mesh = mesh.slice_away(direction.dimension());
-      const auto& orientation = neighbors.orientation();
-      for (const auto& neighbor : neighbors) {
-        const ::dg::MortarId<Dim> mortar_id{direction, neighbor};
-        all_mortar_meshes.emplace(
-            mortar_id,
-            ::dg::mortar_mesh(
-                face_mesh,
-                domain::Initialization::create_initial_mesh(
-                    initial_extents, neighbor, mesh.quadrature(0), orientation)
-                    .slice_away(direction.dimension())));
-        all_mortar_sizes.emplace(
-            mortar_id, ::dg::mortar_size(element.id(), neighbor,
-                                         direction.dimension(), orientation));
-      }
+    // Initialize faces and mortars
+    db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
+                     typename InitializeFacesAndMortars::argument_tags>(
+        InitializeFacesAndMortars{}, make_not_null(&box),
+        db::get<domain::Tags::InitialExtents<Dim>>(box));
+    // Initialize background fields
+    if constexpr (has_background_fields) {
+      db::mutate_apply<typename InitializeBackground::return_tags,
+                       typename InitializeBackground::argument_tags>(
+          InitializeBackground{}, make_not_null(&box),
+          db::get<BackgroundTag>(box));
     }
-    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                                 std::move(all_mortar_meshes),
-                                                 std::move(all_mortar_sizes));
+    // Normalize face normals
+    //
+    // Face normals are currently stored on internal and external faces
+    // separately for compatibility with existing code. Storing them in a single
+    // map will simplify this code.
+    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
+    for (auto& direction : element.internal_boundaries()) {
+      elliptic::util::mutate_apply_at<
+          make_interface_tags<typename NormalizeFaceNormal::return_tags,
+                              domain::Tags::InternalDirections<Dim>>,
+          make_interface_tags<typename NormalizeFaceNormal::argument_tags,
+                              domain::Tags::InternalDirections<Dim>>,
+          tmpl::list<>>(NormalizeFaceNormal{}, make_not_null(&box), direction);
+    }
+    for (auto& direction : element.external_boundaries()) {
+      elliptic::util::mutate_apply_at<
+          make_interface_tags<typename NormalizeFaceNormal::return_tags,
+                              domain::Tags::BoundaryDirectionsInterior<Dim>>,
+          make_interface_tags<typename NormalizeFaceNormal::argument_tags,
+                              domain::Tags::BoundaryDirectionsInterior<Dim>>,
+          tmpl::list<>>(NormalizeFaceNormal{}, make_not_null(&box), direction);
+    }
     return {std::move(box)};
   }
 };
@@ -470,13 +433,44 @@ struct ReceiveMortarDataAndApplyOperator<
 }  // namespace detail
 
 /*!
- * \brief Initialize DataBox tags for applying the DG operator
+ * \brief Initialize geometric and background quantities for the elliptic DG
+ * operator
+ *
+ * The geometric and background quantities are initialized together because the
+ * geometry depends on the background metric through the normalization of face
+ * normals. Other examples for background fields are curvature quantities
+ * associated with the background metric, or matter sources such as a
+ * mass-density in the XCTS equations. All `System::background_fields` are
+ * retrieved from the `BackgroundTag` together, to enable re-using cached
+ * temporary quantities in the computations. The `variables` function is invoked
+ * on the `BackgroundTag` with the inertial coordinates, the element's `Mesh`
+ * and the element's inverse Jacobian. These arguments allow computing numeric
+ * derivatives, if necessary. The `BackgroundTag` can be set to `void` (default)
+ * if the `System` has no background fields.
+ *
+ * DataBox:
+ * - Uses:
+ *   - `domain::Tags::InitialExtents<Dim>`
+ *   - `BackgroundTag`
+ * - Adds:
+ *   - `::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>`
+ *   - `::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>`
+ *   - `::Tags::Variables<background_fields>`
+ * - Adds on internal and external faces:
+ *   - `domain::Tags::Coordinates<Dim, Frame::Inertial>`
+ *   - `::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>`
+ *   - `::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>`
+ *   - `::Tags::Variables<background_fields>`
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
  *
  * \see elliptic::dg::Actions::apply_operator
  */
-template <typename System>
-using initialize_operator =
-    tmpl::list<detail::InitializeFacesAndMortars<System>>;
+template <typename System, typename BackgroundTag = void>
+using initialize_operator = tmpl::list<
+    detail::InitializeFacesMortarsAndBackground<System, BackgroundTag>>;
 
 /*!
  * \brief Apply the DG operator to the `PrimalFieldsTag` and write the result to

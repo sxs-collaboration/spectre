@@ -37,6 +37,13 @@ struct make_interface_tag {
                                    domain::Tags::Interface<DirectionsTag, Tag>>;
 };
 
+template <typename TagsList, typename DirectionsTag,
+          typename VolumeTags = tmpl::list<>>
+using make_interface_tags =
+    tmpl::transform<TagsList,
+                    make_interface_tag<tmpl::_1, tmpl::pin<DirectionsTag>,
+                                       tmpl::pin<VolumeTags>>>;
+
 namespace InterfaceHelpers_detail {
 
 // Retrieve the `argument_tags` from the `InterfaceInvokable` and wrap them in
