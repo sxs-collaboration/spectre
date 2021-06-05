@@ -125,6 +125,9 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
                         ? extents[i]
                         : target_number_of_bytes_per_chunk / sizeof(T);
   }
+  ASSERT(alg::none_of(extents,
+                      [](const size_t extent) noexcept { return extent == 0; }),
+         "Got zero extent when trying to write data.");
 
   const std::vector<hsize_t> dims(extents.begin(), extents.end());
   const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
