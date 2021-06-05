@@ -41,6 +41,9 @@ void append_element_extents_and_connectivity(
     const ExtentsAndTensorVolumeData& element) noexcept {
   // Process the element extents
   const auto& extents = element.extents;
+  ASSERT(alg::none_of(extents,
+                      [](const size_t extent) noexcept { return extent == 1; }),
+         "We cannot generate connectivity for any single grid point elements.");
   if (extents.size() != dim) {
     ERROR("Trying to write data of dimensionality"
           << extents.size() << "but the VolumeData file has dimensionality"
