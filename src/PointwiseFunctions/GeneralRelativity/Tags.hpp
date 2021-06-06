@@ -169,12 +169,11 @@ struct WeylElectric : db::SimpleTag {
 };
 
 /*!
- * \brief Computes the magnetic part of the Weyl tensor in vaccum.
- * \details Computes the magnetic part of the Weyl tensor \f$B_{ij}\f$
- * as: \f$ B_{ij} =
- \left(1/\sqrt{\det\gamma}\right)D_{k}K_{l(i}\gamma_{j)m}\epsilon^{mlk}
+ * \brief The magnetic part of the Weyl tensor in vaccum.
+ *  \f$B_{ij}\f$ as: \f$ B_{ij} =
+ * \left(1/\sqrt{\det\gamma}\right)D_{k}K_{l(i}\gamma_{j)m}\epsilon^{mlk}
  * \f$ where \f$\epsilon^{ijk}\f$ is the spatial Levi-Civita symbol,
- \f$K_{ij}\f$
+ * \f$K_{ij}\f$
  * is the extrinsic curvature, \f$\gamma_{jm} \f$ is the spatial metric,
  * and \f$D_i\$f is spatial covariant derivative.
  */
@@ -194,9 +193,8 @@ struct WeylElectricScalar : db::SimpleTag {
 };
 
 /*!
- * \brief Computes the scalar \f$B_{ij} B^{ij}\f$ from the magnetic part of the
- * Weyl tensor \f$B_{ij}\f$ and the inverse spatial metric \f$\gamma^{ij}\f$,
- * i.e. \f$B_{ij} B^{ij} = \gamma^{ik}\gamma^{jl}B_{ij}B_{kl}\f$.
+ * \brief The square \f$B_{ij} B^{ij}\f$ of the magnetic part of the Weyl tensor
+ * \f$B_{ij}\f$.
  */
 template <typename DataType>
 struct WeylMagneticScalar : db::SimpleTag {
