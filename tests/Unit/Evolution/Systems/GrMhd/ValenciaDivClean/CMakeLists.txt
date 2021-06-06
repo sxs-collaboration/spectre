@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
+  Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOptions.cpp
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
