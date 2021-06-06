@@ -39,9 +39,9 @@ void make_random_tensors(
   std::uniform_real_distribution<> distribution(-3.0, 3.0);
   const auto nn_generator = make_not_null(&generator);
   const auto nn_distribution = make_not_null(&distribution);
-
   *grad_extrinsic_curvature = make_with_random_values<tnsr::ijj<DataType, 3>>(
       nn_generator, nn_distribution, used_for_size);
+
   std::uniform_real_distribution<> metric_distribution(-0.03, 0.03);
   const auto nn_metric_distribution = make_not_null(&metric_distribution);
   *spatial_metric = make_with_random_values<tnsr::ii<DataType, 3>>(
