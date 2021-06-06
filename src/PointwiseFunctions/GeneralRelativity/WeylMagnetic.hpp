@@ -25,10 +25,10 @@ namespace gr {
  *
  * \details Computes the magnetic part of the Weyl tensor \f$B_{ij}\f$
  * as: \f$ B_{ij} =
- \left(1/\sqrt{\det\gamma}\right)D_{k}K_{l(i}\gamma_{j)m}\epsilon^{mlk}
+ * \left(1/\sqrt{\det\gamma}\right)D_{k}K_{l(i}\g_{j)m}\epsilon^{mlk}
  * \f$ where \f$\epsilon^{ijk}\f$ is the spatial Levi-Civita symbol,
- \f$K_{ij}\f$
- * is the extrinsic curvature, \f$\gamma_{jm} \f$ is the spatial metric,
+ * \f$K_{ij}\f$
+ * is the extrinsic curvature, \f$\g_{jm} \f$ is the spatial metric,
  * and \f$D_i\$f is spatial covariant derivative.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -51,7 +51,7 @@ void weyl_magnetic(
  *
  * \details Computes the scalar \f$B_{ij} B^{ij}\f$ from the magnetic part
  * of the Weyl tensor \f$B_{ij}\f$ and the inverse spatial metric
- * \f$g^{ij}\f$, i.e. \f$B_{ij} = \gamma^{ik}\gamma^{jl}B_{ij}B_{kl}\f$.
+ * \f$g^{ij}\f$, i.e. \f$B_{ij} = \g^{ik}\g^{jl}B_{ij}B_{kl}\f$.
  *
  * \note The magnetic part of the Weyl tensor in vacuum is available via
  * gr::weyl_magnetic(). The magnetic part of the Weyl tensor needs additional
@@ -66,7 +66,7 @@ Scalar<DataType> weyl_magnetic_scalar(
 template <size_t SpatialDim, typename Frame, typename DataType>
 void weyl_magnetic_scalar(
     gsl::not_null<Scalar<DataType>*> weyl_magnetic_scalar_result,
-    const tnsr::ii<DataType, SpatialDim, Frame>& weyl_magenetic,
+    const tnsr::ii<DataType, SpatialDim, Frame>& weyl_magnetic,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
 // @}
