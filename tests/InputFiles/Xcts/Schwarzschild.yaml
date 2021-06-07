@@ -3,7 +3,7 @@
 
 # Executable: SolveXcts
 # Check: parse;execute_check_output
-# Timeout: 10
+# Timeout: 20
 # ExpectedOutput:
 #   SchwarzschildReductions.h5
 #   SchwarzschildVolume0.h5
