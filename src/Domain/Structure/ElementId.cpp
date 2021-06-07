@@ -109,7 +109,7 @@ ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
   // unlikely we will ever get to that large of a refinement.
   return ElementId<VolumeDim>(
       two_to_the(ElementId::block_id_bits) - 1,
-      make_array<VolumeDim>(SegmentId(ElementId::max_refinement_level, 0)));
+      make_array<VolumeDim>(SegmentId(ElementId::max_refinement_level - 1, 0)));
 }
 
 template <size_t VolumeDim>

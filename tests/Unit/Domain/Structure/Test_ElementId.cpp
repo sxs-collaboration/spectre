@@ -136,7 +136,7 @@ void test_element_id() {
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
         two_to_the(ElementId<3>::block_id_bits) - 1);
   CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
-        make_array<3>(SegmentId(ElementId<3>::max_refinement_level, 0)));
+        make_array<3>(SegmentId(ElementId<3>::max_refinement_level - 1, 0)));
   CHECK(ElementId<3>::external_boundary_id().grid_index() == 0);
 }
 
