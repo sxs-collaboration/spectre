@@ -22,6 +22,13 @@ Evolution:
   # InitialSlabSize: 0.01
 
 PhaseChangeAndTriggers:
+  - - Slabs:
+       EvenlySpaced:
+         # Current implementation checks wallclock at these global syncs
+         Interval: 100
+         Offset: 0
+    - - CheckpointAndExitAfterWallclock:
+          WallclockHours: None
 
 DomainCreator:
   Brick:
