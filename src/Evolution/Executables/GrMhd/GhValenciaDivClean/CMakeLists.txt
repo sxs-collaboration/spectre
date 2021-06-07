@@ -57,7 +57,7 @@ add_ghmhd_with_horizon_executable(
   )
 
 add_ghmhd_executable(
-  CylindricalBlastWave
+  BlastWave
   GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::BlastWave>
   "${LIBS_TO_LINK}"
   )
