@@ -79,8 +79,8 @@ void GhLocalTimeStepping::insert_gh_data(
   // if we have pending requests, we know how much history to insert, so we take
   // from the deque and then add in the current data if suitable
   // NOLINTNEXTLINE(performance-move-const-arg)
-  boundary_history_.insert(std::move(time_id), input_gh_variables,
-                           input_dt_gh_variables);
+  boundary_history_.insert(std::move(time_id), input_dt_gh_variables);
+  boundary_history_.most_recent_value() = input_gh_variables;
   // NOLINTNEXTLINE(performance-move-const-arg)
   latest_next_ = std::move(*get<2>(*previous_deque_entry));
   pre_history_.erase(previous_deque_entry);
@@ -125,8 +125,8 @@ void GhLocalTimeStepping::insert_next_gh_time(
   // if we have pending requests, we know how much history to insert, so we take
   // from the deque and then add in the current data if suitable
   // NOLINTNEXTLINE(performance-move-const-arg)
-  boundary_history_.insert(std::move(time_id), *get<1>(*previous_deque_entry),
-                           *get<3>(*previous_deque_entry));
+  boundary_history_.insert(std::move(time_id), *get<3>(*previous_deque_entry));
+  boundary_history_.most_recent_value() = *get<1>(*previous_deque_entry);
   // NOLINTNEXTLINE(performance-move-const-arg)
   latest_next_ = std::move(next_time_id);
   pre_history_.erase(previous_deque_entry);
@@ -154,8 +154,8 @@ void GhLocalTimeStepping::update_history() noexcept {
          requests_.front().substep_time().value() >=
              get<0>(pre_history_.front()).substep_time().value()) {
     boundary_history_.insert(get<0>(pre_history_.front()),
-                             *get<1>(pre_history_.front()),
                              *get<3>(pre_history_.front()));
+    boundary_history_.most_recent_value() = *get<1>(pre_history_.front());
     latest_next_ = *get<2>(pre_history_.front());
     pre_history_.pop_front();
   }
@@ -176,13 +176,9 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
   if (boundary_history_.size() > 0 and
       (boundary_history_.end() - 1)->value() <= first_request and
       latest_next_.substep_time().value() >= first_request) {
-    gh_variables latest_values = (boundary_history_.end() - 1).value();
-    // this handles the edge case of a 0 dense step size, which causes
-    // an FPE in the AdamsBashforthN dense output.
-    if ((boundary_history_.end() - 1)->value() != first_request) {
-      time_stepper_.dense_update_u(make_not_null(&latest_values),
-                                   boundary_history_, first_request);
-    }
+    gh_variables latest_values{};
+    time_stepper_.dense_update_u(make_not_null(&latest_values),
+                                 boundary_history_, first_request);
     // NOLINTNEXTLINE(performance-move-const-arg)
     std::tuple requested_data{std::move(requests_.front()),
                               std::move(latest_values)};

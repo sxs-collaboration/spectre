@@ -127,30 +127,31 @@ void RungeKutta3::update_u(
     history->mark_unneeded(history->end() - 1);
   }
 
-  const auto& vars = (history->end() - 1).value();
-
   switch (substep) {
     case 0: {
       // from (5.32) of Hesthaven
       // v^(1) = u^n + dt*RHS(u^n,t^n)
-      *u = vars + time_step.value() * history->begin().derivative();
+      *u = history->most_recent_value() +
+           time_step.value() * history->begin().derivative();
       break;
     }
     case 1: {
       // from (5.32) of Hesthaven
       // v^(2) = (1/4)*( 3*u^n + v^(1) + dt*RHS(v^(1),t^n + dt) )
-      *u = vars - 0.25 * time_step.value() *
-                      (3.0 * history->begin().derivative() -
-                       (history->begin() + 1).derivative());
+      *u = history->most_recent_value() -
+           0.25 * time_step.value() *
+               (3.0 * history->begin().derivative() -
+                (history->begin() + 1).derivative());
       break;
     }
     case 2: {
       // from (5.32) of Hesthaven
       // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
-      *u = vars - (1.0 / 12.0) * time_step.value() *
-                      (history->begin().derivative() +
-                       (history->begin() + 1).derivative() -
-                       8.0 * (history->begin() + 2).derivative());
+      *u = history->most_recent_value() -
+           (1.0 / 12.0) * time_step.value() *
+               (history->begin().derivative() +
+                (history->begin() + 1).derivative() -
+                8.0 * (history->begin() + 2).derivative());
       break;
     }
     default:
@@ -192,7 +193,7 @@ bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = (history.end() - 1).value();
+    *u = history.most_recent_value();
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -208,13 +209,12 @@ bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
          << ", " << step_end << "]");
 
   // arXiv:1605.02429
-  *u = (history.end() - 1).value() -
+  *u = history.most_recent_value() -
        (1.0 / 6.0) * time_step * (1.0 - output_fraction) *
            ((1.0 - 5.0 * output_fraction) * history.begin().derivative() +
             (1.0 + output_fraction) *
                 ((history.begin() + 1).derivative() +
                  4.0 * (history.begin() + 2).derivative()));
-
   return true;
 }
 }  // namespace TimeSteppers

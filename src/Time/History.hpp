@@ -50,13 +50,18 @@ class History {
       : integration_order_(integration_order) {}
 
   /// Add a new set of values to the end of the history.
-  void insert(const TimeStepId& time_step_id, const Vars& value,
-              const DerivVars& deriv) noexcept;
+  void insert(const TimeStepId& time_step_id, const DerivVars& deriv) noexcept;
 
-  /// Add a new set of values to the front of the history.  This is
-  /// often convenient for setting initial data.
-  void insert_initial(TimeStepId time_step_id, Vars value,
-                      DerivVars deriv) noexcept;
+  /// Add a new derivative to the front of the history.  This is often
+  /// convenient for setting initial data.  The function value must be
+  /// set separately before this object is used, using `most_recent_value()`.
+  void insert_initial(TimeStepId time_step_id, DerivVars deriv) noexcept;
+
+  /// The most recent value of the integrated variables.
+  //@{
+  Vars& most_recent_value() noexcept { return most_recent_value_; }
+  const Vars& most_recent_value() const noexcept { return most_recent_value_; }
+  //@}
 
   /// Mark all data before the passed point in history as unneeded so
   /// it can be removed.  Calling this directly should not often be
@@ -64,8 +69,8 @@ class History {
   void mark_unneeded(const const_iterator& first_needed) noexcept;
 
   /// These iterators directly return the Time of the past values.
-  /// The other data can be accessed through the iterators using
-  /// HistoryIterator::value() and HistoryIterator::derivative().
+  /// The derivative data can be accessed through the iterators using
+  /// HistoryIterator::derivative().
   //@{
   const_iterator begin() const noexcept {
     return data_.begin() +
@@ -109,12 +114,14 @@ class History {
     // to be thrown away after serialization, so we take the easy
     // route of just throwing them away.
     shrink_to_fit();
+    p | most_recent_value_;
     p | data_;
     p | integration_order_;
   }
 
  private:
-  std::deque<std::tuple<TimeStepId, Vars, DerivVars>> data_;
+  Vars most_recent_value_{};
+  std::deque<std::tuple<TimeStepId, DerivVars>> data_;
   size_t first_needed_entry_{0};
   size_t integration_order_{0};
 };
@@ -124,8 +131,8 @@ class History {
 /// details.
 template <typename Vars, typename DerivVars>
 class HistoryIterator {
-  using Base = typename std::deque<
-      std::tuple<TimeStepId, Vars, DerivVars>>::const_iterator;
+  using Base =
+      typename std::deque<std::tuple<TimeStepId, DerivVars>>::const_iterator;
 
  public:
   using iterator_category =
@@ -162,8 +169,7 @@ class HistoryIterator {
   const TimeStepId& time_step_id() const noexcept {
     return std::get<0>(*base_);
   }
-  const Vars& value() const noexcept { return std::get<1>(*base_); }
-  const DerivVars& derivative() const noexcept { return std::get<2>(*base_); }
+  const DerivVars& derivative() const noexcept { return std::get<1>(*base_); }
 
  private:
   friend class History<Vars, DerivVars>;
@@ -196,17 +202,15 @@ class HistoryIterator {
 
 template <typename Vars, typename DerivVars>
 void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
-                                      const Vars& value,
                                       const DerivVars& deriv) noexcept {
   if (first_needed_entry_ == 0) {
-    data_.emplace_back(time_step_id, value, deriv);
+    data_.emplace_back(time_step_id, deriv);
   } else {
     // Reuse resources from an old entry.
     auto& old_entry = data_.front();
     // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
     std::get<0>(old_entry) = time_step_id;
-    std::get<1>(old_entry) = value;
-    std::get<2>(old_entry) = deriv;
+    std::get<1>(old_entry) = deriv;
     data_.push_back(std::move(old_entry));
     data_.pop_front();
     --first_needed_entry_;
@@ -215,11 +219,9 @@ void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
 
 template <typename Vars, typename DerivVars>
 inline void History<Vars, DerivVars>::insert_initial(TimeStepId time_step_id,
-                                                     Vars value,
                                                      DerivVars deriv) noexcept {
   // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
-  data_.emplace_front(std::move(time_step_id), std::move(value),
-                      std::move(deriv));
+  data_.emplace_front(std::move(time_step_id), std::move(deriv));
 }
 
 template <typename Vars, typename DerivVars>

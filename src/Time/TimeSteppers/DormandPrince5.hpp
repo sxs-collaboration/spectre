@@ -186,7 +186,7 @@ void DormandPrince5::update_u(
     static_assert(std::tuple_size_v<std::decay_t<decltype(coeffs_last)>> + 1 ==
                       std::tuple_size_v<std::decay_t<decltype(coeffs_this)>>,
                   "Unexpected coefficient vector sizes.");
-    *u = (history->end() - 1).value() +
+    *u = history->most_recent_value() +
          coeffs_this.back() * dt * (history->end() - 1).derivative();
     for (size_t i = 0; i < coeffs_last.size(); ++i) {
       *u += (gsl::at(coeffs_this, i) - gsl::at(coeffs_last, i)) * dt *
@@ -195,7 +195,7 @@ void DormandPrince5::update_u(
   };
 
   if (substep == 0) {
-    *u = (history->end() - 1).value() +
+    *u = history->most_recent_value() +
          (a2_[0] * dt) * history->begin().derivative();
   } else if (substep == 1) {
     increment_u(a2_, a3_);
@@ -226,7 +226,7 @@ bool DormandPrince5::update_u(
     update_u(u, history, time_step);
   } else if (substep == 6) {
     // u is the same as for the previous substep.
-    *u = (history->end() - 1).value();
+    *u = history->most_recent_value();
 
     const double dt = time_step.value();
 
@@ -254,7 +254,7 @@ bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
   if (time == t_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = (history.end() - 1).value();
+    *u = history.most_recent_value();
     return true;
   }
   const evolution_less<double> before{t_end > t0};
@@ -277,7 +277,7 @@ bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
     return square(output_fraction) * gsl::at(d_, n) -
            (1.0 + 2.0 * output_fraction) * gsl::at(b_, n);
   };
-  *u = (history.end() - 1).value() +
+  *u = history.most_recent_value() +
        dt * (1.0 - output_fraction) *
            ((1.0 - output_fraction) *
                 ((common(0) + output_fraction) * history.begin().derivative() +

@@ -40,7 +40,8 @@ void take_step(
        substep < stepper.number_of_substeps();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
+    history->insert(time_id, rhs(*y, time_id.substep_time().value()));
+    history->most_recent_value() = *y;
     stepper.update_u(y, history, step_size);
     // check that the stepper still works as expected when re-applied with the
     // same parameters -- This must be supported for step-rejection to be viable
@@ -64,7 +65,8 @@ void take_step_and_check_error(
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
+    history->insert(time_id, rhs(*y, time_id.substep_time().value()));
+    history->most_recent_value() = *y;
     bool error_updated = stepper.update_u(y, y_error, history, step_size);
     // check that the stepper still works as expected when re-applied with the
     // same parameters -- This must be supported for step-rejection to be viable
@@ -123,7 +125,7 @@ void check_substep_properties(const TimeStepper& stepper) noexcept {
   CHECK(stepper.can_change_step_size(id, history));
   id = stepper.next_time_id(id, slab.duration() / 2);
   if (id.substep() != 0) {
-    history.insert(id, 0.0, 0.0);
+    history.insert(id, 0.0);
     CHECK(not stepper.can_change_step_size(id, history));
   }
 }
@@ -388,8 +390,10 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
       }
       history_time -= history_step_size;
       const TimeStepId history_id(forward, 0, history_time);
-      volume_history.insert_initial(history_id, analytic(history_time.value()),
-                                    0.);
+      volume_history.insert_initial(history_id, 0.);
+      if (j == 0) {
+        volume_history.most_recent_value() = analytic(history_time.value());
+      }
       boundary_history.local_insert_initial(history_id, unused_local_deriv);
       boundary_history.remote_insert_initial(history_id,
                                              driver(history_time.value()));
@@ -400,7 +404,8 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
     for (uint64_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
-      volume_history.insert(time_id, y, 0.);
+      volume_history.insert(time_id, 0.);
+      volume_history.most_recent_value() = y;
       boundary_history.local_insert(time_id, unused_local_deriv);
       boundary_history.remote_insert(time_id,
                                      driver(time_id.substep_time().value()));
@@ -467,7 +472,8 @@ void check_dense_output(const TimeStepper& stepper) noexcept {
           step_size, stepper.number_of_past_steps());
       auto step = step_size;
       for (;;) {
-        history.insert(time_id, y, y);
+        history.insert(time_id, y);
+        history.most_recent_value() = y;
         if (not before((time_id.step_time() + step).value(), time)) {
           double result = std::numeric_limits<double>::signaling_NaN();
           if (stepper.dense_update_u(make_not_null(&result), history, time)) {

@@ -151,14 +151,14 @@ void RungeKutta4::update_u(
     case 0: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(1) = u^n + dt * \mathcal{L}(u^n,t^n)/2
-      *u = (history->end() - 1).value() +
+      *u = history->most_recent_value() +
            0.5 * time_step.value() * history->begin().derivative();
       break;
     }
     case 1: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(2) = u^n + dt * \mathcal{L}(v^(1), t^n + (1/2)*dt)/2
-      *u = (history->end() - 1).value() -
+      *u = history->most_recent_value() -
            0.5 * time_step.value() *
                (history->begin().derivative() -
                 (history->begin() + 1).derivative());
@@ -167,7 +167,7 @@ void RungeKutta4::update_u(
     case 2: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(3) = u^n + dt * \mathcal{L}(v^(2), t^n + (1/2)*dt))
-      *u = (history->end() - 1).value() +
+      *u = history->most_recent_value() +
            time_step.value() * (-0.5 * (history->begin() + 1).derivative() +
                                 (history->begin() + 2).derivative());
       break;
@@ -178,7 +178,7 @@ void RungeKutta4::update_u(
       // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this gives
       // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
       //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
-      *u = (history->end() - 1).value() +
+      *u = history->most_recent_value() +
            (1.0 / 3.0) * time_step.value() *
                (0.5 * history->begin().derivative() +
                 (history->begin() + 1).derivative() -
@@ -205,7 +205,7 @@ bool RungeKutta4::update_u(
   } else {
     switch (substep) {
       case 3: {
-        *u = (history->end() - 1).value() +
+        *u = history->most_recent_value() +
              (1.0 / 32.0) * time_step.value() *
                  (5.0 * history->begin().derivative() +
                   7.0 * (history->begin() + 1).derivative() -
@@ -219,7 +219,7 @@ bool RungeKutta4::update_u(
         // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this
         // gives u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
         //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
-        *u = (history->end() - 1).value() +
+        *u = history->most_recent_value() +
              (1.0 / 96.0) * time_step.value() *
                  (history->begin().derivative() +
                   11.0 * (history->begin() + 1).derivative() -
@@ -256,7 +256,7 @@ bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = (history.end() - 1).value();
+    *u = history.most_recent_value();
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -274,7 +274,7 @@ bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
 
   // Numerical Recipes Eq. (17.2.15). This implements cubic interpolation
   // throughout the step.
-  *u = (history.end() - 1).value() -
+  *u = history.most_recent_value() -
        (1.0 / 3.0) * time_step * (1.0 - output_fraction) *
            ((1.0 - output_fraction) *
                 ((0.5 - 2.0 * output_fraction) * history.begin().derivative() +

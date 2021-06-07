@@ -264,12 +264,13 @@ struct TciAndSwitchToDg {
                 dg_history{active_history_ptr->integration_order()};
             const auto end_it = active_history_ptr->end();
             for (auto it = active_history_ptr->begin(); it != end_it; ++it) {
-              dg_history.insert(
-                  it.time_step_id(),
-                  fd::reconstruct(it.value(), dg_mesh, subcell_mesh.extents()),
-                  fd::reconstruct(it.derivative(), dg_mesh,
-                                  subcell_mesh.extents()));
+              dg_history.insert(it.time_step_id(),
+                                fd::reconstruct(it.derivative(), dg_mesh,
+                                                subcell_mesh.extents()));
             }
+            dg_history.most_recent_value() =
+                fd::reconstruct(active_history_ptr->most_recent_value(),
+                                dg_mesh, subcell_mesh.extents()),
             *active_history_ptr = std::move(dg_history);
             *active_grid_ptr = ActiveGrid::Dg;
 
