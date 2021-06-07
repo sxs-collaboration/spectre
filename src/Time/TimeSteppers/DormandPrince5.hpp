@@ -6,10 +6,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <ostream>
 #include <pup.h>
+#include <tuple>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -123,7 +125,7 @@ class DormandPrince5 : public TimeStepper::Inherit {
  private:
   // Coefficients from the Dormand-Prince 5 Butcher tableau (e.g. Sec. 7.2
   // of \cite NumericalRecipes).
-  static constexpr double a2_ = 0.2;
+  static constexpr std::array<double, 1> a2_{{0.2}};
   static constexpr std::array<double, 2> a3_{{3.0 / 40.0, 9.0 / 40.0}};
   static constexpr std::array<double, 3> a4_{
       {44.0 / 45.0, -56.0 / 15.0, 32.0 / 9.0}};
@@ -145,8 +147,8 @@ class DormandPrince5 : public TimeStepper::Inherit {
 
   // Coefficients for dense output, taken from Sec. 7.2 of
   // \cite NumericalRecipes
-  static constexpr std::array<double, 6> d_{
-      {-12715105075.0 / 11282082432.0, 87487479700.0 / 32700410799.0,
+  static constexpr std::array<double, 7> d_{
+      {-12715105075.0 / 11282082432.0, 0.0, 87487479700.0 / 32700410799.0,
        -10690763975.0 / 1880347072.0, 701980252875.0 / 199316789632.0,
        -1453857185.0 / 822651844.0, 69997945.0 / 29380423.0}};
 };
@@ -176,32 +178,35 @@ void DormandPrince5::update_u(
     history->mark_unneeded(history->end() - 1);
   }
 
-  const auto& u0 = history->begin().value();
   const double dt = time_step.value();
 
-  const auto increment_u = [&u, &history, &dt](const auto& coeffs) noexcept {
-    for (size_t i = 0; i < coeffs.size(); ++i) {
-      *u += (gsl::at(coeffs, i) * dt) *
+  const auto increment_u = [&u, &history, &dt](
+                               const auto& coeffs_last,
+                               const auto& coeffs_this) noexcept {
+    static_assert(std::tuple_size_v<std::decay_t<decltype(coeffs_last)>> + 1 ==
+                      std::tuple_size_v<std::decay_t<decltype(coeffs_this)>>,
+                  "Unexpected coefficient vector sizes.");
+    *u = (history->end() - 1).value() +
+         coeffs_this.back() * dt * (history->end() - 1).derivative();
+    for (size_t i = 0; i < coeffs_last.size(); ++i) {
+      *u += (gsl::at(coeffs_this, i) - gsl::at(coeffs_last, i)) * dt *
             (history->begin() + static_cast<int>(i)).derivative();
     }
   };
 
   if (substep == 0) {
     *u = (history->end() - 1).value() +
-         (a2_ * dt) * history->begin().derivative();
-  } else if (substep < 6) {
-    *u = u0;
-    if (substep == 1) {
-      increment_u(a3_);
-    } else if (substep == 2) {
-      increment_u(a4_);
-    } else if (substep == 3) {
-      increment_u(a5_);
-    } else if (substep == 4) {
-      increment_u(a6_);
-    } else {
-      increment_u(b_);
-    }
+         (a2_[0] * dt) * history->begin().derivative();
+  } else if (substep == 1) {
+    increment_u(a2_, a3_);
+  } else if (substep == 2) {
+    increment_u(a3_, a4_);
+  } else if (substep == 3) {
+    increment_u(a4_, a5_);
+  } else if (substep == 4) {
+    increment_u(a5_, a6_);
+  } else if (substep == 5) {
+    increment_u(a6_, b_);
   } else {
     ERROR("Substep in DP5 should be one of 0,1,2,3,4,5, not " << substep);
   }
@@ -217,41 +222,18 @@ bool DormandPrince5::update_u(
          << history->integration_order());
   const size_t substep = (history->end() - 1).time_step_id().substep();
 
-  // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
-  }
+  if (substep < 6) {
+    update_u(u, history, time_step);
+  } else if (substep == 6) {
+    // u is the same as for the previous substep.
+    *u = (history->end() - 1).value();
 
-  const auto& u0 = history->begin().value();
-  const double dt = time_step.value();
+    const double dt = time_step.value();
 
-  const auto increment_u = [&history, &dt](const auto& coeffs,
-                                           auto local_u) noexcept {
-    for (size_t i = 0; i < coeffs.size(); ++i) {
-      *local_u += (gsl::at(coeffs, i) * dt) *
+    *u_error = -b_alt_.back() * dt * (history->end() - 1).derivative();
+    for (size_t i = 0; i < b_.size(); ++i) {
+      *u_error -= (gsl::at(b_alt_, i) - gsl::at(b_, i)) * dt *
                   (history->begin() + static_cast<int>(i)).derivative();
-    }
-  };
-  if (substep == 0) {
-    *u = (history->end() - 1).value() +
-         (a2_ * dt) * history->begin().derivative();
-  } else if (substep < 7) {
-    *u = u0;
-    if (substep == 1) {
-      increment_u(a3_, u);
-    } else if (substep == 2) {
-      increment_u(a4_, u);
-    } else if (substep == 3) {
-      increment_u(a5_, u);
-    } else if (substep == 4) {
-      increment_u(a6_, u);
-    } else if (substep == 5) {
-      increment_u(b_, u);
-    } else {
-      increment_u(b_, u);
-      *u_error = u0;
-      increment_u(b_alt_, u_error);
-      *u_error = *u - *u_error;
     }
   } else {
     ERROR("Substep in adaptive DP5 should be one of 0,1,2,3,4,5,6, not "
@@ -288,32 +270,23 @@ bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
                                      << time << ") not within step [" << t0
                                      << ", " << t0 + dt << "]");
 
-  const auto& u0 = history.begin().value();
-  const auto& u1 = (history.end() - 1).value();
-
-  // We need the following: k1, k3, k4, k5, k6.
-  // Here k1 = dt * l1, k3 = dt * l3, etc.
-  const auto& l1 = history.begin().derivative();
-  const auto& l3 = (history.begin() + 2).derivative();
-  const auto& l4 = (history.begin() + 3).derivative();
-  const auto& l5 = (history.begin() + 4).derivative();
-  const auto& l6 = (history.begin() + 5).derivative();
-  const auto& l7 = (history.begin() + 6).derivative();
-
-  // Compute the updating coefficents, called rcontN in Numerical recipes,
-  // that will be reused, so I don't have to compute them more than once.
-  const Vars rcont2 = u1 - u0;
-  const Vars rcont3 = dt * l1 - rcont2;
-
   // The formula for dense output is given in Numerical Recipes Sec. 17.2.3.
-  *u = u0 + output_fraction *
-                (rcont2 + (1.0 - output_fraction) *
-                              (rcont3 + output_fraction *
-                                            ((rcont2 - dt * l7 - rcont3) +
-                                             ((1.0 - output_fraction) * dt) *
-                                                 (d_[0] * l1 + d_[1] * l3 +
-                                                  d_[2] * l4 + d_[3] * l5 +
-                                                  d_[4] * l6 + d_[5] * l7))));
+  // This version is modified to eliminate all the values of the function
+  // except the most recent.
+  const auto common = [&output_fraction](const size_t n) noexcept {
+    return square(output_fraction) * gsl::at(d_, n) -
+           (1.0 + 2.0 * output_fraction) * gsl::at(b_, n);
+  };
+  *u = (history.end() - 1).value() +
+       dt * (1.0 - output_fraction) *
+           ((1.0 - output_fraction) *
+                ((common(0) + output_fraction) * history.begin().derivative() +
+                 common(2) * (history.begin() + 2).derivative() +
+                 common(3) * (history.begin() + 3).derivative() +
+                 common(4) * (history.begin() + 4).derivative() +
+                 common(5) * (history.begin() + 5).derivative()) +
+            square(output_fraction) * ((1.0 - output_fraction) * d_[6] - 1.0) *
+                (history.begin() + 6).derivative());
   return true;
 }
 }  // namespace TimeSteppers
