@@ -70,6 +70,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
@@ -169,6 +170,7 @@ struct GeneralizedHarmonicDefaults {
     InitializeTimeStepperHistory,
     Register,
     LoadBalancing,
+    WriteCheckpoint,
     Evolve,
     Exit
   };
@@ -243,8 +245,11 @@ struct GeneralizedHarmonicTemplateBase<
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
 
-  using phase_changes = tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-      GeneralizedHarmonicTemplateBase, Phase::LoadBalancing>>;
+  using phase_changes =
+      tmpl::list<PhaseControl::Registrars::VisitAndReturn<
+                     GeneralizedHarmonicTemplateBase, Phase::LoadBalancing>,
+                 PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
+                     GeneralizedHarmonicTemplateBase>>;
 
   using initialize_phase_change_decision_data =
       PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
