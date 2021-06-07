@@ -565,6 +565,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
   Variables<tmpl::list<
       GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      GeneralizedHarmonic::Tags::GaugeH<Dim>,
+      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>,
       GeneralizedHarmonic::Tags::Gamma1Gamma2,
       GeneralizedHarmonic::Tags::PiTwoNormals,
       GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint,
@@ -604,6 +606,9 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
       make_not_null(
           &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
               buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::GaugeH<Dim>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
       make_not_null(
@@ -668,6 +673,11 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
       get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
           buffer),
       gamma2);
+  CHECK_ITERABLE_APPROX(get<GeneralizedHarmonic::Tags::GaugeH<Dim>>(buffer),
+                        gauge_function);
+  CHECK_ITERABLE_APPROX(
+      get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer),
+      spacetime_deriv_gauge_function);
 
   CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric, dt_spacetime_metric);
   CHECK_ITERABLE_APPROX(expected_dt_pi, dt_pi);

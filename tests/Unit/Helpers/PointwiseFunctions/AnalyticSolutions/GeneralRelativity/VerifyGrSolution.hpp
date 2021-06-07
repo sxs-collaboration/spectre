@@ -242,6 +242,8 @@ void verify_time_independent_einstein_solution(
   Variables<tmpl::list<
       GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      GeneralizedHarmonic::Tags::GaugeH<3>,
+      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3>,
       GeneralizedHarmonic::Tags::Gamma1Gamma2,
       GeneralizedHarmonic::Tags::PiTwoNormals,
       GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint,
@@ -279,6 +281,9 @@ void verify_time_independent_einstein_solution(
       make_not_null(
           &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
               buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::GaugeH<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
       make_not_null(
@@ -401,10 +406,8 @@ void verify_consistency(const Solution& solution, const double time,
   using Shift = gr::Tags::Shift<3, Frame, double>;
   using SpatialMetric = gr::Tags::SpatialMetric<3, Frame, double>;
   using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<double>;
-  using InverseSpatialMetric =
-      gr::Tags::InverseSpatialMetric<3, Frame, double>;
-  using ExtrinsicCurvature =
-      gr::Tags::ExtrinsicCurvature<3, Frame, double>;
+  using InverseSpatialMetric = gr::Tags::InverseSpatialMetric<3, Frame, double>;
+  using ExtrinsicCurvature = gr::Tags::ExtrinsicCurvature<3, Frame, double>;
   using tags =
       tmpl::list<SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
                  ExtrinsicCurvature, Lapse, Shift, detail::deriv<Shift, Frame>,

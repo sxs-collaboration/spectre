@@ -31,6 +31,9 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> dt_phi,
     const gsl::not_null<Scalar<DataVector>*> temp_gamma1,
     const gsl::not_null<Scalar<DataVector>*> temp_gamma2,
+    const gsl::not_null<tnsr::a<DataVector, Dim>*> temp_gauge_function,
+    const gsl::not_null<tnsr::ab<DataVector, Dim>*>
+        temp_spacetime_deriv_gauge_function,
     const gsl::not_null<Scalar<DataVector>*> gamma1gamma2,
     const gsl::not_null<Scalar<DataVector>*> pi_two_normals,
     const gsl::not_null<Scalar<DataVector>*> normal_dot_gauge_constraint,
@@ -71,6 +74,9 @@ void TimeDerivative<Dim>::apply(
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
+  // Need guage function on external faces for gauge-constraint preservation
+  *temp_gauge_function = gauge_function;
+  *temp_spacetime_deriv_gauge_function = spacetime_deriv_gauge_function;
 
   gr::spatial_metric(spatial_metric, spacetime_metric);
   determinant_and_inverse(det_spatial_metric, inverse_spatial_metric,
