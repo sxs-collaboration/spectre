@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -211,9 +212,8 @@ namespace Solutions {
  * Right now we use (\f$\ref{eq:sphertocartsimple}\f$), but we may
  * wish to use the other transformation in the future.
  */
-class KerrSchild : public MarkAsAnalyticSolution {
+class KerrSchild : public AnalyticSolution<3_st> {
  public:
-  static constexpr size_t volume_dim = 3;
   struct Mass {
     using type = double;
     static constexpr Options::String help = {"Mass of the black hole"};
@@ -244,30 +244,6 @@ class KerrSchild : public MarkAsAnalyticSolution {
   KerrSchild(KerrSchild&& /*rhs*/) noexcept = default;
   KerrSchild& operator=(KerrSchild&& /*rhs*/) noexcept = default;
   ~KerrSchild() = default;
-
-  template <typename DataType, typename Frame = ::Frame::Inertial>
-  using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
-                                   tmpl::size_t<volume_dim>, Frame>;
-  template <typename DataType, typename Frame = ::Frame::Inertial>
-  using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame, DataType>,
-                    tmpl::size_t<volume_dim>, Frame>;
-  template <typename DataType, typename Frame = ::Frame::Inertial>
-  using DerivSpatialMetric = ::Tags::deriv<
-      gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
-      tmpl::size_t<volume_dim>, Frame>;
-  template <typename DataType, typename Frame = ::Frame::Inertial>
-  using tags = tmpl::list<
-      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType, Frame>, gr::Tags::Shift<volume_dim, Frame, DataType>,
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame, DataType>>,
-      DerivShift<DataType, Frame>,
-      gr::Tags::SpatialMetric<volume_dim, Frame, DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<volume_dim, Frame, DataType>>,
-      DerivSpatialMetric<DataType, Frame>,
-      gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame, DataType>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame, DataType>>;
 
   template <typename DataType, typename Frame, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(

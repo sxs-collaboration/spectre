@@ -4,6 +4,7 @@
 set(LIBRARY "Test_GhValenciaDivClean")
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_ProductOfConditions.cpp
   BoundaryCorrections/Test_ProductOfCorrections.cpp
   Test_Tags.cpp
   Test_StressEnergy.cpp
@@ -14,6 +15,6 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GrMhd/GhValenciaDivClean"
   "${LIBRARY_SOURCES}"
-  "Framework;GhValenciaDivClean"
-  "DomainHelpers;Framework;GeneralRelativityHelpers;GeneralizedHarmonic;ValenciaDivClean;GhValenciaDivClean"
+  "Framework;GhValenciaDivClean;GhGrMhdSolutions"
+  "DomainHelpers;Framework;GeneralRelativityHelpers;GeneralizedHarmonic;ValenciaDivClean;GhValenciaDivClean;GeneralRelativitySolutions"
   )

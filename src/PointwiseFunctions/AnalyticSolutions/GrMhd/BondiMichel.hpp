@@ -10,8 +10,9 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -161,7 +162,8 @@ namespace Solutions {
  *
  * The magnetic field \f$b^2\f$ is the same as the \f$\gamma\ne5/3\f$.
  */
-class BondiMichel : public MarkAsAnalyticSolution {
+class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
+ protected:
   template <typename DataType>
   struct IntermediateVars;
 
@@ -271,7 +273,7 @@ class BondiMichel : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
- private:
+ protected:
   friend bool operator==(const BondiMichel& lhs,
                          const BondiMichel& rhs) noexcept;
 

@@ -14,10 +14,10 @@ namespace Tags {
 namespace detail {
 // A const reference to another tag, used for rerouting arguments in the
 // combined system utilities
-template <typename Tag>
+template <typename Tag, typename Type = typename Tag::type>
 struct TemporaryReference {
   using tag = Tag;
-  using type = const typename Tag::type&;
+  using type = const Type&;
 };
 }  // namespace detail
 

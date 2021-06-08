@@ -221,7 +221,7 @@ class Kerr : public AnalyticSolution<Registrars>,
 
   void pup(PUP::er& p) noexcept override {
     gr::Solutions::KerrSchild::pup(p);
-    AnalyticSolution<Registrars>::pup(p);
+    Xcts::Solutions::AnalyticSolution<Registrars>::pup(p);
   }
 };
 

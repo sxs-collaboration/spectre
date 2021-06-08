@@ -11,6 +11,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -86,7 +87,7 @@ namespace Solutions {
  *
  * \f[b^2 = B_0^2 + B_1^2 - B_0^2 v_f^2\f]
  */
-class AlfvenWave : public MarkAsAnalyticSolution {
+class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -233,7 +234,7 @@ class AlfvenWave : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
- private:
+ protected:
   friend bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;
 
   // Computes the phase.
