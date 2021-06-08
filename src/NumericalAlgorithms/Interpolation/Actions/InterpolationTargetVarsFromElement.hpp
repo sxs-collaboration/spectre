@@ -77,6 +77,44 @@ struct InterpolationTargetVarsFromElement {
         not InterpolationTargetTag::compute_target_points::is_sequential::value,
         "Use InterpolationTargetGetVarsFromElement only with non-sequential"
         " compute_target_points");
+    // Check if we already have completed interpolation at this
+    // temporal_id.
+    const auto& completed_ids =
+        db::get<Tags::CompletedTemporalIds<TemporalId>>(box);
+    // (Search from the end because temporal_id is more likely to be
+    // at the end of the list then at the beginning.)
+    if (UNLIKELY(std::find(completed_ids.rbegin(), completed_ids.rend(),
+                           temporal_id) != completed_ids.rend())) {
+      // The code will get into this 'if' statement in the following
+      // scenario:
+      // - There is at least one interpolation point exactly on the
+      //   boundary of two or more Elements, so that
+      //   InterpolationTargetVarsFromElement is called more than once
+      //   with data for the same interpolation point (this is ok,
+      //   and add_received_variables handles this).
+      // - The only Elements that have not yet called
+      //   InterpolationTargetVarsFromElement for this temporal_id are
+      //   those that have data only for duplicated interpolation
+      //   points, and the InterpolationTarget has already received
+      //   that data from other Elements.
+      // In this case, the InterpolationTarget proceeds to do its
+      // work because it has all the data it needs. There is now
+      // one more condition needed for the scenario that gets
+      // us inside this 'if':
+      // - The InterpolationTarget has already completed its work at
+      //   this temporal_id, and it has cleaned up its data structures
+      //   for this temporal_id before all of the remaining calls to
+      //   InterpolationTargetVarsFromElement have occurred at this
+      //   temporal_id, and now we are in one of those remaining
+      //   calls.
+      //
+      // If this scenario occurs, we just return. This is because the
+      // InterpolationTarget is done and there is nothing left to do
+      // at this temporal_id.  Note that if there were extra work to
+      // do at this temporal_id, then CompletedTemporalIds would not
+      // have an entry for this temporal_id.
+      return;
+    }
 
     // Call set_up_interpolation only if it has not been called for this
     // temporal_id.
