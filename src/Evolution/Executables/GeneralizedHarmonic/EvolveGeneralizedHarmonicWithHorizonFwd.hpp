@@ -16,8 +16,7 @@ struct WrappedGr;
 }  // namespace GeneralizedHarmonic
 namespace gr {
 namespace Solutions {
-template <size_t Dim>
-struct GaugeWave;
+struct KerrSchild;
 }  // namespace Solutions
 }  // namespace gr
 namespace evolution {

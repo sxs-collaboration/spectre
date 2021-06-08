@@ -145,9 +145,10 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
         *phase_change_decision_data) = false;
   }
 
-  template <typename ParallelComponent, typename ArrayIndex>
+  template <typename ParallelComponent, typename ArrayIndex,
+            typename LocalMetavariables>
   void contribute_phase_data_impl(
-      Parallel::GlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<LocalMetavariables>& cache,
       const ArrayIndex& array_index) const noexcept {
     if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
                                  Parallel::Algorithms::Array>) {
@@ -161,14 +162,15 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
     }
   }
 
-  template <typename... DecisionTags>
+  template <typename... DecisionTags, typename LocalMetavariables>
   typename std::optional<
       std::pair<typename Metavariables::Phase, ArbitrationStrategy>>
   arbitrate_phase_change_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
-      const typename Metavariables::Phase current_phase,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const typename LocalMetavariables::Phase current_phase,
+      const Parallel::GlobalCache<LocalMetavariables>& /*cache*/)
+      const noexcept {
     auto& return_phase = tuples::get<Tags::ReturnPhase<TargetPhase>>(
         *phase_change_decision_data);
     if (return_phase.has_value()) {

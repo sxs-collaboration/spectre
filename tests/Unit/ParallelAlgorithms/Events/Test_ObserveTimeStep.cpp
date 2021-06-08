@@ -54,10 +54,10 @@ static_assert(
 
 template <typename Metavariables>
 struct MockContributeReductionData {
-  using ReductionData =
-      tmpl::wrap<tmpl::front<typename Events::ObserveTimeStep<
-                     Metavariables>::observed_reduction_data_tags>,
-                 Parallel::ReductionData>;
+  using ReductionData = tmpl::wrap<
+      tmpl::front<typename Events::ObserveTimeStep<
+          typename Metavariables::system>::observed_reduction_data_tags>,
+      Parallel::ReductionData>;
   struct Results {
     observers::ObservationId observation_id;
     std::string subfile_name;
@@ -154,8 +154,9 @@ struct Metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<Event, tmpl::list<Events::ObserveTimeStep<Metavariables>>>>;
+    using factory_classes = tmpl::map<tmpl::pair<
+        Event,
+        tmpl::list<Events::ObserveTimeStep<typename Metavariables::system>>>>;
   };
 
   enum class Phase { Initialization, Testing, Exit };
@@ -257,8 +258,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
   for (const bool print_to_terminal : {true, false}) {
-    const Events::ObserveTimeStep<Metavariables> observer("time_step_subfile",
-                                                          print_to_terminal);
+    const Events::ObserveTimeStep<typename Metavariables::system> observer(
+        "time_step_subfile", print_to_terminal);
     CHECK(not observer.needs_evolved_variables());
     test_observe(observer, false);
     test_observe(observer, true);
