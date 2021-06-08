@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from WeylElectric import weyl_electric_tensor
+from .WeylElectric import weyl_electric_tensor
 
 
 def weyl_propagating_modes(ricci, extrinsic_curvature, inverse_spatial_metric,

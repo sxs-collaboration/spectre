@@ -57,7 +57,7 @@ void test_weyl_propagating(const DataType& used_for_size) {
         const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::Ij<DataType, SpatialDim, Frame::Inertial>&) =
         &weyl_propagating_plus_wrapper<SpatialDim, Frame::Inertial, DataType>;
-    pypp::check_with_random_values<1>(f, "WeylPropagating",
+    pypp::check_with_random_values<1>(f, "GeneralRelativity.WeylPropagating",
                                       "weyl_propagating_mode_plus",
                                       {{{-1., 1.}}}, used_for_size);
   }
@@ -72,7 +72,7 @@ void test_weyl_propagating(const DataType& used_for_size) {
         const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::Ij<DataType, SpatialDim, Frame::Inertial>&) =
         &weyl_propagating_minus_wrapper<SpatialDim, Frame::Inertial, DataType>;
-    pypp::check_with_random_values<1>(f, "WeylPropagating",
+    pypp::check_with_random_values<1>(f, "GeneralRelativity.WeylPropagating",
                                       "weyl_propagating_mode_minus",
                                       {{{-1., 1.}}}, used_for_size);
   }
@@ -81,8 +81,7 @@ void test_weyl_propagating(const DataType& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.WeylPropagating",
                   "[PointwiseFunctions][Unit]") {
-  pypp::SetupLocalPythonEnvironment local_python_env(
-      "PointwiseFunctions/GeneralRelativity/");
+  pypp::SetupLocalPythonEnvironment local_python_env("PointwiseFunctions/");
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
 
