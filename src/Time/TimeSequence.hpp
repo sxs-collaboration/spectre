@@ -12,16 +12,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \ingroup TimeSteppersGroup
-///
-/// Holds all the TimeSequences
-namespace TimeSequences {
-template <typename T>
-class EvenlySpaced;
-template <typename T>
-class Specified;
-}  // namespace TimeSequences
-
 /// Represents a sequence of times.
 ///
 /// The template parameter \p T can either be `double` for a sequence
@@ -43,9 +33,6 @@ class TimeSequence : public PUP::able {
 
   WRAPPED_PUPable_abstract(TimeSequence);  // NOLINT
 
-  using creatable_classes =
-      tmpl::list<TimeSequences::EvenlySpaced<T>, TimeSequences::Specified<T>>;
-
   /// Returns the time in the sequence nearest to \p time, the time
   /// before that, and the time after, in numerical order.  These
   /// values allow a consumer to find the times in the sequence
@@ -58,6 +45,9 @@ class TimeSequence : public PUP::able {
   virtual std::array<std::optional<T>, 3> times_near(T time) const noexcept = 0;
 };
 
+/// \ingroup TimeGroup
+///
+/// Holds all the TimeSequences
 namespace TimeSequences {
 /// A sequence of evenly spaced times.
 template <typename T>
@@ -138,4 +128,7 @@ class Specified : public TimeSequence<T> {
  private:
   std::vector<T> values_;
 };
+
+template <typename T>
+using all_time_sequences = tmpl::list<EvenlySpaced<T>, Specified<T>>;
 }  // namespace TimeSequences

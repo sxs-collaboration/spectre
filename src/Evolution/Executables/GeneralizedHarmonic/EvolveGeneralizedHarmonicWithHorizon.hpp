@@ -31,6 +31,7 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
+#include "Options/FactoryHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -88,28 +89,13 @@ struct EvolutionMetavars
                  GeneralizedHarmonic::Tags::Pi<volume_dim, frame>,
                  GeneralizedHarmonic::Tags::Phi<volume_dim, frame>>;
 
-  using observe_fields = typename GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars>::observe_fields;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields,
-                                               analytic_solution_fields>,
-                Events::time_events<system>,
-                intrp::Events::Interpolate<3, AhA, interpolator_source_vars>>>>,
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::Slab>,
-            StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
-        tmpl::pair<StepController, StepControllers::standard_step_controllers>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+    using factory_classes = Options::add_factory_classes<
+        typename GeneralizedHarmonicTemplateBase<
+            EvolutionMetavars>::factory_creation::factory_classes,
+        tmpl::pair<Event, tmpl::list<intrp::Events::Interpolate<
+                              3, AhA, interpolator_source_vars>>>>;
   };
 
   using phase_changes = typename GeneralizedHarmonicTemplateBase<
@@ -162,8 +148,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
-    &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,

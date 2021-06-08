@@ -60,6 +60,7 @@ struct Options::create_from_yaml<DenseTriggers::Times> {
   template <typename Metavariables>
   static DenseTriggers::Times create(const Option& options) {
     return DenseTriggers::Times(
-        options.parse_as<std::unique_ptr<TimeSequence<double>>>());
+        options
+            .parse_as<std::unique_ptr<TimeSequence<double>>, Metavariables>());
   }
 };

@@ -17,6 +17,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -27,7 +28,9 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<DenseTriggers::Times>>>;
+        tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<DenseTriggers::Times>>,
+                  tmpl::pair<TimeSequence<double>,
+                             TimeSequences::all_time_sequences<double>>>;
   };
 };
 
@@ -80,8 +83,7 @@ void check_both_directions(std::vector<double> trigger_times,
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.DenseTriggers.Times",
                   "[Unit][Evolution]") {
-  Parallel::register_classes_with_charm<DenseTriggers::Times>();
-  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   const auto infinity = std::numeric_limits<double>::infinity();
 

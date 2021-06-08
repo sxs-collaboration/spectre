@@ -68,6 +68,7 @@ struct Options::create_from_yaml<Triggers::Slabs> {
   template <typename Metavariables>
   static Triggers::Slabs create(const Option& options) {
     return Triggers::Slabs(
-        options.parse_as<std::unique_ptr<TimeSequence<uint64_t>>>());
+        options.parse_as<std::unique_ptr<TimeSequence<uint64_t>>,
+                         Metavariables>());
   }
 };

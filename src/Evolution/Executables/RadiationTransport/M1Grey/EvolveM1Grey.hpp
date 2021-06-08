@@ -156,6 +156,10 @@ struct EvolutionMetavars {
                    StepChoosers::standard_slab_choosers<
                        system, local_time_stepping, false>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
+        tmpl::pair<TimeSequence<double>,
+                   TimeSequences::all_time_sequences<double>>,
+        tmpl::pair<TimeSequence<std::uint64_t>,
+                   TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };
@@ -324,8 +328,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection<
             metavariables::neutrino_species>>,
-    &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
-    &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,
