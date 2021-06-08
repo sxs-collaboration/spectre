@@ -302,8 +302,12 @@ void test_dg_operator(
             CAPTURE(vars);
             const auto& primal_fluxes_vars =
                 get_tag(primal_fluxes_vars_tag{}, element_id);
+            // Working around a bug in GCC 7.3 that fails to handle the
+            // structured bindings here
+            const auto& local_expected_primal_fluxes_vars =
+                expected_primal_fluxes_vars;
             CHECK_VARIABLES_CUSTOM_APPROX(primal_fluxes_vars,
-                                          expected_primal_fluxes_vars,
+                                          local_expected_primal_fluxes_vars,
                                           custom_aux_approx);
           }
         }
@@ -319,9 +323,14 @@ void test_dg_operator(
             CAPTURE(vars);
             const auto& operator_applied_to_vars =
                 get_tag(operator_applied_to_vars_tag{}, element_id);
-            CHECK_VARIABLES_CUSTOM_APPROX(operator_applied_to_vars,
-                                          expected_operator_applied_to_vars,
-                                          custom_operator_approx);
+            // Working around a bug in GCC 7.3 that fails to handle the
+            // structured bindings here
+            const auto& local_expected_operator_applied_to_vars =
+                expected_operator_applied_to_vars;
+            CHECK_VARIABLES_CUSTOM_APPROX(
+                operator_applied_to_vars,
+                local_expected_operator_applied_to_vars,
+                custom_operator_approx);
           }
         }
       };
