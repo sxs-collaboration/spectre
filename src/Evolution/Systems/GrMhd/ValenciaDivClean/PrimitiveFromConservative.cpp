@@ -190,6 +190,10 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
 using NewmanHamlinThenPalenzuelaEtAl = tmpl::list<
     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
+using KastaunThenNewmanThenPalenzuela = tmpl::list<
+    grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
+    grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
+    grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
@@ -231,13 +235,12 @@ GENERATE_INSTANTIATIONS(
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
-    (tmpl::list<
-         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+    (tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-     NewmanHamlinThenPalenzuelaEtAl),
+     NewmanHamlinThenPalenzuelaEtAl, KastaunThenNewmanThenPalenzuela),
     (true, false), (1, 2))
 
 #undef INSTANTIATION
