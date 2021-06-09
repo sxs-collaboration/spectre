@@ -28,5 +28,8 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  GeneralRelativity
+  Hydro
   Options
+  Utilities
   )
