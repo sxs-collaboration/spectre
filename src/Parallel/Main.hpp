@@ -9,6 +9,8 @@
 #include <boost/program_options.hpp>
 #include <charm++.h>
 #include <initializer_list>
+#include <pup.h>
+#include <regex>
 #include <string>
 #include <type_traits>
 
@@ -24,6 +26,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Formaline.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/System/Exit.hpp"
@@ -74,7 +77,10 @@ class Main : public CBase_Main<Metavariables> {
   /// \endcond
 
   explicit Main(CkArgMsg* msg) noexcept;
-  explicit Main(CkMigrateMessage* /*msg*/) {}
+  explicit Main(CkMigrateMessage* msg) noexcept;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) noexcept override;
 
   /// Allocate the initial elements of array components, and then execute the
   /// initialization phase on each component
@@ -89,6 +95,12 @@ class Main : public CBase_Main<Metavariables> {
   /// used as the callback after a quiescence detection.
   void start_load_balance() noexcept;
 
+  /// Place the Charm++ call that starts writing a checkpoint
+  ///
+  /// \details This call is wrapped within an entry method so that it may be
+  /// used as the callback after a quiescence detection.
+  void start_write_checkpoint() noexcept;
+
   /// Reduction target for data used in phase change decisions.
   ///
   /// It is required that the `Parallel::ReductionData` holds a single
@@ -100,6 +112,19 @@ class Main : public CBase_Main<Metavariables> {
           reduction_data) noexcept;
 
  private:
+  // Return the dir name for the next Charm++ checkpoint as well as the pieces
+  // from which the name is built up: the basename and the padding. This is a
+  // "detail" function so that these pieces can be defined in one place only.
+  std::tuple<std::string, std::string, size_t> checkpoint_dir_basename_pad()
+      const noexcept;
+
+  // Return the dir name for the next Charm++ checkpoint; check and error if
+  // this name already exists and writing the checkpoint would be unsafe.
+  std::string checkpoint_dir() const noexcept;
+
+  // Check if future checkpoint dirs are available; error if any already exist.
+  void check_future_checkpoint_dirs_available() const noexcept;
+
   template <typename ParallelComponent>
   using parallel_component_options =
       Parallel::get_option_tags<typename ParallelComponent::initialization_tags,
@@ -114,9 +139,9 @@ class Main : public CBase_Main<Metavariables> {
       tmpl::bind<
           tmpl::type_,
           tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
-
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
@@ -128,6 +153,7 @@ class Main : public CBase_Main<Metavariables> {
   // Metavariables
   tuples::tagged_tuple_from_typelist<phase_change_tags_and_combines_list>
       phase_change_decision_data_;
+  size_t checkpoint_dir_counter_ = 0_st;
 };
 
 namespace detail {
@@ -332,6 +358,21 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
         // program would have started.
         Parallel::printf("\nNo options to check!\n");
       }
+
+      // Include a check that the checkpoint dirs are available for writing as
+      // part of checking the option parsing. Doing these checks together helps
+      // catch more user errors before running the executable 'for real'.
+      //
+      // Note we don't do this check at the beginning of the Main chare
+      // constructor because we don't _always_ want to error if checkpoint dirs
+      // already exist. For example, running the executable with flags like
+      // `--help` or `--dump-source-tree-as` should succeed even if checkpoints
+      // were previously written.
+      if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
+                        typename Metavariables::Phase>) {
+        check_future_checkpoint_dirs_available();
+      }
+
       sys::exit();
     }
 
@@ -343,6 +384,11 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
     Parallel::printf("\nOption parsing completed.\n");
   } catch (const bpo::error& e) {
     ERROR(e.what());
+  }
+
+  if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
+                    typename Metavariables::Phase>) {
+    check_future_checkpoint_dirs_available();
   }
 
   mutable_global_cache_proxy_ = CProxy_MutableGlobalCache<Metavariables>::ckNew(
@@ -470,6 +516,59 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
 }
 
 template <typename Metavariables>
+Main<Metavariables>::Main(CkMigrateMessage* msg) noexcept
+    : CBase_Main<Metavariables>(msg) {}
+
+template <typename Metavariables>
+void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
+  p | current_phase_;
+  p | mutable_global_cache_proxy_;
+  p | global_cache_proxy_;
+  p | at_sync_indicator_proxy_;
+  // Note: we do NOT serialize the options.
+  // This is because options are only used in the initialization phase when
+  // the executable first starts up. Thereafter, the information from the
+  // options will be held in various code objects that will themselves be
+  // serialized.
+  p | phase_change_decision_data_;
+
+  p | checkpoint_dir_counter_;
+  if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
+                    typename Metavariables::Phase>) {
+    if (p.isUnpacking()) {
+      check_future_checkpoint_dirs_available();
+    }
+  }
+
+  // For now we only support restarts on the same hardware configuration (same
+  // number of nodes and same procs per node) used when writing the checkpoint.
+  // We check this by adding counters to the pup stream.
+  if (p.isUnpacking()) {
+    int previous_nodes = 0;
+    int previous_procs = 0;
+    p | previous_nodes;
+    p | previous_procs;
+    if (previous_nodes != sys::number_of_nodes() or
+        previous_procs != sys::number_of_procs()) {
+      ERROR(
+          "Must restart on the same hardware configuration used when writing "
+          "the checkpoint.\n"
+          "Checkpoint written with "
+          << previous_nodes << " nodes, " << previous_procs
+          << " procs.\n"
+             "Restarted with "
+          << sys::number_of_nodes() << " nodes, " << sys::number_of_procs()
+          << " procs.");
+    }
+  } else {
+    int current_nodes = sys::number_of_nodes();
+    int current_procs = sys::number_of_procs();
+    p | current_nodes;
+    p | current_procs;
+  }
+}
+
+template <typename Metavariables>
 void Main<Metavariables>::
     allocate_array_components_and_execute_initialization_phase() noexcept {
   ASSERT(current_phase_ == Metavariables::Phase::Initialization,
@@ -534,6 +633,15 @@ void Main<Metavariables>::execute_next_phase() noexcept {
       return;
     }
   }
+  if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
+                    typename Metavariables::Phase>) {
+    if (current_phase_ == Metavariables::Phase::WriteCheckpoint) {
+      CkStartQD(
+          CkCallback(CkIndex_Main<Metavariables>::start_write_checkpoint(),
+                     this->thisProxy));
+      return;
+    }
+  }
 
   // The general case simply returns to execute_next_phase
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
@@ -545,6 +653,15 @@ void Main<Metavariables>::start_load_balance() noexcept {
   at_sync_indicator_proxy_.IndicateAtSync();
   // No need for a callback to return to execute_next_phase: this is done by
   // ResumeFromSync instead.
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::start_write_checkpoint() noexcept {
+  const std::string dir = checkpoint_dir();
+  checkpoint_dir_counter_++;
+  CkStartCheckpoint(
+      dir.c_str(), CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
+                              this->thisProxy));
 }
 
 template <typename Metavariables>
@@ -650,6 +767,62 @@ void contribute_to_phase_change_reduction(
         "reduction.");
   }
 }
+
+template <typename Metavariables>
+std::tuple<std::string, std::string, size_t>
+Main<Metavariables>::checkpoint_dir_basename_pad() const noexcept {
+  const std::string basename = "SpectreCheckpoint";
+  constexpr size_t pad = 6;
+
+  const std::string counter = std::to_string(checkpoint_dir_counter_);
+  const std::string padded_counter =
+      std::string(pad - counter.size(), '0').append(counter);
+  const std::string checkpoint_dir = basename + padded_counter;
+  return std::make_tuple(checkpoint_dir, basename, pad);
+}
+
+template <typename Metavariables>
+std::string Main<Metavariables>::checkpoint_dir() const noexcept {
+  const auto [checkpoint_dir, basename, pad] = checkpoint_dir_basename_pad();
+  (void)basename;
+  (void)pad;
+  if (file_system::check_if_dir_exists(checkpoint_dir)) {
+    ERROR("Can't write checkpoint: dir " + checkpoint_dir + " already exists!");
+  }
+  return checkpoint_dir;
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::check_future_checkpoint_dirs_available()
+    const noexcept {
+  // Can't lambda-capture from structured binding in clang-11
+  std::string checkpoint_dir;
+  std::string basename;
+  size_t pad;
+  std::tie(checkpoint_dir, basename, pad) = checkpoint_dir_basename_pad();
+
+  // Find existing files with names that match the checkpoint dir name pattern
+  const auto all_files = file_system::ls();
+  const std::regex re(basename + "[0-9]{" + std::to_string(pad) + "}");
+  std::vector<std::string> checkpoint_files;
+  std::copy_if(
+      all_files.begin(), all_files.end(), std::back_inserter(checkpoint_files),
+      [&re](const std::string& s) noexcept { return std::regex_match(s, re); });
+
+  // Using string comparison of filenames, check that all the files we found
+  // are from older checkpoints, but not from future checkpoints
+  const bool found_older_checkpoints_only =
+      std::all_of(checkpoint_files.begin(), checkpoint_files.end(),
+                  [&checkpoint_dir](const std::string& s) noexcept {
+                    return s < checkpoint_dir;
+                  });
+  if (not found_older_checkpoints_only) {
+    ERROR(
+        "Can't start run: found checkpoints that may be overwritten!\n"
+        "Dirs from " << checkpoint_dir << " onward must not exist.\n");
+  }
+}
+
 /// @}
 }  // namespace Parallel
 

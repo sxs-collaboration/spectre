@@ -34,18 +34,19 @@ function(add_algorithm_test EXECUTABLE_NAME)
   add_dependencies(unit-tests ${EXECUTABLE_NAME})
 endfunction()
 
-add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmBadBoxApply)
+add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmGlobalCache)
 add_algorithm_test(Test_AlgorithmLocalSyncAction)
 add_algorithm_test(Test_AlgorithmNestedApply1)
 add_algorithm_test(Test_AlgorithmNestedApply2)
+add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmParallel)
 add_algorithm_test(Test_AlgorithmPhaseControl)
-add_algorithm_test(Test_PhaseChangeMain)
-add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
+add_algorithm_test(Test_CheckpointRestart)
 add_algorithm_test(Test_GlobalCache)
+add_algorithm_test(Test_PhaseChangeMain)
 add_algorithm_test(Test_SectionReductions)
 
 # Test GlobalCache
@@ -155,11 +156,38 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
   endif()
 endfunction()
 
-add_algorithm_test("AlgorithmCore" "")
+# Run TEST_NAME twice: first with no command-line args, then with the
+# `+restart SpectreCheckpoint0` command-line arg to restart from a Charm++
+# checkpoint named `SpectreCheckpoint0`. The checkpoint file is then deleted
+# to avoid it getting in the way of future test invocations (which would try
+# to overwrite the prior checkpoint file and error).
+function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
+  # Executable writes checkpoint file into the dir where it runs:
+  set(CHECKPOINT
+    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
+  add_test(
+    NAME "\"Unit.Parallel.${TEST_NAME}\""
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c
+    "rm -rf ${CHECKPOINT} \
+    && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
+    && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} +restart ${CHECKPOINT} 2>&1 \
+    && rm -rf ${CHECKPOINT}"
+    )
+  set_tests_properties(
+    "\"Unit.Parallel.${TEST_NAME}\""
+    PROPERTIES
+    TIMEOUT 10
+    LABELS "unit"
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+endfunction()
+
 add_algorithm_test(
   "AlgorithmBadBoxApply"
   "Cannot call apply function of 'error_size_zero' with DataBox \
 type 'db::DataBox<brigand::list<")
+add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test("AlgorithmLocalSyncAction" "")
 add_algorithm_test(
   "AlgorithmNestedApply1"
@@ -171,18 +199,21 @@ add_algorithm_test(
   "Already performing an Action and cannot execute additional Actions \
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
-add_algorithm_test("AlgorithmParallel" "")
-add_algorithm_test("PhaseChangeMain" "")
-add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
+add_algorithm_test("AlgorithmParallel" "")
+add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("GlobalCache" "")
+add_algorithm_test("PhaseChangeMain" "")
 add_algorithm_test("SectionReductions"
   "Element 0 received reduction: Counted 2 odd elements.")
+
 add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
   "AlgorithmParallel" "Objects migrating: 14")
 
 add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
 add_algorithm_test_with_input_file("AlgorithmPhaseControl" "Unit/Parallel")
+
+add_algorithm_test_with_restart_from_checkpoint("CheckpointRestart")
 
 # Tests that do not require their own Chare setup and can work with the
 # unit tests
