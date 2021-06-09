@@ -58,42 +58,106 @@ namespace Limiters {
 /// \brief A compact-stencil WENO limiter for DG
 ///
 /// Implements the simple WENO limiter of \cite Zhong2013 and the Hermite WENO
-/// (HWENO) limiter of \cite Zhu2016 for an arbitrary set of tensors. These
-/// limiters require communication only between nearest-neighbor elements, but
-/// preserve the full order of the DG solution when the solution is smooth.
-/// Full volume data is communicated between neighbors.
+/// (HWENO) limiter of \cite Zhu2016. The implementation is system-agnostic and
+/// can act on an arbitrary set of tensors.
 ///
-/// The limiter uses the minmod-based TVB troubled-cell indicator (TCI) of
-/// \cite Cockburn1999 to identify elements that need limiting. The simple
-/// WENO implementation follows the paper: it checks the TCI independently
-/// to each tensor component, so that only certain tensor components may be
-/// limited. The HWENO implementation checks the TCI for all tensor components,
-/// and if any single component is troubled, then all components are limited.
-/// Note that the HWENO paper, because it specializes the limiter to the
-/// Newtonian Euler fluid system, uses a more sophisticated TCI that is adapted
-/// to the particulars of the fluid system. We instead use the TVB indicator
-/// because it is easily applied to a general set of tensors.
+/// #### Summary of the compact-stencil WENO algorithms:
+//
+/// The compact-stencil WENO limiters require communication only between
+/// nearest-neighbor elements, but aim to preserve the full order of the DG
+/// solution when the solution is smooth. To achieve this, full volume data is
+/// communicated between neighbors.
+//
+/// For each tensor component to limit, the new solution is obtained by a
+/// standard WENO procedure --- the new solution is a linear combination of
+/// different polynomials, with weights chosen so that the smoother (i.e., less
+/// oscillatory) polynomials contribute the most to the sum.
 ///
-/// For each tensor component to limit, the new solution is obtained by WENO
-/// reconstruction --- a linear combination of the local DG solution and a
-/// "modified" solution from each neighbor element. For the simple WENO limiter,
-/// the modified solution is obtained by simply extrapolating the neighbor
-/// solution onto the troubled element. For the HWENO limiter, the modified
-/// solution is obtained by a least-squares fit to the solution across multiple
-/// neighboring elements.
+/// For the simple WENO and HWENO limiters, the polynomials used are the local
+/// DG solution as well as a "modified" solution from each neighbor element. For
+/// the simple WENO limiter, the modified solution is obtained by simply
+/// extrapolating the neighbor solution onto the troubled element. For the HWENO
+/// limiter, the modified solution is obtained by a least-squares fit to the
+/// solution across multiple neighboring elements.
 ///
-/// To reconstruct the WENO solution from the local solution and the modified
-/// neighbor solutions, the standard WENO procedure is followed. We use the
-/// oscillation indicator of \cite Dumbser2007, modified for use on the
-/// square/cube grids of SpECTRE. We favor this indicator because portions of
-/// the work can be precomputed, leading to an oscillation measure that is
+/// #### Notes on the SpECTRE implemention of the WENO limiters:
+///
+/// There are a few differences between the limiters as implemented in SpECTRE
+/// and as presented in the references. We list them here and discuss them
+/// further below.
+/// 1. The choice of basis to represent the DG solution
+/// 2. The system-agnostic implementation
+/// 3. The oscillation indicator
+///
+/// Finally, in 4., we will discuss the geometric limitations of the
+/// implementation (which are not a deviation from the references).
+///
+/// ##### 1. The choice of basis
+///
+/// SpECTRE uses a Legendre basis, rather than the polynomial basis that we
+/// understand to be used in the references. Because the construction of the
+/// modified neighbor solutions and the WENO sum is geometrically motivated, the
+/// overall algorithm should work similarly. However, the precise numerics may
+/// differ.
+///
+/// ##### 2. The system-agnostic implementation
+//
+/// This implementation can act on an arbitrary set of tensors. To reach this
+/// generality, our HWENO implementation uses a different troubled-cell
+/// indicator (TCI) than the reference, which instead specializes the TCI to the
+/// Newtonian Euler system of equations.
+///
+/// This implementation uses the minmod-based TVB TCI of \cite Cockburn1999 to
+/// identify elements that need limiting. The simple WENO implementation follows
+/// its reference: it checks the TCI independently for each tensor component, so
+/// that only certain tensor components may be limited. The HWENO implementation
+/// checks the TVB TCI for all tensor components, and if any single component is
+/// troubled, then all components of all tensors are limited.
+///
+/// When the evolution system has multiple evolved variables, the recommendation
+/// of the references is to apply the limiter to the system's characteristic
+/// variables to reduce spurious post-limiting oscillations. In SpECTRE,
+/// applying the limiter to the characteristic variables requires specializing
+/// the limiter to each evolution system. The system-specific limiter can also
+/// implement a system-specific TCI (as the HWENO reference does) to more
+/// precisely trigger the limiter.
+///
+/// ##### 3. The oscillation indicator
+///
+/// We use the oscillation indicator of \cite Dumbser2007, modified for use on
+/// the square/cube grids of SpECTRE. We favor this indicator because portions
+/// of the work can be precomputed, leading to an oscillation measure that is
 /// efficient to evaluate.
 ///
-/// \warning
-/// Limitations:
-/// - Does not support non-Legendre bases; this is ASSERTed.
-/// - Does not support h- or p-refinement; this is ASSERTed.
-/// - Does not support curved elements; this is not enforced.
+/// ##### 4. The geometric limitations
+///
+/// Does not support non-Legendre bases; this is checked in DEBUG mode. In
+/// principle other bases could be supported, but this would require
+/// generalizing the many internal algorithms that assume a Legendre basis.
+///
+/// Does not support h- or p-refinement; this is checked always. In principle
+/// this could be supported. The modified neighbor solution algorithm would
+/// need to be generalized (reasonable for simple WENO, extremely tedious for
+/// HWENO), and the sum of neighbor solutions may need to be updated as well.
+///
+/// Does not support curved elements; this is not enforced. The code will run
+/// but we make no guarantees about the results. Specifically, the limiter acts
+/// in the `Frame::Logical` coordinates, because in these coordinates it is
+/// straightforward to formulate the algorithm. This means the limiter can
+/// operate on generic deformed grids --- however, some things can start to
+/// break down, especially on strongly deformed grids:
+/// 1. When the Jacobian (from `Frame::Logical` to `Frame::Inertial`) varies
+///    across the element, then the limiter fails to be conservative. This is
+///    because the integral of a tensor `u` over the element will change after
+///    the limiter activates on `u`.
+/// 2. When computing the modified neighbor solution for the WENO sum, the
+///    extrapolation or fitting procedure may not properly account for the
+///    coordinates of the source data. If the coordinate map of the neighbor
+///    differs from that of the local element, then the logical-coordinate
+///    representation of the neighbor data may be incorrect. This may be a
+///    large error at Block boundaries with discontinuous map changes, and may
+///    be a small error from smoothly-varying maps that are not sufficiently
+///    resolved from one element to the next.
 template <size_t VolumeDim, typename... Tags>
 class Weno<VolumeDim, tmpl::list<Tags...>> {
  public:
