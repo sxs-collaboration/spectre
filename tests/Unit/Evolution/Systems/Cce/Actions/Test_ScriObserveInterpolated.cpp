@@ -17,9 +17,6 @@
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InsertInterpolationScriData.hpp"
 #include "Evolution/Systems/Cce/Actions/ScriObserveInterpolated.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
@@ -234,8 +231,9 @@ ComplexDataVector compute_expected_field_from_pypp(
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
                   "[Unit][Cce]") {
   Parallel::register_derived_classes_with_charm<TimeStepper>();
-  Parallel::register_derived_classes_with_charm<
-      Cce::Solutions::WorldtubeData>();
+  Parallel::register_classes_with_charm<
+      Cce::Solutions::RotatingSchwarzschild>();
+  Parallel::register_classes_with_charm<Cce::Solutions::TeukolskyWave>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using observation_component = mock_observer<test_metavariables>;
   pypp::SetupLocalPythonEnvironment local_python_env{

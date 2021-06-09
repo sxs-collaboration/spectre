@@ -136,7 +136,8 @@ struct LinearizedBondiSachs : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
 
-  explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit LinearizedBondiSachs(CkMigrateMessage* msg) noexcept
+      : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(hicpp-use-equals-default,modernize-use-equals-default)

@@ -62,7 +62,8 @@ struct RotatingSchwarzschild : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(RotatingSchwarzschild);  // NOLINT
 
-  explicit RotatingSchwarzschild(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit RotatingSchwarzschild(CkMigrateMessage* msg) noexcept
+      : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)

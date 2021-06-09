@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_BouncingBlackHole.cpp
   Test_GaugeWave.cpp
   Test_LinearizedBondiSachs.cpp
+  Test_RobinsonTrautman.cpp
   Test_RotatingSchwarzschild.cpp
   Test_TeukolskyWave.cpp
   )

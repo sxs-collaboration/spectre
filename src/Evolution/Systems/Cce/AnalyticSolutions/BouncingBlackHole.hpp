@@ -71,7 +71,8 @@ struct BouncingBlackHole : public WorldtubeData {
 
   WRAPPED_PUPable_decl_template(BouncingBlackHole);  // NOLINT
 
-  explicit BouncingBlackHole(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BouncingBlackHole(CkMigrateMessage* msg) noexcept
+      : WorldtubeData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)

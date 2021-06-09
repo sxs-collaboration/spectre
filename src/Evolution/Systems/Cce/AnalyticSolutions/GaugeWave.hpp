@@ -91,7 +91,8 @@ struct GaugeWave : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(GaugeWave);  // NOLINT
 
-  explicit GaugeWave(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit GaugeWave(CkMigrateMessage* msg) noexcept
+      : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)

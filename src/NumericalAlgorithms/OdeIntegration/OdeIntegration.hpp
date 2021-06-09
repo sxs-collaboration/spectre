@@ -63,6 +63,26 @@ struct set_unit_value_impl<ComplexModalVector, V, void> {
 };
 }  // namespace detail
 
+// In some integration contexts, boost requires the ability to resize the
+// integration arguments in preparation for writing to output buffers passed by
+// reference. These specializations make the resize work correctly with spectre
+// vector types.
+template <class VectorType1, class VectorType2>
+struct resize_impl_sfinae<VectorType1, VectorType2,
+                          typename boost::enable_if_c<
+                              is_derived_of_vector_impl_v<VectorType1> and
+                              is_derived_of_vector_impl_v<VectorType2>>::type> {
+  static void resize(VectorType1& x1, const VectorType2& x2) noexcept {
+    x1.destructive_resize(x2.size());
+  }
+};
+
+template <class VectorType>
+struct is_resizeable_sfinae<
+    VectorType,
+    typename boost::enable_if_c<is_derived_of_vector_impl_v<VectorType>>::type>
+    : boost::true_type {};
+
 template <>
 struct algebra_dispatcher<DataVector> {
   using algebra_type = ::detail::vector_impl_algebra;
