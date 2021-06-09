@@ -33,6 +33,8 @@ target_link_libraries(
   PoissonSolutions
   Spectral
   Utilities
+  Xcts
+  XctsSolutions
   )
 
 add_subdirectory(Actions)

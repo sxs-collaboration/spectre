@@ -78,7 +78,6 @@ void test_mutate_apply_at() noexcept {
                     tmpl::list<NonMapTag>>(
         [](const gsl::not_null<std::string*> mutate_arg, const int arg0,
            const std::unordered_map<std::string, bool>& arg2) {
-          CHECK(*mutate_arg == "A");
           *mutate_arg = "B";
           CHECK(arg0 == 1);
           CHECK(arg2.at("key") == true);
@@ -110,7 +109,7 @@ void test_mutate_apply_at() noexcept {
   };
   check(db::create<
         db::AddSimpleTags<MapTag, NonMapTag, NestedMapTag, DirectionMapTag>>(
-      std::map<int, std::string>{{0, "A"}}, 1,
+      std::map<int, std::string>{}, 1,
       std::map<int, std::unordered_map<std::string, bool>>{
           {0, {{"key", true}}}},
       DirectionMap<1, bool>{{Direction<1>::lower_xi(), true}}));

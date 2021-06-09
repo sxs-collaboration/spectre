@@ -9,7 +9,6 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
-#include "Elliptic/Actions/InitializeBackgroundFields.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
@@ -186,12 +185,11 @@ struct Metavariables {
       typename linear_solver::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
-      elliptic::Actions::InitializeBackgroundFields<system, background_tag>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
           background_tag, analytic_solution_fields,
           Xcts::Solutions::AnalyticSolution<tmpl::append<
               analytic_solution_registrars, analytic_data_registrars>>>,
-      elliptic::dg::Actions::initialize_operator<system>,
+      elliptic::dg::Actions::initialize_operator<system, background_tag>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   template <bool Linearized>

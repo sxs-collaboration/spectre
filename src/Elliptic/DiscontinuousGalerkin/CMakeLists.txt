@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Initialization.cpp
   Penalty.cpp
 )
 
@@ -17,6 +18,7 @@ spectre_target_headers(
   HEADERS
   DgElementArray.hpp
   DgOperator.hpp
+  Initialization.hpp
   Penalty.hpp
   Tags.hpp
   )
@@ -25,23 +27,23 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Domain
+  DomainStructure
+  ErrorHandling
+  Spectral
+  Utilities
   INTERFACE
   Boost::boost
   DiscontinuousGalerkin
-  Domain
   DomainCreators
-  DomainStructure
   Elliptic
   EllipticSystems
-  ErrorHandling
   Initialization
   LinearOperators
   Options
   Parallel
   ParallelDg
-  Spectral
   SystemUtilities
-  Utilities
   )
 
 add_subdirectory(Actions)
