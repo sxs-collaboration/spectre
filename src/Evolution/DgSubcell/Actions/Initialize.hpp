@@ -47,9 +47,12 @@ namespace evolution::dg::subcell::Actions {
  * If the cell is troubled then `Tags::ActiveGrid` is set to
  * `subcell::ActiveGrid::Subcell`, the `System::variables_tag` become the
  * variables on the subcell grid set by calling
- * `evolution::Initialization::Actions::SetVariables`, and
+ * `evolution::Initialization::Actions::SetVariables`,
  * ` Tags::Inactive<System::variables_tag>` become the (inadmissible) DG
- * solution.
+ * solution, and the `db::add_tag_prefix<Tags::dt, System::variables_tag>` are
+ * resized to the subcell grid with an `ASSERT` requiring that they were
+ * previously set to the size of the DG grid (this is to reduce the likelihood
+ * of them being resized back to the DG grid later).
  *
  * \details `Metavariables::SubcellOptions::DgInitialDataTci::apply` is called
  * with the evolved variables on the DG grid, the projected evolved variables,
@@ -81,6 +84,7 @@ namespace evolution::dg::subcell::Actions {
  * - Removes: nothing
  * - Modifies:
  *   - `System::variables_tag` if the cell is troubled
+ *   - `Tags::dt<System::variables_tag>` if the cell is troubled
  */
 template <size_t Dim, typename System, typename TciMutator>
 struct Initialize {
@@ -166,6 +170,18 @@ struct Initialize {
           SetVariables<Tags::Coordinates<Dim, Frame::Logical>>::apply(
               box, inboxes, cache, array_index, ActionList{},
               std::add_pointer_t<ParallelComponent>{nullptr});
+      db::mutate<
+          db::add_tag_prefix<::Tags::dt, typename System::variables_tag>>(
+          make_not_null(&box),
+          [&dg_mesh, &subcell_mesh](const auto dt_vars_ptr) noexcept {
+            ASSERT(dt_vars_ptr->number_of_grid_points() ==
+                       dg_mesh.number_of_grid_points(),
+                   "Subcell is resizing the time derivative variables and "
+                   "expected them to be the size of the DG grid ("
+                       << dg_mesh.number_of_grid_points() << ") but got "
+                       << dt_vars_ptr->number_of_grid_points());
+            dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points(), 0.0);
+          });
     }
     return std::forward_as_tuple(std::move(box));
   }
