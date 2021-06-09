@@ -124,7 +124,8 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
          "case where proj_center is at larger z than the z_plane. "
          "The map may still be invertible, but further "
          "testing would be needed to ensure that jacobians are not "
-         "ill-conditioned.");
+         "ill-conditioned. Here z_plane = "
+             << z_plane << " and proj_center[2] = " << proj_center[2]);
 
   ASSERT(abs(cos_theta) <= 0.95,
          "z_plane is too far from the center of sphere_one. "
