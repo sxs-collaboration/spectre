@@ -83,8 +83,8 @@ std::pair<double, bool> get_suggestion(
       Variables<EvolvedTags>,
       typename db::add_tag_prefix<::Tags::dt, EvolvedVariablesTag>::type>
       history{stepper_order};
-  history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, step_values,
-                 0.1 * step_values);
+  history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, 0.1 * step_values);
+  history.most_recent_value() = step_values;
   auto box = db::create<
       db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<Metavariables<true>>,

@@ -23,6 +23,8 @@
 
 namespace {
 
+constexpr double test_most_recent_value = 1234.56;
+
 Time make_time(const double t) noexcept { return Slab(t, t + 0.5).start(); }
 
 TimeStepId make_time_id(const double t) noexcept {
@@ -95,7 +97,6 @@ void check_history_state(const HistoryType& hist) noexcept {
       CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
-      CHECK(it.value() == entry_num);
       CHECK(it.derivative() == get_output(entry_num));
     }
     CHECK(it == hist.end());
@@ -103,6 +104,8 @@ void check_history_state(const HistoryType& hist) noexcept {
 
   CHECK(hist.front() == hist[0]);
   CHECK(hist.back() == hist[3]);
+
+  CHECK(hist.most_recent_value() == test_most_recent_value);
 }
 }  // namespace
 
@@ -114,17 +117,19 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   history.integration_order(2);
   CHECK(history.integration_order() == 2);
 
+  history.most_recent_value() = test_most_recent_value;
+
   CHECK(history.size() == 0);
   CHECK(history.capacity() == 0);
   CHECK(history.begin() == history.end());
   CHECK(history.begin() == history.cbegin());
   CHECK(history.end() == history.cend());
 
-  history.insert(make_time_id(0.), 0., get_output(0));
-  history.insert_initial(make_time_id(-1.), -1., get_output(-1));
-  history.insert(make_time_id(1.), 1., get_output(1));
-  history.insert_initial(make_time_id(-2.), -2., get_output(-2));
-  history.insert_initial(make_time_id(-3.), -3., get_output(-3));
+  history.insert(make_time_id(0.), get_output(0));
+  history.insert_initial(make_time_id(-1.), get_output(-1));
+  history.insert(make_time_id(1.), get_output(1));
+  history.insert_initial(make_time_id(-2.), get_output(-2));
+  history.insert_initial(make_time_id(-3.), get_output(-3));
 
   history.mark_unneeded(history.begin());
   CHECK(history.size() == 5);
@@ -133,7 +138,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   CHECK(history.size() == 3);
   CHECK(history.capacity() == 5);
 
-  history.insert(make_time_id(2.), 2., get_output(2));
+  history.insert(make_time_id(2.), get_output(2));
   CHECK(history.size() == 4);
   CHECK(history.capacity() == 5);
 
@@ -157,7 +162,6 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
       CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
-      CHECK(it.value() == entry_num);
       CHECK(it.derivative() == get_output(entry_num));
     }
     CHECK(it == history.end());

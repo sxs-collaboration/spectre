@@ -186,7 +186,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
     const double l_inf_error =
-        error_calc_impl((history.end() - 1).value(), error);
+        error_calc_impl(history.most_recent_value(), error);
     double new_step;
     if (not previous_step_error->has_value()) {
       new_step = previous_step *

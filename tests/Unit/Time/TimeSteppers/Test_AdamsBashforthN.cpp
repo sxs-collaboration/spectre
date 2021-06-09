@@ -64,8 +64,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
                              const TimeStepId& now) noexcept {
     const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history(2);
-    history.insert(first, 0., 0.);
-    history.insert(second, 0., 0.);
+    history.insert(first, 0.);
+    history.insert(second, 0.);
     return stepper.can_change_step_size(now, history);
   };
   CHECK(can_change(start, mid, end));
@@ -130,8 +130,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
                              const TimeStepId& now) noexcept {
     const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history(2);
-    history.insert(first, 0., 0.);
-    history.insert(second, 0., 0.);
+    history.insert(first, 0.);
+    history.insert(second, 0.);
     return stepper.can_change_step_size(now, history);
   };
   CHECK_FALSE(can_change(start, mid, end));
@@ -403,8 +403,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
   const Slab slab(0., 1.);
   TimeSteppers::History<double, double> history{3};
   const auto add_history = [&df, &f, &history](const Time& time) noexcept {
-    history.insert(TimeStepId(true, 0, time), f(time.value()),
-                   df(time.value()));
+    history.insert(TimeStepId(true, 0, time), df(time.value()));
+    history.most_recent_value() = f(time.value());
   };
   add_history(slab.start());
   add_history(slab.end());

@@ -44,7 +44,8 @@ void record_time_stepper_data(
          const TimeStepId& time_step_id,
          const typename variables_tag::type& vars,
          const typename dt_variables_tag::type& dt_vars) noexcept {
-        history->insert(time_step_id, vars, dt_vars);
+        history->insert(time_step_id, dt_vars);
+        history->most_recent_value() = vars;
       },
       db::get<Tags::TimeStepId>(*box), db::get<variables_tag>(*box),
       db::get<dt_variables_tag>(*box));

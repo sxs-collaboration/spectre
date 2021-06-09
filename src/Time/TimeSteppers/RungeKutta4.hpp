@@ -147,52 +147,43 @@ void RungeKutta4::update_u(
     history->mark_unneeded(history->end() - 1);
   }
 
-  const auto& dt_vars = (history->end() - 1).derivative();
-  const auto& u0 = history->begin().value();
-
   switch (substep) {
     case 0: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(1) = u^n + dt * \mathcal{L}(u^n,t^n)/2
-      // On entry V = u^n, u0 = u^n, rhs0 = \mathcal{L}(u^n, t^n),
-      // time = t^n
-      *u = (history->end() - 1).value() + 0.5 * time_step.value() * dt_vars;
-      // On exit v = v^(1), time = t^n + (1/2)*dt
+      *u = history->most_recent_value() +
+           0.5 * time_step.value() * history->begin().derivative();
       break;
     }
     case 1: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(2) = u^n + dt * \mathcal{L}(v^(1), t^n + (1/2)*dt)/2
-      // On entry V = v^(1), u0 = u^n, rhs0 = \mathcal{L}(v^(1), t^n + dt/2),
-      // time = t^n + dt
-      *u = u0 + 0.5 * time_step.value() * dt_vars;
-      // On exit v = v^(2), time = t^n + (1/2)*dt
+      *u = history->most_recent_value() -
+           0.5 * time_step.value() *
+               (history->begin().derivative() -
+                (history->begin() + 1).derivative());
       break;
     }
     case 2: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(3) = u^n + dt * \mathcal{L}(v^(2), t^n + (1/2)*dt))
-      // On entry V = v^(2), u0 = u^n,
-      // rhs0 = \mathcal{L}(v^(2), t^n + (1/2)*dt), time = t^n + (1/2)*dt
-      *u = u0 + time_step.value() * dt_vars;
-      // On exit v = v^(3), time = t^n + dt
+      *u = history->most_recent_value() +
+           time_step.value() * (-0.5 * (history->begin() + 1).derivative() +
+                                (history->begin() + 2).derivative());
       break;
     }
     case 3: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3) + v^(4) - 3*u0)/6
-      // On entry V = v^(3), u0 = u^n, rhs0 = \mathcal{L}(v^(3), t^n + dt),
-      // time = t^n + dt
       // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this gives
       // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
       //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
-      constexpr double one_sixth = 1.0 / 6.0;
-      *u = (2.0 * (history->begin() + 1).value() +
-            4.0 * (history->begin() + 2).value() +
-            2.0 * (history->begin() + 3).value() +
-            (time_step.value() * dt_vars - 2.0 * u0)) *
-           one_sixth;
-      // On exit v = u^(n+1), time = t^n + dt
+      *u = history->most_recent_value() +
+           (1.0 / 3.0) * time_step.value() *
+               (0.5 * history->begin().derivative() +
+                (history->begin() + 1).derivative() -
+                2.0 * (history->begin() + 2).derivative() +
+                0.5 * (history->begin() + 3).derivative());
       break;
     }
     default:
@@ -212,45 +203,37 @@ bool RungeKutta4::update_u(
   if (substep < 3) {
     update_u(u, history, time_step);
   } else {
-    const auto& dt_vars = (history->end() - 1).derivative();
-    const auto& u0 = history->begin().value();
     switch (substep) {
       case 3: {
-        constexpr double prefactor = 1.0 / 32.0;
-        *u = (10.0 * (history->begin() + 1).value() +
-              14.0 * (history->begin() + 2).value() +
-              13.0 * (history->begin() + 3).value() - 5.0 * u0 -
-              time_step.value() * dt_vars) *
-             prefactor;
+        *u = history->most_recent_value() +
+             (1.0 / 32.0) * time_step.value() *
+                 (5.0 * history->begin().derivative() +
+                  7.0 * (history->begin() + 1).derivative() -
+                  19.0 * (history->begin() + 2).derivative() -
+                  (history->begin() + 3).derivative());
         break;
       }
       case 4: {
         // from (17.1.3) of Numerical Recipes 3rd Edition
         // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3) + v^(4) - 3*u0)/6
-        // On entry V = v^(3), u0 = u^n, rhs0 = \mathcal{L}(v^(3), t^n + dt),
-        // time = t^n + dt
         // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this
         // gives u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
         //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
-        constexpr double one_sixth = 1.0 / 6.0;
-        *u = (2.0 * (history->begin() + 1).value() +
-              4.0 * (history->begin() + 2).value() +
-              2.0 * (history->begin() + 3).value() +
-              (time_step.value() * (history->begin() + 3).derivative() -
-               2.0 * u0)) *
-             one_sixth;
-        // On exit v = u^(n+1), time = t^n + dt
+        *u = history->most_recent_value() +
+             (1.0 / 96.0) * time_step.value() *
+                 (history->begin().derivative() +
+                  11.0 * (history->begin() + 1).derivative() -
+                  7.0 * (history->begin() + 2).derivative() +
+                  19.0 * (history->begin() + 3).derivative());
 
         // See Butcher Tableau of Zonneveld 4(3) embedded scheme with five
         // substeps in Table 4.2 of Hairer, Norsett, and Wanner
-        *u_error = *u - u0 -
-                   time_step.value() *
-                       (-3.0 * history->begin().derivative() +
-                        14.0 * (history->begin() + 1).derivative() +
-                        14.0 * (history->begin() + 2).derivative() +
-                        13.0 * (history->begin() + 3).derivative() -
-                        32.0 * (history->begin() + 4).derivative()) *
-                       one_sixth;
+        *u_error = (2.0 / 3.0) * time_step.value() *
+                   (history->begin().derivative() -
+                    3.0 * ((history->begin() + 1).derivative() +
+                           (history->begin() + 2).derivative() +
+                           (history->begin() + 3).derivative()) +
+                    8.0 * (history->begin() + 4).derivative());
         break;
       }
       default:
@@ -273,7 +256,7 @@ bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = (history.end() - 1).value();
+    *u = history.most_recent_value();
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -291,15 +274,15 @@ bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
 
   // Numerical Recipes Eq. (17.2.15). This implements cubic interpolation
   // throughout the step.
-  const auto& u0 = history.begin().value();
-  const auto& deriv0 = history.begin().derivative();
-  const auto& u1 = (history.end() - 1).value();
-  const auto& deriv1 = (history.end() - 1).derivative();
-  *u = (1.0 - output_fraction) * u0 + output_fraction * u1 +
-       (output_fraction) * (output_fraction - 1.0) *
-           ((1.0 - 2.0 * output_fraction) * (u1 - u0) +
-            (output_fraction - 1.0) * time_step * deriv0 +
-            output_fraction * time_step * deriv1);
+  *u = history.most_recent_value() -
+       (1.0 / 3.0) * time_step * (1.0 - output_fraction) *
+           ((1.0 - output_fraction) *
+                ((0.5 - 2.0 * output_fraction) * history.begin().derivative() +
+                 (1.0 + 2.0 * output_fraction) *
+                     ((history.begin() + 1).derivative() +
+                      (history.begin() + 2).derivative() +
+                      0.5 * (history.begin() + 3).derivative())) +
+            3.0 * square(output_fraction) * (history.end() - 1).derivative());
   return true;
 }
 }  // namespace TimeSteppers

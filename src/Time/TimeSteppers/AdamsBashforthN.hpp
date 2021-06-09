@@ -434,7 +434,7 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
   const auto coefficients =
       get_coefficients(history_start, history.end(), time_step);
 
-  *u = (history.end() - 1).value();
+  *u = history.most_recent_value();
   auto coefficient = coefficients.rbegin();
   for (auto history_entry = history_start;
        history_entry != history.end();

@@ -223,17 +223,18 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
       Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>>>
       time_stepper_history{};
   for (size_t i = 0; i < time_stepper->order(); ++i) {
-    Variables<evolved_vars_tags> vars{subcell_mesh.number_of_grid_points()};
-    get(get<Var1>(vars)) =
-        (i + 2.0) * get<0>(logical_coordinates(subcell_mesh));
     Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>> dt_vars{
         subcell_mesh.number_of_grid_points()};
     get(get<Tags::dt<Var1>>(dt_vars)) =
         (i + 20.0) * get<0>(logical_coordinates(subcell_mesh));
     time_stepper_history.insert(
-        {true, 1, Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}}}, vars,
+        {true, 1, Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}}},
         dt_vars);
   }
+  Variables<evolved_vars_tags> vars{subcell_mesh.number_of_grid_points()};
+  get(get<Var1>(vars)) =
+      (time_stepper->order() + 1.0) * get<0>(logical_coordinates(subcell_mesh));
+  time_stepper_history.most_recent_value() = vars;
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
@@ -306,13 +307,14 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   }
 
   if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg) {
+    CHECK(evolution::dg::subcell::fd::reconstruct(
+              time_stepper_history.most_recent_value(), dg_mesh,
+              subcell_mesh.extents()) ==
+          time_stepper_history_from_box.most_recent_value());
     for (auto expected_it = time_stepper_history.cbegin(),
               box_it = time_stepper_history_from_box.cbegin();
          expected_it != time_stepper_history.end(); ++expected_it, ++box_it) {
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
-      CHECK(evolution::dg::subcell::fd::reconstruct(
-                expected_it.value(), dg_mesh, subcell_mesh.extents()) ==
-            box_it.value());
       CHECK(evolution::dg::subcell::fd::reconstruct(
                 expected_it.derivative(), dg_mesh, subcell_mesh.extents()) ==
             box_it.derivative());
@@ -321,11 +323,12 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
     CHECK(tci_grid_history_from_box.empty());
   } else {
     // TCI failed
+    CHECK(time_stepper_history.most_recent_value() ==
+          time_stepper_history_from_box.most_recent_value());
     for (auto expected_it = time_stepper_history.cbegin(),
               box_it = time_stepper_history_from_box.cbegin();
          expected_it != time_stepper_history.end(); ++expected_it, ++box_it) {
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
-      CHECK(expected_it.value() == box_it.value());
       CHECK(expected_it.derivative() == box_it.derivative());
     }
     CHECK(neighbor_data_from_box.size() == 1);

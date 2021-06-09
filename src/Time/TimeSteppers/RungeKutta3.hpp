@@ -127,38 +127,31 @@ void RungeKutta3::update_u(
     history->mark_unneeded(history->end() - 1);
   }
 
-  const auto& vars = (history->end() - 1).value();
-  const auto& dt_vars = (history->end() - 1).derivative();
-  const auto& U0 = history->begin().value();
-
   switch (substep) {
     case 0: {
       // from (5.32) of Hesthaven
       // v^(1) = u^n + dt*RHS(u^n,t^n)
-      // On entry V = u^n, U0 = u^n, rhs0 = RHS(u^n,t^n),
-      // time = t^n
-      *u = (history->end() - 1).value() + time_step.value() * dt_vars;
-      // On exit v = v^(1), time = t^n + dt
+      *u = history->most_recent_value() +
+           time_step.value() * history->begin().derivative();
       break;
     }
     case 1: {
       // from (5.32) of Hesthaven
       // v^(2) = (1/4)*( 3*u^n + v^(1) + dt*RHS(v^(1),t^n + dt) )
-      // On entry V = v^(1), U0 = u^n, rhs0 = RHS(v^(1),t^n + dt),
-      // time = t^n + dt
-      *u = (history->end() - 1).value() +
-           0.25 * (3.0 * (U0 - vars) + time_step.value() * dt_vars);
-      // On exit v = v^(2), time = t^n + (1/2)*dt
+      *u = history->most_recent_value() -
+           0.25 * time_step.value() *
+               (3.0 * history->begin().derivative() -
+                (history->begin() + 1).derivative());
       break;
     }
     case 2: {
       // from (5.32) of Hesthaven
       // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
-      // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
-      // time = t^n + (1/2)*dt
-      *u = (history->end() - 1).value() +
-           (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
-      // On exit v = u^(n+1), time = t^n + dt
+      *u = history->most_recent_value() -
+           (1.0 / 12.0) * time_step.value() *
+               (history->begin().derivative() +
+                (history->begin() + 1).derivative() -
+                8.0 * (history->begin() + 2).derivative());
       break;
     }
     default:
@@ -177,13 +170,12 @@ bool RungeKutta3::update_u(
   update_u(u, history, time_step);
   // error estimate is only available when completing a full step
   if ((history->end() - 1).time_step_id().substep() == 2) {
-    const auto& U0 = history->begin().value();
     // error is estimated by comparing the order 3 step result with an order 2
     // estimate. See e.g. Chapter II.4 of Harrier, Norsett, and Wagner 1993
-    *u_error = *u - U0 -
-               time_step.value() * 0.5 *
-                   (history->begin().derivative() +
-                    (history->begin() + 1).derivative());
+    *u_error =
+        -(1.0 / 3.0) * time_step.value() *
+        (history->begin().derivative() + (history->begin() + 1).derivative() -
+         2.0 * (history->begin() + 2).derivative());
     return true;
   }
   return false;
@@ -201,7 +193,7 @@ bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = (history.end() - 1).value();
+    *u = history.most_recent_value();
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -217,10 +209,12 @@ bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
          << ", " << step_end << "]");
 
   // arXiv:1605.02429
-  *u = (1.0 - output_fraction) * history.begin().value() +
-       output_fraction * (1.0 - output_fraction) *
-           (history.begin() + 1).value() +
-       square(output_fraction) * (history.begin() + 3).value();
+  *u = history.most_recent_value() -
+       (1.0 / 6.0) * time_step * (1.0 - output_fraction) *
+           ((1.0 - 5.0 * output_fraction) * history.begin().derivative() +
+            (1.0 + output_fraction) *
+                ((history.begin() + 1).derivative() +
+                 4.0 * (history.begin() + 2).derivative()));
   return true;
 }
 }  // namespace TimeSteppers

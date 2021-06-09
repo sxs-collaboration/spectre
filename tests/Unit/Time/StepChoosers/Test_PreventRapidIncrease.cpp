@@ -104,8 +104,8 @@ void check_case(const Frac& expected_frac,
     };
 
     for (size_t i = 1; i < times.size(); ++i) {
-      lts_history.insert_initial(make_time_id(i), nullptr, nullptr);
-      gts_history.insert_initial(make_gts_time_id(i), nullptr, nullptr);
+      lts_history.insert_initial(make_time_id(i), nullptr);
+      gts_history.insert_initial(make_gts_time_id(i), nullptr);
     }
 
     const auto check =

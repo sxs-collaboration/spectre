@@ -61,7 +61,10 @@ void initialize_history(
     time -= step_size;
     history->insert_initial(
         TimeStepId(step_size.is_positive(), slab_number, time),
-        analytic(time.value()), rhs(analytic(time.value()), time.value()));
+        rhs(analytic(time.value()), time.value()));
+    if (j == 0) {
+      history->most_recent_value() = analytic(time.value());
+    }
   }
 }
 
