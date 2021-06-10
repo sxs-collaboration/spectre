@@ -134,9 +134,9 @@ void test_element_id() {
   CHECK(get_output(element_six) == "[B4,(L0I0,L0I0,L0I0),G1]");
 
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
-        two_to_the(SegmentId::block_id_bits) - 1);
+        two_to_the(ElementId<3>::block_id_bits) - 1);
   CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
-        make_array<3>(SegmentId(SegmentId::max_refinement_level, 0)));
+        make_array<3>(SegmentId(ElementId<3>::max_refinement_level - 1, 0)));
   CHECK(ElementId<3>::external_boundary_id().grid_index() == 0);
 }
 
@@ -145,10 +145,12 @@ void test_serialization() noexcept {
   constexpr size_t volume_dim = VolumeDim;
   const ElementId<volume_dim> unused_id(0);
   const auto initial_ref_levels = make_array<volume_dim>(1_st);
-  for (size_t block_id = 0; block_id < two_to_the(SegmentId::block_id_bits);
-       ++block_id) {
+  // We restrict the test to 2^7 blocks and 2^grid_index_bits-2 grid indices so
+  // it finishes in a reasonable amount of time.
+  for (size_t block_id = 0; block_id < two_to_the(7_st); ++block_id) {
     for (size_t grid_index = 0;
-         grid_index < two_to_the(SegmentId::grid_index_bits); ++grid_index) {
+         grid_index < two_to_the(ElementId<VolumeDim>::grid_index_bits - 2);
+         ++grid_index) {
       const std::vector<ElementId<volume_dim>> element_ids =
           initial_element_ids(block_id, initial_ref_levels, grid_index);
       for (const auto element_id : element_ids) {
@@ -186,7 +188,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_element_id = ElementId<1>(two_to_the(SegmentId::block_id_bits));
+  auto failed_element_id =
+      ElementId<1>(two_to_the(ElementId<1>::block_id_bits));
   static_cast<void>(failed_element_id);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -198,7 +201,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_element_id =
-      ElementId<1>(0, {{{0, 0}}}, two_to_the(SegmentId::grid_index_bits));
+      ElementId<1>(0, {{{0, 0}}}, two_to_the(ElementId<1>::grid_index_bits));
   static_cast<void>(failed_element_id);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

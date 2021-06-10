@@ -229,8 +229,8 @@ std::vector<OverlapId<Dim>> ordered_overlap_ids(
                 return lhs.second.block_id() < rhs.second.block_id();
               }
               for (size_t d = 0; d < Dim; ++d) {
-                const auto& lhs_segment_id = lhs.second.segment_ids().at(d);
-                const auto& rhs_segment_id = rhs.second.segment_ids().at(d);
+                const auto lhs_segment_id = lhs.second.segment_ids().at(d);
+                const auto rhs_segment_id = rhs.second.segment_ids().at(d);
                 if (lhs_segment_id.refinement_level() !=
                     rhs_segment_id.refinement_level()) {
                   return lhs_segment_id.refinement_level() <
