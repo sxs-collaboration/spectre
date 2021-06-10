@@ -177,7 +177,7 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
     return std::nullopt;
   }
   const double first_request = requests_.front().substep_time().value();
-  if (boundary_history_.size() > 0 and
+  if (boundary_history_.size() >= boundary_history_.integration_order() and
       (boundary_history_.end() - 1)->value() <= first_request and
       latest_next_.substep_time().value() >= first_request) {
     gh_variables latest_values{};

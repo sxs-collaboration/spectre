@@ -34,6 +34,9 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
+#include "Parallel/Printf.hpp"
+#include "Utilities/MakeString.hpp"
+
 /// \cond
 namespace TimeSteppers {
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
@@ -409,7 +412,8 @@ template <typename Vars, typename DerivVars>
 bool AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
                                      const History<Vars, DerivVars>& history,
                                      const double time) const noexcept {
-  ASSERT(history.integration_order() == order_,
+  ASSERT(history.integration_order() == order_ and
+             history.size() >= history.integration_order(),
          "Dense output is only supported at full order");
   const ApproximateTimeDelta time_step{time - history.back().value()};
   update_u_impl(u, history, time_step, order_);
