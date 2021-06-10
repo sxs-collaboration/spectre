@@ -38,4 +38,13 @@ function(add_sinusoid_executable)
     )
 endfunction(add_sinusoid_executable)
 
+function(add_krivodonova_executable)
+  add_scalar_advection_executable(
+    Krivodonova
+    1
+    ScalarAdvection::Solutions::Krivodonova
+    )
+endfunction(add_krivodonova_executable)
+
 add_sinusoid_executable()
+add_krivodonova_executable()

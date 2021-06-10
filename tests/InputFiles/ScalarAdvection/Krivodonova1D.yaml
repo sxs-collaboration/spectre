@@ -1,0 +1,66 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveScalarAdvectionKrivodonova1D
+# Check: parse;execute
+# ExpectedOutput:
+#   ScalarAdvectionKrivodonova1DVolume0.h5
+
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  TimeStepper: RungeKutta3
+
+PhaseChangeAndTriggers:
+
+DomainCreator:
+  Interval:
+    LowerBound: [-1.0]
+    UpperBound: [1.0]
+    InitialRefinement: [1]
+    InitialGridPoints: [2]
+    TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary: Periodic
+      UpperBoundary: Periodic
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    Rusanov:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+AnalyticSolution:
+  Krivodonova:
+
+Limiter:
+  Minmod:
+    Type: LambdaPi1
+    # The optimal value of the TVB constant is problem-dependent.
+    # This test uses 0 to favor robustness over accuracy.
+    TvbConstant: 0.0
+    DisableForDebugging: false
+
+EventsAndTriggers:
+  ? Slabs:
+      Specified:
+        Values: [100]
+  : - Completion
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 10
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve: [U, VelocityField]
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double, Double]
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "ScalarAdvectionKrivodonova1DVolume"
+  ReductionFileName: "ScalarAdvectionKrivodonova1DReductions"

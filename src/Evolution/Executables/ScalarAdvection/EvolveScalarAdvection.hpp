@@ -60,6 +60,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
