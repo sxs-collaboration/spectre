@@ -20,7 +20,6 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -34,6 +33,7 @@
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/NewtonianEuler/Limiters/Minmod.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
@@ -144,10 +144,7 @@ struct EvolutionMetavars {
   static constexpr bool has_source_terms =
       not std::is_same_v<source_term_type, NewtonianEuler::Sources::NoSource>;
 
-  using limiter = Tags::Limiter<Limiters::Minmod<
-      Dim, tmpl::list<NewtonianEuler::Tags::MassDensityCons,
-                      NewtonianEuler::Tags::MomentumDensity<Dim>,
-                      NewtonianEuler::Tags::EnergyDensity>>>;
+  using limiter = Tags::Limiter<NewtonianEuler::Limiters::Minmod<Dim>>;
 
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
