@@ -14,11 +14,12 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/FaceNormal.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
@@ -115,30 +116,17 @@ struct SubdomainOperator
   using prepare_args_tags = tmpl::list<
       domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
       domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      domain::Tags::Interface<
-          domain::Tags::InternalDirections<Dim>,
-          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      domain::Tags::Interface<
-          domain::Tags::BoundaryDirectionsInterior<Dim>,
-          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      domain::Tags::Interface<
-          domain::Tags::InternalDirections<Dim>,
-          ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      domain::Tags::Interface<
-          domain::Tags::BoundaryDirectionsInterior<Dim>,
-          ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
+      domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
+      domain::Tags::Faces<Dim,
+                          domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
       ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
   using apply_args_tags = tmpl::list<
       domain::Tags::Mesh<Dim>,
       domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
       domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
-      domain::Tags::Interface<
-          domain::Tags::InternalDirections<Dim>,
-          ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      domain::Tags::Interface<
-          domain::Tags::BoundaryDirectionsInterior<Dim>,
-          ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
+      domain::Tags::Faces<Dim,
+                          domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
       ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
       elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>;
@@ -149,8 +137,7 @@ struct SubdomainOperator
 
   // We need the fluxes args also on interfaces (internal and external). The
   // volume tags are the subset that don't have to be taken from interfaces.
-  using fluxes_args_volume_tags =
-      get_volume_tags<typename System::fluxes_computer>;
+  using fluxes_args_volume_tags = typename System::fluxes_computer::volume_tags;
 
   // These tags can be taken directly from the central element's DataBox, even
   // when evaluating neighbors
@@ -173,11 +160,8 @@ struct SubdomainOperator
       tmpl::transform<fluxes_args_tags, make_overlap_tag>;
   using sources_args_tags_overlap =
       tmpl::transform<sources_args_tags, make_overlap_tag>;
-  template <typename Directions>
-  using fluxes_args_tags_overlap_interface = tmpl::transform<
-      tmpl::transform<fluxes_args_tags,
-                      make_interface_tag<tmpl::_1, tmpl::pin<Directions>,
-                                         tmpl::pin<fluxes_args_volume_tags>>>,
+  using fluxes_args_tags_overlap_faces = tmpl::transform<
+      domain::make_faces_tags<Dim, fluxes_args_tags, fluxes_args_volume_tags>,
       make_overlap_tag>;
 
   // We also need some data on the remote side of all neighbors' mortars. Such
@@ -211,25 +195,23 @@ struct SubdomainOperator
             tmpl::flatten<tmpl::list<
                 Tags::ExtrudingExtent, domain::Tags::Element<Dim>,
                 domain::Tags::Mesh<Dim>,
-                domain::Tags::Interface<
-                    domain::Tags::InternalDirections<Dim>,
-                    ::Tags::Magnitude<
-                        domain::Tags::UnnormalizedFaceNormal<Dim>>>,
+                domain::Tags::Faces<
+                    Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
                 ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                 ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
                 // Data on the remote side of the neighbor's mortars
                 tmpl::transform<
-                    tmpl::list<domain::Tags::Mesh<Dim>,
-                               ::Tags::Magnitude<
-                                   domain::Tags::UnnormalizedFaceNormal<Dim>>,
-                               domain::Tags::Mesh<Dim - 1>,
-                               ::Tags::MortarSize<Dim - 1>>,
+                    tmpl::list<
+                        domain::Tags::Mesh<Dim>,
+                        domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>,
+                        domain::Tags::Mesh<Dim - 1>,
+                        ::Tags::MortarSize<Dim - 1>>,
                     make_neighbor_mortars_tag>>>,
             make_overlap_tag>>>;
     const auto& [domain, central_element, central_mortar_meshes,
                  all_overlap_extents, all_neighbor_elements,
                  all_neighbor_meshes,
-                 all_neighbor_face_normal_magnitudes_internal,
+                 all_neighbor_face_normal_magnitudes,
                  all_neighbor_mortar_meshes, all_neighbor_mortar_sizes,
                  all_neighbors_neighbor_meshes,
                  all_neighbors_neighbor_face_normal_magnitudes,
@@ -238,13 +220,15 @@ struct SubdomainOperator
         db::apply<tags_to_retrieve>(get_items, box);
     const auto fluxes_args = db::apply<fluxes_args_tags>(get_items, box);
     const auto sources_args = db::apply<sources_args_tags>(get_items, box);
-    const auto fluxes_args_on_internal_faces =
-        interface_apply<domain::Tags::InternalDirections<Dim>, fluxes_args_tags,
-                        fluxes_args_volume_tags>(get_items, box);
-    const auto fluxes_args_on_external_faces =
-        interface_apply<domain::Tags::BoundaryDirectionsInterior<Dim>,
-                        fluxes_args_tags, fluxes_args_volume_tags>(get_items,
-                                                                   box);
+    using FluxesArgs = std::decay_t<decltype(fluxes_args)>;
+    DirectionMap<Dim, FluxesArgs> fluxes_args_on_faces{};
+    for (const auto& direction : Direction<Dim>::all_directions()) {
+      fluxes_args_on_faces.emplace(
+          direction, elliptic::util::apply_at<
+                         domain::make_faces_tags<Dim, fluxes_args_tags,
+                                                 fluxes_args_volume_tags>,
+                         fluxes_args_volume_tags>(get_items, box, direction));
+    }
 
     // Setup boundary conditions
     const auto apply_boundary_condition =
@@ -318,8 +302,7 @@ struct SubdomainOperator
               args...);
         },
         box, temporal_id, apply_boundary_condition_center, fluxes_args,
-        sources_args, fluxes_args_on_internal_faces,
-        fluxes_args_on_external_faces);
+        sources_args, fluxes_args_on_faces);
     // Prepare neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -353,7 +336,7 @@ struct SubdomainOperator
                   typename System::primal_fields,
                   typename System::primal_fluxes>(
                   direction_from_neighbor, neighbor_mesh,
-                  all_neighbor_face_normal_magnitudes_internal.at(overlap_id)
+                  all_neighbor_face_normal_magnitudes.at(overlap_id)
                       .at(direction_from_neighbor),
                   mortar_mesh_from_neighbor, mortar_size_from_neighbor);
           if (not orientation.is_aligned()) {
@@ -397,7 +380,6 @@ struct SubdomainOperator
                   fields_and_fluxes...);
             };
 
-        using FluxesArgs = std::decay_t<decltype(fluxes_args)>;
         const auto fluxes_args_on_overlap =
             elliptic::util::apply_at<fluxes_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
@@ -406,25 +388,13 @@ struct SubdomainOperator
             elliptic::util::apply_at<sources_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id);
-        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces_internal{};
-        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces_external{};
-        for (const auto& neighbor_direction : neighbor.internal_boundaries()) {
-          fluxes_args_on_overlap_faces_internal.emplace(
+        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
+        for (const auto& neighbor_direction :
+             Direction<Dim>::all_directions()) {
+          fluxes_args_on_overlap_faces.emplace(
               neighbor_direction,
-              elliptic::util::apply_at<
-                  fluxes_args_tags_overlap_interface<
-                      domain::Tags::InternalDirections<Dim>>,
-                  args_tags_from_center>(
-                  get_items, box,
-                  std::forward_as_tuple(overlap_id, neighbor_direction)));
-        }
-        for (const auto& neighbor_direction : neighbor.external_boundaries()) {
-          fluxes_args_on_overlap_faces_external.emplace(
-              neighbor_direction,
-              elliptic::util::apply_at<
-                  fluxes_args_tags_overlap_interface<
-                      domain::Tags::BoundaryDirectionsInterior<Dim>>,
-                  args_tags_from_center>(
+              elliptic::util::apply_at<fluxes_args_tags_overlap_faces,
+                                       args_tags_from_center>(
                   get_items, box,
                   std::forward_as_tuple(overlap_id, neighbor_direction)));
         }
@@ -441,8 +411,7 @@ struct SubdomainOperator
             },
             box, overlap_id, temporal_id, apply_boundary_condition_neighbor,
             fluxes_args_on_overlap, sources_args_on_overlap,
-            fluxes_args_on_overlap_faces_internal,
-            fluxes_args_on_overlap_faces_external);
+            fluxes_args_on_overlap_faces);
 
         // Copy this neighbor's mortar data to the other side of the mortars. On
         // the other side we either have the central element, or another element

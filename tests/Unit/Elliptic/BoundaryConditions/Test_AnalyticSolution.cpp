@@ -18,7 +18,10 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/FaceNormal.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
@@ -98,17 +101,11 @@ void test_analytic_solution() noexcept {
         ::Tags::AnalyticSolutions<
             tmpl::list<ScalarFieldTag<1>, ScalarFieldTag<2>, FluxTag<Dim, 1>,
                        FluxTag<Dim, 2>>>,
-        domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
-                                domain::Tags::Direction<Dim>>,
-        domain::Tags::Interface<
-            domain::Tags::BoundaryDirectionsInterior<Dim>,
-            ::Tags::Normalized<
-                domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>>>(
+        domain::Tags::Faces<Dim, domain::Tags::Direction<Dim>>,
+        domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>>(
         volume_mesh, std::move(analytic_solutions),
-        std::unordered_map<Direction<Dim>, Direction<Dim>>{
-            {direction, direction}},
-        std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>{
-            {direction, face_normal}});
+        DirectionMap<Dim, Direction<Dim>>{{direction, direction}},
+        DirectionMap<Dim, tnsr::i<DataVector, Dim>>{{direction, face_normal}});
     Variables<tmpl::list<ScalarFieldTag<1>, ScalarFieldTag<2>,
                          ::Tags::NormalDotFlux<ScalarFieldTag<1>>,
                          ::Tags::NormalDotFlux<ScalarFieldTag<2>>>>

@@ -13,7 +13,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/FaceNormal.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Systems/Elasticity/BoundaryConditions/LaserBeam.hpp"
@@ -41,15 +44,10 @@ void apply_boundary_condition(
     face_normal.get(d) /= get(face_normal_magnitude);
   }
   const auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<3>,
-                              domain::Tags::Coordinates<3, Frame::Inertial>>,
-      domain::Tags::Interface<
-          domain::Tags::BoundaryDirectionsInterior<3>,
-          ::Tags::Normalized<
-              domain::Tags::UnnormalizedFaceNormal<3, Frame::Inertial>>>>>(
-      std::unordered_map<Direction<3>, tnsr::I<DataVector, 3>>{{direction, x}},
-      std::unordered_map<Direction<3>, tnsr::i<DataVector, 3>>{
-          {direction, face_normal}});
+      domain::Tags::Faces<3, domain::Tags::Coordinates<3, Frame::Inertial>>,
+      domain::Tags::Faces<3, domain::Tags::FaceNormal<3>>>>(
+      DirectionMap<3, tnsr::I<DataVector, 3>>{{direction, x}},
+      DirectionMap<3, tnsr::i<DataVector, 3>>{{direction, face_normal}});
   tnsr::I<DataVector, 3> displacement{x.begin()->size(),
                                       std::numeric_limits<double>::max()};
   elliptic::apply_boundary_condition<Linearized>(laser_beam, box, direction,
