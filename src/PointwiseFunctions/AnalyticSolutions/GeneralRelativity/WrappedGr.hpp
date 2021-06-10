@@ -94,6 +94,28 @@ class WrappedGr : public SolutionType {
     return {get<Tag>(variables(x, t, tmpl::list<Tag>{}, intermediate_vars))};
   }
 
+  // overloads for wrapping analytic data
+
+  template <typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataVector, volume_dim>& x,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
+    // Get the underlying solution's variables using the solution's tags list,
+    // store in IntermediateVariables
+    const IntermediateVars intermediate_vars = SolutionType::variables(
+        x, typename SolutionType::template tags<DataVector>{});
+
+    return {get<Tags>(variables(x, tmpl::list<Tags>{}, intermediate_vars))...};
+  }
+
+  template <typename Tag>
+  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataVector, volume_dim>& x,
+                                     tmpl::list<Tag> /*meta*/) const noexcept {
+    const IntermediateVars intermediate_vars = SolutionType::variables(
+        x, typename SolutionType::template tags<DataVector>{});
+    return {get<Tag>(variables(x, tmpl::list<Tag>{}, intermediate_vars))};
+  }
+
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept { SolutionType::pup(p); }  // NOLINT
 
@@ -121,24 +143,43 @@ class WrappedGr : public SolutionType {
     return {get<Tag>(intermediate_vars)};
   }
 
+  template <
+      typename Tag,
+      Requires<tmpl::list_contains_v<
+          typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataVector, volume_dim>& /*x*/, tmpl::list<Tag> /*meta*/,
+      const IntermediateVars& intermediate_vars) const noexcept {
+    return {get<Tag>(intermediate_vars)};
+  }
+
+  template <
+      typename Tag,
+      Requires<not tmpl::list_contains_v<
+          typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataVector, volume_dim>& x, double /*t*/,
+      tmpl::list<Tag> tag_list,
+      const IntermediateVars& intermediate_vars) const noexcept {
+    return variables(x, tag_list, intermediate_vars);
+  }
+
   tuples::TaggedTuple<
       gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataVector>>
-  variables(const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
+  variables(const tnsr::I<DataVector, volume_dim>& /*x*/,
             tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial,
                                                  DataVector>> /*meta*/,
             const IntermediateVars& intermediate_vars) const noexcept;
-
   tuples::TaggedTuple<
       GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Inertial>>
-  variables(const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
+  variables(const tnsr::I<DataVector, volume_dim>& /*x*/,
             tmpl::list<GeneralizedHarmonic::Tags::Pi<volume_dim,
                                                      Frame::Inertial>> /*meta*/,
             const IntermediateVars& intermediate_vars) const noexcept;
-
   tuples::TaggedTuple<
       GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>>
   variables(
-      const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
+      const tnsr::I<DataVector, volume_dim>& /*x*/,
       tmpl::list<
           GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>> /*meta*/,
       const IntermediateVars& intermediate_vars) const noexcept;

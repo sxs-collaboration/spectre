@@ -9,6 +9,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
@@ -92,7 +93,7 @@ namespace Solutions {
  *  - Wavelength
  */
 template <size_t Dim>
-class GaugeWave : public MarkAsAnalyticSolution {
+class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   template <typename DataType>
   struct IntermediateVars;
 

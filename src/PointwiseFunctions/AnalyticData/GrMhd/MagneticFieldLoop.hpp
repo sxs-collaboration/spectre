@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
@@ -55,7 +56,7 @@ namespace AnalyticData {
  * -  AdiabaticIndex: 1.66666666666666667
  *
  */
-class MagneticFieldLoop : public MarkAsAnalyticData {
+class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 

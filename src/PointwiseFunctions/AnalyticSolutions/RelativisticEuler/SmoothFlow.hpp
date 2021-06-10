@@ -12,6 +12,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -52,6 +53,7 @@ namespace RelativisticEuler::Solutions {
  */
 template <size_t Dim>
 class SmoothFlow : virtual public MarkAsAnalyticSolution,
+                   public AnalyticSolution<Dim>,
                    private hydro::Solutions::SmoothFlow<Dim, true> {
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
 
@@ -97,6 +99,18 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
                                      tmpl::list<Tag> /*meta*/) const noexcept {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
+
+  template <typename DataType>
+  tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, Dim>> variables(
+      const tnsr::I<DataType, Dim>& x, double t,
+      tmpl::list<hydro::Tags::MagneticField<DataType, Dim>> /*meta*/)
+      const noexcept;
+
+  template <typename DataType>
+  tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, double t,
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
+      const noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT

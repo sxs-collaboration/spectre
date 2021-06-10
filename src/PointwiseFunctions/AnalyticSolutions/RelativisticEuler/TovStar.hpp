@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
@@ -43,7 +44,7 @@ namespace Solutions {
  * more details.
  */
 template <typename RadialSolution>
-class TovStar : public MarkAsAnalyticSolution {
+class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
  public:
   /*!
    * \brief The radial variables needed to compute the full `TOVStar` solution
@@ -136,6 +137,8 @@ class TovStar : public MarkAsAnalyticSolution {
     static type lower_bound() noexcept { return 1.; }
   };
 
+  static constexpr size_t volume_dim = 3_st;
+
   using options =
       tmpl::list<CentralDensity, PolytropicConstant, PolytropicExponent>;
 
@@ -209,6 +212,31 @@ class TovStar : public MarkAsAnalyticSolution {
   template <typename DataType>
   using ExtrinsicCurvature =
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>;
+ public:
+  template <typename DataType>
+  using tags = tmpl::list<
+      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
+      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
+      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      DerivShift<DataType>,
+      gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>,
+      hydro::Tags::RestMassDensity<DataType>,
+      hydro::Tags::SpecificInternalEnergy<DataType>,
+      hydro::Tags::Pressure<DataType>,
+      hydro::Tags::SpatialVelocity<DataType, 3>,
+      hydro::Tags::MagneticField<DataType, 3>,
+      hydro::Tags::DivergenceCleaningField<DataType>,
+      hydro::Tags::LorentzFactor<DataType>,
+      hydro::Tags::SpecificEnthalpy<DataType>>;
+ protected:
+  template <typename DataType, typename Tag>
+  tuples::TaggedTuple<::Tags::dt<Tag>> variables(
+      const tnsr::I<DataType, 3>& x, tmpl::list<::Tags::dt<Tag>> /*meta*/,
+      const RadialVariables<DataType>& /*radial_vars*/) const noexcept;
 
 #define FUNC_DECL(r, data, elem)                                \
   template <typename DataType>                                  \

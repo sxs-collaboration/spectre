@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
@@ -56,7 +57,7 @@ namespace grmhd::AnalyticData {
  * \cite CerdaDuran2007 \cite CerdaDuran2008 \cite Cipolletta2019. The magnetic
  * field is chosen to be in the z-direction instead of the x-direction.
  */
-class BlastWave : public MarkAsAnalyticData {
+class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 

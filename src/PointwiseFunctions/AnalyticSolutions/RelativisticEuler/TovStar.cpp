@@ -16,8 +16,7 @@
 
 // IWYU pragma: no_include <complex>
 
-namespace RelativisticEuler {
-namespace Solutions {
+namespace RelativisticEuler::Solutions {
 
 template <typename RadialSolution>
 TovStar<RadialSolution>::TovStar(const double central_rest_mass_density,
@@ -284,6 +283,14 @@ TovStar<RadialSolution>::variables(
   return make_with_value<tnsr::ii<DataType, 3>>(x, 0.0);
 }
 
+template <typename RadialSolution>
+template <typename DataType, typename Tag>
+tuples::TaggedTuple<::Tags::dt<Tag>> TovStar<RadialSolution>::variables(
+    const tnsr::I<DataType, 3>& x, tmpl::list<::Tags::dt<Tag>> /*meta*/,
+    const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
+  return make_with_value<typename ::Tags::dt<Tag>::type>(get<0>(x), 0.0);
+}
+
 template <typename LocalRadialSolution>
 bool operator==(const TovStar<LocalRadialSolution>& lhs,
                 const TovStar<LocalRadialSolution>& rhs) noexcept {
@@ -404,6 +411,27 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
                                               DTYPE(data)>> /*meta*/,          \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;
 
+#define INSTANTIATE_DT_VARS(_, data)                                           \
+  template tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DTYPE(data)>>>       \
+  TovStar<STYPE(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<::Tags::dt<gr::Tags::Lapse<DTYPE(data)>>> /*meta*/,           \
+      const RadialVariables<DTYPE(data)>& /*radial_vars*/) const noexcept;     \
+  template tuples::TaggedTuple<                                                \
+      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DTYPE(data)>>>            \
+  TovStar<STYPE(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<::Tags::dt<                                                   \
+          gr::Tags::Shift<3, Frame::Inertial, DTYPE(data)>>> /*meta*/,         \
+      const RadialVariables<DTYPE(data)>& /*radial_vars*/) const noexcept;     \
+  template tuples::TaggedTuple<                                                \
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DTYPE(data)>>>    \
+  TovStar<STYPE(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<::Tags::dt<                                                   \
+          gr::Tags::SpatialMetric<3, Frame::Inertial, DTYPE(data)>>> /*meta*/, \
+      const RadialVariables<DTYPE(data)>& /*radial_vars*/) const noexcept;
+
 #define INSTANTIATE(_, data)                                          \
   template class TovStar<STYPE(data)>;                                \
   template bool operator==(const TovStar<STYPE(data)>& lhs,           \
@@ -413,11 +441,12 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VARS, (gr::Solutions::TovSolution),
                         (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DT_VARS, (gr::Solutions::TovSolution),
+                        (double, DataVector))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::TovSolution))
 
 #undef DTYPE
 #undef STYPE
 #undef INSTANTIATE
 #undef INSTANTIATE_VARS
-}  // namespace Solutions
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Solutions

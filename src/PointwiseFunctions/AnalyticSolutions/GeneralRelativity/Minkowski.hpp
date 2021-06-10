@@ -36,7 +36,7 @@ namespace Solutions {
  * and the identity as the spatial metric: \f$g_{ii} = 1 \f$
  */
 template <size_t Dim>
-class Minkowski : public AnalyticSolution<Dim> {
+class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

@@ -37,9 +37,8 @@ namespace Solutions {
  * \vec{B}(\vec{x},t) &= [0, 0, 0]^{T}
  * \f}
  */
-class SmoothFlow : public AnalyticSolution,
-                   virtual public MarkAsAnalyticSolution,
-                   private RelativisticEuler::Solutions::SmoothFlow<3> {
+class SmoothFlow : virtual public MarkAsAnalyticSolution,
+                   public RelativisticEuler::Solutions::SmoothFlow<3> {
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;
 
  public:
