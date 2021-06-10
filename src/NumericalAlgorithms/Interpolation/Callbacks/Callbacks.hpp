@@ -8,5 +8,5 @@ namespace intrp {
  * \ingroup NumericalAlgorithmsGroup
  * \brief Contains callback functions called by `InterpolationTarget`s.
  */
-namespace callbacks;
+namespace callbacks {}
 }  // namespace intrp

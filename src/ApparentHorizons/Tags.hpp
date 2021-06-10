@@ -29,6 +29,13 @@ namespace ah::Tags {
 struct FastFlow : db::SimpleTag {
   using type = ::FastFlow;
 };
+/// Tag for holding the previously-found value of a Strahlkorper,
+/// which is saved for extrapolation for future initial guesses
+/// and for recovering the initial guess on failure of the algorithm.
+template <typename Frame>
+struct PreviousStrahlkorper : db::SimpleTag {
+  using type = ::Strahlkorper<Frame>;
+};
 }  // namespace ah::Tags
 
 /// \ingroup SurfacesGroup

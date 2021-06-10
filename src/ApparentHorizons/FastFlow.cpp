@@ -318,6 +318,8 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Failed: Negative radius";
     case FastFlow::Status::DivergenceError:
       return os << "Failed: Diverging";
+    case FastFlow::Status::InterpolationFailure:
+      return os << "Failed: Cannot interpolate onto surface";
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START
       ERROR("Need to add another case, don't understand value of 'status'");

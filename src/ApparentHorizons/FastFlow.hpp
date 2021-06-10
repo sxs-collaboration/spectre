@@ -45,7 +45,8 @@ class FastFlow {
     // The following indicate errors.
     MaxIts = -1,
     NegativeRadius = -2,
-    DivergenceError = -3
+    DivergenceError = -3,
+    InterpolationFailure = -4
   };
 
   /// Holds information about an iteration of the algorithm.

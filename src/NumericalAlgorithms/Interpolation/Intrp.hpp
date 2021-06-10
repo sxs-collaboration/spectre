@@ -7,4 +7,4 @@
  * \ingroup NumericalAlgorithmsGroup
  * \brief Contains classes and functions for interpolation
  */
-namespace intrp;
+namespace intrp {}
