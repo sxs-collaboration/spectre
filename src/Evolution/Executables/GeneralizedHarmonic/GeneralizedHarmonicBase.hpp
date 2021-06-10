@@ -166,9 +166,6 @@ struct GeneralizedHarmonicDefaults {
       std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
   using analytic_solution_fields = typename system::variables_tag::tags_list;
 
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   enum class Phase {
     Initialization,
     RegisterWithElementDataReader,
