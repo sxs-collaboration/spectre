@@ -2,7 +2,9 @@
 # See LICENSE.txt for details.
 
 set(GIT_HASH "")
+set(GIT_BRANCH_COMMAND "")
 set(GIT_BRANCH "")
+set(GIT_DESCRIPTION_COMMAND "")
 set(GIT_DESCRIPTION "")
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
@@ -15,15 +17,17 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
       OUTPUT_VARIABLE GIT_HASH
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
+    set(GIT_BRANCH_COMMAND "${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD")
     execute_process(
-      COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+      COMMAND bash -c "${GIT_BRANCH_COMMAND}"
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       OUTPUT_VARIABLE GIT_BRANCH
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
+    set(GIT_DESCRIPTION_COMMAND "${GIT_EXECUTABLE} describe \
+--always --first-parent --match 'v[0-9]*' HEAD")
     execute_process(
-      COMMAND ${GIT_EXECUTABLE} describe
-        --always --first-parent --match "v[0-9]*" HEAD
+      COMMAND bash -c "${GIT_DESCRIPTION_COMMAND}"
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       OUTPUT_VARIABLE GIT_DESCRIPTION
       OUTPUT_STRIP_TRAILING_WHITESPACE

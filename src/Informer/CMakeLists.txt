@@ -36,7 +36,11 @@ spectre_target_headers(
 # can be deferred until we link an executable.
 target_link_options(
   ${LIBRARY}
-  PUBLIC "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_info_from_build>")
+  PUBLIC
+  "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_branch>"
+  "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_description>"
+  "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_link_date>"
+  )
 
 target_link_libraries(
   ${LIBRARY}
