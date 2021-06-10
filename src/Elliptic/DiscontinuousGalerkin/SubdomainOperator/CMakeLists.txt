@@ -1,25 +1,22 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY EllipticDg)
+set(LIBRARY EllipticDgSubdomainOperator)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Initialization.cpp
-  Penalty.cpp
-)
+  InitializeSubdomain.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  DgElementArray.hpp
-  DgOperator.hpp
-  Initialization.hpp
-  Penalty.hpp
+  InitializeSubdomain.hpp
+  SubdomainOperator.hpp
   Tags.hpp
   )
 
@@ -27,24 +24,15 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
-  Domain
   DomainStructure
-  ErrorHandling
+  DiscontinuousGalerkin
+  ParallelSchwarz
   Spectral
   Utilities
   INTERFACE
   Boost::boost
-  DiscontinuousGalerkin
-  DomainCreators
+  Domain
   Elliptic
-  EllipticSystems
-  Initialization
-  LinearOperators
-  Options
-  Parallel
-  ParallelDg
-  SystemUtilities
-  )
-
-add_subdirectory(Actions)
-add_subdirectory(SubdomainOperator)
+  EllipticDg
+  ErrorHandling
+)

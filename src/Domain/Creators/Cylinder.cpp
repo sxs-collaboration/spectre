@@ -31,7 +31,7 @@ Cylinder::Cylinder(
     const double lower_bound, const double upper_bound,
     const bool is_periodic_in_z,
     const typename InitialRefinement::type& initial_refinement,
-    const typename InitialRefinement::type& initial_number_of_grid_points,
+    const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, std::vector<double> radial_partitioning,
     std::vector<double> height_partitioning,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
@@ -180,7 +180,7 @@ Cylinder::Cylinder(
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         mantle_boundary_condition,
     const typename InitialRefinement::type& initial_refinement,
-    const typename InitialRefinement::type& initial_number_of_grid_points,
+    const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, std::vector<double> radial_partitioning,
     std::vector<double> height_partitioning,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,

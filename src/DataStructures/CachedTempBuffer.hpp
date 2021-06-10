@@ -28,6 +28,8 @@
 template <typename Computer, typename... Tags>
 class CachedTempBuffer {
  public:
+  using tags_list = tmpl::list<Tags...>;
+
   /// Construct the buffer with the given computer.  `size` is passed
   /// to the underlying `TempBuffer` constructor.
   CachedTempBuffer(const size_t size, Computer computer) noexcept
