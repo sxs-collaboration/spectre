@@ -17,13 +17,25 @@ spectre_target_headers(
   HEADERS
   Hierarchy.hpp
   Multigrid.hpp
+  Tags.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DomainStructure
-  PRIVATE
   ErrorHandling
   Utilities
+  INTERFACE
+  Convergence
+  DataStructures
+  Domain
+  Initialization
+  IO
+  Logging
+  Options
+  Parallel
+  ParallelLinearSolver
+  Spectral
+  SystemUtilities
   )

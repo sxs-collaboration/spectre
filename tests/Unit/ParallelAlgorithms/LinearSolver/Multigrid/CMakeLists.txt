@@ -5,6 +5,7 @@ set(LIBRARY "Test_ParallelMultigrid")
 
 set(LIBRARY_SOURCES
   Test_Hierarchy.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
@@ -17,6 +18,7 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  DataStructures
   DomainStructure
   ParallelMultigrid
   Utilities
