@@ -16,4 +16,5 @@ spectre_target_headers(
   FiniteDifference.hpp
   Reconstructor.hpp
   RegisterDerivedWithCharm.hpp
+  Tag.hpp
   )

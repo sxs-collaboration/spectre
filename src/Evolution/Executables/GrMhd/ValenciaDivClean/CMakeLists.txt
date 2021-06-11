@@ -13,11 +13,13 @@ endfunction(add_grmhd_executable)
 
 set(LIBS_TO_LINK
   CoordinateMaps
+  DgSubcell
   DiscontinuousGalerkin
   DomainCreators
   EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
+  FiniteDifference
   GeneralRelativitySolutions
   GrMhdAnalyticData
   GrMhdSolutions
