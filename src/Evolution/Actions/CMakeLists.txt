@@ -5,9 +5,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AddMeshVelocityNonconservative.hpp
-  AddMeshVelocitySourceTerms.hpp
   ComputeTimeDerivative.hpp
   ComputeVolumeFluxes.hpp
-  ComputeVolumeSources.hpp
   )

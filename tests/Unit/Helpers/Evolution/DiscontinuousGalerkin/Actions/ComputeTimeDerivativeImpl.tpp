@@ -43,7 +43,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -76,12 +75,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::evolution::dg::Actions {
-inline std::ostream& operator<<(std::ostream& os,
-                                const UseBoundaryCorrection t) noexcept {
-  return os << (t == UseBoundaryCorrection::Yes ? std::string{"Yes"}
-                                                : std::string{"No"});
-}
-
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -376,8 +369,7 @@ class BoundaryCorrection : public PUP::able {
 };
 
 template <size_t Dim, bool HasPrims>
-struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
-                             public BoundaryCorrection<Dim, HasPrims> {
+struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
   struct MaxAbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
@@ -397,35 +389,8 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
   using variables_tags = tmpl::list<Var1, Var2<Dim>>;
   using variables_tag = Tags::Variables<variables_tags>;
 
-  using package_field_tags = tmpl::push_back<
-      tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
-                   variables_tags>,
-      MaxAbsCharSpeed>;
-  using package_extra_tags = tmpl::list<>;
-
-  using argument_tags = tmpl::push_back<tmpl::append<
-      db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>, variables_tags>>;
-
   void pup(PUP::er& p) override {  // NOLINT
     BoundaryCorrection<Dim, HasPrims>::pup(p);
-  }
-
-  void package_data(
-      const gsl::not_null<Scalar<DataVector>*> out_normal_dot_flux_var1,
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          out_normal_dot_flux_var2,
-      const gsl::not_null<Scalar<DataVector>*> out_var1,
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> out_var2,
-      const gsl::not_null<Scalar<DataVector>*> max_abs_char_speed,
-      const Scalar<DataVector>& normal_dot_flux_var1,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_dot_flux_var2,
-      const Scalar<DataVector>& var1,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2) const noexcept {
-    *out_normal_dot_flux_var1 = normal_dot_flux_var1;
-    *out_normal_dot_flux_var2 = normal_dot_flux_var2;
-    *out_var1 = var1;
-    *out_var2 = var2;
-    get(*max_abs_char_speed) = 2.0 * max(get(var1));
   }
 
   /// [bt_nnv]
@@ -750,23 +715,14 @@ PUP::able::PUP_ID Outflow<Dim>::my_PUP_ID = 0;
 template <size_t Dim>
 size_t Outflow<Dim>::number_of_times_called = 0;
 
-struct NoBoundaryCorrection {};
-template <size_t Dim, bool HasPrims>
-struct HaveBoundaryCorrection {
-  using boundary_correction_base = BoundaryCorrection<Dim, HasPrims>;
-};
-
-template <size_t Dim, SystemType system_type,
-          UseBoundaryCorrection use_boundary_correction,
-          bool HasPrimitiveVariables>
-struct System : public tmpl::conditional_t<
-                    use_boundary_correction == UseBoundaryCorrection::Yes,
-                    HaveBoundaryCorrection<Dim, HasPrimitiveVariables>,
-                    NoBoundaryCorrection> {
+template <size_t Dim, SystemType system_type, bool HasPrimitiveVariables>
+struct System {
   static constexpr bool has_primitive_and_conservative_vars =
       HasPrimitiveVariables;
   static constexpr size_t volume_dim = Dim;
 
+  using boundary_correction_base =
+      BoundaryCorrection<Dim, has_primitive_and_conservative_vars>;
   using boundary_conditions_base = BoundaryCondition<Dim>;
 
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
@@ -799,7 +755,7 @@ struct component {
   using boundary_directions_interior =
       domain::Tags::BoundaryDirectionsInterior<Metavariables::volume_dim>;
 
-  using common_simple_tags = tmpl::list<
+  using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
       ::evolution::dg::Tags::Quadrature,
@@ -812,11 +768,6 @@ struct component {
       ::domain::Tags::FunctionsOfTime,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
                                                   Frame::Grid, Frame::Inertial>,
-      domain::Tags::Interface<
-          internal_directions,
-          db::add_tag_prefix<
-              ::Tags::NormalDotFlux,
-              typename metavariables::boundary_scheme::variables_tag>>,
       domain::Tags::Element<Metavariables::volume_dim>,
       domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>,
       domain::Tags::InverseJacobian<Metavariables::volume_dim, Frame::Logical,
@@ -824,23 +775,6 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>>;
-  using simple_tags = tmpl::conditional_t<
-      Metavariables::system_type == SystemType::Nonconservative or
-          Metavariables::use_boundary_correction == UseBoundaryCorrection::Yes,
-      common_simple_tags,
-      tmpl::conditional_t<
-          Metavariables::system_type == SystemType::Conservative,
-          tmpl::push_back<
-              common_simple_tags,
-              db::add_tag_prefix<
-                  ::Tags::Flux, typename Metavariables::system::variables_tag,
-                  tmpl::size_t<Metavariables::volume_dim>, Frame::Inertial>>,
-          tmpl::push_back<
-              common_simple_tags,
-              db::add_tag_prefix<
-                  ::Tags::Flux,
-                  Tags::Variables<tmpl::list<Var2<Metavariables::volume_dim>>>,
-                  tmpl::size_t<Metavariables::volume_dim>, Frame::Inertial>>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim, Frame::Logical,
                                     Frame::Inertial>,
@@ -884,11 +818,6 @@ struct component {
           tmpl::flatten<tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::Actions::SetupDataBox,
-              tmpl::conditional_t<Metavariables::use_boundary_correction ==
-                                      UseBoundaryCorrection::No,
-                                  ::dg::Actions::InitializeMortars<
-                                      typename Metavariables::boundary_scheme>,
-                                  tmpl::list<>>,
               ::evolution::dg::Initialization::Mortars<
                   Metavariables::volume_dim, typename Metavariables::system>>>>,
       Parallel::PhaseActions<
@@ -897,23 +826,14 @@ struct component {
               ::evolution::dg::Actions::ComputeTimeDerivative<Metavariables>>>>;
 };
 
-template <size_t Dim, SystemType SystemTypeIn,
-          UseBoundaryCorrection UseBoundaryCorrectionIn, bool LocalTimeStepping,
+template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
           bool UseMovingMesh, bool HasPrimitiveVariables>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
-  static constexpr UseBoundaryCorrection use_boundary_correction =
-      UseBoundaryCorrectionIn;
   static constexpr bool use_moving_mesh = UseMovingMesh;
   static constexpr bool local_time_stepping = LocalTimeStepping;
-  using system =
-      System<Dim, system_type, use_boundary_correction, HasPrimitiveVariables>;
-  using boundary_scheme = ::dg::FirstOrderScheme::FirstOrderScheme<
-      Dim, typename system::variables_tag,
-      db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
-      Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>,
-      Tags::TimeStepId>;
+  using system = System<Dim, system_type, HasPrimitiveVariables>;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>;
   using const_global_cache_tags =
@@ -950,19 +870,17 @@ double dg_package_data(
 }
 
 template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
-          SystemType system_type, UseBoundaryCorrection use_boundary_correction,
-          bool HasPrims>
+          SystemType system_type, bool HasPrims>
 void test_impl(const Spectral::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) noexcept {
   CAPTURE(LocalTimeStepping);
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
   CAPTURE(system_type);
-  CAPTURE(use_boundary_correction);
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
-  using metavars = Metavariables<Dim, system_type, use_boundary_correction,
-                                 LocalTimeStepping, UseMovingMesh, HasPrims>;
+  using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
+                                 UseMovingMesh, HasPrims>;
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
   Parallel::register_factory_classes_with_charm<metavars>();
@@ -1074,57 +992,32 @@ void test_impl(const Spectral::Quadrature quadrature,
         0, grid_to_inertial_map->get_clone());
     domain.inject_time_dependent_map_for_block(
         1, grid_to_inertial_map->get_clone());
-    if constexpr (use_boundary_correction == UseBoundaryCorrection::No) {
-      if constexpr (metavars::local_time_stepping) {
-        std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
-            step_choosers;
-        step_choosers.emplace_back(
-            std::make_unique<StepChoosers::Constant<StepChooserUse::LtsStep>>(
-                0.128));
 
-        return MockRuntimeSystem{
-            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                  make_array<Dim>(3_st)},
-             typename metavars::normal_dot_numerical_flux::type{},
-             std::move(domain), dg_formulation, std::move(step_choosers),
-             static_cast<std::unique_ptr<StepController>>(
-                 std::make_unique<StepControllers::SplitRemaining>()),
-             static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforthN>(5))}};
-      } else {
-        return MockRuntimeSystem{
-            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                  make_array<Dim>(3_st)},
-             typename metavars::normal_dot_numerical_flux::type{},
-             std::move(domain), dg_formulation}};
-      }
+    if constexpr (metavars::local_time_stepping) {
+      std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
+          step_choosers;
+      step_choosers.emplace_back(
+          std::make_unique<StepChoosers::Constant<StepChooserUse::LtsStep>>(
+              0.128));
+
+      return MockRuntimeSystem{
+          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                make_array<Dim>(3_st)},
+           typename metavars::normal_dot_numerical_flux::type{},
+           std::move(domain), dg_formulation,
+           std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+           std::move(step_choosers),
+           static_cast<std::unique_ptr<StepController>>(
+               std::make_unique<StepControllers::SplitRemaining>()),
+           static_cast<std::unique_ptr<LtsTimeStepper>>(
+               std::make_unique<TimeSteppers::AdamsBashforthN>(5))}};
     } else {
-      if constexpr (metavars::local_time_stepping) {
-        std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
-            step_choosers;
-        step_choosers.emplace_back(
-            std::make_unique<StepChoosers::Constant<StepChooserUse::LtsStep>>(
-                0.128));
-
-        return MockRuntimeSystem{
-            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                  make_array<Dim>(3_st)},
-             typename metavars::normal_dot_numerical_flux::type{},
-             std::move(domain), dg_formulation,
-             std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
-             std::move(step_choosers),
-             static_cast<std::unique_ptr<StepController>>(
-                 std::make_unique<StepControllers::SplitRemaining>()),
-             static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforthN>(5))}};
-      } else {
-        return MockRuntimeSystem{
-            {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                  make_array<Dim>(3_st)},
-             typename metavars::normal_dot_numerical_flux::type{},
-             std::move(domain), dg_formulation,
-             std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
-      }
+      return MockRuntimeSystem{
+          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                make_array<Dim>(3_st)},
+           typename metavars::normal_dot_numerical_flux::type{},
+           std::move(domain), dg_formulation,
+           std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
     }
   }();
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
@@ -1260,18 +1153,6 @@ void test_impl(const Spectral::Quadrature quadrature,
     return fluxes;
   }();
 
-  std::unordered_map<::Direction<Dim>,
-                     Variables<tmpl::list<::Tags::NormalDotFlux<Var1>,
-                                          ::Tags::NormalDotFlux<Var2<Dim>>>>>
-      normal_dot_fluxes_interface{};
-  const size_t interface_grid_points =
-      mesh.slice_away(0).number_of_grid_points();
-  for (const auto& [direction, nhbrs] : element.neighbors()) {
-    (void)nhbrs;
-    normal_dot_fluxes_interface[direction].initialize(interface_grid_points,
-                                                      0.0);
-  }
-
   const Slab time_slab{0.2, 3.4};
   const TimeDelta time_step{time_slab, {4, 100}};
   const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 100}}};
@@ -1286,135 +1167,66 @@ void test_impl(const Spectral::Quadrature quadrature,
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  if constexpr (not std::is_same_v<tmpl::list<>, flux_variables> and
-                use_boundary_correction == UseBoundaryCorrection::No) {
-    ActionTesting::emplace_component_and_initialize<component<metavars>>(
-        &runner, self_id,
-        {time_step_id,
-         next_time_step_id,
-         time_step,
-         time_step,
-         time_step_id.step_time().value(),
-         quadrature,
-         evolved_vars,
-         dt_evolved_vars,
-         history,
-         var3,
-         mesh,
-         clone_unique_ptrs(functions_of_time),
-         grid_to_inertial_map->get_clone(),
-         normal_dot_fluxes_interface,
-         element,
-         inertial_coords,
-         inv_jac,
-         mesh_velocity,
-         div_mesh_velocity,
-         ElementMap<Dim, Frame::Grid>{
-             self_id,
-             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                 domain::CoordinateMaps::Identity<Dim>{})},
-         Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
-                                    tmpl::size_t<Dim>, Frame::Inertial>>{
-             mesh.number_of_grid_points(), -100.}});
-    for (const auto& [direction, neighbor_ids] : neighbors) {
-      (void)direction;
-      for (const auto& neighbor_id : neighbor_ids) {
-        ActionTesting::emplace_component_and_initialize<component<metavars>>(
-            &runner, neighbor_id,
-            {time_step_id,
-             next_time_step_id,
-             time_step,
-             time_step,
-             time_step_id.step_time().value(),
-             quadrature,
-             evolved_vars,
-             dt_evolved_vars,
-             history,
-             var3,
-             mesh,
-             clone_unique_ptrs(functions_of_time),
-             grid_to_inertial_map->get_clone(),
-             normal_dot_fluxes_interface,
-             element,
-             inertial_coords,
-             inv_jac,
-             mesh_velocity,
-             div_mesh_velocity,
-             ElementMap<Dim, Frame::Grid>{
-                 neighbor_id,
-                 domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                     domain::CoordinateMaps::Identity<Dim>{})},
-             Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
-                                        tmpl::size_t<Dim>, Frame::Inertial>>{
-                 mesh.number_of_grid_points(), -100.}});
-      }
-    }
-  } else {
-    ActionTesting::emplace_component_and_initialize<component<metavars>>(
-        &runner, self_id,
-        {time_step_id,
-         next_time_step_id,
-         time_step,
-         time_step,
-         time_step_id.step_time().value(),
-         quadrature,
-         evolved_vars,
-         dt_evolved_vars,
-         history,
-         var3,
-         mesh,
-         clone_unique_ptrs(functions_of_time),
-         grid_to_inertial_map->get_clone(),
-         normal_dot_fluxes_interface,
-         element,
-         inertial_coords,
-         inv_jac,
-         mesh_velocity,
-         div_mesh_velocity,
-         ElementMap<Dim, Frame::Grid>{
-             self_id,
-             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                 domain::CoordinateMaps::Identity<Dim>{})}});
-    for (const auto& [direction, neighbor_ids] : neighbors) {
-      (void)direction;
-      for (const auto& neighbor_id : neighbor_ids) {
-        ActionTesting::emplace_component_and_initialize<component<metavars>>(
-            &runner, neighbor_id,
-            {time_step_id,
-             next_time_step_id,
-             time_step,
-             time_step,
-             time_step_id.step_time().value(),
-             quadrature,
-             evolved_vars,
-             dt_evolved_vars,
-             history,
-             var3,
-             mesh,
-             clone_unique_ptrs(functions_of_time),
-             grid_to_inertial_map->get_clone(),
-             normal_dot_fluxes_interface,
-             element,
-             inertial_coords,
-             inv_jac,
-             mesh_velocity,
-             div_mesh_velocity,
-             ElementMap<Dim, Frame::Grid>{
-                 neighbor_id,
-                 domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                     domain::CoordinateMaps::Identity<Dim>{})}});
-      }
+
+  ActionTesting::emplace_component_and_initialize<component<metavars>>(
+      &runner, self_id,
+      {time_step_id,
+       next_time_step_id,
+       time_step,
+       time_step,
+       time_step_id.step_time().value(),
+       quadrature,
+       evolved_vars,
+       dt_evolved_vars,
+       history,
+       var3,
+       mesh,
+       clone_unique_ptrs(functions_of_time),
+       grid_to_inertial_map->get_clone(),
+       element,
+       inertial_coords,
+       inv_jac,
+       mesh_velocity,
+       div_mesh_velocity,
+       ElementMap<Dim, Frame::Grid>{
+           self_id,
+           domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+               domain::CoordinateMaps::Identity<Dim>{})}});
+  for (const auto& [direction, neighbor_ids] : neighbors) {
+    (void)direction;
+    for (const auto& neighbor_id : neighbor_ids) {
+      ActionTesting::emplace_component_and_initialize<component<metavars>>(
+          &runner, neighbor_id,
+          {time_step_id,
+           next_time_step_id,
+           time_step,
+           time_step,
+           time_step_id.step_time().value(),
+           quadrature,
+           evolved_vars,
+           dt_evolved_vars,
+           history,
+           var3,
+           mesh,
+           clone_unique_ptrs(functions_of_time),
+           grid_to_inertial_map->get_clone(),
+           element,
+           inertial_coords,
+           inv_jac,
+           mesh_velocity,
+           div_mesh_velocity,
+           ElementMap<Dim, Frame::Grid>{
+               neighbor_id,
+               domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                   domain::CoordinateMaps::Identity<Dim>{})}});
     }
   }
+
   // Setup the DataBox
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
 
   // Initialize both the "old" and "new" mortars
-  if (use_boundary_correction == UseBoundaryCorrection::No) {
-    ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                    self_id);
-  }
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
   const auto variables_before_compute_time_derivatives =
@@ -1424,10 +1236,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
-  if constexpr (use_boundary_correction == UseBoundaryCorrection::Yes) {
-    CHECK(Outflow<Dim>::number_of_times_called ==
-          element.external_boundaries().size());
-  }
+  CHECK(Outflow<Dim>::number_of_times_called ==
+        element.external_boundaries().size());
 
   Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>
       expected_dt_evolved_vars{mesh.number_of_grid_points()};
@@ -1624,314 +1434,240 @@ void test_impl(const Spectral::Quadrature quadrature,
   const auto mortar_id_east =
       std::make_pair(Direction<Dim>::upper_xi(), east_id);
 
-  if constexpr (use_boundary_correction == UseBoundaryCorrection::No) {
-    const auto check_mortar =
-        [&get_tag, &time_step_id](
-            const std::pair<Direction<Dim>, ElementId<Dim>>& mortar_id,
-            const size_t num_points) noexcept {
-          CAPTURE(mortar_id);
-          CAPTURE(Dim);
-          const auto& all_mortar_data = get_tag(
-              ::Tags::Mortars<
-                  typename metavars::boundary_scheme::mortar_data_tag, Dim>{});
-          const ::dg::SimpleBoundaryData<
-              typename BoundaryTerms<Dim, HasPrims>::package_field_tags>&
-              boundary_data =
-                  all_mortar_data.at(mortar_id).local_data(time_step_id);
-          CHECK(boundary_data.field_data.number_of_grid_points() == num_points);
-          // Actually checking all the fields is a total nightmare because the
-          // whole boundary scheme code is a complete disaster. The checks will
-          // be added once the boundary scheme code is cleaned up.
-          if constexpr (system_type == SystemType::Conservative) {
-            const Scalar<DataVector> expected_var1_normal_dot_flux(num_points,
-                                                                   0.);
-            CHECK(get<::Tags::NormalDotFlux<Var1>>(boundary_data.field_data) ==
-                  expected_var1_normal_dot_flux);
-          }
-        };
-    check_mortar(mortar_id_east, Dim == 1 ? 1 : Dim == 2 ? 2 : 4);
-    if constexpr (Dim > 1) {
-      const auto mortar_id_south =
-          std::make_pair(Direction<Dim>::lower_eta(), south_id);
-      // The number of points on the mortar should be 3 in 2d and 9 and 3d
-      // because we do projection to the southern neighbor, which has 3 points
-      // per dimension.
-      check_mortar(mortar_id_south, Dim == 2 ? 3 : 9);
-    }
-  } else {
-    // At this point we know the volume terms have been computed correctly and
-    // we want to verify that the functions we expect to be called on the
-    // interfaces are called. Working out all the numbers explicitly would be
-    // tedious.
-    using variables_tags = typename variables_tag::tags_list;
-    using temporary_tags_for_face = tmpl::list<Var3Squared>;
-    using primitive_tags_for_face = tmpl::conditional_t<
-        system::has_primitive_and_conservative_vars,
-        typename BoundaryTerms<Dim, HasPrims>::dg_package_data_primitive_tags,
-        tmpl::list<>>;
-    using volume_tags = tmpl::conditional_t<
-        system::has_primitive_and_conservative_vars,
-        typename BoundaryTerms<Dim, HasPrims>::dg_package_data_volume_tags,
-        tmpl::list<>>;
-    using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
-                                         tmpl::size_t<Dim>, Frame::Inertial>;
-    using mortar_tags_list =
-        typename BoundaryTerms<Dim, HasPrims>::dg_package_field_tags;
-    std::unordered_map<Direction<Dim>,
-                       tnsr::i<DataVector, Dim, Frame::Inertial>>
-        face_normals{};
-    for (const auto& direction : element.internal_boundaries()) {
-      tnsr::i<DataVector, Dim, Frame::Inertial> volume_inv_jac_in_direction{
-          inv_jac[0].size()};
-      for (size_t inertial_index = 0; inertial_index < Dim; ++inertial_index) {
-        volume_inv_jac_in_direction.get(inertial_index) =
-            inv_jac.get(direction.dimension(), inertial_index);
-      }
-
-      const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
-      face_normals[direction] = tnsr::i<DataVector, Dim, Frame::Inertial>{
-          face_mesh.number_of_grid_points()};
-      ::evolution::dg::project_tensor_to_boundary(
-          make_not_null(&face_normals[direction]), volume_inv_jac_in_direction,
-          mesh, direction);
-      for (auto& component : face_normals[direction]) {
-        component *= direction.sign();
-      }
-
-      // GCC-7 gives unused direction warnings if we use structured
-      // bindings.
-      const auto normal_magnitude = magnitude(face_normals.at(direction));
-      for (size_t i = 0; i < Dim; ++i) {
-        face_normals[direction].get(i) /= get(normal_magnitude);
-      }
+  // At this point we know the volume terms have been computed correctly and
+  // we want to verify that the functions we expect to be called on the
+  // interfaces are called. Working out all the numbers explicitly would be
+  // tedious.
+  using variables_tags = typename variables_tag::tags_list;
+  using temporary_tags_for_face = tmpl::list<Var3Squared>;
+  using primitive_tags_for_face = tmpl::conditional_t<
+      system::has_primitive_and_conservative_vars,
+      typename BoundaryTerms<Dim, HasPrims>::dg_package_data_primitive_tags,
+      tmpl::list<>>;
+  using volume_tags = tmpl::conditional_t<
+      system::has_primitive_and_conservative_vars,
+      typename BoundaryTerms<Dim, HasPrims>::dg_package_data_volume_tags,
+      tmpl::list<>>;
+  using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
+                                       tmpl::size_t<Dim>, Frame::Inertial>;
+  using mortar_tags_list =
+      typename BoundaryTerms<Dim, HasPrims>::dg_package_field_tags;
+  std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim, Frame::Inertial>>
+      face_normals{};
+  for (const auto& direction : element.internal_boundaries()) {
+    tnsr::i<DataVector, Dim, Frame::Inertial> volume_inv_jac_in_direction{
+        inv_jac[0].size()};
+    for (size_t inertial_index = 0; inertial_index < Dim; ++inertial_index) {
+      volume_inv_jac_in_direction.get(inertial_index) =
+          inv_jac.get(direction.dimension(), inertial_index);
     }
 
-    const auto& mortar_meshes =
-        get_tag(::evolution::dg::Tags::MortarMesh<Dim>{});
-    const auto& mortar_sizes =
-        get_tag(::evolution::dg::Tags::MortarSize<Dim>{});
+    const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
+    face_normals[direction] = tnsr::i<DataVector, Dim, Frame::Inertial>{
+        face_mesh.number_of_grid_points()};
+    ::evolution::dg::project_tensor_to_boundary(
+        make_not_null(&face_normals[direction]), volume_inv_jac_in_direction,
+        mesh, direction);
+    for (auto& component : face_normals[direction]) {
+      component *= direction.sign();
+    }
 
-    Variables<tmpl::list<Var3Squared>> volume_temporaries{
-        mesh.number_of_grid_points()};
-    get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
-    const auto compute_expected_mortar_data =
-        [&element, &expected_fluxes, &face_normals, &get_tag, &mesh,
-         &mesh_velocity, &mortar_meshes, &mortar_sizes, &volume_temporaries,
-         &variables_before_compute_time_derivatives](
-            const Direction<Dim>& local_direction,
-            const ElementId<Dim>& local_neighbor_id,
-            const bool local_data) noexcept {
-          const auto& face_mesh = mesh.slice_away(local_direction.dimension());
-          // First project data to the face in the direction of the mortar
-          Variables<
-              tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
-                           primitive_tags_for_face>>
-              fields_on_face{face_mesh.number_of_grid_points()};
+    // GCC-7 gives unused direction warnings if we use structured
+    // bindings.
+    const auto normal_magnitude = magnitude(face_normals.at(direction));
+    for (size_t i = 0; i < Dim; ++i) {
+      face_normals[direction].get(i) /= get(normal_magnitude);
+    }
+  }
+
+  const auto& mortar_meshes = get_tag(::evolution::dg::Tags::MortarMesh<Dim>{});
+  const auto& mortar_sizes = get_tag(::evolution::dg::Tags::MortarSize<Dim>{});
+
+  Variables<tmpl::list<Var3Squared>> volume_temporaries{
+      mesh.number_of_grid_points()};
+  get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
+  const auto compute_expected_mortar_data =
+      [&element, &expected_fluxes, &face_normals, &get_tag, &mesh,
+       &mesh_velocity, &mortar_meshes, &mortar_sizes, &volume_temporaries,
+       &variables_before_compute_time_derivatives](
+          const Direction<Dim>& local_direction,
+          const ElementId<Dim>& local_neighbor_id,
+          const bool local_data) noexcept {
+        const auto& face_mesh = mesh.slice_away(local_direction.dimension());
+        // First project data to the face in the direction of the mortar
+        Variables<
+            tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
+                         primitive_tags_for_face>>
+            fields_on_face{face_mesh.number_of_grid_points()};
+        ::evolution::dg::project_contiguous_data_to_boundary(
+            make_not_null(&fields_on_face),
+            variables_before_compute_time_derivatives, mesh, local_direction);
+        if constexpr (tmpl::size<fluxes_tags>::value != 0) {
           ::evolution::dg::project_contiguous_data_to_boundary(
-              make_not_null(&fields_on_face),
-              variables_before_compute_time_derivatives, mesh, local_direction);
-          if constexpr (tmpl::size<fluxes_tags>::value != 0) {
-            ::evolution::dg::project_contiguous_data_to_boundary(
-                make_not_null(&fields_on_face), expected_fluxes, mesh,
-                local_direction);
-          } else {
-            (void)expected_fluxes;
-          }
-          ::evolution::dg::project_tensors_to_boundary<temporary_tags_for_face>(
-              make_not_null(&fields_on_face), volume_temporaries, mesh,
+              make_not_null(&fields_on_face), expected_fluxes, mesh,
               local_direction);
-          if constexpr (system::has_primitive_and_conservative_vars) {
-            ::evolution::dg::project_tensors_to_boundary<
-                primitive_tags_for_face>(
-                make_not_null(&fields_on_face),
-                get_tag(typename system::primitive_variables_tag{}), mesh,
-                local_direction);
-          }
-          std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
-          if (UseMovingMesh) {
-            face_mesh_velocity =
-                tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
-            ::evolution::dg::project_tensor_to_boundary(
-                make_not_null(&*face_mesh_velocity), *mesh_velocity, mesh,
-                local_direction);
-          }
+        } else {
+          (void)expected_fluxes;
+        }
+        ::evolution::dg::project_tensors_to_boundary<temporary_tags_for_face>(
+            make_not_null(&fields_on_face), volume_temporaries, mesh,
+            local_direction);
+        if constexpr (system::has_primitive_and_conservative_vars) {
+          ::evolution::dg::project_tensors_to_boundary<primitive_tags_for_face>(
+              make_not_null(&fields_on_face),
+              get_tag(typename system::primitive_variables_tag{}), mesh,
+              local_direction);
+        }
+        std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
+        if (UseMovingMesh) {
+          face_mesh_velocity =
+              tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
+          ::evolution::dg::project_tensor_to_boundary(
+              make_not_null(&*face_mesh_velocity), *mesh_velocity, mesh,
+              local_direction);
+        }
 
-          // Compute the normal dot mesh velocity and then the packaged data
-          Variables<mortar_tags_list> packaged_data{
-              face_mesh.number_of_grid_points()};
-          std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+        // Compute the normal dot mesh velocity and then the packaged data
+        Variables<mortar_tags_list> packaged_data{
+            face_mesh.number_of_grid_points()};
+        std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
-          if (face_mesh_velocity.has_value()) {
-            normal_dot_mesh_velocity = dot_product(
-                *face_mesh_velocity, face_normals.at(local_direction));
-          }
-          const double max_char_speed_on_face = dg_package_data(
-              make_not_null(&packaged_data), BoundaryTerms<Dim, HasPrims>{},
-              fields_on_face, face_normals.at(local_direction),
-              face_mesh_velocity, normal_dot_mesh_velocity, get_tag,
-              volume_tags{});
+        if (face_mesh_velocity.has_value()) {
+          normal_dot_mesh_velocity = dot_product(
+              *face_mesh_velocity, face_normals.at(local_direction));
+        }
+        const double max_char_speed_on_face = dg_package_data(
+            make_not_null(&packaged_data), BoundaryTerms<Dim, HasPrims>{},
+            fields_on_face, face_normals.at(local_direction),
+            face_mesh_velocity, normal_dot_mesh_velocity, get_tag,
+            volume_tags{});
 
-          CHECK(max_char_speed_on_face ==
-                max(get(
-                    get<typename BoundaryTerms<Dim, HasPrims>::MaxAbsCharSpeed>(
-                        packaged_data))));
-          // Project the face data (stored in packaged_data) to the mortar
-          const auto mortar_id =
-              std::make_pair(local_direction, local_neighbor_id);
-          const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-          const auto& mortar_size = mortar_sizes.at(mortar_id);
-          auto boundary_data_on_mortar =
-              Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
-                  ? ::dg::project_to_mortar(packaged_data, face_mesh,
-                                            mortar_mesh, mortar_size)
-                  : std::move(packaged_data);
+        CHECK(
+            max_char_speed_on_face ==
+            max(get(get<typename BoundaryTerms<Dim, HasPrims>::MaxAbsCharSpeed>(
+                packaged_data))));
+        // Project the face data (stored in packaged_data) to the mortar
+        const auto mortar_id =
+            std::make_pair(local_direction, local_neighbor_id);
+        const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+        const auto& mortar_size = mortar_sizes.at(mortar_id);
+        auto boundary_data_on_mortar =
+            Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
+                ? ::dg::project_to_mortar(packaged_data, face_mesh, mortar_mesh,
+                                          mortar_size)
+                : std::move(packaged_data);
 
-          std::vector<double> expected_data{
-              boundary_data_on_mortar.data(),
-              boundary_data_on_mortar.data() + boundary_data_on_mortar.size()};
-          const auto& orientation =
-              element.neighbors().at(local_direction).orientation();
-          if (local_data or orientation.is_aligned()) {
-            return expected_data;
-          } else {
-            return orient_variables_on_slice(
-                expected_data, mortar_mesh.extents(),
-                local_direction.dimension(), orientation);
-          }
-        };
+        std::vector<double> expected_data{
+            boundary_data_on_mortar.data(),
+            boundary_data_on_mortar.data() + boundary_data_on_mortar.size()};
+        const auto& orientation =
+            element.neighbors().at(local_direction).orientation();
+        if (local_data or orientation.is_aligned()) {
+          return expected_data;
+        } else {
+          return orient_variables_on_slice(expected_data, mortar_mesh.extents(),
+                                           local_direction.dimension(),
+                                           orientation);
+        }
+      };
 
-    const auto check_mortar_data = [&compute_expected_mortar_data,
-                                    &det_inv_jacobian, &get_tag, &mesh,
-                                    &quadrature](const auto& mortar_data,
-                                                 const auto& mortar_id) {
-      CHECK_ITERABLE_APPROX(mortar_data.local_mortar_data()->second,
-                            compute_expected_mortar_data(
-                                mortar_id.first, mortar_id.second, true));
+  const auto check_mortar_data = [&compute_expected_mortar_data,
+                                  &det_inv_jacobian, &get_tag, &mesh,
+                                  &quadrature](const auto& mortar_data,
+                                               const auto& mortar_id) {
+    CHECK_ITERABLE_APPROX(
+        mortar_data.local_mortar_data()->second,
+        compute_expected_mortar_data(mortar_id.first, mortar_id.second, true));
 
-      // Check face normal and/or Jacobians
-      const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
+    // Check face normal and/or Jacobians
+    const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
 
-      Scalar<DataVector> local_face_normal_magnitude{};
-      mortar_data.get_local_face_normal_magnitude(
-          make_not_null(&local_face_normal_magnitude));
-      CHECK(
-          local_face_normal_magnitude ==
+    Scalar<DataVector> local_face_normal_magnitude{};
+    mortar_data.get_local_face_normal_magnitude(
+        make_not_null(&local_face_normal_magnitude));
+    CHECK(local_face_normal_magnitude ==
           get<::evolution::dg::Tags::MagnitudeOfNormal>(
               *get_tag(::evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{})
                    .at(mortar_id.first)));
 
-      if (using_gauss_points) {
-        Scalar<DataVector> local_volume_det_inv_jacobian{};
-        mortar_data.get_local_volume_det_inv_jacobian(
-            make_not_null(&local_volume_det_inv_jacobian));
-        CHECK(local_volume_det_inv_jacobian == det_inv_jacobian);
+    if (using_gauss_points) {
+      Scalar<DataVector> local_volume_det_inv_jacobian{};
+      mortar_data.get_local_volume_det_inv_jacobian(
+          make_not_null(&local_volume_det_inv_jacobian));
+      CHECK(local_volume_det_inv_jacobian == det_inv_jacobian);
 
-        // We use IrregularGridInterpolant to avoid reusing/copying the
-        // apply_matrices-based interpolation in the source tree.
-        const Mesh<Dim - 1> face_mesh =
-            mesh.slice_away(mortar_id.first.dimension());
-        const intrp::Irregular<Dim> interpolator{
-            mesh, interface_logical_coordinates(face_mesh, mortar_id.first)};
-        Variables<tmpl::list<::Tags::TempScalar<0>>> volume_det_jacobian{
-            mesh.number_of_grid_points()};
-        get(get<::Tags::TempScalar<0>>(volume_det_jacobian)) =
-            1.0 / get(det_inv_jacobian);
-        const Scalar<DataVector> expected_local_face_det_jacobian =
-            get<::Tags::TempScalar<0>>(
-                interpolator.interpolate(volume_det_jacobian));
+      // We use IrregularGridInterpolant to avoid reusing/copying the
+      // apply_matrices-based interpolation in the source tree.
+      const Mesh<Dim - 1> face_mesh =
+          mesh.slice_away(mortar_id.first.dimension());
+      const intrp::Irregular<Dim> interpolator{
+          mesh, interface_logical_coordinates(face_mesh, mortar_id.first)};
+      Variables<tmpl::list<::Tags::TempScalar<0>>> volume_det_jacobian{
+          mesh.number_of_grid_points()};
+      get(get<::Tags::TempScalar<0>>(volume_det_jacobian)) =
+          1.0 / get(det_inv_jacobian);
+      const Scalar<DataVector> expected_local_face_det_jacobian =
+          get<::Tags::TempScalar<0>>(
+              interpolator.interpolate(volume_det_jacobian));
 
-        Scalar<DataVector> local_face_det_jacobian{};
-        mortar_data.get_local_face_det_jacobian(
-            make_not_null(&local_face_det_jacobian));
-        CHECK_ITERABLE_APPROX(local_face_det_jacobian,
-                              expected_local_face_det_jacobian);
-      }
-    };
-    if (LocalTimeStepping) {
-      const auto& east_mortar_data =
-          get_tag(::evolution::dg::Tags::MortarDataHistory<
+      Scalar<DataVector> local_face_det_jacobian{};
+      mortar_data.get_local_face_det_jacobian(
+          make_not_null(&local_face_det_jacobian));
+      CHECK_ITERABLE_APPROX(local_face_det_jacobian,
+                            expected_local_face_det_jacobian);
+    }
+  };
+  if (LocalTimeStepping) {
+    const auto& east_mortar_data =
+        get_tag(::evolution::dg::Tags::MortarDataHistory<
+                    Dim, typename dt_variables_tag::type>{})
+            .at(mortar_id_east)
+            .local_data(time_step_id);
+    CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
                       Dim, typename dt_variables_tag::type>{})
               .at(mortar_id_east)
-              .local_data(time_step_id);
-      CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
-                        Dim, typename dt_variables_tag::type>{})
-                .at(mortar_id_east)
-                .integration_order() == 1);
-      check_mortar_data(east_mortar_data, mortar_id_east);
-    } else {
-      CHECK_ITERABLE_APPROX(
-          get_tag(::evolution::dg::Tags::MortarData<Dim>{})
-              .at(mortar_id_east)
-              .local_mortar_data()
-              ->second,
-          compute_expected_mortar_data(mortar_id_east.first,
-                                       mortar_id_east.second, true));
-    }
+              .integration_order() == 1);
+    check_mortar_data(east_mortar_data, mortar_id_east);
+  } else {
     CHECK_ITERABLE_APPROX(
-        *std::get<2>(
-            ActionTesting::get_inbox_tag<
-                component<metavars>,
-                ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                    Dim>>(runner, mortar_id_east.second)
-                .at(time_step_id)
-                .at(std::pair{
-                    element.neighbors()
-                        .at(mortar_id_east.first)
-                        .orientation()(mortar_id_east.first.opposite()),
-                    element.id()})),
+        get_tag(::evolution::dg::Tags::MortarData<Dim>{})
+            .at(mortar_id_east)
+            .local_mortar_data()
+            ->second,
         compute_expected_mortar_data(mortar_id_east.first,
-                                     mortar_id_east.second, false));
+                                     mortar_id_east.second, true));
+  }
+  CHECK_ITERABLE_APPROX(
+      *std::get<2>(
+          ActionTesting::get_inbox_tag<
+              component<metavars>,
+              ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+              runner, mortar_id_east.second)
+              .at(time_step_id)
+              .at(std::pair{element.neighbors()
+                                .at(mortar_id_east.first)
+                                .orientation()(mortar_id_east.first.opposite()),
+                            element.id()})),
+      compute_expected_mortar_data(mortar_id_east.first, mortar_id_east.second,
+                                   false));
 
+  CHECK(
+      std::get<3>(
+          ActionTesting::get_inbox_tag<
+              component<metavars>,
+              ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+              runner, mortar_id_east.second)
+              .at(time_step_id)
+              .at(std::pair{element.neighbors()
+                                .at(mortar_id_east.first)
+                                .orientation()(mortar_id_east.first.opposite()),
+                            element.id()})) ==
+      (LocalTimeStepping ? next_time_step_id : time_step_id));
+
+  if constexpr (Dim > 1) {
+    const auto mortar_id_south =
+        std::make_pair(Direction<Dim>::lower_eta(), south_id);
     CHECK(std::get<3>(
-              ActionTesting::get_inbox_tag<
-                  component<metavars>,
-                  ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                      Dim>>(runner, mortar_id_east.second)
-                  .at(time_step_id)
-                  .at(std::pair{
-                      element.neighbors()
-                          .at(mortar_id_east.first)
-                          .orientation()(mortar_id_east.first.opposite()),
-                      element.id()})) ==
-          (LocalTimeStepping ? next_time_step_id : time_step_id));
-
-    if constexpr (Dim > 1) {
-      const auto mortar_id_south =
-          std::make_pair(Direction<Dim>::lower_eta(), south_id);
-      CHECK(std::get<3>(
-                ActionTesting::get_inbox_tag<
-                    component<metavars>,
-                    ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                        Dim>>(runner, mortar_id_south.second)
-                    .at(time_step_id)
-                    .at(std::pair{
-                        element.neighbors()
-                            .at(mortar_id_south.first)
-                            .orientation()(mortar_id_south.first.opposite()),
-                        element.id()})) ==
-            (LocalTimeStepping ? next_time_step_id : time_step_id));
-
-      if (LocalTimeStepping) {
-        const auto& south_mortar_data =
-            get_tag(::evolution::dg::Tags::MortarDataHistory<
-                        Dim, typename dt_variables_tag::type>{})
-                .at(mortar_id_south)
-                .local_data(time_step_id);
-        CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
-                        Dim, typename dt_variables_tag::type>{})
-                .at(mortar_id_south)
-                .integration_order() == 1);
-        check_mortar_data(south_mortar_data, mortar_id_south);
-      } else {
-        CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
-                                  .at(mortar_id_south)
-                                  .local_mortar_data()
-                                  ->second,
-                              compute_expected_mortar_data(
-                                  Direction<Dim>::lower_eta(), south_id, true));
-      }
-      CHECK_ITERABLE_APPROX(
-          *std::get<2>(
               ActionTesting::get_inbox_tag<
                   component<metavars>,
                   ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -1941,10 +1677,42 @@ void test_impl(const Spectral::Quadrature quadrature,
                       element.neighbors()
                           .at(mortar_id_south.first)
                           .orientation()(mortar_id_south.first.opposite()),
-                      element.id()})),
-          compute_expected_mortar_data(mortar_id_south.first,
-                                       mortar_id_south.second, false));
+                      element.id()})) ==
+          (LocalTimeStepping ? next_time_step_id : time_step_id));
+
+    if (LocalTimeStepping) {
+      const auto& south_mortar_data =
+          get_tag(::evolution::dg::Tags::MortarDataHistory<
+                      Dim, typename dt_variables_tag::type>{})
+              .at(mortar_id_south)
+              .local_data(time_step_id);
+      CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
+                        Dim, typename dt_variables_tag::type>{})
+                .at(mortar_id_south)
+                .integration_order() == 1);
+      check_mortar_data(south_mortar_data, mortar_id_south);
+    } else {
+      CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
+                                .at(mortar_id_south)
+                                .local_mortar_data()
+                                ->second,
+                            compute_expected_mortar_data(
+                                Direction<Dim>::lower_eta(), south_id, true));
     }
+    CHECK_ITERABLE_APPROX(
+        *std::get<2>(
+            ActionTesting::get_inbox_tag<
+                component<metavars>,
+                ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                    Dim>>(runner, mortar_id_south.second)
+                .at(time_step_id)
+                .at(std::pair{
+                    element.neighbors()
+                        .at(mortar_id_south.first)
+                        .orientation()(mortar_id_south.first.opposite()),
+                    element.id()})),
+        compute_expected_mortar_data(mortar_id_south.first,
+                                     mortar_id_south.second, false));
   }
   if constexpr (LocalTimeStepping) {
     for (const auto& mortar_data :
@@ -1957,8 +1725,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
 }
 
-template <SystemType system_type, UseBoundaryCorrection use_boundary_correction,
-          size_t Dim>
+template <SystemType system_type, size_t Dim>
 void test() noexcept {
   // The test impl is structured in the following way:
   // - the static mesh volume contributions are computed "by-hand" and used more
@@ -2030,12 +1797,10 @@ void test() noexcept {
             if constexpr (not(decltype(use_prims)::value and system_type ==
                               SystemType::Nonconservative)) {
               test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, use_boundary_correction,
-                        std::decay_t<decltype(use_prims)>::value>(
+                        system_type, std::decay_t<decltype(use_prims)>::value>(
                   quadrature, local_dg_formulation);
               test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, use_boundary_correction,
-                        std::decay_t<decltype(use_prims)>::value>(
+                        system_type, std::decay_t<decltype(use_prims)>::value>(
                   quadrature, local_dg_formulation);
             }
           };
@@ -2049,10 +1814,8 @@ void test() noexcept {
        {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
     invoke_tests_with_quadrature_and_formulation(
         Spectral::Quadrature::GaussLobatto, dg_formulation);
-    if constexpr (use_boundary_correction == UseBoundaryCorrection::Yes) {
-      invoke_tests_with_quadrature_and_formulation(Spectral::Quadrature::Gauss,
-                                                   dg_formulation);
-    }
+    invoke_tests_with_quadrature_and_formulation(Spectral::Quadrature::Gauss,
+                                                 dg_formulation);
   }
 }
 }  // namespace TestHelpers::evolution::dg::Actions

@@ -6,5 +6,5 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.tpp"
 
 namespace TestHelpers::evolution::dg::Actions {
-template void test<SystemType::Mixed, UseBoundaryCorrection::Yes, 2>();
+template void test<SystemType::Mixed, 2>();
 }  // namespace TestHelpers::evolution::dg::Actions

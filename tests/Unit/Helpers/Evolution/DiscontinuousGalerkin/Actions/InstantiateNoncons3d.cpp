@@ -6,6 +6,5 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.tpp"
 
 namespace TestHelpers::evolution::dg::Actions {
-template void
-test<SystemType::Nonconservative, UseBoundaryCorrection::Yes, 3>();
+template void test<SystemType::Nonconservative, 3>();
 }  // namespace TestHelpers::evolution::dg::Actions
