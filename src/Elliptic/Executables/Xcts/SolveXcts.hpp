@@ -15,6 +15,8 @@
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/InitializeSubdomain.hpp"
+#include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Elliptic/Triggers/EveryNIterations.hpp"
@@ -41,6 +43,8 @@
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/ResetSubdomainSolver.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/NewtonRaphson.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
@@ -77,6 +81,11 @@ struct LinearSolverGroup {
 struct GmresGroup {
   static std::string name() noexcept { return "Gmres"; }
   static constexpr Options::String help = "Options for the GMRES linear solver";
+  using group = LinearSolverGroup;
+};
+struct SchwarzSmootherGroup {
+  static std::string name() noexcept { return "SchwarzSmoother"; }
+  static constexpr Options::String help = "Options for the Schwarz smoother";
   using group = LinearSolverGroup;
 };
 }  // namespace SolveXcts::OptionTags
@@ -131,10 +140,23 @@ struct Metavariables {
   // not guaranteed to be symmetric.
   using linear_solver = LinearSolver::gmres::Gmres<
       Metavariables, typename nonlinear_solver::linear_solver_fields_tag,
-      SolveXcts::OptionTags::GmresGroup, false,
+      SolveXcts::OptionTags::GmresGroup, true,
       typename nonlinear_solver::linear_solver_source_tag>;
   using linear_solver_iteration_id =
       Convergence::Tags::IterationId<typename linear_solver::options_group>;
+  // Precondition each linear solver iteration with a number of Schwarz
+  // smoothing steps
+  using subdomain_operator =
+      elliptic::dg::subdomain_operator::SubdomainOperator<
+          system, SolveXcts::OptionTags::SchwarzSmootherGroup>;
+  // This data needs to be communicated on subdomain overlap regions
+  using communicated_overlap_tags = tmpl::list<
+      // For linearized sources
+      fields_tag, fluxes_tag>;
+  using schwarz_smoother = LinearSolver::Schwarz::Schwarz<
+      typename linear_solver::operand_tag,
+      SolveXcts::OptionTags::SchwarzSmootherGroup, subdomain_operator,
+      typename linear_solver::preconditioner_source_tag>;
   // For the GMRES linear solver we need to apply the DG operator to its
   // internal "operand" in every iteration of the algorithm.
   using correction_vars_tag = typename linear_solver::operand_tag;
@@ -175,7 +197,7 @@ struct Metavariables {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<
           tmpl::list<tmpl::at<factory_creation::factory_classes, Event>,
-                     nonlinear_solver, linear_solver>>>;
+                     nonlinear_solver, linear_solver, schwarz_smoother>>>;
 
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
@@ -185,6 +207,7 @@ struct Metavariables {
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
       typename nonlinear_solver::initialize_element,
       typename linear_solver::initialize_element,
+      typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
@@ -192,6 +215,8 @@ struct Metavariables {
           Xcts::Solutions::AnalyticSolution<tmpl::append<
               analytic_solution_registrars, analytic_data_registrars>>>,
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
+      elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
+          system, background_tag, typename schwarz_smoother::options_group>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   template <bool Linearized>
@@ -207,12 +232,23 @@ struct Metavariables {
   using register_actions =
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
                  typename nonlinear_solver::register_element,
+                 typename schwarz_smoother::register_element,
                  Parallel::Actions::TerminatePhase>;
 
   using solve_actions = tmpl::list<
       typename nonlinear_solver::template solve<
           build_operator_actions<false>,
-          typename linear_solver::template solve<build_operator_actions<true>>,
+          tmpl::list<LinearSolver::Schwarz::Actions::SendOverlapFields<
+                         communicated_overlap_tags,
+                         typename schwarz_smoother::options_group, false>,
+                     LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
+                         volume_dim, communicated_overlap_tags,
+                         typename schwarz_smoother::options_group>,
+                     LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
+                         typename schwarz_smoother::options_group>,
+                     typename linear_solver::template solve<
+                         typename schwarz_smoother::template solve<
+                             build_operator_actions<true>>>>,
           Actions::RunEventsAndTriggers>,
       Parallel::Actions::TerminatePhase>;
 
@@ -228,6 +264,7 @@ struct Metavariables {
   using component_list = tmpl::flatten<
       tmpl::list<dg_element_array, typename nonlinear_solver::component_list,
                  typename linear_solver::component_list,
+                 typename schwarz_smoother::component_list,
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
 
@@ -262,7 +299,8 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &setup_error_handling,
+    &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
@@ -274,6 +312,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
             typename metavariables::analytic_solution_registrars>>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::system::boundary_conditions_base>,
+    &Parallel::register_derived_classes_with_charm<
+        metavariables::schwarz_smoother::subdomain_solver>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
