@@ -3,7 +3,7 @@
 
 # Executable: SolveXcts
 # Check: parse;execute_check_output
-# Timeout: 20
+# Timeout: 40
 # ExpectedOutput:
 #   SchwarzschildReductions.h5
 #   SchwarzschildVolume0.h5
@@ -12,7 +12,7 @@
 #     Subfile: /ErrorNorms.dat
 #     FileGlob: SchwarzschildReductions.h5
 #     SkipColumns: [0, 1]
-#     AbsoluteTolerance: 0.09
+#     AbsoluteTolerance: 0.12
 
 Background:
   Schwarzschild:
@@ -26,7 +26,7 @@ DomainCreator:
     InnerRadius: 0.5
     OuterRadius: 10.
     InitialRefinement: 0
-    InitialGridPoints: [5, 5]
+    InitialGridPoints: [4, 4]
     UseEquiangularMap: True
     AspectRatio: 1.
     WhichWedges: All
@@ -57,7 +57,7 @@ Observers:
 NonlinearSolver:
   NewtonRaphson:
     ConvergenceCriteria:
-      MaxIterations: 2
+      MaxIterations: 1
       RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
     SufficientDecrease: 1.e-4
@@ -68,15 +68,30 @@ NonlinearSolver:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 65
+      MaxIterations: 2
       RelativeResidual: 1.e-3
       AbsoluteResidual: 1.e-12
     Verbosity: Quiet
 
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Verbose
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 30
+          RelativeResidual: 1.e-2
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner: None
+    SkipResets: True
+
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 2
+      Offset: 1
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveFields:

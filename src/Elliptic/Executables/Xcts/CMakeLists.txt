@@ -10,6 +10,7 @@ set(LIBS_TO_LINK
   DomainCreators
   Elliptic
   EllipticDg
+  EllipticDgSubdomainOperator
   ErrorHandling
   Events
   EventsAndTriggers
@@ -22,6 +23,7 @@ set(LIBS_TO_LINK
   Parallel
   ParallelLinearSolver
   ParallelNonlinearSolver
+  ParallelSchwarz
   Utilities
   Xcts
   XctsAnalyticData

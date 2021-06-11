@@ -42,15 +42,21 @@ Observers:
 
 LinearSolver:
   ConvergenceCriteria:
-    MaxIterations: 22
+    MaxIterations: 1
     RelativeResidual: 1.e-6
     AbsoluteResidual: 1.e-6
   Verbosity: Verbose
 
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Quiet
+    SubdomainSolver: ExplicitInverse
+
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 9
+      Offset: 1
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveFields:

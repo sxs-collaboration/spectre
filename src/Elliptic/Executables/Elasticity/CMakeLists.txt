@@ -14,6 +14,7 @@ set(LIBS_TO_LINK
   ElasticitySolutions
   Elliptic
   EllipticDg
+  EllipticDgSubdomainOperator
   Events
   EventsAndTriggers
   Informer
@@ -22,6 +23,7 @@ set(LIBS_TO_LINK
   Options
   Parallel
   ParallelLinearSolver
+  ParallelSchwarz
   Utilities
   )
 
