@@ -188,10 +188,16 @@ struct PrepareStep {
           db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
       using preconditioned_operand_tag =
           db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+      using operator_tag = db::add_tag_prefix<
+          LinearSolver::Tags::OperatorAppliedTo,
+          std::conditional_t<Preconditioned, preconditioned_operand_tag,
+                             operand_tag>>;
 
-      db::mutate<preconditioned_operand_tag>(
+      db::mutate<preconditioned_operand_tag, operator_tag>(
           make_not_null(&box),
-          [](const auto preconditioned_operand, const auto& operand) noexcept {
+          [](const auto preconditioned_operand,
+             const auto operator_applied_to_operand,
+             const auto& operand) noexcept {
             // Start the preconditioner at zero because we have no reason to
             // expect the remaining residual to have a particular form.
             // Another possibility would be to start the preconditioner with an
@@ -201,6 +207,12 @@ struct PrepareStep {
             *preconditioned_operand =
                 make_with_value<typename preconditioned_operand_tag::type>(
                     operand, 0.);
+            // Also set the operator applied to the initial preconditioned
+            // operand to zero because it's linear. This may save the
+            // preconditioner an operator application if it's optimized for
+            // this.
+            *operator_applied_to_operand =
+                make_with_value<typename operator_tag::type>(operand, 0.);
           },
           get<operand_tag>(box));
     }
