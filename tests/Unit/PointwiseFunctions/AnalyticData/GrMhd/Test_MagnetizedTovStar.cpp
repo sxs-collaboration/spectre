@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "Domain/LogicalCoordinates.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
@@ -12,6 +13,14 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+
+static_assert(
+    not evolution::is_analytic_solution_v<
+        grmhd::AnalyticData::MagnetizedTovStar>,
+    "MagnetizedTovStar should be analytic_data, and not an analytic_solution");
+static_assert(
+    evolution::is_analytic_data_v<grmhd::AnalyticData::MagnetizedTovStar>,
+    "MagnetizedTovStar should be analytic_data, and not an analytic_solution");
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
                   "[Unit][PointwiseFunctions]") {
