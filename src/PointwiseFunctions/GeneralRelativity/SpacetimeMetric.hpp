@@ -19,7 +19,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the spacetime metric from the spatial metric, lapse, and
@@ -44,7 +44,7 @@ tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

@@ -17,7 +17,7 @@ struct not_null;
 
 namespace gr {
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute projection operator onto an interface
@@ -37,9 +37,9 @@ void transverse_projection_operator(
     gsl::not_null<tnsr::II<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute projection operator onto an interface
@@ -58,9 +58,9 @@ void transverse_projection_operator(
     gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::ii<DataType, VolumeDim, Frame>& spatial_metric,
     const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute projection operator onto an interface
@@ -79,9 +79,9 @@ void transverse_projection_operator(
     gsl::not_null<tnsr::Ij<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector,
     const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute spacetime projection operator onto an interface
@@ -111,9 +111,9 @@ void transverse_projection_operator(
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>&
         interface_unit_normal_one_form) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute spacetime projection operator onto an interface
@@ -143,9 +143,9 @@ void transverse_projection_operator(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>&
         interface_unit_normal_vector) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute spacetime projection operator onto an interface
@@ -178,5 +178,5 @@ void transverse_projection_operator(
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
     const tnsr::i<DataType, VolumeDim, Frame>&
         interface_unit_normal_one_form) noexcept;
-// @}
+/// @}
 }  // namespace gr

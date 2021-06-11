@@ -60,7 +60,7 @@ struct TwoIndexConstraint : db::SimpleTag {
   using type = tnsr::ij<DataVector, Dim, Frame::Inertial>;
 };
 
-// @{
+/// @{
 /// \brief Tags corresponding to the characteristic fields of the flat-spacetime
 /// scalar-wave system.
 ///
@@ -83,7 +83,7 @@ struct VMinus : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "VMinus"; }
 };
-// @}
+/// @}
 
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {

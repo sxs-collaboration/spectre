@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes extrinsic curvature from metric and derivatives.
@@ -58,5 +58,5 @@ void extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
-//@}
+/// @}
 }  // namespace gr

@@ -48,7 +48,7 @@ size_t result_size(const std::array<MatrixType, Dim>& matrices,
 }
 }  // namespace apply_matrices_detail
 
-// @{
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Multiply by matrices in each dimension
 ///
@@ -139,4 +139,4 @@ ResultType apply_matrices(const std::array<MatrixType, Dim>& matrices,
   apply_matrices(make_not_null(&result), matrices, u, extents);
   return result;
 }
-// @}
+/// @}

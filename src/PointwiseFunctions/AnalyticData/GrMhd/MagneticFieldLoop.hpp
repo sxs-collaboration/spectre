@@ -137,7 +137,7 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
 
   explicit MagneticFieldLoop(CkMigrateMessage* /*unused*/) noexcept {}
 
-  // @{
+  /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
   auto variables(
@@ -187,7 +187,7 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>

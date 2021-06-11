@@ -62,11 +62,11 @@ struct Section {
   /// The section ID corresponding to the `SectionIdTag`
   const IdType& id() const noexcept { return id_; }
 
-  // @{
+  /// @{
   /// The Charm++ section proxy
   const cproxy_section& proxy() const noexcept { return proxy_; }
   cproxy_section& proxy() noexcept { return proxy_; }
-  // @}
+  /// @}
 
   /*!
    * \brief The Charm++ section cookie that keeps track of reductions
@@ -76,10 +76,10 @@ struct Section {
    * reductions see:
    * https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group
    */
-  // @{
+  /// @{
   const CkSectionInfo& cookie() const noexcept { return cookie_; }
   CkSectionInfo& cookie() noexcept { return cookie_; }
-  // @}
+  /// @}
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept {

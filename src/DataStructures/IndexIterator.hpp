@@ -27,13 +27,13 @@ class IndexIterator {
   IndexIterator() = delete;
   /// \cond HIDDEN_SYMBOLS
   ~IndexIterator() = default;
-  // @{
+  /// @{
   /// No copy or move semantics
   IndexIterator(const IndexIterator<Dim>&) = delete;
   IndexIterator(IndexIterator<Dim>&&) = delete;
   IndexIterator<Dim>& operator=(const IndexIterator<Dim>&) = delete;
   IndexIterator<Dim>& operator=(IndexIterator<Dim>&&) = delete;
-  // @}
+  /// @}
   /// \endcond
 
   /// Returns false if the end of the Index iteration is reached

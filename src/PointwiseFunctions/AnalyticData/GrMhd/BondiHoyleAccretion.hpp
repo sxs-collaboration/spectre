@@ -150,7 +150,7 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
                       double polytropic_constant,
                       double polytropic_exponent) noexcept;
 
-  // @{
+  /// @{
   /// Retrieve hydro variable at `x`
   template <typename DataType>
   auto variables(
@@ -200,7 +200,7 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydro variables at `x`
   template <typename DataType, typename... Tags>

@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute spatial metric from spacetime metric.
@@ -37,7 +37,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

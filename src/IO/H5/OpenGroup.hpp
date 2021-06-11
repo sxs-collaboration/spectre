@@ -36,13 +36,13 @@ class OpenGroup {
   ~OpenGroup();
   /// \endcond
 
-  // @{
+  /// @{
   /// \cond HIDDEN_SYMBOLS
   /// Copying does not make sense since the group will then be closed twice.
   OpenGroup(const OpenGroup& /*rhs*/) = delete;
   OpenGroup& operator=(const OpenGroup& /*rhs*/) = delete;
   /// \endcond
-  // @}
+  /// @}
 
   OpenGroup(OpenGroup&& rhs) noexcept;             // NOLINT
   OpenGroup& operator=(OpenGroup&& rhs) noexcept;  // NOLINT

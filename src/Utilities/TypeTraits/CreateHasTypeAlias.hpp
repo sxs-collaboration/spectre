@@ -7,7 +7,7 @@
 
 #include "Utilities/NoSuchType.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Generate a type trait to check if a class has a type alias with a
@@ -40,4 +40,4 @@
   template <typename CheckingType, typename AliasType = NoSuchType*****> \
   static constexpr const bool has_##ALIAS_NAME##_v =                     \
       has_##ALIAS_NAME<CheckingType, AliasType>::value;
-// @}
+/// @}

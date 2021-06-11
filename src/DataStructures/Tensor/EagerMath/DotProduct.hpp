@@ -12,7 +12,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the Euclidean dot product of two vectors or one forms
@@ -40,9 +40,9 @@ Scalar<DataType> dot_product(
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the dot product of a vector and a one form
@@ -75,9 +75,9 @@ Scalar<DataType> dot_product(
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the dot_product of two vectors or one forms
@@ -119,4 +119,4 @@ Scalar<DataType> dot_product(
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b, metric);
   return dot_product;
 }
-// @}
+/// @}

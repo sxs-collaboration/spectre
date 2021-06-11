@@ -60,7 +60,7 @@ class DampingFunction : public PUP::able {
 
   explicit DampingFunction(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
 
-  //@{
+  /// @{
   /// Returns the value of the function at the coordinate 'x'.
   virtual void operator()(
       const gsl::not_null<Scalar<double>*> value_at_x,
@@ -76,7 +76,7 @@ class DampingFunction : public PUP::able {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept = 0;
-  //@}
+  /// @}
 
   virtual auto get_clone() const noexcept
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> = 0;

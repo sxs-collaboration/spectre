@@ -112,7 +112,7 @@ void check_impl(
   helper(serialize_and_deserialize(in_gh_damping_function));
 }
 }  // namespace detail
-// @{
+/// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Test a DampingFunction by comparing to python functions
@@ -166,5 +166,5 @@ void check(DampingFunctionType in_gh_damping_function,
       python_function_prefix, used_for_size, random_value_bounds,
       function_of_time_names, member_args...);
 }
-// @}
+/// @}
 }  // namespace TestHelpers::GeneralizedHarmonic::ConstraintDamping

@@ -29,7 +29,7 @@ struct Normalized;
 namespace RelativisticEuler {
 namespace Valencia {
 
-// @{
+/// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation
  * of the relativistic Euler system.
@@ -73,7 +73,7 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
     const tnsr::i<DataVector, Dim>& normal) noexcept;
-// @}
+/// @}
 
 /*!
  * \brief Right eigenvectors of the Valencia formulation

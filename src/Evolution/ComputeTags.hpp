@@ -39,7 +39,7 @@ struct AnalyticCompute : ::Tags::AnalyticSolutions<AnalyticFieldsTagList>,
   }
 };
 
-// @{
+/// @{
 /*!
  * \brief For each `Tag` in `TagsList`, compute its difference from the
  * analytic solution.
@@ -79,6 +79,6 @@ struct ErrorsCompute
     *errors -= analytic;
   }
 };
-// @}
+/// @}
 }  // namespace Tags
 }  // namespace evolution

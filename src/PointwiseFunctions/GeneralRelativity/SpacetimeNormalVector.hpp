@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes spacetime normal vector from lapse and shift.
@@ -43,7 +43,7 @@ void spacetime_normal_vector(
         spacetime_normal_vector,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

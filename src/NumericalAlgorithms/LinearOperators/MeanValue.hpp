@@ -48,7 +48,7 @@ double mean_value(const DataVector& f, const Mesh<Dim>& mesh) noexcept {
   return definite_integral(f, mesh) / two_to_the(Dim);
 }
 
-// @{
+/// @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the mean value of a function over a boundary of a manifold.
@@ -96,4 +96,4 @@ double mean_value_on_boundary(
     gsl::not_null<DataVector*> /*boundary_buffer*/,
     gsl::span<std::pair<size_t, size_t>> /*volume_and_slice_indices*/,
     const DataVector& f, const Mesh<1>& mesh, size_t d, Side side) noexcept;
-// @}
+/// @}

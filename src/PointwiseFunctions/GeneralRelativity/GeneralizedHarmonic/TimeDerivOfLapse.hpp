@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes time derivative of lapse (N) from the generalized
@@ -76,7 +76,7 @@ Scalar<DataType> time_deriv_of_lapse(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

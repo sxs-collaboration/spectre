@@ -12,7 +12,7 @@ class Matrix;
 
 /// LAPACK wrappers
 namespace lapack {
-// @{
+/// @{
 /*!
  * \ingroup LinearSolverGroup
  * \brief Wrapper for LAPACK dgesv, which solves the general linear equation
@@ -80,5 +80,5 @@ int general_matrix_linear_solve(gsl::not_null<DataVector*> solution,
                                 const Matrix& matrix_operator,
                                 const DataVector& rhs,
                                 int number_of_rhs = 0) noexcept;
-// @}
+/// @}
 }  // namespace lapack

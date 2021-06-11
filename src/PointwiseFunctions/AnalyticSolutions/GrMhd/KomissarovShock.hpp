@@ -133,7 +133,7 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
 
   explicit KomissarovShock(CkMigrateMessage* /*unused*/) noexcept {}
 
-  // @{
+  /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
   auto variables(
@@ -183,7 +183,7 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
       const tnsr::I<DataType, 3>& x, double t,
       tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>

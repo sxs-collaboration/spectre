@@ -13,7 +13,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Slices the data within `vars` to a codimension 1 slice. The
@@ -65,7 +65,7 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
                 sliced_dim, fixed_index);
   return interface_vars;
 }
-// @}
+/// @}
 
 /*!
  * \ingroup DataStructuresGroup

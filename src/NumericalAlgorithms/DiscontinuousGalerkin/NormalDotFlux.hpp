@@ -21,7 +21,7 @@
 // IWYU pragma: no_forward_declare Tags::Flux
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \brief Contract a surface normal covector with the first index of a flux
  * tensor or variables
@@ -66,7 +66,7 @@ auto normal_dot_flux(
   });
   return result;
 }
-// @}
+/// @}
 
 namespace Tags {
 

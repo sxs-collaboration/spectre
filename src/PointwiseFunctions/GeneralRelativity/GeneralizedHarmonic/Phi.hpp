@@ -30,7 +30,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the auxiliary variable \f$\Phi_{iab}\f$ used by the
@@ -67,7 +67,7 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

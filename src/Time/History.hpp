@@ -58,10 +58,10 @@ class History {
   void insert_initial(TimeStepId time_step_id, DerivVars deriv) noexcept;
 
   /// The most recent value of the integrated variables.
-  //@{
+  /// @{
   Vars& most_recent_value() noexcept { return most_recent_value_; }
   const Vars& most_recent_value() const noexcept { return most_recent_value_; }
-  //@}
+  /// @}
 
   /// Mark all data before the passed point in history as unneeded so
   /// it can be removed.  Calling this directly should not often be
@@ -71,7 +71,7 @@ class History {
   /// These iterators directly return the Time of the past values.
   /// The derivative data can be accessed through the iterators using
   /// HistoryIterator::derivative().
-  //@{
+  /// @{
   const_iterator begin() const noexcept {
     return data_.begin() +
            static_cast<typename decltype(data_.begin())::difference_type>(
@@ -80,7 +80,7 @@ class History {
   const_iterator end() const noexcept { return data_.end(); }
   const_iterator cbegin() const noexcept { return begin(); }
   const_iterator cend() const noexcept { return end(); }
-  //@}
+  /// @}
 
   size_type size() const noexcept { return capacity() - first_needed_entry_; }
   size_type capacity() const noexcept { return data_.size(); }
@@ -88,7 +88,7 @@ class History {
 
   /// These return the past times.  The other data can be accessed
   /// through HistoryIterator methods.
-  //@{
+  /// @{
   const_reference operator[](size_type n) const noexcept {
     return *(begin() + static_cast<difference_type>(n));
   }
@@ -97,16 +97,16 @@ class History {
   const_reference back() const noexcept {
     return std::get<0>(data_.back()).substep_time();
   }
-  //@}
+  /// @}
 
   /// Get or set the current order of integration.  TimeSteppers may
   /// impose restrictions on the valid values.
-  //@{
+  /// @{
   size_t integration_order() const noexcept { return integration_order_; }
   void integration_order(const size_t integration_order) noexcept {
     integration_order_ = integration_order;
   }
-  //@}
+  /// @}
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept {  // NOLINT

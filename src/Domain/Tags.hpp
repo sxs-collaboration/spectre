@@ -262,7 +262,7 @@ struct DetInvJacobianCompute : db::ComputeTag,
 /// Base tag for boundary data needed for updating the variables.
 struct VariablesBoundaryData : db::BaseTag {};
 
-// @{
+/// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions to neighboring Elements
@@ -286,8 +286,9 @@ struct InternalDirectionsCompute : InternalDirections<VolumeDim>,
     }
   }
 };
-// @}
+/// @}
 
+/// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions which correspond to external boundaries.
@@ -312,9 +313,9 @@ struct BoundaryDirectionsInteriorCompute
     *directions = element.external_boundaries();
   }
 };
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions which correspond to external boundaries. To be used
@@ -339,7 +340,7 @@ struct BoundaryDirectionsExteriorCompute
     *directions = element.external_boundaries();
   }
 };
-// @}
+/// @}
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup

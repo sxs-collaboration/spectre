@@ -8,7 +8,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type T is a std::array of a given size
 ///
@@ -54,5 +54,5 @@ constexpr bool is_std_array_of_size_v = is_std_array_of_size<N, T>::value;
 /// \see is_std_array_of_size
 template <size_t N, typename T>
 using is_std_array_of_size_t = typename is_std_array_of_size<N, T>::type;
-// @}
+/// @}
 }  // namespace tt

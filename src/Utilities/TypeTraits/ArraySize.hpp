@@ -14,7 +14,7 @@ std::integral_constant<std::size_t, N> array_size_impl(
     const std::array<T, N>& /*array*/);
 }  // namespace TypeTraits_detail
 
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Get the size of a std::array as a std::integral_constant
 ///
@@ -44,5 +44,5 @@ std::integral_constant<std::size_t, N> array_size_impl(
 template <typename Array>
 using array_size =
     decltype(TypeTraits_detail::array_size_impl(std::declval<const Array&>()));
-// @}
+/// @}
 }  // namespace tt

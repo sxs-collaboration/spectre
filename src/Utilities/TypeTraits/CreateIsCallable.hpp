@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Generate a type trait to check if a class has a member function that
@@ -68,4 +69,4 @@
   template <typename T, typename... Args>                     \
   static constexpr const bool is_##METHOD_NAME##_callable_v = \
       is_##METHOD_NAME##_callable<T, Args...>::value;
-// @}
+/// @}

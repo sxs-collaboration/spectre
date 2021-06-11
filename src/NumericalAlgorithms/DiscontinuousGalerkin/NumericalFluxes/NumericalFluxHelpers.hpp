@@ -57,7 +57,7 @@ void normal_dot_numerical_fluxes_impl(
 }
 }  // namespace detail
 
-// @{
+/// @{
 /// Helper function to unpack arguments when invoking the numerical flux
 template <typename NumericalFluxType, typename... AllFieldTags,
           typename... AllExtraTags, typename... Args>
@@ -116,7 +116,7 @@ void normal_dot_numerical_fluxes(
       typename NumericalFluxType::package_field_tags{},
       typename NumericalFluxType::package_extra_tags{}, n_dot_num_fluxes...);
 }
-// @}
+/// @}
 
 }  // namespace NumericalFluxes
 }  // namespace dg

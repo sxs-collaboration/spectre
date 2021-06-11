@@ -77,14 +77,14 @@ class H5File {
   ~H5File();
   /// \endcond
 
-  // @{
+  /// @{
   /*!
    * \brief It does not make sense to copy an object referring to a file, only
    * to move it.
    */
   H5File(const H5File& /*rhs*/) = delete;
   H5File& operator=(const H5File& /*rhs*/) = delete;
-  // @}
+  /// @}
 
   /// \cond HIDDEN_SYMBOLS
   H5File(H5File&& rhs) noexcept;             // NOLINT
@@ -99,7 +99,7 @@ class H5File {
     return h5::get_group_names(file_id_, "/");
   }
 
-  // @{
+  /// @{
   /*!
    * \requires `ObjectType` is a valid h5::Object derived class, `path`
    * is a valid path in the HDF5 file
@@ -117,7 +117,7 @@ class H5File {
 
   template <typename ObjectType, typename... Args>
   const ObjectType& get(const std::string& path, Args&&... args) const;
-  // @}
+  /// @}
 
   /*!
    * \brief Insert an object into an H5 file.

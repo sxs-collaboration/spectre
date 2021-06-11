@@ -47,12 +47,12 @@ class GeneralIndexIterator {
   }
 
   /// Iterate over the coordinates of the current value.
-  //@{
+  /// @{
   iterator_type cbegin() const noexcept { return current_.cbegin(); }
   iterator_type cend() const noexcept { return current_.cend(); }
   iterator_type begin() const noexcept { return cbegin(); }
   iterator_type end() const noexcept { return cend(); }
-  //@}
+  /// @}
 
  private:
   Container ranges_;

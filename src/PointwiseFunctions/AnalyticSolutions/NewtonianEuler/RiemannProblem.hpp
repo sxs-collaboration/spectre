@@ -287,7 +287,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   }
 
  private:
-  // @{
+  /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
@@ -314,7 +314,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
                  tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
                  const Wave& left, const Wave& right) const noexcept
       -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
-  // @}
+  /// @}
 
   // Any of the two waves propagating on each side of the contact discontinuity.
   // Depending on whether p_* is larger or smaller

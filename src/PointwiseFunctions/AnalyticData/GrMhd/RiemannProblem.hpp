@@ -215,7 +215,7 @@ class RiemannProblem : public MarkAsAnalyticData {
 
   explicit RiemannProblem(CkMigrateMessage* /*unused*/) noexcept;
 
-  // @{
+  /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
@@ -277,7 +277,7 @@ class RiemannProblem : public MarkAsAnalyticData {
       tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/)
       const noexcept
       -> tuples::TaggedTuple<gr::Tags::Shift<3, Frame::Inertial, DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>

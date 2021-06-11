@@ -174,7 +174,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
     }
   }
 
-  // @{
+  /// @{
   /// Access to the preconditioner. Check `has_preconditioner()` before calling
   /// this function. Calling this function when `has_preconditioner()` returns
   /// `false` is an error.

@@ -127,7 +127,7 @@ class FixedHashMap {
 
   void clear() noexcept;
 
-  // @{
+  /// @{
   /// Inserts the element if it does not exists.
   std::pair<iterator, bool> insert(const value_type& value) noexcept {
     return insert(value_type(value));
@@ -141,8 +141,8 @@ class FixedHashMap {
   std::pair<iterator, bool> emplace(Args&&... args) noexcept {
     return insert(value_type(std::forward<Args>(args)...));
   }
-  // @}
-  // @{
+  /// @}
+  /// @{
   /// Inserts the element if it does not exists, otherwise assigns to it the new
   /// value.
   template <class M>
@@ -154,7 +154,7 @@ class FixedHashMap {
   std::pair<iterator, bool> insert_or_assign(key_type&& key, M&& obj) noexcept {
     return insert_or_assign_impl<true>(std::move(key), std::forward<M>(obj));
   }
-  // @}
+  /// @}
 
   iterator erase(const const_iterator& pos) noexcept;
   size_t erase(const key_type& key) noexcept;

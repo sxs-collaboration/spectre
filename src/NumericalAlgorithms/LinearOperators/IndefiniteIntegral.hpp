@@ -14,7 +14,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the indefinite integral of a function in the
@@ -41,4 +41,4 @@ template <size_t Dim, typename VectorType>
 VectorType indefinite_integral(const VectorType& integrand,
                                const Mesh<Dim>& mesh,
                                size_t dim_to_integrate) noexcept;
-// @}
+/// @}

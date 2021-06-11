@@ -7,7 +7,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type T is a std::array
 ///
@@ -53,5 +53,5 @@ constexpr bool is_std_array_v = is_std_array<T>::value;
 /// \see is_std_array
 template <typename T>
 using is_std_array_t = typename is_std_array<T>::type;
-// @}
+/// @}
 }  // namespace tt

@@ -14,7 +14,7 @@
 
 namespace Elasticity {
 
-// @{
+/// @{
 /*!
  * \brief The potential energy density \f$U=-\frac{1}{2}S_{ij}T^{ij}\f$ stored
  * in the deformation of the elastic material (see Eq. (11.25) in
@@ -41,7 +41,7 @@ Scalar<DataVector> potential_energy_density(
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 

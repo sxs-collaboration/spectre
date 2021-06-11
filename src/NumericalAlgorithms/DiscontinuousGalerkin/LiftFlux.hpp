@@ -17,7 +17,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace dg {
-// @{
+/// @{
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Lifts the flux contribution from an interface to the volume.
 ///
@@ -73,5 +73,5 @@ auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
             std::move(magnitude_of_face_normal));
   return lifted_data;
 }
-// @}
+/// @}
 }  // namespace dg

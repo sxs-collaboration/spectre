@@ -9,7 +9,7 @@
 #include "Utilities/TypeTraits/IsIterable.hpp"
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` is like a std::map or std::unordored_map
 ///
@@ -62,5 +62,5 @@ constexpr bool is_maplike_v = is_maplike<T>::value;
 /// \see is_maplike
 template <typename T>
 using is_maplike_t = typename is_maplike<T>::type;
-// @}
+/// @}
 }  // namespace tt

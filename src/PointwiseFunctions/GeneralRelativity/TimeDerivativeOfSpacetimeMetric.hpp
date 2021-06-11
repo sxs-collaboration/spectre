@@ -23,7 +23,7 @@
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the time derivative of the spacetime metric from spatial
@@ -59,6 +59,6 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept;
-//@}
+/// @}
 namespace Tags {}  // namespace Tags
 }  // namespace gr

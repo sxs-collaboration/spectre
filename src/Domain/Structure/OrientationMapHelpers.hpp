@@ -47,7 +47,7 @@ std::vector<size_t> oriented_offset_on_slice(
 
 }  // namespace OrientationMapHelpers_detail
 
-// @{
+/// @{
 /// \ingroup ComputationalDomainGroup
 /// Orient variables to the data-storage order of a neighbor element with
 /// the given orientation.
@@ -109,9 +109,9 @@ Variables<TagsList> orient_variables_on_slice(
 
   return oriented_variables;
 }
-// }@
+/// @}
 
-// @{
+/// @{
 /// \ingroup ComputationalDomainGroup
 /// Orient data in a `std::vector<double>` representing one or more tensor
 /// components.
@@ -133,4 +133,4 @@ std::vector<double> orient_variables_on_slice(
     const std::vector<double>& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, size_t sliced_dim,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
-// }@
+/// @}

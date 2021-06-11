@@ -68,7 +68,7 @@ class ConstitutiveRelation : public PUP::able {
 
   WRAPPED_PUPable_abstract(ConstitutiveRelation);  // NOLINT
 
-  // @{
+  /// @{
   /// The constitutive relation that characterizes the elastic properties of a
   /// material
   virtual void stress(gsl::not_null<tnsr::II<DataVector, Dim>*> stress,
@@ -81,7 +81,7 @@ class ConstitutiveRelation : public PUP::able {
   void stress(gsl::not_null<tnsr::IJ<DataVector, Dim>*> stress,
               const tnsr::ii<DataVector, Dim>& strain,
               const tnsr::I<DataVector, Dim>& x) const noexcept;
-  // @}
+  /// @}
 };
 
 }  // namespace ConstitutiveRelations

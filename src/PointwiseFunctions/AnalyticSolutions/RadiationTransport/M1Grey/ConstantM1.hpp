@@ -68,7 +68,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
 
   explicit ConstantM1(CkMigrateMessage* /*unused*/) noexcept {}
 
-  // @{
+  /// @{
   /// Retrieve fluid and neutrino variables at `(x, t)`
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
@@ -117,7 +117,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
       tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>> /*meta*/) const
       noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of fluid and neutrino variables at `(x, t)`
   template <typename... Tags>

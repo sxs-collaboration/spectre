@@ -127,7 +127,7 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
 };
 }  // namespace detail
 
-//@{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Computes the determinant of a rank-2 Tensor `tensor`.
@@ -155,4 +155,4 @@ Scalar<T> determinant(
   determinant(make_not_null(&result), tensor);
   return result;
 }
-//@}
+/// @}

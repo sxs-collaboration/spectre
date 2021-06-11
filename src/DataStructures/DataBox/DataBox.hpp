@@ -49,7 +49,7 @@ template <typename TagsList>
 class DataBox;
 /// \endcond
 
-// @{
+/// @{
 /// \ingroup DataBoxGroup
 /// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
 /// `DataBoxType`.
@@ -60,7 +60,7 @@ using tag_is_retrievable = tmpl::any<typename DataBoxType::tags_list,
 template <typename Tag, typename DataBoxType>
 constexpr bool tag_is_retrievable_v =
     tag_is_retrievable<Tag, DataBoxType>::value;
-// @}
+/// @}
 
 namespace detail {
 template <typename Tag>
@@ -1089,7 +1089,7 @@ static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
 }
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \ingroup DataBoxGroup
  * \brief Apply the invokable `f` with argument Tags `TagsList` from
@@ -1155,7 +1155,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
                                            Args&&... args) noexcept {
   return apply(F{}, box, std::forward<Args>(args)...);
 }
-// @}
+/// @}
 
 namespace detail {
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
@@ -1203,7 +1203,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
 }
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \ingroup DataBoxGroup
  * \brief Apply the invokable `f` mutating items `MutateTags` and taking as
@@ -1267,5 +1267,5 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
     const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) noexcept {
   return mutate_apply(F{}, box, std::forward<Args>(args)...);
 }
-// @}
+/// @}
 }  // namespace db

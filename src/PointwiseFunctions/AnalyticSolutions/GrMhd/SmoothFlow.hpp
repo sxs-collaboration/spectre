@@ -64,7 +64,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   // Overload the variables function from the base class.
   using smooth_flow::variables;
 
-  // @{
+  /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(
@@ -78,7 +78,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
       noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>

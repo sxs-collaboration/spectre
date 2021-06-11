@@ -36,13 +36,13 @@ class LeviCivitaIterator {
 
   /// \cond HIDDEN_SYMBOLS
   ~LeviCivitaIterator() = default;
-  // @{
+  /// @{
   /// No copy or move semantics
   LeviCivitaIterator(const LeviCivitaIterator<Dim>&) = delete;
   LeviCivitaIterator(LeviCivitaIterator<Dim>&&) = delete;
   LeviCivitaIterator<Dim>& operator=(const LeviCivitaIterator<Dim>&) = delete;
   LeviCivitaIterator<Dim>& operator=(LeviCivitaIterator<Dim>&&) = delete;
-  // @}
+  /// @}
   /// \endcond
 
   // Return false if the end of the loop is reached

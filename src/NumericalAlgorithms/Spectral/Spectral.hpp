@@ -424,7 +424,7 @@ template <typename T>
 Matrix interpolation_matrix(const Mesh<1>& mesh,
                             const T& target_points) noexcept;
 
-// @{
+/// @{
 /*!
  * \brief Matrices that interpolate to the lower and upper boundaries of the
  * element.
@@ -443,9 +443,9 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
     size_t num_points) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Interpolates values from the boundary into the volume, which is needed
  * when applying time derivative or Bjorhus-type boundary conditions in a
@@ -477,9 +477,9 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
     size_t num_points) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Terms used during the lifting portion of a discontinuous Galerkin
  * scheme when using Gauss points.
@@ -500,7 +500,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
     size_t num_points) noexcept;
-// @}
+/// @}
 
 /*!
  * \brief %Matrix used to transform from the spectral coefficients (modes) of a

@@ -28,7 +28,7 @@ struct Inertial;
 
 namespace elliptic::Actions {
 
-// @{
+/// @{
 /*!
  * \brief Place the analytic solution of the system fields in the DataBox.
  *
@@ -115,5 +115,5 @@ struct InitializeOptionalAnalyticSolution {
     return {std::move(box)};
   }
 };
-// @}
+/// @}
 }  // namespace elliptic::Actions

@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type T has a begin() and end() function
 ///
@@ -53,5 +53,5 @@ constexpr bool is_iterable_v = is_iterable<T>::value;
 /// \see is_iterable
 template <typename T>
 using is_iterable_t = typename is_iterable<T>::type;
-// @}
+/// @}
 }  // namespace tt

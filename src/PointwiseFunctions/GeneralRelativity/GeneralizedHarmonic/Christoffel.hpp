@@ -9,7 +9,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spatial Christoffel symbol of the 2nd kind from the
@@ -39,4 +39,5 @@ auto christoffel_second_kind(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) noexcept
     -> tnsr::Ijj<DataType, SpatialDim, Frame>;
+/// @}
 }  // namespace GeneralizedHarmonic

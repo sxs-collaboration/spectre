@@ -85,7 +85,7 @@ struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, Dim + 2>;
 };
 
-// @{
+/// @{
 /// The characteristic fields of the NewtonianEuler system.
 struct VMinus : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -97,7 +97,7 @@ struct VMomentum : db::SimpleTag {
 struct VPlus : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-// @}
+/// @}
 
 /// The internal energy density.
 template <typename DataType>

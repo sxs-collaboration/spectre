@@ -20,7 +20,7 @@ struct not_null;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute spatial Ricci tensor using evolved variables and
@@ -129,5 +129,5 @@ tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
     const tnsr::II<DataType, VolumeDim, Frame>&
         inverse_spatial_metric) noexcept;
-// @}
+/// @}
 }  // namespace GeneralizedHarmonic

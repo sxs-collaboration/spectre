@@ -18,7 +18,7 @@ class not_null;
 /// \endcond
 
 namespace ScalarWave {
-// @{
+/// @{
 /*!
  * \brief Compute the scalar-wave one-index constraint.
  *
@@ -36,9 +36,9 @@ void one_index_constraint(
     gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*> constraint,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& d_psi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Compute the scalar-wave 2-index constraint.
  *
@@ -58,7 +58,7 @@ void two_index_constraint(
     gsl::not_null<tnsr::ij<DataVector, SpatialDim, Frame::Inertial>*>
         constraint,
     const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

@@ -144,7 +144,7 @@ class MagnetizedFmDisk
   using fm_disk::equation_of_state_type;
   using fm_disk::variables;
 
-  // @{
+  /// @{
   /// The grmhd variables in Cartesian Kerr-Schild coordinates at `(x, t)`
   ///
   /// \note The functions are optimized for retrieving the hydro variables
@@ -190,7 +190,7 @@ class MagnetizedFmDisk
                           std::numeric_limits<size_t>::max());
     return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
   }
-  // @}
+  /// @}
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT

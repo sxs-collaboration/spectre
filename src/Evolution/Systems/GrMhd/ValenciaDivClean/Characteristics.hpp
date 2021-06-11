@@ -34,7 +34,7 @@ struct Normalized;
 namespace grmhd {
 namespace ValenciaDivClean {
 
-// @{
+/// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation of
  * GRMHD with divergence cleaning.
@@ -120,7 +120,7 @@ void characteristic_speeds(
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /// \brief Compute the characteristic speeds for the Valencia formulation of

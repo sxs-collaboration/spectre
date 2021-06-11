@@ -489,7 +489,7 @@ class MockRuntimeSystem {
         std::forward<Options>(opts)...);
   }
 
-  // @{
+  /// @{
   /// Invoke the simple action `Action` on the `Component` labeled by
   /// `array_index` immediately.
   template <typename Component, typename Action, typename Arg0,
@@ -511,9 +511,9 @@ class MockRuntimeSystem {
         .at(array_index)
         .template simple_action<Action>(true);
   }
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /// Invoke the threaded action `Action` on the `Component` labeled by
   /// `array_index` immediately.
   template <typename Component, typename Action, typename Arg0,
@@ -535,7 +535,7 @@ class MockRuntimeSystem {
         .at(array_index)
         .template threaded_action<Action>(true);
   }
-  // @}
+  /// @}
 
   /// Return true if there are no queued simple actions on the
   /// `Component` labeled by `array_index`.
@@ -671,7 +671,7 @@ class MockRuntimeSystem {
         .next_action_if_ready();
   }
 
-  // @{
+  /// @{
   /// Access the inboxes for a given component.
   template <typename Component>
   auto inboxes() noexcept -> std::unordered_map<
@@ -688,7 +688,7 @@ class MockRuntimeSystem {
           typename MockDistributedObject<Component>::inbox_tags_list>>& {
     return tuples::get<InboxesTag<Component>>(inboxes_);
   }
-  // @}
+  /// @}
 
   /// Find the set of array indices on Component where the specified
   /// inbox is not empty.

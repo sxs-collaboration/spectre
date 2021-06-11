@@ -15,7 +15,7 @@ struct not_null;
 /// \endcond
 
 namespace gr {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute null normal one-form to the boundary of a closed
@@ -43,9 +43,9 @@ void interface_null_normal(
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
     const double sign) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute null normal vector to the boundary of a closed
@@ -73,5 +73,5 @@ void interface_null_normal(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
     const double sign) noexcept;
-// @}
+/// @}
 }  // namespace gr

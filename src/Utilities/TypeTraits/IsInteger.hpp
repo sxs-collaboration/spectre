@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Check if `I` is an integer type (non-bool, non-character), unlike
@@ -61,5 +61,5 @@ struct is_integer<unsigned long long> : std::true_type {};
 /// \see is_integer
 template <typename T>
 constexpr bool is_integer_v = is_integer<T>::value;
-// @}
+/// @}
 }  // namespace tt

@@ -28,7 +28,7 @@ struct Normalized;
 // IWYU pragma: no_forward_declare Tensor
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \brief Compute the characteristic speeds for the generalized harmonic system.
  *
@@ -90,9 +90,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
     characteristic_speeds(result, gamma_1, lapse, shift, unit_normal_one_form);
   };
 };
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes characteristic fields from evolved fields
  *
@@ -178,9 +178,9 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
       const tnsr::iaa<DataVector, Dim, Frame>&,
       const tnsr::i<DataVector, Dim, Frame>&) noexcept>(&characteristic_fields);
 };
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief For expressions used here to compute evolved fields from
  * characteristic ones, see \ref CharacteristicFieldsCompute.
@@ -228,7 +228,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
       const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept>(
       &evolved_fields_from_characteristic_fields);
 };
-// @}
+/// @}
 
 namespace Tags{
 struct LargestCharacteristicSpeed : db::SimpleTag {

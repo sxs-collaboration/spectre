@@ -24,7 +24,7 @@ struct ConformsTo {};
 // Note that std::is_convertible is used in the following type aliases as it
 // will not match private base classes (unlike std::is_base_of)
 
-// @{
+/// @{
 /*!
  * \ingroup ProtocolsGroup
  * \brief Checks if the `ConformingType` conforms to the `Protocol`.
@@ -47,7 +47,7 @@ using conforms_to =
 template <typename ConformingType, typename Protocol>
 constexpr bool conforms_to_v =
     std::is_convertible_v<ConformingType*, ConformsTo<Protocol>*>;
-// @}
+/// @}
 
 namespace detail {
 

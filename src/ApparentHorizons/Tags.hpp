@@ -48,7 +48,7 @@ struct Strahlkorper : db::SimpleTag {
   using type = ::Strahlkorper<Frame>;
 };
 
-// @{
+/// @{
 /// \f$(\theta,\phi)\f$ on the grid.
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
@@ -64,9 +64,9 @@ struct ThetaPhiCompute : ThetaPhi<Frame>, db::ComputeTag {
                        const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `Rhat(i)` is \f$\hat{r}^i = x_i/\sqrt{x^2+y^2+z^2}\f$ on the grid.
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
@@ -82,9 +82,9 @@ struct RhatCompute : Rhat<Frame>, db::ComputeTag {
                        const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `Jacobian(i,0)` is \f$\frac{1}{r}\partial x^i/\partial\theta\f$,
 /// and `Jacobian(i,1)`
 /// is \f$\frac{1}{r\sin\theta}\partial x^i/\partial\phi\f$.
@@ -103,9 +103,9 @@ struct JacobianCompute : Jacobian<Frame>, db::ComputeTag {
                        const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `InvJacobian(0,i)` is \f$r\partial\theta/\partial x^i\f$,
 /// and `InvJacobian(1,i)` is \f$r\sin\theta\partial\phi/\partial x^i\f$.
 /// Here \f$r\f$ means \f$\sqrt{x^2+y^2+z^2}\f$.
@@ -123,9 +123,9 @@ struct InvJacobianCompute : InvJacobian<Frame>, db::ComputeTag {
                        const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `InvHessian(k,i,j)` is \f$\partial (J^{-1}){}^k_j/\partial x^i\f$,
 /// where \f$(J^{-1}){}^k_j\f$ is the inverse Jacobian.
 /// `InvHessian` is not symmetric because the Jacobians are Pfaffian.
@@ -143,9 +143,9 @@ struct InvHessianCompute : InvHessian<Frame>, db::ComputeTag {
                        const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// (Euclidean) distance \f$r_{\rm surf}(\theta,\phi)\f$ from the center to each
 /// point of the surface.
 template <typename Frame>
@@ -161,9 +161,9 @@ struct RadiusCompute : Radius<Frame>, db::ComputeTag {
                        const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `CartesianCoords(i)` is \f$x_{\rm surf}^i\f$,
 /// the vector of \f$(x,y,z)\f$ coordinates of each point
 /// on the surface.
@@ -183,9 +183,9 @@ struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `DxRadius(i)` is \f$\partial r_{\rm surf}/\partial x^i\f$.  Here
 /// \f$r_{\rm surf}=r_{\rm surf}(\theta,\phi)\f$ is the function
 /// describing the surface, which is considered a function of
@@ -208,9 +208,9 @@ struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, InvJacobian<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `D2xRadius(i,j)` is
 /// \f$\partial^2 r_{\rm surf}/\partial x^i\partial x^j\f$. Here
 /// \f$r_{\rm surf}=r_{\rm surf}(\theta,\phi)\f$ is the function
@@ -235,9 +235,9 @@ struct D2xRadiusCompute : D2xRadius<Frame>, db::ComputeTag {
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
                                    InvJacobian<Frame>, InvHessian<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// \f$\nabla^2 r_{\rm surf}\f$, the flat Laplacian of the surface.
 /// This is \f$\eta^{ij}\partial^2 r_{\rm surf}/\partial x^i\partial x^j\f$,
 /// where \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$.
@@ -257,9 +257,9 @@ struct LaplacianRadiusCompute : LaplacianRadius<Frame>, db::ComputeTag {
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, ThetaPhi<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// `NormalOneForm(i)` is \f$s_i\f$, the (unnormalized) normal one-form
 /// to the surface, expressed in Cartesian components.
 /// This is computed by \f$x_i/r-\partial r_{\rm surf}/\partial x^i\f$,
@@ -283,7 +283,7 @@ struct NormalOneFormCompute : NormalOneForm<Frame>, db::ComputeTag {
                        const aliases::OneForm<Frame>& r_hat) noexcept;
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
 };
-// }@
+/// @}
 
 /// The OneOverOneFormMagnitude is the reciprocal of the magnitude of the
 /// one-form perpendicular to the horizon
@@ -455,7 +455,7 @@ struct MinRicciScalarCompute : MinRicciScalar, db::ComputeTag {
   using argument_tags = tmpl::list<RicciScalar>;
 };
 
-// @{
+/// @{
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
 /// surface (i.e. `CartesianCoords`) and are considered functions of
@@ -488,9 +488,9 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
                                    Rhat<Frame>, Jacobian<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// Computes the Euclidean area element on a Strahlkorper.
 /// Useful for flat space integrals.
 template <typename Frame>
@@ -513,9 +513,9 @@ struct EuclideanAreaElementCompute : EuclideanAreaElement<Frame>,
       StrahlkorperTags::Jacobian<Frame>, StrahlkorperTags::NormalOneForm<Frame>,
       StrahlkorperTags::Radius<Frame>, StrahlkorperTags::Rhat<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// Computes the flat-space integral of a scalar over a Strahlkorper.
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral : db::SimpleTag {
@@ -541,9 +541,9 @@ struct EuclideanSurfaceIntegralCompute
   using argument_tags = tmpl::list<EuclideanAreaElement<Frame>, IntegrandTag,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// Computes the Euclidean-space integral of a vector over a
 /// Strahlkorper, \f$\oint V^i s_i (s_j s_k \delta^{jk})^{-1/2} d^2 S\f$,
 /// where \f$s_i\f$ is the Strahlkorper surface unit normal and
@@ -578,7 +578,7 @@ struct EuclideanSurfaceIntegralVectorCompute
                                    StrahlkorperTags::NormalOneForm<Frame>,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
 };
-// }@
+/// @}
 
 template <typename Frame>
 using items_tags = tmpl::list<Strahlkorper<Frame>>;
@@ -600,7 +600,7 @@ namespace StrahlkorperGr {
 /// also need a metric.
 namespace Tags {
 
-// @{
+/// @{
 /// Computes the area element on a Strahlkorper. Useful for integrals.
 template <typename Frame>
 struct AreaElement : db::SimpleTag {
@@ -621,9 +621,9 @@ struct AreaElementCompute : AreaElement<Frame>, db::ComputeTag {
       StrahlkorperTags::NormalOneForm<Frame>, StrahlkorperTags::Radius<Frame>,
       StrahlkorperTags::Rhat<Frame>>;
 };
-// }@
+/// @}
 
-// @{
+/// @{
 /// Computes the integral of a scalar over a Strahlkorper.
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral : db::SimpleTag {
@@ -648,7 +648,7 @@ struct SurfaceIntegralCompute : SurfaceIntegral<IntegrandTag, Frame>,
   using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
 };
-// }@
+/// @}
 
 /// Tag representing the surface area of a Strahlkorper
 struct Area : db::SimpleTag {

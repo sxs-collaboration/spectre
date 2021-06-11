@@ -52,37 +52,37 @@ class MathFunction : public PUP::able {
   MathFunction& operator=(MathFunction&& /*rhs*/) noexcept = default;
   ~MathFunction() override = default;
 
-  //@{
+  /// @{
   /// Returns the value of the function at the coordinate 'x'.
   virtual Scalar<double> operator()(
       const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
   virtual Scalar<DataVector> operator()(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Returns the first partial derivatives of the function at 'x'.
   virtual tnsr::i<double, VolumeDim, Fr> first_deriv(
       const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
   virtual tnsr::i<DataVector, VolumeDim, Fr> first_deriv(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Returns the second partial derivatives of the function at 'x'.
   virtual tnsr::ii<double, VolumeDim, Fr> second_deriv(
       const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
   virtual tnsr::ii<DataVector, VolumeDim, Fr> second_deriv(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
-  //@}
+  /// @}
 
-  //@{
+  /// @{
   /// Returns the third partial derivatives of the function at 'x'.
   virtual tnsr::iii<double, VolumeDim, Fr> third_deriv(
       const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
   virtual tnsr::iii<DataVector, VolumeDim, Fr> third_deriv(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
-  //@}
+  /// @}
 };
 
 /*!

@@ -178,7 +178,7 @@ void check_impl(
 }
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Test an equation of state by comparing to python functions
@@ -213,6 +213,6 @@ void check(EosType in_eos, const std::string& python_function_prefix,
                          std::make_unique<EosType>(std::move(in_eos))),
                      python_function_prefix, used_for_size, member_args...);
 }
-// @}
+/// @}
 }  // namespace EquationsOfState
 }  // namespace TestHelpers

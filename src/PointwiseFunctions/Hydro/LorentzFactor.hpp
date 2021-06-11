@@ -18,7 +18,7 @@ struct not_null;
 /// \endcond
 
 namespace hydro {
-// @{
+/// @{
 /// Computes the Lorentz factor \f$W=1/\sqrt{1 - v^i v_i}\f$
 template <typename DataType, size_t Dim, typename Frame>
 void lorentz_factor(
@@ -38,7 +38,7 @@ void lorentz_factor(gsl::not_null<Scalar<DataType>*> result,
 template <typename DataType>
 Scalar<DataType> lorentz_factor(
     const Scalar<DataType>& spatial_velocity_squared) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /// Compute item for Lorentz factor \f$W\f$.

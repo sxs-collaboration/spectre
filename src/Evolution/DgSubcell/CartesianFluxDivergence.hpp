@@ -11,7 +11,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg::subcell {
-// @{
+/// @{
 /*!
  * \brief Compute and add the 2nd-order flux divergence on a Cartesian mesh to
  * the cell-centered time derivatives.
@@ -85,5 +85,5 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
     }
   }
 }
-// @}
+/// @}
 }  // namespace evolution::dg::subcell

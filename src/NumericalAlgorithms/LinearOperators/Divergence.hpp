@@ -53,7 +53,7 @@ struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
 /// \endcond
 }  // namespace Tags
 
-// @{
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the (Euclidean) divergence of fluxes
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
@@ -70,9 +70,9 @@ void divergence(
     const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept;
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the divergence of the vector `input`
 template <size_t Dim, typename DerivativeFrame>
@@ -89,7 +89,7 @@ void divergence(
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

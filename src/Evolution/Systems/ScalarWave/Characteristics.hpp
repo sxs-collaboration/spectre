@@ -26,7 +26,7 @@ struct Normalized;
 /// \endcond
 
 namespace ScalarWave {
-// @{
+/// @{
 /*!
  * \brief Compute the characteristic speeds for the scalar wave system.
  *
@@ -78,9 +78,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
   }
 };
 }  // namespace Tags
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes characteristic fields from evolved fields
  *
@@ -169,9 +169,9 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
   };
 };
 }  // namespace Tags
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Compute evolved fields from characteristic fields.
  *
@@ -238,5 +238,5 @@ struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
   }
 };
 }  // namespace Tags
-// @}
+/// @}
 }  // namespace ScalarWave

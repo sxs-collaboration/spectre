@@ -31,7 +31,7 @@ Scalar<DataType> pointwise_l2_norm_square(
 }
 }  // namespace L2Norm_detail
 
-// @{
+/// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute point-wise Euclidean \f$L^2\f$-norm of arbitrary Tensors.
@@ -63,7 +63,7 @@ void pointwise_l2_norm(
   destructive_resize_components(norm, get_size(tensor[0].size()));
   get(*norm) = sqrt(get(L2Norm_detail::pointwise_l2_norm_square(tensor)));
 }
-// @}
+/// @}
 
 /*!
  * \ingroup TensorGroup

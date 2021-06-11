@@ -14,7 +14,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace NewtonianEuler {
-//@{
+/// @{
 /*!
  * Compute the ram pressure, \f$\rho v^i v^j\f$, where \f$\rho\f$ is the
  * mass density, and \f$v^i\f$ is the velocity.
@@ -28,7 +28,7 @@ template <typename DataType, size_t Dim, typename Fr>
 tnsr::II<DataType, Dim, Fr> ram_pressure(
     const Scalar<DataType>& mass_density,
     const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
-//@}
+/// @}
 
 namespace Tags {
 /// Compute item for the ram pressure, \f$\rho v^i v^j\f$.

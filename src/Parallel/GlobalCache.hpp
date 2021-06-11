@@ -523,7 +523,7 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__)
 
-// @{
+/// @{
 /// \ingroup ParallelGroup
 /// \brief Access the Charm++ proxy associated with a ParallelComponent
 ///
@@ -552,9 +552,9 @@ auto get_parallel_component(const GlobalCache<Metavariables>& cache) noexcept
           typename Metavariables::component_list, ParallelComponentTag>>>>(
       cache.parallel_components_);
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// \ingroup ParallelGroup
 /// \brief Access data in the cache
 ///

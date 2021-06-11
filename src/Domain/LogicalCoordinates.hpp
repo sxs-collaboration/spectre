@@ -33,7 +33,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the logical coordinates in an Element.
@@ -53,7 +53,7 @@ void logical_coordinates(
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
     const Mesh<VolumeDim>& mesh) noexcept;
-// @}
+/// @}
 
 /*!
  * \ingroup ComputationalDomainGroup

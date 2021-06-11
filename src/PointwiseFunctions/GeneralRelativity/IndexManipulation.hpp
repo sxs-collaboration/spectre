@@ -10,7 +10,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Raises or lowers the first index of a rank 3 tensor which is symmetric
@@ -53,9 +53,9 @@ raise_or_lower_first_index(
   raise_or_lower_first_index(make_not_null(&result), tensor, metric);
   return result;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Raises or lowers the index of a rank 1 tensor.
@@ -91,9 +91,9 @@ raise_or_lower_index(
   raise_or_lower_index(make_not_null(&result), tensor, metric);
   return result;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes trace of a rank 3 tensor, which is symmetric in its last two
@@ -128,9 +128,9 @@ Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
   trace_last_indices(make_not_null(&trace_of_tensor), tensor, metric);
   return trace_of_tensor;
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes trace of a rank-2 symmetric tensor.
@@ -155,4 +155,4 @@ Scalar<DataType> trace(
   ::trace(make_not_null(&trace), tensor, metric);
   return trace;
 }
-// @}
+/// @}

@@ -64,7 +64,7 @@ void transpose_to_reals_then_imags_radial_stripes(
     size_t number_of_radial_points, size_t number_of_angular_points) noexcept;
 }  // namespace detail
 
-// @{
+/// @{
 /*!
  * \brief Computational structs for evaluating the hypersurface integrals during
  * CCE evolution. These are compatible with use in `db::mutate_apply`.
@@ -193,5 +193,5 @@ struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiH> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
-// @}
+/// @}
 }  // namespace Cce

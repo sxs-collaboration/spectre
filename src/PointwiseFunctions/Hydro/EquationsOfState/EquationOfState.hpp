@@ -88,7 +88,7 @@ class EquationOfState<IsRelativistic, 1>
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
-  // @{
+  /// @{
   /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$.
    */
@@ -96,9 +96,9 @@ class EquationOfState<IsRelativistic, 1>
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> pressure_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes the rest mass density \f$\rho\f$ from the specific enthalpy
    * \f$h\f$.
@@ -107,9 +107,9 @@ class EquationOfState<IsRelativistic, 1>
       const Scalar<double>& /*specific_enthalpy*/) const noexcept = 0;
   virtual Scalar<DataVector> rest_mass_density_from_enthalpy(
       const Scalar<DataVector>& /*specific_enthalpy*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes the specific enthalpy \f$h\f$ from the rest mass density
    * \f$\rho\f$.
@@ -118,9 +118,9 @@ class EquationOfState<IsRelativistic, 1>
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> specific_enthalpy_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
    * density \f$\rho\f$.
@@ -129,9 +129,9 @@ class EquationOfState<IsRelativistic, 1>
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> specific_internal_energy_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes \f$\chi=\partial p / \partial \rho\f$ from \f$\rho\f$, where
    * \f$p\f$ is the pressure and \f$\rho\f$ is the rest mass density.
@@ -140,9 +140,9 @@ class EquationOfState<IsRelativistic, 1>
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> chi_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon\f$
    * from \f$\rho\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass
@@ -204,7 +204,7 @@ class EquationOfState<IsRelativistic, 2>
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
-  // @{
+  /// @{
   /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$ and the
    * specific internal energy \f$\epsilon\f$.
@@ -216,9 +216,9 @@ class EquationOfState<IsRelativistic, 2>
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_internal_energy*/) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$ and the
    * specific enthalpy \f$h\f$.
@@ -229,9 +229,9 @@ class EquationOfState<IsRelativistic, 2>
   virtual Scalar<DataVector> pressure_from_density_and_enthalpy(
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_enthalpy*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes the specific enthalpy \f$h\f$ from the rest mass density
    * \f$\rho\f$ and the specific internal energy \f$\epsilon\f$.
@@ -243,9 +243,9 @@ class EquationOfState<IsRelativistic, 2>
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_internal_energy*/) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
    * density \f$\rho\f$ and the pressure \f$p\f$.
@@ -256,9 +256,9 @@ class EquationOfState<IsRelativistic, 2>
   virtual Scalar<DataVector> specific_internal_energy_from_density_and_pressure(
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*pressure*/) const noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes \f$\chi=\partial p / \partial \rho\f$ from the \f$\rho\f$ and
    * \f$\epsilon\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass
@@ -271,9 +271,9 @@ class EquationOfState<IsRelativistic, 2>
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_internal_energy*/) const
       noexcept = 0;
-  // @}
+  /// @}
 
-  // @{
+  /// @{
   /*!
    * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon\f$
    * from \f$\rho\f$ and \f$\epsilon\f$, where \f$p\f$ is the pressure,
@@ -293,7 +293,7 @@ class EquationOfState<IsRelativistic, 2>
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_internal_energy*/) const
       noexcept = 0;
-  // @}
+  /// @}
 
   /// The lower bound of the rest mass density that is valid for this EOS
   virtual double rest_mass_density_lower_bound() const noexcept = 0;

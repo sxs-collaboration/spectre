@@ -138,7 +138,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
   return TensorExpressions::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
 }
 
-// @{
+/// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the sum of a tensor
 /// expression and a `double`
@@ -172,7 +172,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
     const TensorExpression<T, X, tmpl::list<>, tmpl::list<>, tmpl::list<>>& t) {
   return TensorExpressions::NumberAsExpression(number) + t;
 }
-// @}
+/// @}
 
 /*!
  * \ingroup TensorExpressionsGroup
@@ -191,7 +191,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
   return TensorExpressions::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
 
-// @{
+/// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the difference of a tensor
 /// expression and a `double`
@@ -225,4 +225,4 @@ SPECTRE_ALWAYS_INLINE auto operator-(
     const TensorExpression<T, X, tmpl::list<>, tmpl::list<>, tmpl::list<>>& t) {
   return TensorExpressions::NumberAsExpression(number) - t;
 }
-// @}
+/// @}

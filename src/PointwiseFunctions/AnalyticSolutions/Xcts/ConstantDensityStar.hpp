@@ -119,7 +119,7 @@ class ConstantDensityStar {
   double density() const noexcept { return density_; }
   double radius() const noexcept { return radius_; }
 
-  // @{
+  /// @{
   /// Retrieve variable at coordinates `x`
   template <typename DataType>
   auto variables(
@@ -154,7 +154,7 @@ class ConstantDensityStar {
   auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
                  tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of variables at coordinates `x`
   template <typename DataType, typename... Tags>

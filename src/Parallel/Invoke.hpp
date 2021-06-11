@@ -53,7 +53,7 @@ void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
   }
 }
 
-// @{
+/// @{
 /*!
  * \ingroup ParallelGroup
  * \brief Invoke a simple action on `proxy`
@@ -69,7 +69,7 @@ void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
       std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
           std::forward<Arg0>(arg0), std::forward<Args>(args)...));
 }
-// @}
+/// @}
 
 /*!
  * \ingroup ParallelGroup
@@ -82,7 +82,7 @@ decltype(auto) local_synchronous_action(Proxy&& proxy,
       std::forward<Args>(args)...);
 }
 
-// @{
+/// @{
 /*!
  * \ingroup ParallelGroup
  * \brief Invoke a threaded action on `proxy`, where the proxy must be a
@@ -99,5 +99,5 @@ void threaded_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
       std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
           std::forward<Arg0>(arg0), std::forward<Args>(args)...));
 }
-// @}
+/// @}
 }  // namespace Parallel

@@ -31,7 +31,7 @@ class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-// @{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spatial derivatives of the shift vector from
@@ -68,7 +68,7 @@ tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
-// @}
+/// @}
 
 namespace Tags {
 /*!

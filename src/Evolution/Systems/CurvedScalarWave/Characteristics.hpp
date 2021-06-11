@@ -16,7 +16,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace CurvedScalarWave {
-// @{
+/// @{
 /*!
  * \brief Compute the characteristic speeds for the scalar wave system in curved
  * spacetime.
@@ -79,9 +79,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
                                       unit_normal_one_form);
   }
 };
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief Computes characteristic fields from evolved fields
  *
@@ -177,9 +177,9 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
                                       psi, pi, phi, unit_normal_one_form);
   }
 };
-// @}
+/// @}
 
-// @{
+/// @{
 /*!
  * \brief For expressions used here to compute evolved fields from
  * characteristic ones, see \ref CharacteristicFieldsCompute.
@@ -225,7 +225,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
         result, gamma_2, v_psi, v_zero, v_plus, v_minus, unit_normal_one_form);
   }
 };
-// @}
+/// @}
 
 namespace Tags {
 /*!

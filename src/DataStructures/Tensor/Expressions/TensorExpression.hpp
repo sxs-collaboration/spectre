@@ -105,7 +105,7 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
   }
 }
 
-// @{
+/// @{
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief The available TensorIndex's to use in a TensorExpression
@@ -137,7 +137,7 @@ static constexpr TensorIndex<spatial_sentinel + 2> ti_k{};
 static constexpr TensorIndex<upper_spatial_sentinel + 2> ti_K{};
 static constexpr TensorIndex<spatial_sentinel + 3> ti_l{};
 static constexpr TensorIndex<upper_spatial_sentinel + 3> ti_L{};
-// @}
+/// @}
 
 namespace tt {
 /*!
@@ -158,7 +158,7 @@ struct is_tensor_index<TensorIndex<I>> : std::true_type {};
 /// TensorExpression.
 struct Expression {};
 
-// @{
+/// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief The base class all tensor expression implementations derive from
 ///
@@ -192,7 +192,7 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
 
   virtual ~TensorExpression() = 0;
 
-  // @{
+  /// @{
   /// Derived is casted down to the derived class. This is enabled by the
   /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
   ///
@@ -201,7 +201,7 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
   SPECTRE_ALWAYS_INLINE const auto& operator~() const noexcept {
       return static_cast<const Derived&>(*this);
   }
-  // @}
+  /// @}
 };
 
 template <typename Derived, typename DataType, typename Symm,
@@ -209,4 +209,4 @@ template <typename Derived, typename DataType, typename Symm,
           typename... Args>
 TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
                  ArgsList<Args...>>::~TensorExpression() = default;
-// @}
+/// @}

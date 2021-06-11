@@ -35,7 +35,7 @@ struct ElementMap;
 }  // namespace domain
 /// \endcond
 
-// @{
+/// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the inertial-coordinate size of an element along each of its
@@ -65,7 +65,7 @@ std::array<double, VolumeDim> size_of_element(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) noexcept;
-// @}
+/// @}
 
 namespace domain {
 namespace Tags {

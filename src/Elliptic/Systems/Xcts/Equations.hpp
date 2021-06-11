@@ -206,7 +206,7 @@ void add_linearized_distortion_hamiltonian_and_lapse_sources(
  *
  * \see Xcts
  */
-//@{
+/// @{
 template <int ConformalMatterScale>
 void add_curved_momentum_sources(
     gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
@@ -238,7 +238,7 @@ void add_flat_cartesian_momentum_sources(
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>&
         longitudinal_shift_minus_dt_conformal_metric) noexcept;
-//@}
+/// @}
 
 /// The linearization of `add_curved_momentum_sources`
 template <int ConformalMatterScale>

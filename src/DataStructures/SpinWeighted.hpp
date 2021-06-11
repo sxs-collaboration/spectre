@@ -8,7 +8,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Make a spin-weighted type `T` with spin-weight `Spin`. Mathematical
@@ -211,7 +211,7 @@ struct SpinWeighted<T, Spin, true> {
  private:
   T data_;
 };
-// @}
+/// @}
 
 template <typename T, int Spin>
 void SpinWeighted<T, Spin, true>::pup(PUP::er& p) noexcept {
@@ -223,7 +223,7 @@ void SpinWeighted<T, Spin, false>::pup(PUP::er& p) noexcept {
   p | data_;
 }
 
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \ingroup DataStructuresGroup
 /// This is a `std::true_type` if the provided type is a `SpinWeighted` of any
@@ -233,12 +233,12 @@ struct is_any_spin_weighted : std::false_type {};
 
 template <typename T, int S>
 struct is_any_spin_weighted<SpinWeighted<T, S>> : std::true_type {};
-// @}
+/// @}
 
 template <typename T>
 constexpr bool is_any_spin_weighted_v = is_any_spin_weighted<T>::value;
 
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \ingroup DataStructuresGroup
 /// This is a `std::true_type` if the provided type `T` is a `SpinWeighted` of
@@ -249,13 +249,13 @@ struct is_spin_weighted_of : std::false_type {};
 template <typename InternalType, int S>
 struct is_spin_weighted_of<InternalType, SpinWeighted<InternalType, S>>
     : std::true_type {};
-// @}
+/// @}
 
 template <typename InternalType, typename T>
 constexpr bool is_spin_weighted_of_v =
     is_spin_weighted_of<InternalType, T>::value;
 
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \ingroup DataStructuresGroup
 /// This is a `std::true_type` if the provided type `T1` is a `SpinWeighted` and
@@ -268,13 +268,13 @@ template <typename T, int Spin1, int Spin2>
 struct is_spin_weighted_of_same_type<SpinWeighted<T, Spin1>,
                                      SpinWeighted<T, Spin2>> : std::true_type {
 };
-// @}
+/// @}
 
 template <typename T1, typename T2>
 constexpr bool is_spin_weighted_of_same_type_v =
     is_spin_weighted_of_same_type<T1, T2>::value;
 
-// {@
+/// @{
 /// \brief Add two spin-weighted quantities if the types are compatible and
 /// spins are the same. Un-weighted quantities are assumed to be spin 0.
 // These overloads are designed to allow SpinWeighted to wrap Blaze expression
@@ -315,9 +315,9 @@ operator+(const get_vector_element_type_t<T>& lhs,
           const SpinWeighted<T, 0>& rhs) noexcept {
   return {lhs + rhs.data()};
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// \brief Subtract two spin-weighted quantities if the types are compatible and
 /// spins are the same. Un-weighted quantities are assumed to be spin 0.
 // These overloads are designed to allow SpinWeighted to wrap Blaze expression
@@ -358,7 +358,7 @@ operator-(const get_vector_element_type_t<T>& lhs,
           const SpinWeighted<T, 0>& rhs) noexcept {
   return {lhs - rhs.data()};
 }
-// @}
+/// @}
 
 /// Negation operator preserves spin
 template <typename T, int Spin>
@@ -374,7 +374,7 @@ operator+(const SpinWeighted<T, Spin>& operand) noexcept {
   return {+operand.data()};
 }
 
-// @{
+/// @{
 /// \brief Multiply two spin-weighted quantities if the types are compatible and
 /// add the spins. Un-weighted quantities are assumed to be spin 0.
 // These overloads are designed to allow SpinWeighted to wrap Blaze expression
@@ -415,9 +415,9 @@ operator*(const get_vector_element_type_t<T>& lhs,
           const SpinWeighted<T, Spin>& rhs) noexcept {
   return {lhs * rhs.data()};
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// \brief Divide two spin-weighted quantities if the types are compatible and
 /// subtract the spins. Un-weighted quantities are assumed to be spin 0.
 // These overloads are designed to allow SpinWeighted to wrap Blaze expression
@@ -458,7 +458,7 @@ operator/(const get_vector_element_type_t<T>& lhs,
           const SpinWeighted<T, Spin>& rhs) noexcept {
   return {lhs / rhs.data()};
 }
-// @}
+/// @}
 
 /// conjugate the spin-weighted quantity, inverting the spin
 template <typename T, int Spin>
@@ -483,7 +483,7 @@ SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(sqrt(std::declval<T>())), 0> sqrt(
   return {sqrt(value.data())};
 }
 
-// @{
+/// @{
 /// \brief Test equivalence of spin-weighted quantities if the types are
 /// compatible and spins are the same. Un-weighted quantities are assumed to
 /// be spin 0.
@@ -503,9 +503,9 @@ SPECTRE_ALWAYS_INLINE bool operator==(const T& lhs,
                                       const SpinWeighted<T, 0>& rhs) noexcept {
   return lhs == rhs.data();
 }
-// @}
+/// @}
 
-// @{
+/// @{
 /// \brief Test inequivalence of spin-weighted quantities if the types are
 /// compatible and spins are the same. Un-weighted quantities are assumed to be
 /// spin 0.
@@ -525,7 +525,7 @@ SPECTRE_ALWAYS_INLINE bool operator!=(const T& lhs,
                                       const SpinWeighted<T, 0>& rhs) noexcept {
   return not(lhs == rhs);
 }
-// @}
+/// @}
 
 /// \ingroup DataStructuresGroup
 /// Make the input `view` a `const` view of the const data `spin_weighted`, at

@@ -38,7 +38,7 @@ class Irregular {
   /// Serialization for Charm++
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  //@{
+  /// @{
   /// Performs the interpolation on a `Variables` with grid points corresponding
   /// to the `Mesh<Dim>` specified in the constructor.
   /// The result is a `Variables` whose internal `DataVector` goes over the
@@ -50,7 +50,7 @@ class Irregular {
   template <typename TagsList>
   Variables<TagsList> interpolate(const Variables<TagsList>& vars) const
       noexcept;
-  //@}
+  /// @}
 
  private:
   friend bool operator==(const Irregular& lhs, const Irregular& rhs) noexcept {

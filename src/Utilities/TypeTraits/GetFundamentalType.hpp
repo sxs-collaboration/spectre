@@ -9,7 +9,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace tt {
-// @{
+/// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Extracts the fundamental type for a container
 ///
@@ -35,5 +35,5 @@ struct get_fundamental_type<T, std::void_t<typename T::value_type>> {
 
 template <typename T>
 using get_fundamental_type_t = typename get_fundamental_type<T>::type;
-// @}
+/// @}
 }  // namespace tt

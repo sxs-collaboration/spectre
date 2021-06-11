@@ -156,7 +156,7 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
              const std::array<double, 3>& background_magnetic_field,
              const std::array<double, 3>& wave_magnetic_field) noexcept;
 
-  // @{
+  /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(
@@ -206,7 +206,7 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
       const tnsr::I<DataType, 3>& x, double t,
       tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  /// @}
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>

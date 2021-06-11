@@ -15,7 +15,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-// @{
+/// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Slices the data within `volume_tensor` to a codimension 1 slice. The
@@ -96,4 +96,4 @@ std::optional<Tensor<VectorType, Structure...>> data_on_slice(
   }
   return std::nullopt;
 }
-// @}
+/// @}

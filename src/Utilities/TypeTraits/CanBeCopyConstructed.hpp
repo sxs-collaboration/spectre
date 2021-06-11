@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace tt {
-// @{
+/// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Check if `T` is copy constructible
@@ -30,5 +30,5 @@ struct can_be_copy_constructed<T, std::void_t<typename T::value_type>>
 
 template <typename T>
 constexpr bool can_be_copy_constructed_v = can_be_copy_constructed<T>::value;
-// @}
+/// @}
 }  // namespace tt

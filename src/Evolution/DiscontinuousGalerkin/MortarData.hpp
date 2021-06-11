@@ -66,14 +66,14 @@ class MortarData {
    * neighboring elements have no a priori knowledge about what well be
    * received.
    */
-  //@{
+  /// @{
   void insert_local_mortar_data(TimeStepId time_step_id,
                                 Mesh<Dim - 1> local_interface_mesh,
                                 std::vector<double> local_mortar_vars) noexcept;
   void insert_neighbor_mortar_data(
       TimeStepId time_step_id, Mesh<Dim - 1> neighbor_interface_mesh,
       std::vector<double> neighbor_mortar_vars) noexcept;
-  //@}
+  /// @}
 
   /*!
    * \brief Insert the magnitude of the local face normal, the determinant

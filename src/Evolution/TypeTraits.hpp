@@ -35,7 +35,7 @@ template <typename T>
 constexpr bool is_analytic_solution_v =
     std::is_convertible_v<T*, MarkAsAnalyticSolution*>;
 
-// @{
+/// @{
 /// Helper metafunction that checks if the class `T` is marked as numeric
 /// initial data.
 template <typename T>
@@ -45,5 +45,5 @@ using is_numeric_initial_data =
 template <typename T>
 constexpr bool is_numeric_initial_data_v =
     tt::conforms_to_v<T, protocols::NumericInitialData>;
-// @}
+/// @}
 }  // namespace evolution

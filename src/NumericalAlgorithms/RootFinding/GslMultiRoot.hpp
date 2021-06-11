@@ -339,7 +339,7 @@ void print_rootfinding_parameters(Method method, double absolute_tolerance,
                                   StoppingCondition condition) noexcept;
 }  // namespace gsl_multiroot_detail
 
-// @{
+/// @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief A multidimensional root finder supporting Newton and Hybrid
@@ -478,5 +478,5 @@ std::array<double, Dim> gsl_multiroot(
       &gsl_multiroot_fsolver_set, &gsl_multiroot_fsolver_iterate,
       &gsl_multiroot_fsolver_free);
 }
-// @}
+/// @}
 }  // namespace RootFinder
