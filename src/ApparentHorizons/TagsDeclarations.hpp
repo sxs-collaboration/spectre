@@ -46,6 +46,14 @@ template <typename Frame>
 struct UnitNormalVector;
 template <typename Frame>
 struct UnitNormalVectorCompute;
+template <typename Frame>
+struct GradUnitNormalOneForm;
+template <typename Frame>
+struct GradUnitNormalOneFormCompute;
+template <typename Frame>
+struct ExtrinsicCurvature;
+template <typename Frame>
+struct ExtrinsicCurvatureCompute;
 struct RicciScalar;
 template <typename Frame>
 struct RicciScalarCompute;
