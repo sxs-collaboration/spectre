@@ -42,7 +42,9 @@ namespace LinearSolver::gmres {
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`
  * is updated with the preconditioned result in each step of the algorithm, i.e.
  * that it is \f$A(q)\f$ where \f$q\f$ is the preconditioner's approximate
- * solution to \f$A(q)=b\f$.
+ * solution to \f$A(q)=b\f$. The preconditioner always begins at an initial
+ * guess of zero. It does not need to compute the operator applied to the
+ * initial guess, since it's zero as well due to the linearity of the operator.
  *
  * Note that the operand \f$q\f$ for which \f$A(q)\f$ needs to be computed is
  * not the field \f$x\f$ we are solving for but
