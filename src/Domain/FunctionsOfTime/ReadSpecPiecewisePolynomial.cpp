@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/FunctionsOfTime/ReadSpecThirdOrderPiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/ReadSpecPiecewisePolynomial.hpp"
 
 #include <array>
 #include <cstddef>
@@ -17,32 +17,31 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace domain::FunctionsOfTime {
-void read_spec_third_order_piecewise_polynomial(
+template <size_t MaxDeriv>
+void read_spec_piecewise_polynomial(
     const gsl::not_null<std::unordered_map<
-        std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>*>
+        std::string, domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>>*>
         spec_functions_of_time,
     const std::string& file_name,
     const std::map<std::string, std::string>& dataset_name_map) noexcept {
-  // Currently, only support order 3 piecewise polynomials.
-  // This could be generalized later, but the SpEC functions of time
-  // that we will read in with this action will always be 3rd-order
-  // piecewise polynomials
-  constexpr size_t max_deriv{3};
-
   h5::H5File<h5::AccessType::ReadOnly> file{file_name};
   for (const auto& [spec_name, spectre_name] : dataset_name_map) {
     const auto& dat_file = file.get<h5::Dat>("/" + spec_name);
     const auto& dat_data = dat_file.get_data();
 
-    // Check that the data in the file uses deriv order 3
+    // Check that the data in the file uses deriv order MaxDeriv
     // Column 3 of the file contains the derivative order
+    // If not, just continue: this function will only read in
+    // FunctionsOfTime whose DerivOrder matches.
+    // Note: this is not an ERROR(), because a future call to
+    // this function but with different MaxDeriv might succeed.
     const size_t dat_max_deriv = dat_data(0, 3);
-    if (dat_max_deriv != max_deriv) {
-      ERROR("Deriv order in " << file_name << " should be " << max_deriv
-                              << ", not " << dat_max_deriv);
+    if (dat_max_deriv != MaxDeriv) {
+      continue;
     }
 
     // Get the initial time ('time of last update') from the file
@@ -53,8 +52,8 @@ void read_spec_third_order_piecewise_polynomial(
     // at each time. This could be generalized if needed
     const size_t number_of_components = dat_data(0, 2);
 
-    std::array<DataVector, max_deriv + 1> initial_coefficients;
-    for (size_t deriv_order = 0; deriv_order < max_deriv + 1; ++deriv_order) {
+    std::array<DataVector, MaxDeriv + 1> initial_coefficients;
+    for (size_t deriv_order = 0; deriv_order < MaxDeriv + 1; ++deriv_order) {
       gsl::at(initial_coefficients, deriv_order) =
           DataVector(number_of_components);
       for (size_t component = 0; component < number_of_components;
@@ -63,16 +62,16 @@ void read_spec_third_order_piecewise_polynomial(
         // 0 through 4 contain the following quantities:
         // 0 == time, 1 == time of last update, 2 == number of components,
         // 3 == maximum derivative order, 4 == version.
-        // After this, each component takes up max_deriv + 1 columns, which are
-        // the zeroth, first, second, ... max_deriv-th time derivatives of the
+        // After this, each component takes up MaxDeriv + 1 columns, which are
+        // the zeroth, first, second, ... MaxDeriv-th time derivatives of the
         // component. The nth-order derivative of the ith component is therefore
-        // in column 5 + (max_deriv + 1) * i + n.
+        // in column 5 + (MaxDeriv + 1) * i + n.
         gsl::at(initial_coefficients, deriv_order)[component] =
-            dat_data(0, 5 + (max_deriv + 1) * component + deriv_order);
+            dat_data(0, 5 + (MaxDeriv + 1) * component + deriv_order);
       }
     }
     (*spec_functions_of_time)[spectre_name] =
-        domain::FunctionsOfTime::PiecewisePolynomial<3>(
+        domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>(
             start_time, initial_coefficients, start_time);
 
     // Loop over the remaining times, updating the function of time
@@ -85,7 +84,7 @@ void read_spec_third_order_piecewise_polynomial(
         time_last_updated = dat_data(row, 1);
         for (size_t a = 0; a < number_of_components; ++a) {
           highest_derivative[a] =
-              dat_data(row, 5 + (max_deriv + 1) * a + max_deriv);
+              dat_data(row, 5 + (MaxDeriv + 1) * a + MaxDeriv);
         }
         (*spec_functions_of_time)[spectre_name].update(
             time_last_updated, highest_derivative, time_last_updated);
@@ -113,3 +112,19 @@ void read_spec_third_order_piecewise_polynomial(
   }
 }
 }  // namespace domain::FunctionsOfTime
+
+#define MAX_DERIV(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATE(_, data)                                                \
+  template void                                                             \
+  domain::FunctionsOfTime::read_spec_piecewise_polynomial<MAX_DERIV(data)>( \
+      const gsl::not_null<std::unordered_map<                               \
+          std::string,                                                      \
+          domain::FunctionsOfTime::PiecewisePolynomial<MAX_DERIV(data)>>*>  \
+          spec_functions_of_time,                                           \
+      const std::string& file_name,                                         \
+      const std::map<std::string, std::string>& dataset_name_map);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
+
+#undef MAX_DERIV
+#undef INSTANTIATE

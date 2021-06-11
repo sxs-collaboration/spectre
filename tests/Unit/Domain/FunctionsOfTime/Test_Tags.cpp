@@ -14,7 +14,7 @@ namespace domain {
 template <bool Override>
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
-  static constexpr bool override_cubic_functions_of_time = Override;
+  static constexpr bool override_functions_of_time = Override;
 };
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.Tags", "[Domain][Unit]") {

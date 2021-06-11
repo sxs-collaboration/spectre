@@ -149,6 +149,10 @@ struct GeneralizedHarmonicDefaults {
   static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
+  // Set override_functions_of_time to true to override the
+  // 2nd or 3rd order piecewise polynomial functions of time using
+  // `read_spec_piecewise_polynomial()`
+  static constexpr bool override_functions_of_time = false;
 
   using normal_dot_numerical_flux = Tags::NumericalFlux<
     GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
@@ -317,7 +321,8 @@ struct GeneralizedHarmonicTemplateBase<
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox,
       Initialization::Actions::TimeAndTimeStep<derived_metavars>,
-      evolution::dg::Initialization::Domain<volume_dim>,
+      evolution::dg::Initialization::Domain<volume_dim,
+                                            override_functions_of_time>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,

@@ -79,7 +79,7 @@ namespace Initialization {
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
  * phase action list prior to this action.
  * \note If OverrideCubicFunctionsOfTime == true, then cubic functions
- * of time are overriden via `read_spec_third_order_piecewise_polynomial()`
+ * of time are overriden via `read_spec_piecewise_polynomial()`
  */
 template <size_t Dim, bool OverrideCubicFunctionsOfTime = false>
 struct Domain {
