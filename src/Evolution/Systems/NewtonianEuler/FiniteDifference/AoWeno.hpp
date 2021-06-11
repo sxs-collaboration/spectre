@@ -4,55 +4,31 @@
 #pragma once
 
 #include <array>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <utility>
+#include <limits>
+#include <memory>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
-#include "Options/Options.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Utilities/TMPL.hpp"
-
-/// \cond
-template <size_t Dim>
-class Direction;
-template <size_t Dim>
-class Element;
-template <size_t Dim>
-class ElementId;
-namespace EquationsOfState {
-template <bool IsRelativistic, size_t ThermodynamicDim>
-class EquationOfState;
-}  // namespace EquationsOfState
-namespace evolution::dg::subcell {
-struct NeighborData;
-}  // namespace evolution::dg::subcell
-namespace gsl {
-template <typename T>
-class not_null;
-}  // namespace gsl
-template <size_t Dim>
-class Mesh;
-template <typename TagsList>
-class Variables;
-/// \endcond
 
 namespace NewtonianEuler::fd {
 /*!
- * \brief Monotised central reconstruction. See
- * `::fd::reconstruction::monotised_central()` for details.
+ * \brief Adaptive-order WENO reconstruction hybridizing orders 5 and 3. See
+ * ::fd::reconstruction::aoweno_53() for details.
  */
 template <size_t Dim>
-class MonotisedCentralPrim : public Reconstructor<Dim> {
+class AoWeno53Prim : public Reconstructor<Dim> {
  private:
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
@@ -74,27 +50,53 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
       tmpl::list<MassDensity, Velocity, Pressure>;
 
  public:
-  using options = tmpl::list<>;
+  struct GammaHi {
+    using type = double;
+    static constexpr Options::String help = {
+        "The linear weight for the 5th-order stencil."};
+  };
+  struct GammaLo {
+    using type = double;
+    static constexpr Options::String help = {
+        "The linear weight for the central 3rd-order stencil."};
+  };
+  struct Epsilon {
+    using type = double;
+    static constexpr Options::String help = {
+        "The parameter added to the oscillation indicators to avoid division "
+        "by zero"};
+  };
+  struct NonlinearWeightExponent {
+    using type = size_t;
+    static constexpr Options::String help = {
+        "The exponent q to which the oscillation indicators are raised"};
+  };
+
+  using options =
+      tmpl::list<GammaHi, GammaLo, Epsilon, NonlinearWeightExponent>;
   static constexpr Options::String help{
       "Monotised central reconstruction scheme using primitive variables."};
 
-  MonotisedCentralPrim() = default;
-  MonotisedCentralPrim(MonotisedCentralPrim&&) noexcept = default;
-  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) noexcept = default;
-  MonotisedCentralPrim(const MonotisedCentralPrim&) = default;
-  MonotisedCentralPrim& operator=(const MonotisedCentralPrim&) = default;
-  ~MonotisedCentralPrim() override = default;
+  AoWeno53Prim() = default;
+  AoWeno53Prim(AoWeno53Prim&&) noexcept = default;
+  AoWeno53Prim& operator=(AoWeno53Prim&&) noexcept = default;
+  AoWeno53Prim(const AoWeno53Prim&) = default;
+  AoWeno53Prim& operator=(const AoWeno53Prim&) = default;
+  ~AoWeno53Prim() override = default;
 
-  explicit MonotisedCentralPrim(CkMigrateMessage* msg) noexcept;
+  AoWeno53Prim(double gamma_hi, double gamma_lo, double epsilon,
+               size_t nonlinear_weight_exponent) noexcept;
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, MonotisedCentralPrim);
+  explicit AoWeno53Prim(CkMigrateMessage* msg) noexcept;
+
+  WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, AoWeno53Prim);
 
   auto get_clone() const noexcept
       -> std::unique_ptr<Reconstructor<Dim>> override;
 
   void pup(PUP::er& p) override;
 
-  size_t ghost_zone_size() const noexcept override { return 2; }
+  size_t ghost_zone_size() const noexcept override { return 3; }
 
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<prims_tags>,
@@ -119,11 +121,6 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
       const Mesh<Dim>& subcell_mesh) const noexcept;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
-  ///
-  /// This is used to reconstruct the fluxes on the mortar that the subcell
-  /// neighbor would have sent had we instead used a two a two-communication
-  /// subcell solver (first communication for reconstruction, second for
-  /// fluxes).
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<TagsList>*> vars_on_face,
@@ -138,17 +135,39 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
           neighbor_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const noexcept;
+
+ private:
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(const AoWeno53Prim<LocalDim>& lhs,
+                         const AoWeno53Prim<LocalDim>& rhs) noexcept;
+
+  double gamma_hi_ = std::numeric_limits<double>::signaling_NaN();
+  double gamma_lo_ = std::numeric_limits<double>::signaling_NaN();
+  double epsilon_ = std::numeric_limits<double>::signaling_NaN();
+  size_t nonlinear_weight_exponent_ = 0;
+
+  void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+                       gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+                       const gsl::span<const double>&,
+                       const DirectionMap<Dim, gsl::span<const double>>&,
+                       const Index<Dim>&, size_t, double, double,
+                       double) noexcept;
+  void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
+                                      const DataVector&, const DataVector&,
+                                      const Index<Dim>&, const Index<Dim>&,
+                                      const Direction<Dim>&, const double&,
+                                      const double&, const double&) noexcept;
+  void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
+                                      const DataVector&, const DataVector&,
+                                      const Index<Dim>&, const Index<Dim>&,
+                                      const Direction<Dim>&, const double&,
+                                      const double&, const double&) noexcept;
 };
 
 template <size_t Dim>
-bool operator==(const MonotisedCentralPrim<Dim>& /*lhs*/,
-                const MonotisedCentralPrim<Dim>& /*rhs*/) noexcept {
-  return true;
-}
-
-template <size_t Dim>
-bool operator!=(const MonotisedCentralPrim<Dim>& lhs,
-                const MonotisedCentralPrim<Dim>& rhs) noexcept {
+bool operator!=(const AoWeno53Prim<Dim>& lhs,
+                const AoWeno53Prim<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 }  // namespace NewtonianEuler::fd
