@@ -217,8 +217,8 @@ SPECTRE_TEST_CASE(
   // Execute the first request for boundary data
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // Check that the receive action is appropriately not ready
-  REQUIRE_FALSE(ActionTesting::next_action_if_ready<evolution_component>(
-      make_not_null(&runner), 0));
+  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
+  CHECK(ActionTesting::get_terminate<evolution_component>(runner, 0));
 
   // the response (`BoundaryComputeAndSendToEvolution`)
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
