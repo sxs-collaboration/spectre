@@ -93,6 +93,10 @@ void GhLocalTimeStepping::insert_gh_data(
 
 void GhLocalTimeStepping::insert_next_gh_time(
     TimeStepId time_id, TimeStepId next_time_id) noexcept {
+  if (times_seen_.count(time_id) != 0) {
+    return;
+  }
+  times_seen_.insert(time_id);
   // retrieve an iterator position if the next time has already been
   // inserted for this data
   const auto previous_deque_entry = alg::find_if(
@@ -173,7 +177,7 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
     return std::nullopt;
   }
   const double first_request = requests_.front().substep_time().value();
-  if (boundary_history_.size() > 0 and
+  if (boundary_history_.size() >= boundary_history_.integration_order() and
       (boundary_history_.end() - 1)->value() <= first_request and
       latest_next_.substep_time().value() >= first_request) {
     gh_variables latest_values{};

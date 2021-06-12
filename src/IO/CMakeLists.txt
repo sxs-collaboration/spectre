@@ -27,6 +27,7 @@ target_link_libraries(
   EventsAndTriggers
   Hdf5
   Options
+  Parallel
   Spectral
   Utilities
   PRIVATE

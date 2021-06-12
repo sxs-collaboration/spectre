@@ -19,6 +19,8 @@
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Printf.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Cce {
 namespace OptionTags {
@@ -484,12 +486,23 @@ struct GhInterfaceManager : db::SimpleTag {
 /// provide data for CCE.
 struct InterfaceManagerInterpolationStrategy : db::SimpleTag {
   using type = InterfaceManagers::InterpolationStrategy;
-  using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
+  using option_tags = tmpl::list<OptionTags::GhInterfaceManager,
+                                 ::OptionTags::TimeStepper<TimeStepper>>;
 
   static constexpr bool pass_metavariables = false;
   static InterfaceManagers::InterpolationStrategy create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
-          interface_manager) noexcept {
+          interface_manager,
+      const std::unique_ptr<TimeStepper>& time_stepper) noexcept {
+    if (interface_manager->get_interpolation_strategy() ==
+            InterfaceManagers::InterpolationStrategy::EveryStep and
+        time_stepper->number_of_substeps() != 1) {
+      ERROR(
+          "The use of full-step interface managers (which perform "
+          "interpolation and extrapolation between the CCE and GH systems) "
+          "require a time stepper with monotonically increasing time values, "
+          "which is only guaranteed for steppers which do not have substeps.");
+    }
     return interface_manager->get_interpolation_strategy();
   }
 };

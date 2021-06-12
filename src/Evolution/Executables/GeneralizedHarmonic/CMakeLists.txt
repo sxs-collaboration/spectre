@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-function(add_generalized_harmonic_executable
+function(add_generalized_harmonic_with_horizon_executable
     INITIAL_DATA_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
   add_spectre_parallel_executable(
     "EvolveGh${INITIAL_DATA_NAME}"
@@ -10,9 +10,9 @@ function(add_generalized_harmonic_executable
     "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
     "${LIBS_TO_LINK}"
     )
-endfunction(add_generalized_harmonic_executable)
+endfunction(add_generalized_harmonic_with_horizon_executable)
 
-function(add_generalized_harmonic_no_horizon_executable
+function(add_generalized_harmonic_executable
     INITIAL_DATA_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
   add_spectre_parallel_executable(
     "EvolveGh${INITIAL_DATA_NAME}"
@@ -21,7 +21,30 @@ function(add_generalized_harmonic_no_horizon_executable
     "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
     "${LIBS_TO_LINK}"
     )
-endfunction(add_generalized_harmonic_no_horizon_executable)
+endfunction(add_generalized_harmonic_executable)
+
+function(add_generalized_harmonic_cce_executable
+  EXECUTABLE_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
+  add_spectre_parallel_executable(
+    "EvolveGhCce${EXECUTABLE_NAME}"
+    EvolveGeneralizedHarmonicCce
+    Evolution/Executables/GeneralizedHarmonic
+    "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_generalized_harmonic_cce_executable)
+
+function(add_generalized_harmonic_with_horizon_cce_executable
+  EXECUTABLE_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
+  add_spectre_parallel_executable(
+    "EvolveGhCce${EXECUTABLE_NAME}"
+    EvolveGeneralizedHarmonicCceWithHorizon
+    Evolution/Executables/GeneralizedHarmonic
+    "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_generalized_harmonic_with_horizon_cce_executable)
+
 
 set(LIBS_TO_LINK
   CoordinateMaps
@@ -41,35 +64,63 @@ set(LIBS_TO_LINK
   MathFunctions
   Options
   Parallel
+  Spectral
   Time
   Utilities
   )
 
-add_generalized_harmonic_executable(
+add_generalized_harmonic_with_horizon_executable(
   KerrSchild
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
   "${LIBS_TO_LINK};ApparentHorizons;GeneralRelativitySolutions"
 )
 
-add_generalized_harmonic_executable(
+add_generalized_harmonic_with_horizon_executable(
   KerrSchildNumericInitialData
   evolution::NumericInitialData
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
   "${LIBS_TO_LINK};ApparentHorizons;GeneralRelativitySolutions;Importers"
 )
 
-add_generalized_harmonic_no_horizon_executable(
+add_generalized_harmonic_with_horizon_cce_executable(
+  KerrSchild
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions"
+)
+
+add_generalized_harmonic_with_horizon_cce_executable(
+  KerrSchildNumericInitialData
+  evolution::NumericInitialData
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions;Importers"
+)
+
+add_generalized_harmonic_executable(
   GaugeWave
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
   "${LIBS_TO_LINK};GeneralRelativitySolutions"
 )
 
-add_generalized_harmonic_no_horizon_executable(
+add_generalized_harmonic_executable(
   GaugeWaveNumericInitialData
   evolution::NumericInitialData
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
   "${LIBS_TO_LINK};GeneralRelativitySolutions;Importers"
 )
 
+add_generalized_harmonic_cce_executable(
+  GaugeWave
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions"
+)
+
+add_generalized_harmonic_cce_executable(
+  GaugeWaveNumericInitialData
+  evolution::NumericInitialData
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions;Importers"
+)

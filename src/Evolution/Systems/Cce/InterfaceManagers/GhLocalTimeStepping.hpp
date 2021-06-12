@@ -39,6 +39,9 @@ namespace Cce::InterfaceManagers {
  * time steps via `GhLocalTimeStepping::request_gh_data()` and receives dense
  * output boundary data via
  * `GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()`.
+ *
+ * \warning To use this interface manager, the CCE system must evolve using a
+ * local time-stepping compatible stepper, such as `AdamsBashforthN`.
  */
 class GhLocalTimeStepping : public GhInterfaceManager {
  public:
@@ -136,6 +139,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
                  std::optional<TimeStepId>, std::optional<dt_gh_variables>>>
       pre_history_;
   std::deque<TimeStepId> requests_;
+  std::unordered_set<TimeStepId> times_seen_;
 
   TimeSteppers::History<gh_variables, dt_gh_variables> boundary_history_;
   TimeStepId latest_next_;
