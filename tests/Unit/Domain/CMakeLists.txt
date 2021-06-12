@@ -3,6 +3,7 @@
 
 add_subdirectory(FunctionsOfTime)
 add_subdirectory(Python)
+add_subdirectory(Tags)
 
 set(LIBRARY "Test_Domain")
 
