@@ -187,11 +187,11 @@ struct ComponentBeta {
                                         Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Evolve,
-          tmpl::list<
-              Actions::RecordPhaseIteration<3_st>,
-              Actions::TerminateAndRestart<ComponentAlpha<Metavariables>, 3_st>,
-              PhaseControl::Actions::ExecutePhaseChange<
-                  typename Metavariables::phase_changes>>>>;
+          tmpl::list<Actions::RecordPhaseIteration<3_st>,
+                     PhaseControl::Actions::ExecutePhaseChange<
+                         typename Metavariables::phase_changes>,
+                     Actions::TerminateAndRestart<ComponentAlpha<Metavariables>,
+                                                  3_st>>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -285,7 +285,7 @@ struct TerminateAndRestart {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     if (db::get<Tags::Step>(box) % interval == 0) {
-      if(db::get<Tags::Step>(box) <= 15) {
+      if(db::get<Tags::Step>(box) < 15) {
         Parallel::simple_action<Actions::RestartMe<ParallelComponent>>(
             Parallel::get_parallel_component<OtherComponent>(cache));
 
@@ -451,26 +451,24 @@ struct TestMetavariables {
       tmpl::type_<ComponentBeta<TestMetavariables>> /*meta*/) noexcept {
     return "Running phase: Initialization\n" +
            repeat("Running phase: Evolve\n", 3_st) +  // steps 1-3 -> B
-           "Terminate and Restart\n"
-           "Running phase: TempPhaseB\n" +
+           "Running phase: TempPhaseB\n"
+           "Terminate and Restart\n" +
            repeat("Running phase: Evolve\n", 2_st) +  // steps 4-5 -> A
            "Running phase: TempPhaseA\n"
            "Running phase: Evolve\n"  // step 6 -> B
-           "Terminate and Restart\n"
-           "Running phase: TempPhaseB\n" +
-           repeat("Running phase: Evolve\n", 3_st) +  // steps 8-9 -> B
-           "Terminate and Restart\n"
            "Running phase: TempPhaseB\n"
+           "Terminate and Restart\n" +
+           repeat("Running phase: Evolve\n", 3_st) +  // steps 8-9 -> B
+           "Running phase: TempPhaseB\n"
+           "Terminate and Restart\n"
            "Running phase: Evolve\n"  // step 10 -> A
            "Running phase: TempPhaseA\n" +
            repeat("Running phase: Evolve\n", 2_st) +  // steps 11-12 -> B
-           "Terminate and Restart\n"
-           "Running phase: TempPhaseB\n" +
+           "Running phase: TempPhaseB\n"
+           "Terminate and Restart\n" +
            repeat("Running phase: Evolve\n", 3_st) +  // steps 13-15 -> A then B
-           "Terminate and Restart\n"
            "Running phase: TempPhaseA\n"
-           "Running phase: TempPhaseB\n" +
-           repeat("Running phase: Evolve\n", 3_st) +  // steps 16-18
+           "Running phase: TempPhaseB\n"
            "Terminate Completion\n";
   }
 
