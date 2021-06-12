@@ -264,11 +264,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                        tmpl::integral_list<UpLo, Indices::ul...>>,
         "The valences of the generic indices in the expression do "
         "not match the valences of the indices in the Tensor.");
-    static_assert((... and (TensorIndices::is_spacetime ==
-                            (Indices::index_type == IndexType::Spacetime))),
-                  "The index types (SpatialIndex or SpacetimeIndex) of the "
-                  "generic indices in the expression do not match the index "
-                  "types of the indices in the Tensor.");
+    static_assert((... and (not(TensorIndices::is_spacetime and
+                                (Indices::index_type == IndexType::Spatial)))),
+                  "Cannot use a generic spacetime index for a spatial index. "
+                  "e.g. Cannot do R(ti_a), where R's index is spatial, because "
+                  "ti_a denotes a generic spacetime index.");
     return TensorExpressions::contract(TE<tmpl::list<TensorIndices...>>{*this});
   }
   /// @}
