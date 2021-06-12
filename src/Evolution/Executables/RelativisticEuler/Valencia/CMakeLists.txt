@@ -18,6 +18,7 @@ set(LIBS_TO_LINK
   Time
   Options
   Parallel
+  PhaseControl
   Utilities
   Valencia
   )
