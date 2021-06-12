@@ -272,8 +272,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // check that the 'block' appropriately reports that it's not ready:
-  REQUIRE_FALSE(ActionTesting::next_action_if_ready<evolution_component>(
-      make_not_null(&runner), 0));
+  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
+  CHECK(ActionTesting::get_terminate<evolution_component>(runner, 0));
 
   // the first response (`BoundaryComputeAndSendToEvolution`)
   ActionTesting::invoke_queued_simple_action<worldtube_component>(

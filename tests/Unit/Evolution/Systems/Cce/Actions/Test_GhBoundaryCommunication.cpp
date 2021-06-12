@@ -242,8 +242,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // check that the 'block' appropriately reports that it's not ready:
-  CHECK_FALSE(ActionTesting::next_action_if_ready<evolution_component>(
-      make_not_null(&runner), 0));
+  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
+  CHECK(ActionTesting::get_terminate<evolution_component>(runner, 0));
 
   // send the current timestep data to the boundary component
   tnsr::aa<DataVector, 3> spacetime_metric{

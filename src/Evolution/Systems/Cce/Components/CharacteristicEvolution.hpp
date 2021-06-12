@@ -194,10 +194,10 @@ struct CharacteristicEvolution {
       Actions::RequestBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
+      ::Actions::Label<CceEvolutionLabelTag>,
       Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface<
           Metavariables::uses_partially_flat_cartesian_coordinates>,
-      ::Actions::Label<CceEvolutionLabelTag>,
       Actions::UpdateGauge<
           Metavariables::uses_partially_flat_cartesian_coordinates>,
       Actions::PrecomputeGlobalCceDependencies,
@@ -212,7 +212,6 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
       ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
-      Actions::ReceiveWorldtubeData<Metavariables>,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<
