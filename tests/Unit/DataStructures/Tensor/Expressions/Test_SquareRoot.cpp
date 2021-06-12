@@ -83,6 +83,27 @@ void test_sqrt(const DataType& used_for_size) noexcept {
       TensorExpressions::evaluate(sqrt(S(ti_k, ti_K) * 3.6));
   CHECK(sqrt_S.get() == sqrt(S_trace));
   CHECK(sqrt_S_T.get() == sqrt(S_trace * 3.6));
+
+  Tensor<DataType, Symmetry<1>,
+         index_list<SpatialIndex<4, UpLo::Up, Frame::Grid>>>
+      G(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&G));
+
+  Tensor<DataType, Symmetry<1>,
+         index_list<SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
+      H(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&H));
+
+  DataType GH_product = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 4; i++) {
+    GH_product += G.get(i) * H.get(i + 1);
+  }
+
+  // Test expression that uses generic spatial index for a spacetime index
+  // \f$L = \sqrt{G^{j} H_{j}\f$
+  const Tensor<DataType> sqrt_GH_product =
+      TensorExpressions::evaluate(sqrt(G(ti_J) * H(ti_j)));
+  CHECK(sqrt_GH_product.get() == sqrt(GH_product));
 }
 }  // namespace
 
