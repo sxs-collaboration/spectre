@@ -1132,6 +1132,108 @@ void test_three_term_inner_outer_product(
   }
 }
 
+// \brief Test the products of tensors where generic spatial indices are used
+// for spacetime indices
+//
+// \details
+// The product cases tested are:
+// - \f$L = R^{i} * S_{i}\f$
+// - \f$L = R^{k} * T_{k}\f$
+// - \f$L_{j, a, i}{}^{b} = G_{i, a} * H_{j}{}^{b}\f$
+// - \f$L_{k, i} = H_{i}{}^{j} * G_{k, j}\f$
+//
+// where \f$R\f$'s index is spacetime, \f$S\f$' index is spatial, \f$T\f$'s
+// index is spacetime, \f$G\f$'s indices are spacetime, and \f$H\f$'s first
+// index is spatial and second is spacetime.
+//
+// \tparam DataType the type of data being stored in the tensor operand of the
+// products
+template <typename DataType>
+void test_spatial_spacetime_index(const DataType& used_for_size) noexcept {
+  std::uniform_real_distribution<> distribution(0.1, 1.0);
+
+  Tensor<DataType, Symmetry<1>,
+         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      R(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&R));
+  Tensor<DataType, Symmetry<1>,
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+      S(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&S));
+  Tensor<DataType, Symmetry<1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      T(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&T));
+
+  // \f$L = R^{i} * S_{i}\f$
+  // (spatial) * (spacetime) inner product with generic spatial indices
+  // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
+  // return type of `evaluate`
+  const Tensor<DataType> RS = TensorExpressions::evaluate(R(ti_I) * S(ti_i));
+  // \f$L = R^{k} * T_{k}\f$
+  // (spacetime) * (spacetime) inner product with generic spatial indices
+  const Tensor<DataType> RT = TensorExpressions::evaluate(R(ti_K) * T(ti_k));
+
+  DataType expected_RS_product = make_with_value<DataType>(used_for_size, 0.0);
+  DataType expected_RT_product = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    expected_RS_product += R.get(i + 1) * S.get(i);
+    expected_RT_product += R.get(i + 1) * T.get(i + 1);
+  }
+  CHECK_ITERABLE_APPROX(RS.get(), expected_RS_product);
+  CHECK_ITERABLE_APPROX(RT.get(), expected_RT_product);
+
+  Tensor<DataType, Symmetry<1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+      G(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&G));
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
+      H(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&H));
+
+  // \f$L_{j, a, i}{}^{b} = G_{i, a} * H_{j}{}^{b}\f$
+  // rank 2 x rank 2 outer product containing a spacetime index with a generic
+  // spatial index
+  const Tensor<DataType, Symmetry<4, 3, 2, 1>,
+               index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
+                          SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
+      GH = TensorExpressions::evaluate<ti_j, ti_a, ti_i, ti_B>(G(ti_i, ti_a) *
+                                                               H(ti_j, ti_B));
+  for (size_t j = 0; j < 3; j++) {
+    for (size_t a = 0; a < 4; a++) {
+      for (size_t i = 0; i < 3; i++) {
+        for (size_t b = 0; b < 4; b++) {
+          CHECK_ITERABLE_APPROX(GH.get(j, a, i, b),
+                                G.get(i + 1, a) * H.get(j, b));
+        }
+      }
+    }
+  }
+
+  // \f$L_{k, i} = H_{i}{}^{j} * G_{k, j}\f$
+  // inner and outer product in one expression using generic spatial indices
+  // for spacetime indices
+  const Tensor<DataType, Symmetry<2, 1>,
+               index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
+      HG = TensorExpressions::evaluate<ti_k, ti_i>(H(ti_i, ti_J) *
+                                                   G(ti_k, ti_j));
+  for (size_t k = 0; k < 3; k++) {
+    for (size_t i = 0; i < 3; i++) {
+      DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
+      for (size_t j = 0; j < 3; j++) {
+        expected_product += H.get(i, j + 1) * G.get(k + 1, j + 1);
+      }
+      CHECK_ITERABLE_APPROX(HG.get(k, i), expected_product);
+    }
+  }
+}
+
 template <typename DataType>
 void test_products(const DataType& used_for_size) noexcept {
   // Test evaluation of outer products
@@ -1148,6 +1250,10 @@ void test_products(const DataType& used_for_size) noexcept {
   // Test evaluation of expressions involving both inner and outer products
   test_two_term_inner_outer_product(used_for_size);
   test_three_term_inner_outer_product(used_for_size);
+
+  // Test product expressions where generic spatial indices are used for
+  // spacetime indices
+  test_spatial_spacetime_index(used_for_size);
 }
 }  // namespace
 

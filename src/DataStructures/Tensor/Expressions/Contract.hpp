@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -28,10 +29,14 @@ namespace TensorExpressions {
 namespace detail {
 
 template <typename I1, typename I2>
-using indices_contractible = std::integral_constant<
-    bool, I1::dim == I2::dim and I1::ul != I2::ul and
-              std::is_same_v<typename I1::Frame, typename I2::Frame> and
-              I1::index_type == I2::index_type>;
+using indices_contractible = std::bool_constant<
+    I1::ul != I2::ul and
+    std::is_same_v<typename I1::Frame, typename I2::Frame> and
+    ((I1::index_type == I2::index_type and I1::dim == I2::dim) or
+     // If one index is spacetime and the other is spatial, the indices can
+     // be contracted if they have the same number of spatial dimensions
+     (I1::index_type == IndexType::Spacetime and I1::dim == I2::dim + 1) or
+     (I2::index_type == IndexType::Spacetime and I1::dim + 1 == I2::dim))>;
 
 template <typename T, typename X, typename SymmList, typename IndexList,
           typename TensorIndexList>
@@ -214,30 +219,44 @@ struct TensorContract
     /// third positions are the contracted index positions, this function
     /// computes the contracted LHS component at multi-index `{1, 3}`.
     ///
-    /// To compute a contracted component correctly, the external call to this
-    /// function must be done with `ContractedIndexValue == 0`.
+    /// The distinction between `FirstContractedIndexValue` and
+    /// `SecondContractedIndexValue` is necessary to properly compute the
+    /// contraction of special cases where the "starting" index values to insert
+    /// at the contracted index positions are not equal. One such case:
+    /// `R(ti_J, ti_j)`, where R is a rank 2 tensor whose first index is spatial
+    /// and whose second index is spacetime. The external call to this function
+    /// would require `FirstContractedIndexValue == 0` and
+    /// `SecondContractedIndexValue == 1` to ensure the correct "starting" index
+    /// values are inserted into `uncontracted_lhs_multi_index_to_fill` at both
+    /// index positions, respectively.
     ///
-    /// \tparam ContractedIndexValue the concrete value inserted for the indices
-    /// to contract
+    /// \tparam FirstContractedIndexValue the concrete value inserted for the
+    /// first index to contract
+    /// \tparam SecondContractedIndexValue the concrete value inserted for the
+    /// second index to contract
     /// \param t the expression contained within this RHS contraction expression
     /// \param uncontracted_lhs_multi_index_to_fill the multi-index of an
     /// uncontracted LHS tensor component to sum for contraction
     /// \return the value of a component of the contracted LHS tensor
-    template <size_t ContractedIndexValue>
+    template <size_t FirstContractedIndexValue,
+              size_t SecondContractedIndexValue>
     static SPECTRE_ALWAYS_INLINE decltype(auto) apply(
         const T& t, std::array<size_t, num_uncontracted_tensor_indices>
                         uncontracted_lhs_multi_index_to_fill) noexcept {
-      // Fill contracted indices in multi-index with `ContractedIndexValue`
+      // Fill contracted indices in multi-index with `FirstContractedIndexValue`
+      // and `SecondContractedIndexValue`
       uncontracted_lhs_multi_index_to_fill[FirstContractedIndexPos] =
-          ContractedIndexValue;
+          FirstContractedIndexValue;
       uncontracted_lhs_multi_index_to_fill[SecondContractedIndexPos] =
-          ContractedIndexValue;
+          SecondContractedIndexValue;
 
-      if constexpr (ContractedIndexValue < first_contracted_index::dim - 1) {
+      if constexpr (FirstContractedIndexValue <
+                    first_contracted_index::dim - 1) {
         // We have more than one component left to sum
         return t.template get<UncontractedLhsTensorIndices...>(
                    uncontracted_lhs_multi_index_to_fill) +
-               apply<ContractedIndexValue + 1>(
+               apply<FirstContractedIndexValue + 1,
+                     SecondContractedIndexValue + 1>(
                    t, uncontracted_lhs_multi_index_to_fill);
       } else {
         // We only have one final component to sum
@@ -280,9 +299,22 @@ struct TensorContract
       const {
     using uncontracted_lhs_tensorindex_list =
         get_uncontracted_lhs_tensorindex_list<ContractedLhsIndices...>;
+    constexpr size_t initial_first_contracted_index_value =
+        first_contracted_index::index_type == IndexType::Spacetime and
+                not tmpl::at_c<ArgsList, FirstContractedIndexPos>::is_spacetime
+            ? 1
+            : 0;
+    constexpr size_t initial_second_contracted_index_value =
+        second_contracted_index::index_type == IndexType::Spacetime and
+                not tmpl::at_c<ArgsList, SecondContractedIndexPos>::is_spacetime
+            ? 1
+            : 0;
+
     return ComputeContraction<uncontracted_lhs_tensorindex_list>::
-        template apply<0>(t_, get_first_uncontracted_lhs_multi_index_to_sum(
-                                  contracted_lhs_multi_index));
+        template apply<initial_first_contracted_index_value,
+                       initial_second_contracted_index_value>(
+            t_, get_first_uncontracted_lhs_multi_index_to_sum(
+                    contracted_lhs_multi_index));
   }
 
  private:
