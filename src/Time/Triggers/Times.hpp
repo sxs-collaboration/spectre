@@ -72,6 +72,7 @@ struct Options::create_from_yaml<Triggers::Times> {
   template <typename Metavariables>
   static Triggers::Times create(const Option& options) {
     return Triggers::Times(
-        options.parse_as<std::unique_ptr<TimeSequence<double>>>());
+        options
+            .parse_as<std::unique_ptr<TimeSequence<double>>, Metavariables>());
   }
 };

@@ -30,14 +30,15 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::NearTimes>>>;
+        tmpl::map<tmpl::pair<TimeSequence<double>,
+                             TimeSequences::all_time_sequences<double>>,
+                  tmpl::pair<Trigger, tmpl::list<Triggers::NearTimes>>>;
   };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
-  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
   using Direction = Triggers::NearTimes::Direction;
   using Unit = Triggers::NearTimes::Unit;

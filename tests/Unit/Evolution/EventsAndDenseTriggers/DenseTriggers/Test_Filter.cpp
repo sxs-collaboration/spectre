@@ -20,6 +20,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Triggers/TimeCompares.hpp"
 #include "Utilities/TMPL.hpp"
@@ -67,6 +68,8 @@ struct Metavariables {
         tmpl::pair<DenseTrigger,
                    tmpl::list<DenseTriggers::Filter,
                               TestHelpers::DenseTriggers::TestTrigger>>,
+        tmpl::pair<TimeSequence<double>,
+                   TimeSequences::all_time_sequences<double>>,
         tmpl::pair<Trigger, tmpl::list<TestTrigger>>>;
   };
 };
@@ -110,6 +113,8 @@ struct ExampleMetavariables {
     using factory_classes =
         tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<DenseTriggers::Filter,
                                                       DenseTriggers::Times>>,
+                  tmpl::pair<TimeSequence<double>,
+                             TimeSequences::all_time_sequences<double>>,
                   tmpl::pair<Trigger, tmpl::list<Triggers::TimeCompares>>>;
   };
 };

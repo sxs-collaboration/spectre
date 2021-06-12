@@ -48,7 +48,8 @@
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
-#include "Time/Triggers/TimeTriggers.hpp"
+#include "Time/Triggers/SlabCompares.hpp"
+#include "Time/Triggers/TimeCompares.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
@@ -205,8 +206,8 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<Event, tmpl::list<Events::Completion>>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+        tmpl::pair<Trigger, tmpl::list<Triggers::SlabCompares,
+                                       Triggers::TimeCompares>>>;
   };
 
   enum class Phase { Initialization, RegisterWithObserver, Export, Exit };

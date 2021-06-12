@@ -34,14 +34,15 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
         tmpl::map<tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::StepToTimes>>>;
+                             tmpl::list<StepChoosers::StepToTimes>>,
+                  tmpl::pair<TimeSequence<double>,
+                             TimeSequences::all_time_sequences<double>>>;
   };
   using component_list = tmpl::list<>;
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
   const auto requested = [](const double now, std::vector<double> times,

@@ -18,6 +18,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Triggers/Slabs.hpp"
 #include "Utilities/Gsl.hpp"
@@ -30,14 +31,15 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Slabs>>>;
+        tmpl::map<tmpl::pair<TimeSequence<std::uint64_t>,
+                             TimeSequences::all_time_sequences<std::uint64_t>>,
+                  tmpl::pair<Trigger, tmpl::list<Triggers::Slabs>>>;
   };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Triggers.Slabs", "[Unit][Time]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
-  Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
 
   const auto trigger =
       TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(

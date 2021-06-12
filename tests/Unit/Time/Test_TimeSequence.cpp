@@ -19,8 +19,9 @@ namespace {
 void test_evenly_spaced() noexcept {
   {
     const TimeSequences::EvenlySpaced<std::uint64_t> constructed(3, 5);
-    const auto factory = TestHelpers::test_creation<
-        std::unique_ptr<TimeSequence<std::uint64_t>>>(
+    const auto factory = TestHelpers::test_factory_creation<
+        TimeSequence<std::uint64_t>,
+        TimeSequences::EvenlySpaced<std::uint64_t>>(
         "EvenlySpaced:\n"
         "  Interval: 3\n"
         "  Offset: 5\n");
@@ -49,7 +50,8 @@ void test_evenly_spaced() noexcept {
   {
     const TimeSequences::EvenlySpaced<double> constructed(3.75, 4.0625);
     const auto factory =
-        TestHelpers::test_creation<std::unique_ptr<TimeSequence<double>>>(
+        TestHelpers::test_factory_creation<TimeSequence<double>,
+                                           TimeSequences::EvenlySpaced<double>>(
             "EvenlySpaced:\n"
             "  Interval: 3.75\n"
             "  Offset: 4.0625\n");
@@ -73,8 +75,8 @@ void test_specified() noexcept {
     using Result = std::array<std::optional<std::uint64_t>, 3>;
     const TimeSequences::Specified<std::uint64_t> constructed(
         {4, 8, 0, 4, 4, 3, 4});
-    const auto factory = TestHelpers::test_creation<
-        std::unique_ptr<TimeSequence<std::uint64_t>>>(
+    const auto factory = TestHelpers::test_factory_creation<
+        TimeSequence<std::uint64_t>, TimeSequences::Specified<std::uint64_t>>(
         "Specified:\n"
         "  Values: [4, 8, 0, 4, 4, 3, 4]\n");
     const auto check = [&constructed, &factory](
@@ -113,7 +115,8 @@ void test_specified() noexcept {
     const TimeSequences::Specified<double> constructed(
         {-5.1, 7.2, -2.3, 0.0, -5.1, -5.1, 3.4, 4.5});
     const auto factory =
-        TestHelpers::test_creation<std::unique_ptr<TimeSequence<double>>>(
+        TestHelpers::test_factory_creation<TimeSequence<double>,
+                                           TimeSequences::Specified<double>>(
             "Specified:\n"
             "  Values: [-5.1, 7.2, -2.3, 0.0, -5.1, -5.1, 3.4, 4.5]\n");
     const auto check = [&constructed, &factory](
@@ -137,8 +140,10 @@ void test_specified() noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSequence", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
-  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
+  Parallel::register_classes_with_charm(
+      TimeSequences::all_time_sequences<double>{});
+  Parallel::register_classes_with_charm(
+      TimeSequences::all_time_sequences<std::uint64_t>{});
 
   test_evenly_spaced();
   test_specified();

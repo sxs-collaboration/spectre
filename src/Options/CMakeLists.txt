@@ -19,6 +19,7 @@ spectre_target_headers(
   Auto.hpp
   Comparator.hpp
   Factory.hpp
+  FactoryHelpers.hpp
   Options.hpp
   OptionsDetails.hpp
   ParseOptions.hpp

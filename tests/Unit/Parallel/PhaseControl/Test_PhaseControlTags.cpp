@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <type_traits>
 
@@ -16,6 +17,7 @@
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/Triggers/Slabs.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
@@ -96,7 +98,9 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Slabs>>>;
+        tmpl::map<tmpl::pair<TimeSequence<std::uint64_t>,
+                             TimeSequences::all_time_sequences<std::uint64_t>>,
+                  tmpl::pair<Trigger, tmpl::list<Triggers::Slabs>>>;
   };
 };
 
@@ -105,8 +109,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
   using phase_changes = tmpl::list<Registrars::TestCreatable<1_st>,
                                    Registrars::TestCreatable<2_st>>;
   Parallel::register_derived_classes_with_charm<PhaseChange<phase_changes>>();
-  Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
-  Parallel::register_classes_with_charm<Triggers::Slabs>();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
 
   TestHelpers::db::test_simple_tag<
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>(

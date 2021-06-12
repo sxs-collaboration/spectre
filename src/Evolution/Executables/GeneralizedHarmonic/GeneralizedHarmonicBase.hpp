@@ -118,6 +118,7 @@
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -238,6 +239,10 @@ struct GeneralizedHarmonicTemplateBase<
             StepChooser<StepChooserUse::Slab>,
             StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
+        tmpl::pair<TimeSequence<double>,
+                   TimeSequences::all_time_sequences<double>>,
+        tmpl::pair<TimeSequence<std::uint64_t>,
+                   TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };

@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Comparator.cpp
   Test_CustomTypeConstruction.cpp
   Test_Factory.cpp
+  Test_FactoryHelpers.cpp
   Test_Options.cpp
   Test_StdComplex.cpp
   )
