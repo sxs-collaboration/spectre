@@ -30,7 +30,6 @@ target_link_libraries(
   EllipticDgSubdomainOperator
   ErrorHandling
   Parallel
-  ParallelDg
   ParallelSchwarz
   Poisson
   PoissonBoundaryConditions
