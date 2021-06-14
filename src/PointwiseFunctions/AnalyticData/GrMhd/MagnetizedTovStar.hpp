@@ -146,9 +146,9 @@ namespace grmhd::AnalyticData {
  * Note that the magnetic field strength goes as \f$A_b\f$ so any desired value
  * can be achieved by a linear scaling.
  */
-class MagnetizedTovStar
-    : public MarkAsAnalyticData,
-      public RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> {
+class MagnetizedTovStar : public MarkAsAnalyticData,
+                          private RelativisticEuler::Solutions::TovStar<
+                              gr::Solutions::TovSolution> {
  private:
   using tov_star =
       RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>;
@@ -183,6 +183,11 @@ class MagnetizedTovStar
 
   static constexpr Options::String help = {
       "Magnetized TOV star in areal coordinates."};
+
+  static constexpr size_t volume_dim = 3_st;
+
+  template <typename DataType>
+  using tags = typename tov_star::template tags<DataType>;
 
   MagnetizedTovStar() = default;
   MagnetizedTovStar(const MagnetizedTovStar& /*rhs*/) = delete;
