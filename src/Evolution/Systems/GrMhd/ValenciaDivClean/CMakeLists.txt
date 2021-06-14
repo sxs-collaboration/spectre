@@ -49,6 +49,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   DgSubcell
+  DiscontinuousGalerkin
   ErrorHandling
   GeneralRelativity
   Hydro
