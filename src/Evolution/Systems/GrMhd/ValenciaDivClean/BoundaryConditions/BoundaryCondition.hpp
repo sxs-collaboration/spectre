@@ -12,6 +12,7 @@
 /// \cond
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
 class DirichletAnalytic;
+class Outflow;
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions
 /// \endcond
 
@@ -21,7 +22,7 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   using creatable_classes =
-      tmpl::list<DirichletAnalytic,
+      tmpl::list<DirichletAnalytic, Outflow,
                  domain::BoundaryConditions::Periodic<BoundaryCondition>>;
 
   BoundaryCondition() = default;
