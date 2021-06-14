@@ -64,8 +64,9 @@ double adjust_angular_coordinates_for_j(
  */
 struct GaugeAdjustInitialJ {
   using boundary_tags =
-      tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-                 Tags::CauchyAngularCoords, Spectral::Swsh::Tags::LMax>;
+      tmpl::list<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                 Tags::PartiallyFlatGaugeOmega, Tags::CauchyAngularCoords,
+                 Spectral::Swsh::Tags::LMax>;
   using return_tags = tmpl::list<Tags::BondiJ>;
   using argument_tags = tmpl::append<boundary_tags>;
 

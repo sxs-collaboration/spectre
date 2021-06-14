@@ -789,7 +789,9 @@ void InitializeGauge::apply(
   get(*gauge_d).data() = 2.0;
 }
 
-template struct GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>;
+template struct GaugeUpdateOmega<Tags::PartiallyFlatGaugeC,
+                                 Tags::PartiallyFlatGaugeD,
+                                 Tags::PartiallyFlatGaugeOmega>;
 template struct GaugeUpdateOmega<Tags::CauchyGaugeC, Tags::CauchyGaugeD,
                                  Tags::CauchyGaugeOmega>;
 }  // namespace Cce

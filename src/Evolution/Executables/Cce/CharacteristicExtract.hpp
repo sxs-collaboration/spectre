@@ -87,8 +87,9 @@ struct EvolutionMetavars {
                      Cce::Tags::BondiBeta, Cce::Tags::BondiQ, Cce::Tags::BondiU,
                      Cce::Tags::BondiW, Cce::Tags::BondiH>,
           tmpl::bind<Cce::Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
-      Cce::Tags::BondiUAtScri, Cce::Tags::GaugeC, Cce::Tags::GaugeD,
-      Cce::Tags::GaugeOmega, Cce::Tags::Du<Cce::Tags::GaugeOmega>,
+      Cce::Tags::BondiUAtScri, Cce::Tags::PartiallyFlatGaugeC,
+      Cce::Tags::PartiallyFlatGaugeD, Cce::Tags::PartiallyFlatGaugeOmega,
+      Cce::Tags::Du<Cce::Tags::PartiallyFlatGaugeOmega>,
       std::conditional_t<
           uses_partially_flat_cartesian_coordinates,
           tmpl::list<
@@ -97,7 +98,7 @@ struct EvolutionMetavars {
               Spectral::Swsh::Tags::Derivative<Cce::Tags::CauchyGaugeOmega,
                                                Spectral::Swsh::Tags::Eth>>,
           tmpl::list<>>,
-      Spectral::Swsh::Tags::Derivative<Cce::Tags::GaugeOmega,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Cce::all_boundary_pre_swsh_derivative_tags_for_scri,
       Cce::all_boundary_swsh_derivative_tags_for_scri>>;

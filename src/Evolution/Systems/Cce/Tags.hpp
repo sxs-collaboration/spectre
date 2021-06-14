@@ -150,13 +150,13 @@ struct Du : db::PrefixTag, db::SimpleTag {
 
 /// The spin-weight 2 angular Jacobian factor in the partially flat Bondi-like
 /// coordinates, see Eq. (31a) of \cite Moxon2020gha
-struct GaugeC : db::SimpleTag {
+struct PartiallyFlatGaugeC : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
 };
 
 /// The spin-weight 0 angular Jacobian factor in the partially flat Bondi-like
 /// coordinates, see Eq. (31b) of \cite Moxon2020gha
-struct GaugeD : db::SimpleTag {
+struct PartiallyFlatGaugeD : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
 };
 
@@ -175,7 +175,7 @@ struct CauchyGaugeD : db::SimpleTag {
 /// The conformal factor in the partially flat Bondi-like coordinates,
 /// associated with an angular transformation, see Eq. (32) of
 /// \cite Moxon2020gha
-struct GaugeOmega : db::SimpleTag {
+struct PartiallyFlatGaugeOmega : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
 };
 

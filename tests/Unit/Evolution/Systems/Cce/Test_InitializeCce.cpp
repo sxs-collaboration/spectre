@@ -144,13 +144,14 @@ void test_initialize_j_zero_nonsmooth(
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       box_to_initialize);
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(box_to_initialize);
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      box_to_initialize);
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       box_to_initialize);
   db::mutate_apply<
-      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
-      box_to_initialize);
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(box_to_initialize);
 
   db::mutate_apply<GaugeAdjustedBoundaryValue<Tags::BondiJ>>(box_to_initialize);
 
@@ -285,13 +286,14 @@ void test_initialize_j_no_radiation(
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       box_to_initialize);
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(box_to_initialize);
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      box_to_initialize);
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       box_to_initialize);
   db::mutate_apply<
-      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
-      box_to_initialize);
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(box_to_initialize);
 
   db::mutate_apply<PrecomputeCceDependencies<Tags::EvolutionGaugeBoundaryValue,
                                              Tags::OneMinusY>>(
@@ -342,13 +344,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   const size_t l_max = sdist(generator);
   const size_t number_of_radial_points = sdist(generator);
 
-  using boundary_variables_tag = ::Tags::Variables<
-      tmpl::push_back<InitializeJ::InverseCubic<true>::boundary_tags,
-                      Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-                      Spectral::Swsh::Tags::Derivative<
-                          Tags::GaugeOmega, Spectral::Swsh::Tags::Eth>,
-                      Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
-                      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>>;
+  using boundary_variables_tag = ::Tags::Variables<tmpl::push_back<
+      InitializeJ::InverseCubic<true>::boundary_tags, Tags::PartiallyFlatGaugeC,
+      Tags::PartiallyFlatGaugeD, Tags::PartiallyFlatGaugeOmega,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
+                                       Spectral::Swsh::Tags::Eth>,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>>;
   using pre_swsh_derivatives_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
       Tags::BondiK, Tags::BondiR, Tags::OneMinusY, Tags::Psi0>>;

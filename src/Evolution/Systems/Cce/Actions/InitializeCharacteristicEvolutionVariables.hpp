@@ -155,7 +155,7 @@ struct InitializeCharacteristicEvolutionVariables {
         Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
          false);
 
-    return std::make_tuple(std::move(box));
+      return std::make_tuple(std::move(box));
   }
 };
 

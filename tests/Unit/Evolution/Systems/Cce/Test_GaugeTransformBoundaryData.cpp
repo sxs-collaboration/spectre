@@ -92,10 +92,11 @@ void test_gauge_transforms_via_inverse_coordinate_map(
                  ::Tags::dt<Tags::CauchyCartesianCoords>,
                  ::Tags::dt<Tags::PartiallyFlatCartesianCoords>>;
   using spin_weighted_boundary_tags = tmpl::flatten<tmpl::list<
-      tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-                 Tags::CauchyGaugeC, Tags::CauchyGaugeD, Tags::CauchyGaugeOmega,
-                 Tags::Du<Tags::GaugeOmega>,
-                 Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      tmpl::list<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                 Tags::PartiallyFlatGaugeOmega, Tags::CauchyGaugeC,
+                 Tags::CauchyGaugeD, Tags::CauchyGaugeOmega,
+                 Tags::Du<Tags::PartiallyFlatGaugeOmega>,
+                 Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                                   Spectral::Swsh::Tags::Eth>,
                  Spectral::Swsh::Tags::Derivative<Tags::CauchyGaugeOmega,
                                                   Spectral::Swsh::Tags::Eth>,
@@ -406,11 +407,13 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         make_not_null(&inverse_transform_box));
 
     db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-        Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-        Tags::CauchyCartesianCoords>>(make_not_null(&forward_transform_box));
+        Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+        Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+        make_not_null(&forward_transform_box));
     db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-        Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-        Tags::CauchyCartesianCoords>>(make_not_null(&inverse_transform_box));
+        Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+        Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+        make_not_null(&inverse_transform_box));
 
     db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
         Tags::CauchyGaugeC, Tags::CauchyGaugeD,
@@ -422,10 +425,12 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         make_not_null(&inverse_transform_box));
 
     db::mutate_apply<
-        GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+        GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                         Tags::PartiallyFlatGaugeOmega>>(
         make_not_null(&forward_transform_box));
     db::mutate_apply<
-        GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+        GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                         Tags::PartiallyFlatGaugeOmega>>(
         make_not_null(&inverse_transform_box));
 
     db::mutate_apply<GaugeUpdateOmega<Tags::CauchyGaugeC, Tags::CauchyGaugeD,
@@ -469,7 +474,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
     // check that the coordinates are actually inverses of one another.
     interpolator.interpolate(
         make_not_null(&get(interpolated_forward_omega_cd)),
-        get(db::get<Tags::GaugeOmega>(inverse_transform_box)));
+        get(db::get<Tags::PartiallyFlatGaugeOmega>(inverse_transform_box)));
     interpolator_inertial.interpolate(
         make_not_null(&get(interpolated_forward_omega_cauchy_cd)),
         get(db::get<Tags::CauchyGaugeOmega>(inverse_transform_box)));
@@ -489,7 +494,8 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         get(interpolated_forward_omega_cauchy_cd));
 
     const auto& check_rhs =
-        get(db::get<Tags::GaugeOmega>(inverse_transform_box)).data();
+        get(db::get<Tags::PartiallyFlatGaugeOmega>(inverse_transform_box))
+            .data();
     CHECK_ITERABLE_APPROX(forward_and_inverse_interpolated_omega_cd.data(),
                           check_rhs);
     const auto& check_rhs_cauchy =
@@ -500,9 +506,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
     interpolator.interpolate(
         make_not_null(&get(interpolated_forward_omega_cd)),
-        get(db::get<Tags::GaugeOmega>(inverse_transform_box)));
+        get(db::get<Tags::PartiallyFlatGaugeOmega>(inverse_transform_box)));
     const auto& inverse_omega_cd =
-        db::get<Tags::GaugeOmega>(forward_transform_box);
+        db::get<Tags::PartiallyFlatGaugeOmega>(forward_transform_box);
     const auto another_check_rhs = 1.0 / (get(inverse_omega_cd).data());
     CHECK_ITERABLE_APPROX(get(interpolated_forward_omega_cd).data(),
                           another_check_rhs);
@@ -672,9 +678,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         fill_with_n_copies(make_not_null(&(get(*bondi_u).data())), minus_u,
                            number_of_radial_grid_points);
       },
-      db::get<Tags::GaugeC>(inverse_transform_box),
-      db::get<Tags::GaugeD>(inverse_transform_box),
-      db::get<Tags::GaugeOmega>(inverse_transform_box),
+      db::get<Tags::PartiallyFlatGaugeC>(inverse_transform_box),
+      db::get<Tags::PartiallyFlatGaugeD>(inverse_transform_box),
+      db::get<Tags::PartiallyFlatGaugeOmega>(inverse_transform_box),
       db::get<Tags::CauchyAngularCoords>(inverse_transform_box));
 
   // subtract off the gauge adjustments from the gauge for the inverse
@@ -712,12 +718,14 @@ void test_gauge_transforms_via_inverse_coordinate_map(
   const auto& x_of_x_tilde =
       db::get<Tags::CauchyAngularCoords>(inverse_transform_box);
   const auto& forward_du_omega_cd =
-      db::get<Tags::Du<Tags::GaugeOmega>>(forward_transform_box);
+      db::get<Tags::Du<Tags::PartiallyFlatGaugeOmega>>(forward_transform_box);
   const auto& forward_u_0 = db::get<Tags::BondiUAtScri>(forward_transform_box);
-  const auto& forward_eth_omega_cd = db::get<Spectral::Swsh::Tags::Derivative<
-      Tags::GaugeOmega, Spectral::Swsh::Tags::Eth>>(forward_transform_box);
+  const auto& forward_eth_omega_cd =
+      db::get<Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
+                                               Spectral::Swsh::Tags::Eth>>(
+          forward_transform_box);
   const auto& forward_omega_cd =
-      get(db::get<Tags::GaugeOmega>(forward_transform_box));
+      get(db::get<Tags::PartiallyFlatGaugeOmega>(forward_transform_box));
   const SpinWeighted<ComplexDataVector, 0>
       forward_adjusted_du_omega_cd_over_omega =
           (get(forward_du_omega_cd) -
@@ -732,8 +740,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
   omega_interpolator.interpolate(make_not_null(&omega_comparison_lhs),
                                  forward_adjusted_du_omega_cd_over_omega);
   const SpinWeighted<ComplexDataVector, 0> omega_comparison_rhs =
-      -get(db::get<Tags::Du<Tags::GaugeOmega>>(inverse_transform_box)) /
-      get(db::get<Tags::GaugeOmega>(inverse_transform_box));
+      -get(db::get<Tags::Du<Tags::PartiallyFlatGaugeOmega>>(
+          inverse_transform_box)) /
+      get(db::get<Tags::PartiallyFlatGaugeOmega>(inverse_transform_box));
 
   // check that the eth_omega_cd are as expected.
   SpinWeighted<ComplexDataVector, 0> interpolated_forward_omega{
@@ -747,8 +756,10 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       l_max, 1, make_not_null(&eth_interpolated_forward_omega),
       interpolated_forward_omega);
 
-  const auto& inverse_c = db::get<Tags::GaugeC>(inverse_transform_box);
-  const auto& inverse_d = db::get<Tags::GaugeD>(inverse_transform_box);
+  const auto& inverse_c =
+      db::get<Tags::PartiallyFlatGaugeC>(inverse_transform_box);
+  const auto& inverse_d =
+      db::get<Tags::PartiallyFlatGaugeD>(inverse_transform_box);
 
   SpinWeighted<ComplexDataVector, 1> eth_omega{number_of_angular_grid_points};
   Spectral::Swsh::angular_derivatives<tmpl::list<Spectral::Swsh::Tags::Eth>>(

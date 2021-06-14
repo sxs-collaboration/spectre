@@ -51,13 +51,14 @@ struct UpdateGauge {
         Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
         make_not_null(&box));
     db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-        Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-        Tags::CauchyCartesianCoords>>(make_not_null(&box));
+        Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+        Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+        make_not_null(&box));
     db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
         make_not_null(&box));
     db::mutate_apply<
-        GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
-        make_not_null(&box));
+        GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                         Tags::PartiallyFlatGaugeOmega>>(make_not_null(&box));
 
     if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
       db::mutate_apply<

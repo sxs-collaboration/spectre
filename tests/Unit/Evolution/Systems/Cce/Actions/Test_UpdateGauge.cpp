@@ -38,9 +38,10 @@ using real_tags_to_compute =
     tmpl::list<Tags::CauchyAngularCoords, Tags::PartiallyFlatAngularCoords>;
 
 using swsh_tags_to_compute =
-    tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega, Tags::CauchyGaugeC,
+    tmpl::list<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+               Tags::PartiallyFlatGaugeOmega, Tags::CauchyGaugeC,
                Tags::CauchyGaugeD, Tags::CauchyGaugeOmega,
-               Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+               Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                                 Spectral::Swsh::Tags::Eth>,
                Spectral::Swsh::Tags::Derivative<Tags::CauchyGaugeOmega,
                                                 Spectral::Swsh::Tags::Eth>>;
@@ -134,12 +135,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      make_not_null(&expected_box));
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       make_not_null(&expected_box));
   db::mutate_apply<
-      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(
       make_not_null(&expected_box));
 
   if (metavariables::uses_partially_flat_cartesian_coordinates) {

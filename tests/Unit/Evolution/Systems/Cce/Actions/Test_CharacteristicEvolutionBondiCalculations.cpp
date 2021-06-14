@@ -69,12 +69,13 @@ struct mock_characteristic_evolution {
       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
           Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
       ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
-          Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-          Tags::CauchyCartesianCoords>>,
+          Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+          Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
       ::Actions::MutateApply<
           GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>,
       ::Actions::MutateApply<
-          GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>,
+          GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                           Tags::PartiallyFlatGaugeOmega>>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -110,9 +111,9 @@ struct metavariables {
                      Tags::Dr<Tags::BondiJ>, Tags::BondiBeta, Tags::BondiQ,
                      Tags::BondiU, Tags::BondiW, Tags::BondiH>,
           tmpl::bind<Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
-      Tags::BondiUAtScri, Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-      Tags::Du<Tags::GaugeOmega>,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::BondiUAtScri, Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::PartiallyFlatGaugeOmega, Tags::Du<Tags::PartiallyFlatGaugeOmega>,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
   using const_global_cache_tags =
@@ -320,12 +321,14 @@ SPECTRE_TEST_CASE(
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(make_not_null(&boundary_box));
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       make_not_null(&boundary_box));
   db::mutate_apply<
-      GaugeUpdateOmega<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>>(
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(
       make_not_null(&boundary_box));
 
   tmpl::for_each<gauge_adjustments_setup_tags>([&boundary_box](auto tag_v) {

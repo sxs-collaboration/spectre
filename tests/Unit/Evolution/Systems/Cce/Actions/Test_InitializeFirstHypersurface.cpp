@@ -46,7 +46,7 @@ using real_cauchy_boundary_tags_to_compute =
                Tags::InertialRetardedTime>;
 
 using swsh_cauchy_boundary_tags_to_compute =
-    tmpl::list<Tags::GaugeC, Tags::GaugeD>;
+    tmpl::list<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD>;
 
 using real_inertial_boundary_tags_to_compute =
     tmpl::list<Tags::PartiallyFlatCartesianCoords,
@@ -88,8 +88,8 @@ struct mock_characteristic_evolution {
               ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
                   Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
               ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
-                  Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-                  Tags::CauchyCartesianCoords>>,
+                  Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                  Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
               std::conditional_t<
                   Metavariables::uses_partially_flat_cartesian_coordinates,
                   tmpl::list<
@@ -200,8 +200,9 @@ void test_InitializeFirstHypersurface() noexcept {
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      make_not_null(&expected_box));
   if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
     db::mutate_apply<GaugeUpdateAngularFromCartesian<
         Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
