@@ -40,9 +40,11 @@ DomainCreator:
       InitialExpirationDeltaT: Auto
       ExpansionMap:
         OuterBoundary: 590.0
-        InitialExpansion: [1.0, 1.0]
-        InitialExpansionVelocity: [0.01, 0.02]
-        FunctionOfTimeNames: ['ExpansionFactor',  'Unity']
+        InitialExpansion: 1.0
+        InitialExpansionVelocity: 0.01
+        FunctionOfTimeName: 'ExpansionFactor'
+        AsymptoticVelocityOuterBoundary: -0.1
+        DecayTimescaleOuterBoundaryVelocity: 5.0
       RotationAboutZAxisMap:
         InitialRotationAngle: 0.0
         InitialAngularVelocity: 0.0
