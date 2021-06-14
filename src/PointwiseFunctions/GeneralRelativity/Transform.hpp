@@ -15,7 +15,7 @@ class DataVector;
 
 /// Holds functions related to transforming between frames.
 namespace transform {
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * Transforms tensor to different frame.
@@ -48,9 +48,9 @@ auto to_different_frame(const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
                         const Jacobian<DataVector, VolumeDim, DestFrame,
                                        SrcFrame>& jacobian) noexcept
     -> tnsr::ii<DataVector, VolumeDim, DestFrame>;
-//@}
+/// @}
 
-//@{
+/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * Transforms only the first index to different frame.
@@ -96,5 +96,5 @@ auto first_index_to_different_frame(
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
     const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
         jacobian) noexcept -> tnsr::ijj<DataVector, VolumeDim, DestFrame>;
-//@}
+/// @}
 }  // namespace transform
