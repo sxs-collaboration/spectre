@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  FixedSpeedCubic.cpp
   PiecewisePolynomial.cpp
   ReadSpecPiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
@@ -18,6 +19,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  FixedSpeedCubic.hpp
   FunctionOfTime.hpp
   OptionTags.hpp
   PiecewisePolynomial.hpp
