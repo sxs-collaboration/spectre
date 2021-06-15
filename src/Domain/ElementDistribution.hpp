@@ -93,11 +93,10 @@ struct BlockZCurveProcDistribution {
                               const std::vector<std::array<size_t, Dim>>&
                                   refinements_by_block) noexcept;
 
-  /// Gets the suggested processor number for a particular block and element,
+  /// Gets the suggested processor number for a particular element,
   /// determined by the greedy block assignment and Morton curve element
   /// assignment described in detail in the parent class documentation.
-  size_t get_proc_for_element(size_t block_id,
-                              const ElementId<Dim>& element_id) const noexcept;
+  size_t get_proc_for_element(const ElementId<Dim>& element_id) const noexcept;
 
  private:
   // in this nested data structure:

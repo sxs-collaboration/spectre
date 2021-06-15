@@ -74,7 +74,7 @@ std::vector<std::vector<size_t>> make_proc_map_for_domain(
           element_index_to_segment_id(
               gsl::at(refinement_levels_by_block, block), element_index)};
       proc_map.at(block).at(element_index) =
-          distribution.get_proc_for_element(block, element_id);
+          distribution.get_proc_for_element(element_id);
     }
   }
   return proc_map;
