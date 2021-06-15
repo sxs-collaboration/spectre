@@ -94,6 +94,9 @@ void test_element_id() {
   ElementId<3> block_2_3d(2, segment_ids);
   CHECK(block_2_3d.block_id() == 2);
   CHECK(block_2_3d.segment_ids() == segment_ids);
+  CHECK(block_2_3d.segment_id(0) == segment_ids[0]);
+  CHECK(block_2_3d.segment_id(1) == segment_ids[1]);
+  CHECK(block_2_3d.segment_id(2) == segment_ids[2]);
   CHECK(block_2_3d.grid_index() == 0);
 
   // Test parent and child operations:

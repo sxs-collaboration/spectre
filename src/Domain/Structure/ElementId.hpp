@@ -16,6 +16,7 @@
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -98,6 +99,21 @@ class ElementId {
       return {{SegmentId{refinement_level_xi_, index_xi_},
                SegmentId{refinement_level_eta_, index_eta_},
                SegmentId{refinement_level_zeta_, index_zeta_}}};
+    }
+  }
+
+  SegmentId segment_id(const size_t dim) const noexcept {
+    ASSERT(dim < VolumeDim, "Dimension must be smaller than "
+                                << VolumeDim << ", but is: " << dim);
+    switch (dim) {
+      case 0:
+        return {refinement_level_xi_, index_xi_};
+      case 1:
+        return {refinement_level_eta_, index_eta_};
+      case 2:
+        return {refinement_level_zeta_, index_zeta_};
+      default:
+        ERROR("Invalid dimension: " << dim);
     }
   }
 
