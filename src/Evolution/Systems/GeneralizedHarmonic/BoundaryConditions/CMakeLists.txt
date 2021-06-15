@@ -7,6 +7,7 @@ spectre_target_sources(
   BjorhusImpl.cpp
   BoundaryCondition.cpp
   DirichletAnalytic.cpp
+  Outflow.cpp
   RegisterDerivedWithCharm.cpp
   )
 
@@ -18,5 +19,6 @@ spectre_target_headers(
   BoundaryCondition.hpp
   DirichletAnalytic.hpp
   Factory.hpp
+  Outflow.hpp
   RegisterDerivedWithCharm.hpp
   )
