@@ -133,7 +133,7 @@ using operator_applied_to_fields_tag =
 // element to an index into these vectors. We assume the domain is composed of a
 // single block.
 size_t get_index(const ElementId<1>& element_id) noexcept {
-  return element_id.segment_ids()[0].index();
+  return element_id.segment_id(0).index();
 }
 
 // In the following `ComputeOperatorAction` and `CollectOperatorAction` actions

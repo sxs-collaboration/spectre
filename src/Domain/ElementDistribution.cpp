@@ -36,8 +36,8 @@ size_t z_curve_index(const ElementId<Dim>& element_id) noexcept {
   std::array<std::pair<size_t, size_t>, Dim>
       dimension_by_highest_refinement_level;
   for (size_t i = 0; i < Dim; ++i) {
-    dimension_by_highest_refinement_level.at(i) = std::make_pair(
-        gsl::at(element_id.segment_ids(), i).refinement_level(), i);
+    dimension_by_highest_refinement_level.at(i) =
+        std::make_pair(element_id.segment_id(i).refinement_level(), i);
   }
   alg::sort(dimension_by_highest_refinement_level,
             [](const std::pair<size_t, size_t>& lhs,
@@ -60,7 +60,8 @@ size_t z_curve_index(const ElementId<Dim>& element_id) noexcept {
   size_t leading_gap = 0;
   for (size_t i = 0; i < Dim; ++i) {
     const size_t id_to_gap_and_shift =
-        gsl::at(element_id.segment_ids(),
+        element_id
+            .segment_id(
                 gsl::at(dimension_by_highest_refinement_level, i).second)
             .index();
     size_t total_gap = leading_gap;

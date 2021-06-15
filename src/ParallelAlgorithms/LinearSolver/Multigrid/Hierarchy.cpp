@@ -89,7 +89,7 @@ std::unordered_set<ElementId<1>> child_ids<1>(
     return {};
   }
   const std::unordered_set<SegmentId> child_segment_ids =
-      child_segment_ids_impl(parent_id.segment_ids()[0],
+      child_segment_ids_impl(parent_id.segment_id(0),
                              children_refinement_levels[0]);
   std::unordered_set<ElementId<1>> child_ids{};
   for (const auto& child_segment_id : child_segment_ids) {
@@ -112,9 +112,8 @@ std::unordered_set<ElementId<2>> child_ids<2>(
   }
   std::array<std::unordered_set<SegmentId>, 2> child_segment_ids{};
   for (size_t d = 0; d < 2; ++d) {
-    gsl::at(child_segment_ids, d) =
-        child_segment_ids_impl(gsl::at(parent_id.segment_ids(), d),
-                               gsl::at(children_refinement_levels, d));
+    gsl::at(child_segment_ids, d) = child_segment_ids_impl(
+        parent_id.segment_id(d), gsl::at(children_refinement_levels, d));
   }
   std::unordered_set<ElementId<2>> child_ids{};
   for (const auto& child_segment_id_x : child_segment_ids[0]) {
@@ -140,9 +139,8 @@ std::unordered_set<ElementId<3>> child_ids<3>(
   }
   std::array<std::unordered_set<SegmentId>, 3> child_segment_ids{};
   for (size_t d = 0; d < 3; ++d) {
-    gsl::at(child_segment_ids, d) =
-        child_segment_ids_impl(gsl::at(parent_id.segment_ids(), d),
-                               gsl::at(children_refinement_levels, d));
+    gsl::at(child_segment_ids, d) = child_segment_ids_impl(
+        parent_id.segment_id(d), gsl::at(children_refinement_levels, d));
   }
   std::unordered_set<ElementId<3>> child_ids{};
   for (const auto& child_segment_id_x : child_segment_ids[0]) {
