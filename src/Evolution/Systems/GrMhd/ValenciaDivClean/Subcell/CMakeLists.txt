@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  FixConservativesAndComputePrims.cpp
   InitialDataTci.cpp
   PrimitiveGhostData.cpp
   ResizeAndComputePrimitives.cpp
@@ -17,6 +18,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  FixConservativesAndComputePrims.hpp
   GrTagsForHydro.hpp
   InitialDataTci.hpp
   PrimitiveGhostData.hpp
