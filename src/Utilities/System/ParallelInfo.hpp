@@ -89,7 +89,7 @@ inline int local_rank_of(const int proc_index) {
 
 /*!
  * \ingroup SystemUtilitiesGroup
- * \brief The current wall time in seconds
+ * \brief The elapsed wall time in seconds.
  */
-inline double wall_time() { return CmiWallTimer(); }
+inline double wall_time() { return CkWallTimer(); }
 }  // namespace sys
