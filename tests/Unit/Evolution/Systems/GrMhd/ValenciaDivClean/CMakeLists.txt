@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_FixConservatives.cpp
   Test_Fluxes.cpp
   Test_PrimitiveFromConservative.cpp
+  Test_SetVariablesNeededFixingToFalse.cpp
   Test_Sources.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp

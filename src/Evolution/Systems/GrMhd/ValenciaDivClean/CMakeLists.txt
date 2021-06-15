@@ -16,6 +16,7 @@ spectre_target_sources(
   NewmanHamlin.cpp
   PalenzuelaEtAl.cpp
   PrimitiveFromConservative.cpp
+  SetVariablesNeededFixingToFalse.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
   VolumeTermsInstantiation.cpp
@@ -34,6 +35,7 @@ spectre_target_headers(
   PalenzuelaEtAl.hpp
   PrimitiveFromConservative.hpp
   PrimitiveRecoveryData.hpp
+  SetVariablesNeededFixingToFalse.hpp
   Sources.hpp
   System.hpp
   Tags.hpp
