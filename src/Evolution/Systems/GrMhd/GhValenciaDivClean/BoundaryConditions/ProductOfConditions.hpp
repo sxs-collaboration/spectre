@@ -429,8 +429,7 @@ struct ProductOfConditionsImpl<
             Tags::detail::TemporaryReference<ValenciaInteriorEvolvedTags>>(
             shuffle_refs)...,
         valencia_int_prim_variables...,
-        tuples::get<
-            Tags::detail::TemporaryReference<ValenciaInteriorEvolvedTags>>(
+        tuples::get<Tags::detail::TemporaryReference<ValenciaInteriorTempTags>>(
             shuffle_refs)...,
         valencia_int_dt_variables..., valencia_int_deriv_variables...,
         tuples::get<Tags::detail::TemporaryReference<

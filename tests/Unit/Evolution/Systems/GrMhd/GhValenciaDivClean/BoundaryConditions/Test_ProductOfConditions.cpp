@@ -69,7 +69,7 @@ struct ComputeBoundaryConditionHelper<
       const ArgumentVariables& argument_variables,
       const GridlessBox& gridless_box,
       const DerivedCondition& derived_condition) noexcept {
-    return derived_condition.dg_ghost(
+    return derived_condition.dg_outflow(
         tuples::get<ArgumentTags>(argument_variables)...,
         db::get<GridlessTags>(gridless_box)...);
   }
@@ -230,15 +230,12 @@ void test_boundary_condition_combination(
       product_condition_type::bc_type;
 
   if constexpr (bc_type == evolution::BoundaryConditions::Type::Outflow) {
-    auto gh_result = gh_bc_helper::dg_outflow(
-        make_not_null(&expected_mutable_variables), argument_variables,
-        gridless_box, derived_gh_condition);
+    auto gh_result = gh_bc_helper::dg_outflow(argument_variables, gridless_box,
+                                              derived_gh_condition);
     auto valencia_result = valencia_bc_helper::dg_outflow(
-        make_not_null(&expected_mutable_variables), argument_variables,
-        gridless_box, derived_valencia_condition);
+        argument_variables, gridless_box, derived_valencia_condition);
     auto product_result = product_bc_helper::dg_outflow(
-        make_not_null(&mutable_variables), argument_variables, gridless_box,
-        derived_product_condition);
+        argument_variables, gridless_box, derived_product_condition);
     if (gh_result.has_value()) {
       if (valencia_result.has_value()) {
         CHECK((product_result.value() ==
@@ -287,7 +284,8 @@ void test_boundary_condition_combination(
     gh_result_ghost = gh_bc_helper::dg_ghost(
         make_not_null(&expected_mutable_variables), argument_variables,
         gridless_box, derived_gh_condition);
-  } else {
+  } else if constexpr (DerivedGhCondition::bc_type ==
+                       evolution::BoundaryConditions::Type::TimeDerivative) {
     // copy the needed tags, verifying the application of the `do nothing' ghost
     // condition
     tmpl::for_each<tmpl::push_back<
@@ -321,7 +319,8 @@ void test_boundary_condition_combination(
     valencia_result_ghost = valencia_bc_helper::dg_ghost(
         make_not_null(&expected_mutable_variables), argument_variables,
         gridless_box, derived_valencia_condition);
-  } else {
+  } else if constexpr (DerivedValenciaCondition::bc_type ==
+                       evolution::BoundaryConditions::Type::TimeDerivative) {
     tmpl::for_each<tmpl::append<
         typename grmhd::ValenciaDivClean::System::variables_tag::tags_list,
         db::wrap_tags_in<
@@ -468,6 +467,33 @@ SPECTRE_TEST_CASE(
         GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<
             3_st>,
         grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>(
+        gh_condition, valencia_condition, serialized_and_deserialized_condition,
+        gridless_box);
+  }
+  {
+    INFO(
+        "Product condition of ValenciaDivClean Outflow and "
+        "GeneralizedHarmonic Outflow");
+    const grmhd::ValenciaDivClean::BoundaryConditions::Outflow
+        valencia_condition{};
+    const GeneralizedHarmonic::BoundaryConditions::Outflow<3_st> gh_condition{};
+    const auto product_boundary_condition =
+        TestHelpers::test_creation<std::unique_ptr<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>>(
+            "ProductOutflowAndOutflow:\n"
+            "  GeneralizedHarmonicOutflow:\n"
+            "  ValenciaOutflow:");
+    const auto gridless_box = db::create<db::AddSimpleTags<>>();
+    auto serialized_and_deserialized_condition = serialize_and_deserialize(
+        *dynamic_cast<
+            grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
+                GeneralizedHarmonic::BoundaryConditions::Outflow<3_st>,
+                grmhd::ValenciaDivClean::BoundaryConditions::Outflow>*>(
+            product_boundary_condition.get()));
+    test_boundary_condition_combination<
+        tmpl::list<>, tmpl::list<>,
+        GeneralizedHarmonic::BoundaryConditions::Outflow<3_st>,
+        grmhd::ValenciaDivClean::BoundaryConditions::Outflow>(
         gh_condition, valencia_condition, serialized_and_deserialized_condition,
         gridless_box);
   }
