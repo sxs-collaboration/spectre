@@ -12,3 +12,5 @@ See LICENSE.txt for details.
   and other Python modules provided by SpECTRE.
 - \ref tutorial_cce - How to get started running stand-alone CCE with
   externally produced data
+- \ref tutorial_checkpoint_restart - How to get set up a SpECTRE executable for
+  checkpointing and restarting

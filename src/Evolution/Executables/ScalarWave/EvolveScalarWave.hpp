@@ -41,6 +41,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
@@ -176,6 +177,7 @@ struct EvolutionMetavars {
     RegisterWithObserver,
     InitializeTimeStepperHistory,
     LoadBalancing,
+    WriteCheckpoint,
     Evolve,
     Exit
   };
@@ -190,8 +192,11 @@ struct EvolutionMetavars {
         << static_cast<int>(phase));
   }
 
-  using phase_changes = tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-      EvolutionMetavars, Phase::LoadBalancing>>;
+  using phase_changes =
+      tmpl::list<PhaseControl::Registrars::VisitAndReturn<EvolutionMetavars,
+                                                          Phase::LoadBalancing>,
+                 PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
+                     EvolutionMetavars>>;
 
   using initialize_phase_change_decision_data =
       PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
