@@ -189,6 +189,8 @@ class Main : public CBase_Main<Metavariables> {
   Parallel::Phase current_phase_{Parallel::Phase::Initialization};
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
+  Options::Parser<tmpl::remove<option_list, Options::Tags::InputSource>>
+      parser_{Metavariables::help};
   // This is only used during startup, and will be cleared after all
   // the chares are created.  It is a member variable because passing
   // local state through charm callbacks is painful.
@@ -359,11 +361,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     bpo::store(command_line_parser.run(), parsed_command_line_options);
     bpo::notify(parsed_command_line_options);
 
-    Options::Parser<tmpl::remove<option_list, Options::Tags::InputSource>>
-        options(Metavariables::help);
-
     if (parsed_command_line_options.count("help") != 0) {
-      Parallel::printf("%s\n%s", command_line_options, options.help());
+      Parallel::printf("%s\n%s", command_line_options, parser_.help());
       sys::exit();
     }
 
@@ -394,15 +393,15 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         ERROR_NO_TRACE("No default input file name.  Pass --input-file.");
       }
       input_file = parsed_command_line_options["input-file"].as<std::string>();
-      options.parse_file(input_file);
+      parser_.parse_file(input_file);
     } else {
       if constexpr (tmpl::size<singleton_component_list>::value > 0) {
-        options.parse(
+        parser_.parse(
             "ResourceInfo:\n"
             "  AvoidGlobalProc0: false\n"
             "  Singletons: Auto\n");
       } else {
-        options.parse(
+        parser_.parse(
             "ResourceInfo:\n"
             "  AvoidGlobalProc0: false\n");
       }
@@ -410,7 +409,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
     if (parsed_command_line_options.count("check-options") != 0) {
       // Force all the options to be created.
-      options.template apply<option_list, Metavariables>([](auto... args) {
+      parser_.template apply<option_list, Metavariables>([](auto... args) {
         (void)std::initializer_list<char>{((void)args, '0')...};
       });
       if (has_options) {
@@ -436,7 +435,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     }
 
     options_ =
-        options.template apply<option_list, Metavariables>([](auto... args) {
+        parser_.template apply<option_list, Metavariables>([](auto... args) {
           return tuples::tagged_tuple_from_typelist<option_list>(
               std::move(args)...);
         });
@@ -593,11 +592,9 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | current_phase_;
   p | global_cache_proxy_;
   p | at_sync_indicator_proxy_;
-  // Note: we do NOT serialize the options.
-  // This is because options are only used in the initialization phase when
-  // the executable first starts up. Thereafter, the information from the
-  // options will be held in various code objects that will themselves be
-  // serialized.
+  p | parser_;
+  // Note: we don't serialize options_, because it's used as a temporary in
+  // startup only (see comment in class definition).
   p | phase_change_decision_data_;
 
   p | checkpoint_dir_counter_;
