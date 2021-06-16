@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
@@ -158,6 +159,7 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
                               Events::Completion,
                               dg::Events::field_observations<

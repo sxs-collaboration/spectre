@@ -402,12 +402,14 @@ void test_rotated_bricks_factory() {
         return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3>>(opt_string);
+                MetavariablesWithBoundaryConditions<
+                    3, domain::creators::RotatedBricks>>(opt_string);
       } else {
         return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<3>>(opt_string);
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::RotatedBricks>>(opt_string);
       }
     }();
     const auto* rotated_bricks_creator =

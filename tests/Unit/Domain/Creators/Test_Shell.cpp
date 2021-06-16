@@ -450,11 +450,13 @@ void test_shell_factory_equiangular() {
                          auto use_boundary_condition) {
     const auto shell = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<decltype(use_boundary_condition)::value,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+        tmpl::conditional_t<
+            decltype(use_boundary_condition)::value,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::Shell>>>(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -488,11 +490,13 @@ void test_shell_factory_equiangular_time_dependent() {
                          auto use_boundary_condition) {
     const auto shell = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<decltype(use_boundary_condition)::value,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+        tmpl::conditional_t<
+            decltype(use_boundary_condition)::value,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::Shell>>>(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -565,11 +569,13 @@ void test_shell_factory_equidistant() {
                          auto use_boundary_condition) {
     const auto shell = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<decltype(use_boundary_condition)::value,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+        tmpl::conditional_t<
+            decltype(use_boundary_condition)::value,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::Shell>>>(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -640,11 +646,13 @@ void test_shell_factory_aspect_ratio() {
                          auto use_boundary_condition) {
     const auto shell = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<decltype(use_boundary_condition)::value,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+        tmpl::conditional_t<
+            decltype(use_boundary_condition)::value,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::Shell>>>(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -773,11 +781,13 @@ void test_shell_factory_logarithmic_map() {
                          auto use_boundary_condition) {
     const auto shell = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<decltype(use_boundary_condition)::value,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
-                            TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+        tmpl::conditional_t<
+            decltype(use_boundary_condition)::value,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
+            TestHelpers::domain::BoundaryConditions::
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::Shell>>>(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -807,22 +817,22 @@ void test_shell_factory_logarithmic_map() {
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
 
   INFO("Test with multiple radial layers");
-  const auto shell =
-      TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
-                                   TestHelpers::domain::BoundaryConditions::
-                                       MetavariablesWithBoundaryConditions<3>>(
-          "Shell:\n"
-          "  InnerRadius: 1\n"
-          "  OuterRadius: 3\n"
-          "  InitialRefinement: 2\n"
-          "  InitialGridPoints: [2,3]\n"
-          "  UseEquiangularMap: false\n"
-          "  AspectRatio: 2.0        \n"
-          "  RadialPartitioning: [1.5, 2.5]\n"
-          "  RadialDistribution: [Logarithmic, Logarithmic, Logarithmic]\n"
-          "  WhichWedges: All\n"
-          "  TimeDependence: None\n" +
-          boundary_conditions_string());
+  const auto shell = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditions<3, domain::creators::Shell>>(
+      "Shell:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: false\n"
+      "  AspectRatio: 2.0        \n"
+      "  RadialPartitioning: [1.5, 2.5]\n"
+      "  RadialDistribution: [Logarithmic, Logarithmic, Logarithmic]\n"
+      "  WhichWedges: All\n"
+      "  TimeDependence: None\n" +
+      boundary_conditions_string());
   const Domain<3> multiple_layers_domain = shell->create_domain();
   const auto expected_boundary_conditions =
       create_boundary_conditions(3, ShellWedges::All);
@@ -858,7 +868,7 @@ void test_shell_factory_wedges_four_on_equator() {
   const auto shell = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
+          MetavariablesWithoutBoundaryConditions<3, domain::creators::Shell>>(
       "Shell:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -888,7 +898,7 @@ void test_shell_factory_wedges_one_along_minus_x() {
   const auto shell = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
+          MetavariablesWithoutBoundaryConditions<3, domain::creators::Shell>>(
       "Shell:\n"
       "  InnerRadius: 2\n"
       "  OuterRadius: 3\n"

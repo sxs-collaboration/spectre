@@ -224,7 +224,8 @@ void test_rotated_intervals_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<1>>(
+            MetavariablesWithoutBoundaryConditions<
+                1, domain::creators::RotatedIntervals>>(
         "RotatedIntervals:\n"
         "  LowerBound: [0.0]\n"
         "  Midpoint:   [0.5]\n"
@@ -249,7 +250,8 @@ void test_rotated_intervals_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<1>>(
+            MetavariablesWithBoundaryConditions<
+                1, domain::creators::RotatedIntervals>>(
         "RotatedIntervals:\n"
         "  LowerBound: [0.0]\n"
         "  Midpoint:   [0.5]\n"

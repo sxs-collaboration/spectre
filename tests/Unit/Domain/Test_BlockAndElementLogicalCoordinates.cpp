@@ -19,6 +19,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"

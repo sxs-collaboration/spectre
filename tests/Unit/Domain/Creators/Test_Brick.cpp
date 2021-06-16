@@ -306,7 +306,7 @@ void test_brick_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<3>>(
+            MetavariablesWithoutBoundaryConditions<3, domain::creators::Brick>>(
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
@@ -332,7 +332,7 @@ void test_brick_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<3>>(
+            MetavariablesWithBoundaryConditions<3, domain::creators::Brick>>(
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
@@ -358,7 +358,7 @@ void test_brick_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<3>>(
+            MetavariablesWithoutBoundaryConditions<3, domain::creators::Brick>>(
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
@@ -407,7 +407,7 @@ void test_brick_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<3>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<3>>(
+            MetavariablesWithBoundaryConditions<3, domain::creators::Brick>>(
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"

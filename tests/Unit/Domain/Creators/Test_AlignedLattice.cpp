@@ -92,7 +92,8 @@ auto make_domain_creator(const std::string& opt_string,
     return TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<VolumeDim>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<VolumeDim>>(
+            MetavariablesWithBoundaryConditions<
+                VolumeDim, domain::creators::AlignedLattice<VolumeDim>>>(
         opt_string + std::string{"  BoundaryCondition:\n"
                                  "    TestBoundaryCondition:\n"
                                  "      Direction: upper-xi\n"
@@ -101,7 +102,9 @@ auto make_domain_creator(const std::string& opt_string,
     return TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<VolumeDim>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<VolumeDim>>(opt_string);
+            MetavariablesWithoutBoundaryConditions<
+                VolumeDim, domain::creators::AlignedLattice<VolumeDim>>>(
+        opt_string);
   }
 }
 }  // namespace
@@ -215,7 +218,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
   const auto domain_creator_2d_periodic = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<2>>(
+          MetavariablesWithoutBoundaryConditions<
+              2, domain::creators::AlignedLattice<2>>>(
       "AlignedLattice:\n"
       "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
       "  IsPeriodicIn: [false, true]\n"
@@ -232,7 +236,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
   const auto domain_creator_3d_periodic = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
+          MetavariablesWithoutBoundaryConditions<
+              3, domain::creators::AlignedLattice<3>>>(
       "AlignedLattice:\n"
       "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
       "  IsPeriodicIn: [false, true, false]\n"
@@ -254,7 +259,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto refined_domain = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<2>>(
+            MetavariablesWithoutBoundaryConditions<
+                2, domain::creators::AlignedLattice<2>>>(
         "AlignedLattice:\n"
         "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
         "  IsPeriodicIn: [false, false]\n"
@@ -306,7 +312,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto refined_domain = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<2>>(
+            MetavariablesWithoutBoundaryConditions<
+                2, domain::creators::AlignedLattice<2>>>(
         "AlignedLattice:\n"
         "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
         "  IsPeriodicIn: [false, false]\n"

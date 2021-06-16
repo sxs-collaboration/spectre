@@ -13,7 +13,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/TagName.hpp"
-#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Brick.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   const auto created_domain_creator = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
+          MetavariablesWithoutBoundaryConditions<3, domain::creators::Brick>>(
       "Brick:\n"
       "  LowerBound: [-4.0, -5.0, -6.0]\n"
       "  UpperBound: [6.0, 5.0, 4.0]\n"
