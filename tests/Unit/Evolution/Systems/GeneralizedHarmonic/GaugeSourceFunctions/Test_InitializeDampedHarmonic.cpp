@@ -63,6 +63,7 @@ struct component {
       metavariables::use_rollon,
       tmpl::list<
           domain::Tags::FunctionsOfTime, Tags::Time, domain::Tags::Mesh<Dim>,
+          domain::Tags::Coordinates<Dim, Frame::Grid>,
           domain::Tags::Coordinates<Dim, Frame::Inertial>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
@@ -72,6 +73,7 @@ struct component {
           ::Initialization::Tags::InitialTime, Tags::Time,
           domain::Tags::Mesh<Dim>,
           domain::Tags::Coordinates<Dim, Frame::Logical>,
+          domain::Tags::Coordinates<Dim, Frame::Grid>,
           domain::Tags::Coordinates<Dim, Frame::Inertial>,
           domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
@@ -148,15 +150,15 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
     center.fill(0.0);
     auto damping_function_0 =
         std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                             GaussianPlusConstant<Dim, Frame::Inertial>>(
+                             GaussianPlusConstant<Dim, Frame::Grid>>(
             constant_02, amplitude_0, width, center);
     auto damping_function_1 =
         std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                             GaussianPlusConstant<Dim, Frame::Inertial>>(
+                             GaussianPlusConstant<Dim, Frame::Grid>>(
             constant_1, amplitude_1, width, center);
     auto damping_function_2 =
         std::make_unique<GeneralizedHarmonic::ConstraintDamping::
-                             GaussianPlusConstant<Dim, Frame::Inertial>>(
+                             GaussianPlusConstant<Dim, Frame::Grid>>(
             constant_02, amplitude_2, width, center);
 
     if constexpr (UseRollon) {
@@ -166,11 +168,11 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
       tuples::TaggedTuple<
           GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<true>,
           GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-              Dim, Frame::Inertial>,
+              Dim, Frame::Grid>,
           GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-              Dim, Frame::Inertial>,
+              Dim, Frame::Grid>,
           GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-              Dim, Frame::Inertial>>
+              Dim, Frame::Grid>>
           global_cache{parameters, std::move(damping_function_0),
                        std::move(damping_function_1),
                        std::move(damping_function_2)};
@@ -185,11 +187,11 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
       tuples::TaggedTuple<
           GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<false>,
           GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-              Dim, Frame::Inertial>,
+              Dim, Frame::Grid>,
           GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-              Dim, Frame::Inertial>,
+              Dim, Frame::Grid>,
           GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-              Dim, Frame::Inertial>>
+              Dim, Frame::Grid>>
           global_cache{parameters, std::move(damping_function_0),
                        std::move(damping_function_1),
                        std::move(damping_function_2)};
@@ -207,6 +209,10 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   const auto inertial_coords =
       make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
           generator, make_not_null(&pdist), mesh.number_of_grid_points());
+  tnsr::I<DataVector, Dim, Frame::Grid> grid_coords;
+  for (size_t i = 0; i < Dim; ++i) {
+    grid_coords.get(i) = inertial_coords.get(i);
+  }
   Variables<typename metavars::evolved_vars> evolved_vars{
       mesh.number_of_grid_points()};
   tmpl::for_each<typename metavars::evolved_vars>(
@@ -236,7 +242,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
         {std::unordered_map<
              std::string,
              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
-         time, mesh, inertial_coords,
+         time, mesh, grid_coords, inertial_coords,
          domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
              domain::CoordinateMaps::Identity<Dim>{}),
          inv_jac, evolved_vars});
@@ -248,7 +254,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
 
     ActionTesting::emplace_component_and_initialize<comp>(
         &runner, 0,
-        {time, time, mesh, logical_coords, inertial_coords,
+        {time, time, mesh, logical_coords, grid_coords, inertial_coords,
          ElementMap<Dim, Frame::Grid>{
              ElementId<Dim>{0},
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -415,14 +421,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.InitializeDampedHarmonic",
                   "[Unit][Evolution][Actions]") {
   domain::creators::register_derived_with_charm();
   Parallel::register_derived_classes_with_charm<
-      GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          1, Frame::Inertial>>();
+      GeneralizedHarmonic::ConstraintDamping::DampingFunction<1,
+                                                              Frame::Grid>>();
   Parallel::register_derived_classes_with_charm<
-      GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          2, Frame::Inertial>>();
+      GeneralizedHarmonic::ConstraintDamping::DampingFunction<2,
+                                                              Frame::Grid>>();
   Parallel::register_derived_classes_with_charm<
-      GeneralizedHarmonic::ConstraintDamping::DampingFunction<
-          3, Frame::Inertial>>();
+      GeneralizedHarmonic::ConstraintDamping::DampingFunction<3,
+                                                              Frame::Grid>>();
 
   MAKE_GENERATOR(generator);
   test<1, true>(make_not_null(&generator));

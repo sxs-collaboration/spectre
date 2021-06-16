@@ -101,17 +101,17 @@ struct InitializeGhAnd3Plus1Variables {
       gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
       gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
       GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
-      ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, frame>,
-      ConstraintDamping::Tags::ConstraintGamma1Compute<Dim, frame>,
-      ConstraintDamping::Tags::ConstraintGamma2Compute<Dim, frame>>;
+      ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
+      ConstraintDamping::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
+      ConstraintDamping::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>>;
 
   using const_global_cache_tags = tmpl::list<
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          Dim, frame>,
+          Dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          Dim, frame>,
+          Dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          Dim, frame>>;
+          Dim, Frame::Grid>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

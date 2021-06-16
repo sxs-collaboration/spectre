@@ -265,11 +265,11 @@ struct GeneralizedHarmonicTemplateBase<
   using const_global_cache_tags = tmpl::list<
       analytic_solution_tag, Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, frame>,
+          volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, frame>,
+          volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, frame>,
+          volume_dim, Frame::Grid>,
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
