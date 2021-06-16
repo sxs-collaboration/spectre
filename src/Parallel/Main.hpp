@@ -145,6 +145,7 @@ class Main : public CBase_Main<Metavariables> {
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
+  Options::Parser<option_list> parser_{Metavariables::help};
   // This is only used during startup, and will be cleared after all
   // the chares are created.  It is a member variable because passing
   // local state through charm callbacks is painful.
@@ -307,10 +308,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
     bpo::store(command_line_parser.run(), parsed_command_line_options);
     bpo::notify(parsed_command_line_options);
 
-    Options::Parser<option_list> options(Metavariables::help);
-
     if (parsed_command_line_options.count("help") != 0) {
-      Parallel::printf("%s\n%s", command_line_options, options.help());
+      Parallel::printf("%s\n%s", command_line_options, parser_.help());
       sys::exit();
     }
 
@@ -341,14 +340,14 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
         ERROR("No default input file name.  Pass --input-file.");
       }
       input_file = parsed_command_line_options["input-file"].as<std::string>();
-      options.parse_file(input_file);
+      parser_.parse_file(input_file);
     } else {
-      options.parse("");
+      parser_.parse("");
     }
 
     if (parsed_command_line_options.count("check-options") != 0) {
       // Force all the options to be created.
-      options.template apply<option_list, Metavariables>([](auto... args) {
+      parser_.template apply<option_list, Metavariables>([](auto... args) {
         (void)std::initializer_list<char>{((void)args, '0')...};
       });
       if (has_options) {
@@ -376,7 +375,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       sys::exit();
     }
 
-    options_ = options.template apply<option_list, Metavariables>(
+    options_ = parser_.template apply<option_list, Metavariables>(
         [](auto... args) noexcept {
           return tuples::tagged_tuple_from_typelist<option_list>(
               std::move(args)...);
@@ -525,6 +524,7 @@ void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
   p | mutable_global_cache_proxy_;
   p | global_cache_proxy_;
   p | at_sync_indicator_proxy_;
+  p | parser_;
   // Note: we do NOT serialize the options.
   // This is because options are only used in the initialization phase when
   // the executable first starts up. Thereafter, the information from the
