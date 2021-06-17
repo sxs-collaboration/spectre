@@ -256,7 +256,7 @@ struct Initialize {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename ExitTag>
+template <typename ExitTag, typename System>
 struct CheckForCompletion {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -267,13 +267,12 @@ struct CheckForCompletion {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
 
     const bool done_with_order =
         db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
 
     if (done_with_order) {
-      tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {
+      tmpl::for_each<detail::vars_to_save<System>>([&box](auto tag) noexcept {
         using Tag = tmpl::type_from<decltype(tag)>;
         db::mutate<Tag>(
             make_not_null(&box),
@@ -466,7 +465,7 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
 // clang-format off
     SelfStart::Actions::Initialize<System>,
     ::Actions::Label<detail::PhaseStart>,
-    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
+    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System>,
     ::Actions::AdvanceTime,
     SelfStart::Actions::CheckForOrderIncrease,
     StepActions,
