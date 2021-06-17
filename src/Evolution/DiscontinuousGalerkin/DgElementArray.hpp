@@ -97,9 +97,9 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
         initial_element_ids(block.id(), initial_ref_levs);
     if (use_z_order_distribution) {
       for (const auto& element_id : element_ids) {
-        const size_t target_proc = element_distribution.get_proc_for_element(
-            block.id(), ElementId<volume_dim>(element_id));
-        dg_element_array(ElementId<volume_dim>(element_id))
+        const size_t target_proc =
+            element_distribution.get_proc_for_element(element_id);
+        dg_element_array(element_id)
             .insert(global_cache, initialization_items, target_proc);
       }
     } else {

@@ -999,8 +999,8 @@ void test_radial_block_layers(const double inner_radius,
       // three logical dimensions. It is sufficient to only check the elements
       // in the radial direction lying along a ray at a fixed angle.
       // This is done by getting the desired Elements through their SegmentIds.
-      if (element_id.segment_ids()[0] == SegmentId{refinement_level, 0} and
-          element_id.segment_ids()[1] == SegmentId{refinement_level, 0}) {
+      if (element_id.segment_id(0) == SegmentId{refinement_level, 0} and
+          element_id.segment_id(1) == SegmentId{refinement_level, 0}) {
         element_count++;
         if (block.is_time_dependent()) {
           ERROR(

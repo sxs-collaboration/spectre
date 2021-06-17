@@ -21,7 +21,7 @@ std::array<size_t, VolumeDim> desired_refinement_levels(
   for (size_t d = 0; d < VolumeDim; ++d) {
     ASSERT(amr::Flag::Undefined != gsl::at(flags, d),
            "Undefined amr::Flag in dimension " << d);
-    gsl::at(result, d) = gsl::at(id.segment_ids(), d).refinement_level();
+    gsl::at(result, d) = id.segment_id(d).refinement_level();
     if (amr::Flag::Join == gsl::at(flags, d)) {
       --gsl::at(result, d);
     } else if (amr::Flag::Split == gsl::at(flags, d)) {
@@ -44,8 +44,7 @@ std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
     ASSERT(amr::Flag::Undefined != gsl::at(neighbor_flags, d),
            "Undefined amr::Flag in dimension " << d);
     const size_t mapped_dim = orientation(d);
-    gsl::at(result, d) =
-        gsl::at(neighbor_id.segment_ids(), mapped_dim).refinement_level();
+    gsl::at(result, d) = neighbor_id.segment_id(mapped_dim).refinement_level();
     if (amr::Flag::Join == gsl::at(neighbor_flags, mapped_dim)) {
       --gsl::at(result, d);
     } else if (amr::Flag::Split == gsl::at(neighbor_flags, mapped_dim)) {
@@ -59,8 +58,7 @@ template <size_t VolumeDim>
 bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
                            const Direction<VolumeDim>& direction) noexcept {
   return direction.side() ==
-         gsl::at(element_id.segment_ids(), direction.dimension())
-             .side_of_sibling();
+         element_id.segment_id(direction.dimension()).side_of_sibling();
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

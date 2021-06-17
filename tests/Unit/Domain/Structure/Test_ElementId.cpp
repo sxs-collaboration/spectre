@@ -94,6 +94,9 @@ void test_element_id() {
   ElementId<3> block_2_3d(2, segment_ids);
   CHECK(block_2_3d.block_id() == 2);
   CHECK(block_2_3d.segment_ids() == segment_ids);
+  CHECK(block_2_3d.segment_id(0) == segment_ids[0]);
+  CHECK(block_2_3d.segment_id(1) == segment_ids[1]);
+  CHECK(block_2_3d.segment_id(2) == segment_ids[2]);
   CHECK(block_2_3d.grid_index() == 0);
 
   // Test parent and child operations:
@@ -101,7 +104,7 @@ void test_element_id() {
     for (size_t dim = 0; dim < 3; dim++) {
       CHECK(id == id.id_of_child(dim, Side::Lower).id_of_parent(dim));
       CHECK(id == id.id_of_child(dim, Side::Upper).id_of_parent(dim));
-      if (0 == gsl::at(id.segment_ids(), dim).index() % 2) {
+      if (0 == id.segment_id(dim).index() % 2) {
         CHECK(id == id.id_of_parent(dim).id_of_child(dim, Side::Lower));
       } else {
         CHECK(id == id.id_of_parent(dim).id_of_child(dim, Side::Upper));

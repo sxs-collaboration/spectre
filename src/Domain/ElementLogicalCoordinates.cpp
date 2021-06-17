@@ -57,10 +57,8 @@ element_logical_coordinates(const std::vector<ElementId<Dim>>& element_ids,
         bool is_contained = true;
         auto x_elem = make_array<Dim>(0.0);
         for (size_t d = 0; d < Dim; ++d) {
-          const double up =
-              gsl::at(element_id.segment_ids(), d).endpoint(Side::Upper);
-          const double lo =
-              gsl::at(element_id.segment_ids(), d).endpoint(Side::Lower);
+          const double up = element_id.segment_id(d).endpoint(Side::Upper);
+          const double lo = element_id.segment_id(d).endpoint(Side::Lower);
           const double x_block_log = x_block_logical.get(d);
           if (x_block_log < lo or x_block_log > up) {
             is_contained = false;

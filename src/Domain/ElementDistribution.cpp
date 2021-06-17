@@ -36,8 +36,8 @@ size_t z_curve_index(const ElementId<Dim>& element_id) noexcept {
   std::array<std::pair<size_t, size_t>, Dim>
       dimension_by_highest_refinement_level;
   for (size_t i = 0; i < Dim; ++i) {
-    dimension_by_highest_refinement_level.at(i) = std::make_pair(
-        gsl::at(element_id.segment_ids(), i).refinement_level(), i);
+    dimension_by_highest_refinement_level.at(i) =
+        std::make_pair(element_id.segment_id(i).refinement_level(), i);
   }
   alg::sort(dimension_by_highest_refinement_level,
             [](const std::pair<size_t, size_t>& lhs,
@@ -60,7 +60,8 @@ size_t z_curve_index(const ElementId<Dim>& element_id) noexcept {
   size_t leading_gap = 0;
   for (size_t i = 0; i < Dim; ++i) {
     const size_t id_to_gap_and_shift =
-        gsl::at(element_id.segment_ids(),
+        element_id
+            .segment_id(
                 gsl::at(dimension_by_highest_refinement_level, i).second)
             .index();
     size_t total_gap = leading_gap;
@@ -142,11 +143,11 @@ BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
 
 template <size_t Dim>
 size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
-    const size_t block_id, const ElementId<Dim>& element_id) const noexcept {
+    const ElementId<Dim>& element_id) const noexcept {
   const size_t element_order_index = z_curve_index(element_id);
   size_t total_so_far = 0;
   for (const std::pair<size_t, size_t>& element_info :
-       gsl::at(block_element_distribution_, block_id)) {
+       gsl::at(block_element_distribution_, element_id.block_id())) {
     if (total_so_far <= element_order_index and
         element_info.second + total_so_far > element_order_index) {
       return element_info.first;

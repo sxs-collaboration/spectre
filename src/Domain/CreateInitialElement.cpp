@@ -29,7 +29,7 @@ Element<VolumeDim> create_initial_element(
     const std::vector<std::array<size_t, VolumeDim>>&
         initial_refinement_levels) noexcept {
   const auto& neighbors_of_block = block.neighbors();
-  const auto& segment_ids = element_id.segment_ids();
+  const auto segment_ids = element_id.segment_ids();
 
   // Declare two helper lambdas for setting the neighbors of an element
   const auto compute_element_neighbor_in_other_block =

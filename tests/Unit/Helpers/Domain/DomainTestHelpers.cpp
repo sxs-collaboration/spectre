@@ -52,7 +52,7 @@ template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_face_area(
     const ElementId<VolumeDim>& element_id,
     const Direction<VolumeDim>& direction) noexcept {
-  const auto& segment_ids = element_id.segment_ids();
+  const auto segment_ids = element_id.segment_ids();
   size_t sum_of_refinement_levels = 0;
   const size_t dim_normal_to_face = direction.dimension();
   for (size_t d = 0; d < VolumeDim; ++d) {
@@ -171,12 +171,10 @@ void test_refinement_levels_of_neighbors(
         }
 
         const size_t my_dim_in_neighbor = orientation(d);
-        const size_t my_level =
-            gsl::at(element_id.segment_ids(), d).refinement_level();
+        const size_t my_level = element_id.segment_id(d).refinement_level();
         for (const auto neighbor_id : neighbors.ids()) {
           const size_t neighbor_level =
-              gsl::at(neighbor_id.segment_ids(), my_dim_in_neighbor)
-                  .refinement_level();
+              neighbor_id.segment_id(my_dim_in_neighbor).refinement_level();
           check_if_levels_are_within<AllowedTangentialDifference>(
               my_level, neighbor_level);
         }
@@ -519,7 +517,7 @@ void test_det_jac_positive(
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_volume(
     const ElementId<VolumeDim>& element_id) noexcept {
-  const auto& segment_ids = element_id.segment_ids();
+  const auto segment_ids = element_id.segment_ids();
   size_t sum_of_refinement_levels = 0;
   for (const auto& segment_id : segment_ids) {
     sum_of_refinement_levels += segment_id.refinement_level();

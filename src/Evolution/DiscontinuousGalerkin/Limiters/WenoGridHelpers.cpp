@@ -28,12 +28,12 @@ bool check_element_has_one_similar_neighbor_in_direction(
     return false;
   } else {
     const auto& orientation_map = neighbors.orientation();
-    const auto& neighbor_segment_ids = neighbors.ids().cbegin()->segment_ids();
+    const auto neighbor_segment_ids = neighbors.ids().cbegin()->segment_ids();
     const auto reoriented_neighbor_segment_ids =
         orientation_map.inverse_map()(neighbor_segment_ids);
     for (size_t d = 0; d < VolumeDim; ++d) {
       if (gsl::at(reoriented_neighbor_segment_ids, d).refinement_level() !=
-          gsl::at(element.id().segment_ids(), d).refinement_level()) {
+          element.id().segment_id(d).refinement_level()) {
         // One neighbor, but of a different refinement level
         return false;
       }
