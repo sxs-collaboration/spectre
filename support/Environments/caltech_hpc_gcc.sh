@@ -12,6 +12,7 @@ spectre_load_sys_modules() {
     module load boost/1_68_0-gcc730
     module load cmake/3.18.0
     module load python3/3.8.5
+    module load git/2.26.0
 }
 
 # Unload system modules
@@ -23,6 +24,7 @@ spectre_unload_sys_modules() {
     module unload gcc/9.2.0
     module unload cmake/3.18.0
     module unload python3/3.8.5
+    module unload git/2.26.0
 }
 
 
