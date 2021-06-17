@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-file(WRITE
+file(APPEND
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "CMake Version: ${CMAKE_VERSION}\n"
   "SpECTRE Version: ${SPECTRE_VERSION}\n"
