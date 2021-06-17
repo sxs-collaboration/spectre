@@ -871,10 +871,8 @@ void multiply_variables_by_two(
 }  // namespace
 
 namespace test_databox_tags {
-struct MultiplyScalarByTwo : db::SimpleTag {
-  using type = Variables<
-      tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>;
-};
+using MultiplyScalarByTwo = ::Tags::Variables<
+    tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>;
 
 struct MultiplyScalarByTwoCompute : MultiplyScalarByTwo, db::ComputeTag {
   using base = MultiplyScalarByTwo;
@@ -917,10 +915,8 @@ struct DivideScalarByThreeCompute : DivideScalarByThree, db::ComputeTag {
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByThree>;
 };
 
-struct DivideScalarByTwo : db::SimpleTag {
-  using type = Variables<
-      tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>;
-};
+using DivideScalarByTwo = ::Tags::Variables<
+    tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>;
 
 struct DivideScalarByTwoCompute : DivideScalarByTwo, db::ComputeTag {
   using base = DivideScalarByTwo;
@@ -930,10 +926,8 @@ struct DivideScalarByTwoCompute : DivideScalarByTwo, db::ComputeTag {
   using argument_tags = tmpl::list<test_databox_tags::DivideScalarByThree>;
 };
 
-struct MultiplyVariablesByTwo : db::SimpleTag {
-  using type = Variables<
-      tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>;
-};
+using MultiplyVariablesByTwo = ::Tags::Variables<
+    tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>;
 
 struct MultiplyVariablesByTwoCompute : MultiplyVariablesByTwo, db::ComputeTag {
   using base = MultiplyVariablesByTwo;

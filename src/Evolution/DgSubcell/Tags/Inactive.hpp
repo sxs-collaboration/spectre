@@ -27,7 +27,8 @@ struct Inactive : db::PrefixTag, db::SimpleTag {
 
 /// \copydoc Inactive
 template <typename TagList>
-struct Inactive<::Tags::Variables<TagList>> : db::PrefixTag, db::SimpleTag {
+struct Inactive<::Tags::Variables<TagList>>
+    : ::Tags::Variables<db::wrap_tags_in<Inactive, TagList>> {
   using tag = ::Tags::Variables<TagList>;
   using type = Variables<db::wrap_tags_in<Inactive, TagList>>;
 };

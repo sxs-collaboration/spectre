@@ -27,8 +27,8 @@ struct OnSubcells : db::PrefixTag, db::SimpleTag {
 
 /// \cond
 template <typename TagList>
-struct OnSubcells<::Tags::Variables<TagList>> : db::PrefixTag,
-                                                   db::SimpleTag {
+struct OnSubcells<::Tags::Variables<TagList>>
+    : ::Tags::Variables<db::wrap_tags_in<OnSubcells, TagList>> {
  private:
   using wrapped_tags_list = db::wrap_tags_in<OnSubcells, TagList>;
 
