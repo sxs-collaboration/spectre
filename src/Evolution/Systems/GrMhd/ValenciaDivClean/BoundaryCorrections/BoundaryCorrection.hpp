@@ -9,8 +9,9 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace grmhd::ValenciaDivClean {
 /// Boundary corrections/numerical fluxes
-namespace grmhd::ValenciaDivClean::BoundaryCorrections {
+namespace BoundaryCorrections {
 /// \cond
 class Hll;
 class Rusanov;
@@ -37,4 +38,5 @@ class BoundaryCorrection : public PUP::able {
 
   virtual std::unique_ptr<BoundaryCorrection> get_clone() const noexcept = 0;
 };
-}  // namespace grmhd::ValenciaDivClean::BoundaryCorrections
+}  // namespace BoundaryCorrections
+}  // namespace grmhd::ValenciaDivClean
