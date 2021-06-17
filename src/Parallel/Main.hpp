@@ -189,6 +189,7 @@ class Main : public CBase_Main<Metavariables> {
   Parallel::Phase current_phase_{Parallel::Phase::Initialization};
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
+  std::string input_file_{};
   Options::Parser<tmpl::remove<option_list, Options::Tags::InputSource>>
       parser_{Metavariables::help};
   // This is only used during startup, and will be cleared after all
@@ -387,13 +388,12 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
       sys::exit();
     }
 
-    std::string input_file;
     if (has_options) {
       if (parsed_command_line_options.count("input-file") == 0) {
         ERROR_NO_TRACE("No default input file name.  Pass --input-file.");
       }
-      input_file = parsed_command_line_options["input-file"].as<std::string>();
-      parser_.parse_file(input_file);
+      input_file_ = parsed_command_line_options["input-file"].as<std::string>();
+      parser_.parse_file(input_file_);
     } else {
       if constexpr (tmpl::size<singleton_component_list>::value > 0) {
         parser_.parse(
@@ -413,7 +413,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         (void)std::initializer_list<char>{((void)args, '0')...};
       });
       if (has_options) {
-        Parallel::printf("\n%s parsed successfully!\n", input_file);
+        Parallel::printf("\n%s parsed successfully!\n", input_file_);
       } else {
         // This is still considered successful, since it means the
         // program would have started.
@@ -592,6 +592,7 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | current_phase_;
   p | global_cache_proxy_;
   p | at_sync_indicator_proxy_;
+  p | input_file_;
   p | parser_;
   // Note: we don't serialize options_, because it's used as a temporary in
   // startup only (see comment in class definition).
