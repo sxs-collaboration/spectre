@@ -41,6 +41,20 @@ namespace Solutions {
  * is imposed by the solution itself, any modes specified in the input file are
  * treated as perturbations to the leading value of 1.0 for the
  * Robinson-Trautman scalar \f$\omega_{\text{RT}}\f$.
+ *
+ * \note The use of substep time-steppers in conjunction with `RobinsonTrautman`
+ * analytic data is explictly forbidden by checks in
+ * `Cce::Actions::InitializeWorldtubeBoundary`. The reason is that any time the
+ * `RobinsonTrautman` receives a request for data at a time in the past of its
+ * current state, it must re-start its internal time stepper from the beginning
+ * of the evolution. This is a reasonable cost for multistep methods that only
+ * have non-ordered time steps during self-start, but will lead to
+ * \f$\mathcal O(N^2)\f$ internal steps in the `RobinsonTrautman` solution if a
+ * substep method is used, where \f$N\f$ is the number of steps performed by the
+ * substep method. If you find an unavoidable need to use `RobinsonTrautman`
+ * with a substep method, you will either need to only do so for very short
+ * evolutions, or need to write more sophisticated caching of the internal time
+ * step data.
  */
 struct RobinsonTrautman : public SphericalMetricData {
   struct InitialModes {
@@ -134,7 +148,7 @@ struct RobinsonTrautman : public SphericalMetricData {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
       const noexcept;
 
-  void initialize_stepper_from_start() noexcept;
+  void initialize_stepper_from_start() const noexcept;
 
  protected:
   /*!

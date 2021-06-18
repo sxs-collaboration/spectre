@@ -68,6 +68,10 @@ class AnalyticBoundaryDataManager {
 
   size_t get_l_max() const noexcept { return l_max_; }
 
+  const Solutions::WorldtubeData& get_generator() const noexcept {
+    return *generator_;
+  }
+
   /// Serialization for Charm++.
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;

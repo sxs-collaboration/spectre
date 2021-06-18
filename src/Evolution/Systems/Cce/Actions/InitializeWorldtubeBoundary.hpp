@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
@@ -57,6 +58,20 @@ struct InitializeWorldtubeBoundaryBase {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    if constexpr (std::is_same_v<Tags::AnalyticBoundaryDataManager,
+                                 ManagerTag>) {
+      if (dynamic_cast<const Solutions::RobinsonTrautman*>(
+              &(db::get<Tags::AnalyticBoundaryDataManager>(box)
+                    .get_generator())) != nullptr) {
+        if(db::get<::Tags::TimeStepper<>>(box).number_of_substeps() != 1) {
+          ERROR(
+              "Do not use RobinsonTrautman analytic solution with a "
+              "substep-based timestepper. This is to prevent severe slowdowns "
+              "in the current RobinsonTrautman implementation. See the "
+              "documentation for the RobinsonTrautman solution for details.");
+        }
+      }
+    }
     if constexpr (tmpl::list_contains_v<DataBoxTagsList, ManagerTag>) {
       const size_t l_max = db::get<Tags::LMax>(box);
       Variables<BoundaryCommunicationTagsList> boundary_variables{
@@ -197,7 +212,8 @@ struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
   using base_type::apply;
   using typename base_type::simple_tags;
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;
+      tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime,
+                 ::Tags::TimeStepper<TimeStepper>>;
   using typename base_type::initialization_tags;
   using typename base_type::initialization_tags_to_keep;
 };

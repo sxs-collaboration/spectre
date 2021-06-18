@@ -13,6 +13,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
@@ -26,6 +28,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -200,12 +203,15 @@ void test_gh_initialization() noexcept {
 void test_analytic_initialization() noexcept {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
-      {l_max, 0.0, 100.0}};
+      {l_max, 100.0, 0.0, std::make_unique<::TimeSteppers::RungeKutta3>()}};
 
   runner.set_phase(AnalyticMetavariables::Phase::Initialization);
-  ActionTesting::emplace_component<component>(&runner, 0,
-                                              AnalyticBoundaryDataManager{});
+  ActionTesting::emplace_component<component>(
+      &runner, 0,
+      AnalyticBoundaryDataManager{
+          12_st, 20.0, std::make_unique<Solutions::RotatingSchwarzschild>()});
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -231,5 +237,25 @@ SPECTRE_TEST_CASE(
   test_h5_initialization(make_not_null(&gen));
   test_gh_initialization();
   test_analytic_initialization();
+}
+
+// [[OutputRegex, Do not use RobinsonTrautman analytic solution with]]
+SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
+                  "[Utilities][Unit]") {
+  ERROR_TEST();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
+  const size_t l_max = 8;
+  ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
+      {l_max, 100.0, 0.0, std::make_unique<::TimeSteppers::RungeKutta3>()}};
+  runner.set_phase(AnalyticMetavariables::Phase::Initialization);
+  ActionTesting::emplace_component<component>(
+      &runner, 0,
+      AnalyticBoundaryDataManager{
+          12_st, 20.0, std::make_unique<Solutions::RobinsonTrautman>()});
+  // this should run the initialization
+  for (size_t i = 0; i < 3; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
 }
 }  // namespace Cce
