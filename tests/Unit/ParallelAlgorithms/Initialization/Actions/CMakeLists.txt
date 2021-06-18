@@ -5,6 +5,7 @@ set(LIBRARY "Test_InitializationActions")
 
 set(LIBRARY_SOURCES
   Test_AddComputeTags.cpp
+  Test_AddSimpleTags.cpp
   Test_RemoveOptionsAndTerminatePhase.cpp
   )
 
