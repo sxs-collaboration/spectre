@@ -196,12 +196,12 @@ void apply_boundary_condition_on_face(
                           db::wrap_tags_in<::Tags::Flux, flux_variables,
                                            tmpl::size_t<Dim>, Frame::Inertial>,
                           tmpl::list<>>;
-  using tags_on_interior_face = tmpl::append<
+  using tags_on_interior_face = tmpl::remove_duplicates<tmpl::append<
       fluxes_tags, interior_temp_tags, interior_prim_tags,
       interior_evolved_vars_tags, bcondition_interior_dt_evolved_vars_tags,
       bcondition_interior_deriv_evolved_vars_tags, inverse_spatial_metric_list,
       tmpl::list<detail::OneOverNormalVectorMagnitude,
-                 detail::NormalVector<Dim>>>;
+                 detail::NormalVector<Dim>>>>;
 
   Variables<tags_on_interior_face> interior_face_fields{
       number_of_points_on_face};
