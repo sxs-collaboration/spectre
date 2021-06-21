@@ -14,6 +14,7 @@
 #include <variant>
 #include <vector>
 
+#include "Framework/TestHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -1292,6 +1293,109 @@ SPECTRE_TEST_CASE("Unit.Options.overlay.subgroup_context", "[Unit][Options]") {
       "  OuterGroupedTag: 2\n"
       "  OuterGroupedTag: 2");
 }
+
+void test_options_serialization() noexcept {
+  {
+    // Test serialization of an unparsed parser.
+    Options::Parser<tmpl::list<Simple>> parser("passed help");
+    auto parser2 = serialize_and_deserialize(parser);
+    CHECK(parser2.get<Options::InputSource>().empty());
+    CHECK(parser2.help() == parser.help());
+    const std::string source = "Simple: 4";
+    parser2.parse(source);
+    const auto parser3 = serialize_and_deserialize(parser2);
+    CHECK(parser3.get<Options::InputSource>() == std::vector{source});
+    CHECK(parser3.get<Simple>() == 4);
+  }
+
+  const auto check_repeated = [](const auto& parser1, const auto& f) noexcept {
+    f(parser1);
+    const auto parser2 = serialize_and_deserialize(parser1);
+    f(parser2);
+    const auto parser3 = serialize_and_deserialize(parser2);
+    f(parser3);
+  };
+
+  {
+    // Groups
+    Options::Parser<tmpl::list<InnerGroupedTag, OuterGroupedTag, Simple>>
+        parser("Overall help text");
+    const std::string source =
+        "OuterGroup:\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 3\n"
+        "  OuterGroupedTag: 1\n"
+        "Simple: 2\n";
+    parser.parse(source);
+    check_repeated(parser, [&source](
+                               const decltype(parser)& local_parser) noexcept {
+      CHECK(local_parser.get<Options::InputSource>() == std::vector{source});
+      CHECK(local_parser.get<InnerGroupedTag>() == 3);
+      CHECK(local_parser.get<OuterGroupedTag>() == 1);
+      CHECK(local_parser.get<Simple>() == 2);
+    });
+  }
+  {
+    // Overlays
+    Options::Parser<tmpl::list<Simple>> parser("");
+    const std::string source = "Simple: 3";
+    const std::string overlay = "Simple: 4";
+    parser.parse(source);
+    parser.overlay<tmpl::list<Simple>>(overlay);
+    check_repeated(parser, [&source, &overlay](
+                               const decltype(parser)& local_parser) noexcept {
+      CHECK(local_parser.get<Options::InputSource>() ==
+            std::vector{source, overlay});
+      CHECK(local_parser.get<Simple>() == 4);
+    });
+  }
+  {
+    // Groups + Overlays
+    Options::Parser<tmpl::list<Simple, InnerGroupedTag, OuterGroupedTag>>
+        parser("");
+    const std::string source =
+        "Simple: 1\n"
+        "OuterGroup:\n"
+        "  OuterGroupedTag: 2\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 3\n";
+    const std::string overlay =
+        "OuterGroup:\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 5\n";
+    parser.parse(source);
+    parser.overlay<tmpl::list<InnerGroupedTag>>(overlay);
+    check_repeated(parser, [&source, &overlay](
+                               const decltype(parser)& local_parser) noexcept {
+      CHECK(local_parser.get<Options::InputSource>() ==
+            std::vector{source, overlay});
+      CHECK(local_parser.get<Simple>() == 1);
+      CHECK(local_parser.get<OuterGroupedTag>() == 2);
+      CHECK(local_parser.get<InnerGroupedTag>() == 5);
+    });
+  }
+  {
+    // Alternatives
+    Options::Parser<tmpl::list<AlternativesTag>> parser("");
+    const std::string source =
+        "AlternativesTag:\n"
+        "  A: 1.2\n"
+        "  C: 7\n"
+        "  F: required\n";
+    parser.parse(source);
+    check_repeated(parser, [&source](
+                               const decltype(parser)& local_parser) noexcept {
+      CHECK(local_parser.get<Options::InputSource>() == std::vector{source});
+      const auto result = local_parser.get<AlternativesTag>();
+      CHECK(result.a_ == 1.2);
+      CHECK(result.b_ == -1);
+      CHECK(result.c_ == 7);
+      CHECK(result.d_.empty());
+      CHECK(result.e_ == false);
+      CHECK(result.f_ == "required");
+    });
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -1320,4 +1424,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_input_source();
   test_options_alternatives();
   test_options_overlay();
+  test_options_serialization();
 }

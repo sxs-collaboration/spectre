@@ -15,6 +15,7 @@
 #include <limits>
 #include <map>
 #include <ostream>
+#include <pup.h>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -182,6 +183,8 @@ class Parser {
       OptionList, Options_detail::find_subgroup<tmpl::_1, tmpl::pin<Group>>>>;
 
  public:
+  Parser() = default;
+
   /// \param help_text an overall description of the options
   explicit Parser(std::string help_text) noexcept;
 
@@ -239,6 +242,9 @@ class Parser {
   /// Get the help string
   template <typename TagsAndSubgroups = tags_and_subgroups_list>
   std::string help() const noexcept;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) noexcept;
 
  private:
   template <typename, typename>
@@ -645,6 +651,28 @@ std::string Parser<OptionList, Group>::help() const noexcept {
     ss << "\n\n<No options>\n";
   }
   return ss.str();
+}
+
+template <typename OptionList, typename Group>
+void Parser<OptionList, Group>::pup(PUP::er& p) noexcept {
+  static_assert(std::is_same_v<Group, NoSuchType>,
+                "Inner parsers should be recreated by the root parser, not "
+                "serialized.");
+  // We reconstruct most of the state when deserializing, rather than
+  // trying to package it.
+  p | help_text_;
+  p | input_source_;
+  if (p.isUnpacking() and not input_source_.empty()) {
+    // input_source_ is populated by the `parse` and `overlay` calls
+    // below, so we have to clear out the old values before calling
+    // them.
+    auto received_source = std::move(input_source_);
+    input_source_.clear();
+    parse(std::move(received_source[0]));
+    for (size_t i = 1; i < received_source.size(); ++i) {
+      overlay<OptionList>(std::move(received_source[i]));
+    }
+  }
 }
 
 template <typename OptionList, typename Group>
