@@ -13,6 +13,8 @@
 namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
 class DirichletAnalytic;
+template <size_t Dim>
+class Outflow;
 }  // namespace GeneralizedHarmonic::BoundaryConditions
 /// \endcond
 
@@ -23,7 +25,7 @@ template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   using creatable_classes =
-      tmpl::list<DirichletAnalytic<Dim>,
+      tmpl::list<DirichletAnalytic<Dim>, Outflow<Dim>,
                  domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
 
   BoundaryCondition() = default;
