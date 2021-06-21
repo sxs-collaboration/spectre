@@ -67,8 +67,8 @@ void test_cylindrical_side_sphere_two_encloses_sphere_one() {
   ]() noexcept {
     // Need proj_center between or on the z_planes.
     const double z = z_planes[0] + (z_planes[1] - z_planes[0]) * unit_dis(gen);
-    // choose 0.95 so that proj_center is not on edge of sphere_one.
-    const double rho_max = 0.95 * radius_one *
+    // choose 0.9 so that proj_center is not on edge of sphere_one.
+    const double rho_max = 0.9 * radius_one *
                            sqrt(1.0 - square((z - center_one[2]) / radius_one));
     const double rho = unit_dis(gen) * rho_max;
     const double phi = angle_dis(gen);
