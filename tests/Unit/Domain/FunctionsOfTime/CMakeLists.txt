@@ -4,6 +4,7 @@
 set(LIBRARY "Test_FunctionsOfTime")
 
 set(LIBRARY_SOURCES
+  Test_FixedSpeedCubic.cpp
   Test_PiecewisePolynomial.cpp
   Test_ReadSpecPiecewisePolynomial.cpp
   Test_SettleToConstant.cpp
