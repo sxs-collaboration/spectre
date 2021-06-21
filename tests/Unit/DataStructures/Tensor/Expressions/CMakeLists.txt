@@ -7,6 +7,8 @@ set(LIBRARY_SOURCES
   Test_AddSubtract.cpp
   Test_Contract.cpp
   Test_Evaluate.cpp
+  Test_EvaluateRank3.cpp
+  Test_EvaluateRank4.cpp
   Test_MixedOperations.cpp
   Test_Product.cpp
   Test_ProductHighRankIntermediate.cpp
