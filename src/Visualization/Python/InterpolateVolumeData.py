@@ -264,7 +264,7 @@ def parse_args(sys_args):
 
     parser.add_argument(
         "--stride",
-        type=float,
+        type=int,
         default=1,
         help=("Stride through observations with this step size."))
 
