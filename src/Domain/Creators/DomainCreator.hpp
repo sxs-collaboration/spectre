@@ -6,29 +6,19 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/MakeArray.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 template <size_t>
-class Block;
-namespace domain {
-template <typename, typename, size_t>
-class CoordinateMapBase;
-
-namespace FunctionsOfTime {
-class FunctionOfTime;
-}  // namespace FunctionsOfTime
-}  // namespace domain
-template <size_t>
 class Domain;
-namespace Frame {
-struct Grid;
-}  // namespace Frame
 /// \endcond
 
 namespace domain {
