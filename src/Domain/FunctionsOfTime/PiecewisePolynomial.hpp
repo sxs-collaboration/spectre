@@ -51,8 +51,8 @@ class PiecewisePolynomial : public FunctionOfTime {
   }
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.
-  std::array<DataVector, 3> func_and_2_derivs(double t) const
-      noexcept override {
+  std::array<DataVector, 3> func_and_2_derivs(
+      double t) const noexcept override {
     return func_and_derivs<2>(t);
   }
 
@@ -70,8 +70,12 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.
   std::array<double, 2> time_bounds() const noexcept override {
-    return {{deriv_info_at_update_times_.front().time,
-             expiration_time_}};
+    return {{deriv_info_at_update_times_.front().time, expiration_time_}};
+  }
+
+  std::vector<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>&
+  get_deriv_info() {
+    return deriv_info_at_update_times_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -87,8 +91,8 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// an arbitrary time `t`.
   /// The function has multiple components.
   template <size_t MaxDerivReturned = MaxDeriv>
-  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const
-      noexcept;
+  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(
+      double t) const noexcept;
 
   // There exists a DataVector for each deriv order that contains
   // the values of that deriv order for all components.

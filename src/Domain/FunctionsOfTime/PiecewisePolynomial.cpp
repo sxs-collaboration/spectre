@@ -154,7 +154,7 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
   return not(lhs == rhs);
 }
 
-// do explicit instantiation of MaxDeriv = {2,3,4}
+// do explicit instantiation of MaxDeriv = {0,1,2,3,4}
 // along with all combinations of MaxDerivReturned = {0,...,MaxDeriv}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -168,7 +168,7 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
       <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
                   const PiecewisePolynomial<DIM(data)>&) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 
 #undef INSTANTIATE
 
@@ -177,6 +177,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
   PiecewisePolynomial<DIM(data)>::func_and_derivs<DIMRETURNED(data)>( \
       const double) const noexcept;
 
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0), (0))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1), (0, 1))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2), (0, 1, 2))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (3), (0, 1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (4), (0, 1, 2, 3, 4))
