@@ -173,11 +173,8 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
-          ASSERT(Metavariables::local_time_stepping
-                     ? mortar_next_time_step_id->at(mortar_id) ==
-                           received_temporal_id_and_data->first
-                     : received_temporal_id_and_data->first ==
-                           mortar_data->at(mortar_id).time_step_id(),
+          ASSERT(received_temporal_id_and_data->first ==
+                     mortar_data->at(mortar_id).time_step_id(),
                  "Expected to receive mortar data on mortar "
                      << mortar_id << " at time "
                      << mortar_next_time_step_id->at(mortar_id)
