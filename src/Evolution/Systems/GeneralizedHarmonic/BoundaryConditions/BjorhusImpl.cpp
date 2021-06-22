@@ -482,8 +482,9 @@ void add_physical_terms_to_dt_v_minus(
         for (size_t c = 0; c <= VolumeDim; ++c) {
           for (size_t d = 0; d <= VolumeDim; ++d) {
             if constexpr (mu_phys == 0.) {
-              (projection_Ab.get(c, a) * projection_Ab.get(d, b) -
-               0.5 * projection_ab.get(a, b) * projection_AB.get(c, d)) *
+              bc_dt_v_minus->get(a, b) +=
+                  (projection_Ab.get(c, a) * projection_Ab.get(d, b) -
+                   0.5 * projection_ab.get(a, b) * projection_AB.get(c, d)) *
                   (char_projected_rhs_dt_v_minus.get(c, d) +
                    char_speeds[3] * (U3m.get(c, d)));
             } else {
