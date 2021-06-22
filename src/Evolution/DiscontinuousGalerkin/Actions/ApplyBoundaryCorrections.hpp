@@ -37,6 +37,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -654,22 +655,18 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
       tmpl::all<derived_boundary_corrections, std::is_final<tmpl::_1>>::value,
       "All createable classes for boundary corrections must be marked "
       "final.");
-  tmpl::for_each<derived_boundary_corrections>(
-      [&boundary_correction, &box, &compute_and_lift_boundary_corrections](
-          auto derived_correction_v) noexcept {
-        using DerivedCorrection =
-            tmpl::type_from<decltype(derived_correction_v)>;
-        if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
-          // Compute internal boundary quantities on the mortar for sides of
-          // the element that have neighbors, i.e. they are not an external
-          // side.
-          db::mutate<dt_variables_tag, variables_tag,
-                     evolution::dg::Tags::MortarData<volume_dim>,
-                     evolution::dg::Tags::MortarDataHistory<
-                         volume_dim, typename dt_variables_tag::type>>(
-              box, compute_and_lift_boundary_corrections,
-              dynamic_cast<const DerivedCorrection&>(boundary_correction));
-        }
+  call_with_dynamic_type<void, derived_boundary_corrections>(
+      &boundary_correction, [&box, &compute_and_lift_boundary_corrections](
+                                auto* typed_boundary_correction) noexcept {
+        // Compute internal boundary quantities on the mortar for sides of
+        // the element that have neighbors, i.e. they are not an external
+        // side.
+        db::mutate<dt_variables_tag, variables_tag,
+                   evolution::dg::Tags::MortarData<volume_dim>,
+                   evolution::dg::Tags::MortarDataHistory<
+                       volume_dim, typename dt_variables_tag::type>>(
+            box, compute_and_lift_boundary_corrections,
+            *typed_boundary_correction);
       });
 }
 
