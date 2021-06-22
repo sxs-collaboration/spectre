@@ -125,7 +125,7 @@ struct ApplyBoundaryCorrections {
       gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
 
   template <typename DbTagsList, typename... InboxTags>
-  static void receive_global_time_stepping(
+  static bool receive_global_time_stepping(
       gsl::not_null<db::DataBox<DbTagsList>*> box,
       gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
 
@@ -137,12 +137,12 @@ struct ApplyBoundaryCorrections {
 
 template <typename Metavariables>
 template <typename DbTagsList, typename... InboxTags>
-void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
+bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
-  // Move inbox contents into the DataBox
+  const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
   std::map<
       TimeStepId,
@@ -153,8 +153,24 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
           boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
-  const auto& temporal_id = get<::Tags::TimeStepId>(*box);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
+  if (received_temporal_id_and_data == inbox.end()) {
+    return false;
+  }
+  const auto& received_neighbor_data = received_temporal_id_and_data->second;
+  const Element<volume_dim>& element =
+      db::get<domain::Tags::Element<volume_dim>>(*box);
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    for (const auto& neighbor : neighbors) {
+      const auto neighbor_received =
+          received_neighbor_data.find(Key{direction, neighbor});
+      if (neighbor_received == received_neighbor_data.end()) {
+        return false;
+      }
+    }
+  }
+
+  // Move inbox contents into the DataBox
   if constexpr (using_subcell_v<Metavariables>) {
     evolution::dg::subcell::neighbor_reconstructed_face_solution<Metavariables>(
         box, make_not_null(&*received_temporal_id_and_data));
@@ -195,6 +211,7 @@ void ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
         }
       });
   inbox.erase(received_temporal_id_and_data);
+  return true;
 }
 
 template <typename Metavariables>
@@ -646,26 +663,10 @@ ApplyBoundaryCorrections<Metavariables>::apply(
   }
 
   if constexpr (not Metavariables::local_time_stepping) {
-    const TimeStepId& temporal_id = get<::Tags::TimeStepId>(box);
-    const auto& inbox =
-        tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-            Metavariables::volume_dim>>(inboxes);
-    const auto received_temporal_id_and_data = inbox.find(temporal_id);
-    if (received_temporal_id_and_data == inbox.end()) {
+    if (not receive_global_time_stepping(make_not_null(&box),
+                                         make_not_null(&inboxes))) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
-    const auto& received_neighbor_data = received_temporal_id_and_data->second;
-    for (const auto& [direction, neighbors] : element.neighbors()) {
-      for (const auto& neighbor : neighbors) {
-        const auto neighbor_received =
-            received_neighbor_data.find(std::pair{direction, neighbor});
-        if (neighbor_received == received_neighbor_data.end()) {
-          return {std::move(box), Parallel::AlgorithmExecution::Retry};
-        }
-      }
-    }
-
-    receive_global_time_stepping(make_not_null(&box), make_not_null(&inboxes));
   } else {
     const auto& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
