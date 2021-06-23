@@ -34,7 +34,7 @@ jobs:
       SPECTRE_SPACK_DEPS: >-
         blaze@3.5 brigand@master libxsmm libsharp~mpi~openmp
       CHARM_VERSION: "6.10.2"
-      SPECTRE_MIN_MACOS: -mmacosx-version-min=10.11
+      OSX_DEPLOYMENT_TARGET: "10.11"
       CCACHE_DIR: $HOME/ccache
       CCACHE_MAXSIZE: 400M
       CCACHE_COMPRESS: 1
@@ -119,7 +119,8 @@ jobs:
           wget http://charm.cs.illinois.edu/distrib/charm-${CHARM_VERSION}.tar.gz
           tar -xzf charm-${CHARM_VERSION}.tar.gz
           cd ./charm-v${CHARM_VERSION}
-          ./build charm++ multicore-darwin-x86_64 -j4 -O0 $SPECTRE_MIN_MACOS
+          ./build charm++ multicore-darwin-x86_64 -j4 -O0 \
+            -mmacosx-version-min=${OSX_DEPLOYMENT_TARGET}
           rm ../charm-${CHARM_VERSION}.tar.gz
       # Replace the ccache directory that building the dependencies may have
       # generated with the cached ccache directory.
@@ -154,7 +155,7 @@ jobs:
           -D OVERRIDE_ARCH=x86-64
           -D CHARM_ROOT=$HOME/dependencies/charm-v${CHARM_VERSION}
           -D BLAS_ROOT=$(brew --prefix openblas)
-          -D MACOSX_MIN=10.11
+          -D CMAKE_OSX_DEPLOYMENT_TARGET=${OSX_DEPLOYMENT_TARGET}
           -D CMAKE_BUILD_TYPE=Debug
           -D DEBUG_SYMBOLS=OFF
           -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF
