@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Hll.cpp
   BoundaryCorrections/Test_Rusanov.cpp
+  Subcell/Test_GrTagsForHydro.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_PrimitiveGhostData.cpp
   Subcell/Test_ResizeAndComputePrimitives.cpp
