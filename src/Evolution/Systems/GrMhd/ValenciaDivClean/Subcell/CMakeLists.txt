@@ -31,4 +31,5 @@ spectre_target_headers(
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
   TciOptions.hpp
+  TimeDerivative.hpp
   )
