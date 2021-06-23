@@ -35,7 +35,7 @@ struct TensorExpression;
 
 namespace TensorExpressions {
 namespace detail {
-// @{
+/// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the canonical symmetry of the tensor resulting from
 /// adding or subtracting two tensors, according to their symmetries
@@ -97,7 +97,7 @@ constexpr std::array<std::int32_t, NumIndices> get_addsub_symm(
     const std::array<std::int32_t, NumIndices>& /*symm2*/) {
   return symm1;
 }
-// @}
+/// @}
 
 /// \ingroup TensorExpressionsGroup
 /// \brief Helper struct for computing the canonical symmetry of the tensor
