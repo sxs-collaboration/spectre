@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   InitialDataTci.cpp
   PrimitiveGhostData.cpp
+  ResizeAndComputePrimitives.cpp
   SwapGrTags.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   InitialDataTci.hpp
   PrimitiveGhostData.hpp
+  ResizeAndComputePrimitives.hpp
   Subcell.hpp
   SwapGrTags.hpp
   TciOnDgGrid.hpp
