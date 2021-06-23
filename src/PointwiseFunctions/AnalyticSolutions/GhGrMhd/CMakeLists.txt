@@ -13,7 +13,9 @@ spectre_target_sources(
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE
+  PRIVATE
+  DataStructures
   GeneralRelativitySolutions
   GrMhdSolutions
+  Utilities
   )
