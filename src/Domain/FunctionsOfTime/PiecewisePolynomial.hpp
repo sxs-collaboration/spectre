@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace domain {
@@ -93,33 +94,8 @@ class PiecewisePolynomial : public FunctionOfTime {
   // the values of that deriv order for all components.
   using value_type = std::array<DataVector, MaxDeriv + 1>;
 
-  // Holds information at single time at which the `MaxDeriv`th
-  // derivative has been updated.
-  struct DerivInfo {
-    double time{std::numeric_limits<double>::signaling_NaN()};
-    value_type derivs_coefs;
-
-    DerivInfo() = default;
-
-    // Constructor is needed for use of emplace_back of a vector
-    // (additionally, the constructor converts the supplied derivs to
-    // coefficients for simplified polynomial evaluation.)
-    DerivInfo(double t, value_type deriv) noexcept;
-
-    // NOLINTNEXTLINE(google-runtime-references)
-    void pup(PUP::er& p) noexcept;
-
-    bool operator==(const DerivInfo& rhs) const noexcept;
-  };
-
-  /// Returns a DerivInfo corresponding to the closest element in the range of
-  /// DerivInfos with an update time that is less than or equal to `t`.
-  /// The function throws an error if `t` is less than all DerivInfo update
-  /// times. (unless `t` is just less than the earliest update time by roundoff,
-  /// in which case it returns the DerivInfo at the earliest update time.)
-  const DerivInfo& deriv_info_from_upper_bound(double t) const noexcept;
-
-  std::vector<DerivInfo> deriv_info_at_update_times_;
+  std::vector<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
+      deriv_info_at_update_times_;
   double expiration_time_{std::numeric_limits<double>::lowest()};
 };
 
