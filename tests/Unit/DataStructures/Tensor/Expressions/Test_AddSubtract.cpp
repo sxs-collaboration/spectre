@@ -124,12 +124,22 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
       Hll{};
   std::iota(Hll.begin(), Hll.end(), 0.0);
   // [use_tensor_index]
-  auto Gll = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
-                                                     Hll(ti_a, ti_b));
-  auto Gll2 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
-                                                      Hll(ti_b, ti_a));
-  auto Gll3 = TensorExpressions::evaluate<ti_a, ti_b>(
-      All(ti_a, ti_b) + Hll(ti_b, ti_a) + All(ti_b, ti_a) - Hll(ti_b, ti_a));
+  const Tensor<double, Symmetry<2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Gll = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
+                                                    Hll(ti_a, ti_b));
+  const Tensor<double, Symmetry<2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Gll2 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
+                                                     Hll(ti_b, ti_a));
+  const Tensor<double, Symmetry<2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Gll3 = TensorExpressions::evaluate<ti_a, ti_b>(
+          All(ti_a, ti_b) + Hll(ti_b, ti_a) + All(ti_b, ti_a) -
+          Hll(ti_b, ti_a));
   // [use_tensor_index]
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -151,19 +161,57 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Hlll{};
   std::iota(Hlll.begin(), Hlll.end(), 0.0);
-  auto Glll = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-      Alll(ti_a, ti_b, ti_c) + Hlll(ti_a, ti_b, ti_c));
-  auto Glll2 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-      Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c));
-  auto Glll3 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-      Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c) + Alll(ti_b, ti_a, ti_c) -
-      Hlll(ti_b, ti_a, ti_c));
+  Tensor<double, Symmetry<2, 1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Rlll{};
+  std::iota(Rlll.begin(), Rlll.end(), 0.0);
+
+  const Tensor<double, Symmetry<3, 2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
+          Alll(ti_a, ti_b, ti_c) + Hlll(ti_a, ti_b, ti_c));
+  const Tensor<double, Symmetry<3, 2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll2 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
+          Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c));
+  const Tensor<double, Symmetry<3, 2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll3 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
+          Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c) +
+          Alll(ti_b, ti_a, ti_c) - Hlll(ti_b, ti_a, ti_c));
+  // testing LHS symmetry is nonsymmetric when RHS operands do not have
+  // symmetries in common
+  const Tensor<double, Symmetry<3, 2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll4 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
+          Alll(ti_b, ti_c, ti_a) + Rlll(ti_c, ti_a, ti_b));
+  // testing LHS symmetry preserves shared RHS symmetry when RHS operands have
+  // symmetries in common
+  const Tensor<double, Symmetry<2, 1, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll5 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
+          Alll(ti_b, ti_c, ti_a) - Rlll(ti_a, ti_c, ti_b));
+
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
       for (int k = 0; k < 4; ++k) {
         CHECK(Glll.get(i, j, k) == Alll.get(i, j, k) + Hlll.get(i, j, k));
         CHECK(Glll2.get(i, j, k) == Alll.get(i, j, k) + Hlll.get(j, i, k));
         CHECK(Glll3.get(i, j, k) == 2.0 * Alll.get(i, j, k));
+        CHECK(Glll4.get(i, j, k) == Alll.get(j, k, i) + Rlll.get(k, i, j));
+        CHECK(Glll5.get(i, j, k) == Alll.get(j, k, i) - Rlll.get(i, k, j));
       }
     }
   }
