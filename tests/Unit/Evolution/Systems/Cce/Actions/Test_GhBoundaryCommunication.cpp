@@ -87,7 +87,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -191,8 +191,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
           Parallel::get_const_global_cache_tags<test_metavariables>>{
           l_max, extraction_radius, end_time, start_time,
           InterfaceManagers::InterpolationStrategy::EveryStep,
-          number_of_radial_points,
-          std::make_unique<::TimeSteppers::DormandPrince5>()}};
+          number_of_radial_points}};
 
   // first prepare the input for the modal version
   const double mass = value_dist(gen);
@@ -208,7 +207,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
 
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, scri_plus_interpolation_order);
+      &runner, 0, target_step_size,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::DormandPrince5>()),
+      scri_plus_interpolation_order);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       Tags::GhInterfaceManager::create_from_options(

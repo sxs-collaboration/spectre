@@ -205,17 +205,22 @@ template <typename Metavariables>
 struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
     : public detail::InitializeWorldtubeBoundaryBase<
           InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
-          tmpl::list<Tags::AnalyticBoundaryDataManager>,
+          tmpl::list<Tags::AnalyticBoundaryDataManager,
+                     Tags::CceEvolutionPrefix<::Tags::TimeStepper<
+                         tmpl::conditional_t<Metavariables::local_time_stepping,
+                                             LtsTimeStepper, TimeStepper>>>>,
           typename Metavariables::cce_boundary_communication_tags> {
   using base_type = detail::InitializeWorldtubeBoundaryBase<
       InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
-      tmpl::list<Tags::AnalyticBoundaryDataManager>,
+      tmpl::list<Tags::AnalyticBoundaryDataManager,
+                 Tags::CceEvolutionPrefix<::Tags::TimeStepper<
+                     tmpl::conditional_t<Metavariables::local_time_stepping,
+                                         LtsTimeStepper, TimeStepper>>>>,
       typename Metavariables::cce_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime,
-                 ::Tags::TimeStepper<TimeStepper>>;
+      tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;
   using typename base_type::initialization_tags;
   using typename base_type::initialization_tags_to_keep;
 };

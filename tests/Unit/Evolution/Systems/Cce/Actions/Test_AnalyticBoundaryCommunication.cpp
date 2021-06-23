@@ -72,7 +72,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -104,6 +104,7 @@ struct mock_characteristic_evolution {
 
 struct test_metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
+  static constexpr bool local_time_stepping = false;
   using evolved_swsh_dt_tag = Tags::BondiH;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
@@ -174,9 +175,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
-          l_max, end_time, start_time,
-          std::make_unique<::TimeSteppers::DormandPrince5>(),
-          number_of_radial_points}};
+          l_max, end_time, start_time, number_of_radial_points}};
 
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius,
@@ -184,12 +183,17 @@ SPECTRE_TEST_CASE(
                                                               1.0, frequency)};
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, scri_plus_interpolation_order,
+      &runner, 0, target_step_size,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::DormandPrince5>()),
+      scri_plus_interpolation_order,
       serialize_and_deserialize(analytic_manager));
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<worldtube_component>(
-      &runner, 0, serialize_and_deserialize(analytic_manager));
+      &runner, 0, serialize_and_deserialize(analytic_manager),
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::DormandPrince5>()));
 
   // Run the initializations
   for (size_t i = 0; i < 6; ++i) {

@@ -79,6 +79,7 @@ struct GhMetavariables {
 };
 
 struct AnalyticMetavariables {
+  static constexpr bool local_time_stepping = false;
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
@@ -207,13 +208,15 @@ void test_analytic_initialization() noexcept {
   const size_t l_max = 8;
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
-      {l_max, 100.0, 0.0, std::make_unique<::TimeSteppers::RungeKutta3>()}};
+      {l_max, 100.0, 0.0}};
 
   runner.set_phase(AnalyticMetavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       AnalyticBoundaryDataManager{
-          12_st, 20.0, std::make_unique<Solutions::RotatingSchwarzschild>()});
+          12_st, 20.0, std::make_unique<Solutions::RotatingSchwarzschild>()},
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::RungeKutta3>()));
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -249,12 +252,14 @@ SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
-      {l_max, 100.0, 0.0, std::make_unique<::TimeSteppers::RungeKutta3>()}};
+      {l_max, 100.0, 0.0}};
   runner.set_phase(AnalyticMetavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       AnalyticBoundaryDataManager{
-          12_st, 20.0, std::make_unique<Solutions::RobinsonTrautman>()});
+          12_st, 20.0, std::make_unique<Solutions::RobinsonTrautman>()},
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::RungeKutta3>()));
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);

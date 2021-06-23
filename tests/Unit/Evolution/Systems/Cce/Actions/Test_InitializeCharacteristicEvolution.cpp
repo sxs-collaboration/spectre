@@ -52,7 +52,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -165,13 +165,15 @@ SPECTRE_TEST_CASE(
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t scri_plus_interpolation_order = 3;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {start_time, l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>()}};
+      {start_time, l_max, number_of_radial_points}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
-  ActionTesting::emplace_component<component>(&runner, 0, target_step_size,
-                                              scri_plus_interpolation_order);
+  ActionTesting::emplace_component<component>(
+      &runner, 0, target_step_size,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::RungeKutta3>()),
+      scri_plus_interpolation_order);
 
   // this should run the initialization
   for (size_t i = 0; i < 6; ++i) {

@@ -14,20 +14,31 @@
 #     AbsoluteTolerance: 5e-10
 
 Evolution:
-  TimeStepper: RungeKutta3
+  InitialTimeStep: 0.1
 
 Observers:
   VolumeFileName: "CharacteristicExtractVolume"
   ReductionFileName: "CharacteristicExtractUnusedReduction"
 
 Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforthN:
+        Order: 3
+    InitialSlabSize: 1.0
+    StepChoosers:
+      - Constant: 0.5
+      - Increase:
+          Factor: 2
+    StepController:
+      BinaryFraction
+
   LMax: 8
   NumberOfRadialPoints: 8
   ObservationLMax: 8
 
   StartTime: -6.0
   EndTime: -1.0
-  TargetStepSize: 0.5
   ExtractionRadius: 40.0
 
   AnalyticSolution:

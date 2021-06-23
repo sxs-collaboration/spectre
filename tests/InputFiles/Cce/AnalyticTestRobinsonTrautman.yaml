@@ -3,7 +3,7 @@
 
 # Executable: AnalyticTestCharacteristicExtract
 # Check: parse;execute_check_output
-# Timeout: 8
+# Timeout: 10
 # ExpectedOutput:
 #   CharacteristicExtractVolume0.h5
 # OutputFileChecks:
@@ -14,22 +14,31 @@
 #     AbsoluteTolerance: 5e-11
 
 Evolution:
-  TimeStepper:
-    AdamsBashforthN:
-      Order: 3
+  InitialTimeStep: 0.1
 
 Observers:
   VolumeFileName: "CharacteristicExtractVolume"
   ReductionFileName: "CharacteristicExtractUnusedReduction"
 
 Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforthN:
+        Order: 3
+    InitialSlabSize: 0.6
+    StepChoosers:
+      - Constant: 0.1
+      - Increase:
+          Factor: 2
+    StepController:
+      BinaryFraction
+
   LMax: 10
   NumberOfRadialPoints: 8
   ObservationLMax: 8
 
   StartTime: 0.0
   EndTime: 0.5
-  TargetStepSize: 0.1
   ExtractionRadius: 40.0
 
   AnalyticSolution:
