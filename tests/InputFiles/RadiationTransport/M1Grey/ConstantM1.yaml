@@ -56,6 +56,8 @@ EventsAndTriggers:
         Values: [10]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "M1GreyVolume"
   ReductionFileName: "M1GreyReductions"

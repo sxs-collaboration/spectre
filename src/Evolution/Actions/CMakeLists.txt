@@ -7,4 +7,5 @@ spectre_target_headers(
   HEADERS
   ComputeTimeDerivative.hpp
   ComputeVolumeFluxes.hpp
+  RunEventsAndDenseTriggers.hpp
   )

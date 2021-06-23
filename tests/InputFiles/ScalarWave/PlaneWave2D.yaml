@@ -60,6 +60,8 @@ EventsAndTriggers:
         Values: [5]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "ScalarWavePlaneWave2DVolume"
   ReductionFileName: "ScalarWavePlaneWave2DReductions"

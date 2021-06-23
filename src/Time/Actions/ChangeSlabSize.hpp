@@ -300,6 +300,15 @@ class ChangeSlabSize : public Event {
         component_proxy);
   }
 
+  using is_ready_argument_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/) const noexcept {
+    return true;
+  }
+
   bool needs_evolved_variables() const noexcept override {
     // This depends on the chosen StepChoosers, but they don't have a
     // way to report this information so we just return true to be

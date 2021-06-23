@@ -56,8 +56,13 @@ class EventsAndTriggers {
     p | events_and_triggers_;
   }
 
-  const Storage& events_and_triggers() const noexcept {
-    return events_and_triggers_;
+  template <typename F>
+  void for_each_event(F&& f) const noexcept {
+    for (const auto& trigger_and_events : events_and_triggers_) {
+      for (const auto& event : trigger_and_events.second) {
+        f(*event);
+      }
+    }
   }
 
  private:

@@ -79,3 +79,5 @@ EventsAndTriggers:
       Specified:
         Values: [2]
   : - Completion
+
+EventsAndDenseTriggers:

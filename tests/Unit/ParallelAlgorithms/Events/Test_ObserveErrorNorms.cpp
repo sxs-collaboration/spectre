@@ -345,6 +345,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   });
   CHECK(results.errors.size() == num_tensors_observed);
 
+  CHECK(static_cast<const Event&>(*observe).is_ready(
+      box, ActionTesting::cache<element_component>(runner, array_index),
+      array_index, std::add_pointer_t<element_component>{}));
   CHECK(observe->needs_evolved_variables());
 }
 

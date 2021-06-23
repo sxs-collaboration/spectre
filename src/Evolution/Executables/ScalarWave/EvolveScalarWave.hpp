@@ -11,12 +11,15 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -124,6 +127,7 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
                               Events::Completion,
                               dg::Events::field_observations<
@@ -164,7 +168,9 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
+          tmpl::list<Actions::RecordTimeStepperData<>,
+                     evolution::Actions::RunEventsAndDenseTriggers<>,
+                     Actions::UpdateU<>>>,
       tmpl::conditional_t<
           use_filtering,
           dg::Actions::Filter<Filters::Exponential<0>,
@@ -225,6 +231,7 @@ struct EvolutionMetavars {
                      evolution::Tags::AnalyticCompute<
                          Dim, initial_data_tag, analytic_solution_fields>>>,
                  ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+                 evolution::Actions::InitializeRunEventsAndDenseTriggers,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using dg_element_array = DgElementArray<

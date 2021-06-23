@@ -27,23 +27,22 @@ the executable using the flag `--input-file`. For example, for a scalar wave
 evolution, run the command:
 `./EvolvePlaneWave3D --input-file Input3DPeriodic.yaml`.
 By default, the example input files do not produce any output. This can be
-changed by modifying the options passed to `EventsAndTriggers`:
+changed by modifying the options passed to `EventsAndTriggers` or
+`EventsAndDenseTriggers`:
 
 \snippet PlaneWave1DObserveExample.yaml observe_event_trigger
 
-This will observe the norms of the errors in the system every three
-slabs starting with slab five and the volume data of Psi at the start
-of slabs 0 and 100. Be sure to keep the Completion event, as without
-it the executable will run indefinitely. In this case, it will terminate
-after 100 slabs. A successful observation will result in the
-creation of H5 files whose names can be specified in the YAML file
-under the options `VolumeFileName` and `ReductionFileName`. One volume
-data file will be produced from each Charm++ node that is used to run
-the executable. Each volume data file will have its corresponding node
+This will observe the norms of the errors in the system at times
+\f$0.0\f$ and \f$1.0\f$ and the field data at the start of every 50th
+slab.  A successful observation will result in the creation of H5
+files whose names can be specified in the YAML file under the options
+`VolumeFileName` and `ReductionFileName`. One volume data file will be
+produced from each Charm++ node that is used to run the
+executable. Each volume data file will have its corresponding node
 number appended to its file name.  Visualization of the volume data
 will be described in the next section.
 
-### 3D %Data Volume %Data In ParaView
+### 3D Data Volume Data In ParaView
 
 A SpECTRE executable with observers produces volume and/or reduced data h5
 files. An XDMF file must be created from the volume data in order to do

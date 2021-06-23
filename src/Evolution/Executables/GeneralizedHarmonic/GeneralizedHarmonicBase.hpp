@@ -16,11 +16,14 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsCharacteresticSpeeds.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -229,6 +232,7 @@ struct GeneralizedHarmonicTemplateBase<
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
                               Events::Completion,
                               dg::Events::field_observations<
@@ -326,7 +330,9 @@ struct GeneralizedHarmonicTemplateBase<
       evolution::dg::Actions::ApplyBoundaryCorrections<derived_metavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>>;
+          tmpl::list<Actions::RecordTimeStepperData<>,
+                     evolution::Actions::RunEventsAndDenseTriggers<>,
+                     Actions::UpdateU<>>>>;
 
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox,
@@ -346,6 +352,7 @@ struct GeneralizedHarmonicTemplateBase<
           evolution::Tags::AnalyticCompute<volume_dim, analytic_solution_tag,
                                            analytic_solution_fields>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using gh_dg_element_array = DgElementArray<

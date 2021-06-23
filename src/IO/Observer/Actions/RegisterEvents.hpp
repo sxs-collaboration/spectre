@@ -22,6 +22,12 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
+/// \cond
+namespace evolution::Tags {
+struct EventsAndDenseTriggers;
+}  // namespace evolution::Tags
+/// \endcond
+
 namespace observers {
 namespace detail {
 CREATE_HAS_TYPE_ALIAS(observation_registration_tags)
@@ -120,35 +126,43 @@ struct RegisterEventsWithObservers {
     std::vector<
         std::pair<observers::TypeOfObservation, observers::ObservationKey>>
         type_of_observation_and_observation_key_pairs;
-    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggers,
-                                           db::DataBox<DbTagList>>) {
-      const auto& triggers_and_events = db::get<::Tags::EventsAndTriggers>(box);
-      for (const auto& trigger_and_events :
-           triggers_and_events.events_and_triggers()) {
-        for (const auto& event : trigger_and_events.second) {
+    const auto collect_observations =
+        [&box, &type_of_observation_and_observation_key_pairs](
+            const auto& event) noexcept {
           if (auto obs_type_and_obs_key =
-                  get_registration_observation_type_and_key(*event, box);
+                  get_registration_observation_type_and_key(event, box);
               obs_type_and_obs_key.has_value()) {
             type_of_observation_and_observation_key_pairs.push_back(
                 *obs_type_and_obs_key);
           }
-        }
-      }
+        };
 
-      for (const auto& [type_of_observation, observation_key] :
-           type_of_observation_and_observation_key_pairs) {
-        Parallel::simple_action<RegisterOrDeregisterAction>(
-            observer, observation_key,
-            observers::ArrayComponentId(
-                std::add_pointer_t<ParallelComponent>{nullptr},
-                Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
-            type_of_observation);
-      }
-    } else {
-      ERROR(
-          "Cannot perform registration of events, "
-          "`::Tags::EventsAndTriggers` is not retrievable from the "
-          "DataBox");
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 10
+    (void)collect_observations;
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 10
+
+    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggers,
+                                           db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events = db::get<::Tags::EventsAndTriggers>(box);
+      triggers_and_events.for_each_event(collect_observations);
+    }
+
+    if constexpr (db::tag_is_retrievable_v<
+                      evolution::Tags::EventsAndDenseTriggers,
+                      db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events =
+          db::get<evolution::Tags::EventsAndDenseTriggers>(box);
+      triggers_and_events.for_each_event(collect_observations);
+    }
+
+    for (const auto& [type_of_observation, observation_key] :
+         type_of_observation_and_observation_key_pairs) {
+      Parallel::simple_action<RegisterOrDeregisterAction>(
+          observer, observation_key,
+          observers::ArrayComponentId(
+              std::add_pointer_t<ParallelComponent>{nullptr},
+              Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
+          type_of_observation);
     }
   }
 

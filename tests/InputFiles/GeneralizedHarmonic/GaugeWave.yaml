@@ -98,6 +98,8 @@ EventsAndTriggers:
         Values: [2]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "GhGaugeWaveVolume"
   ReductionFileName: "GhGaugeWaveReductions"

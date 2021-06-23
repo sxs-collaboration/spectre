@@ -72,6 +72,8 @@ EventsAndTriggers:
           - Cfl:
               SafetyFactor: 20
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DVolume"
   ReductionFileName: "ScalarWavePlaneWave1DReductions"

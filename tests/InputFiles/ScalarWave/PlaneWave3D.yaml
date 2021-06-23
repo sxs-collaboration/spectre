@@ -59,6 +59,8 @@ EventsAndTriggers:
         Values: [5]
   : - Completion
 
+EventsAndDenseTriggers:
+
 Observers:
   VolumeFileName: "ScalarWavePlaneWave3DVolume"
   ReductionFileName: "ScalarWavePlaneWave3DReductions"
