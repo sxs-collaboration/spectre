@@ -48,14 +48,18 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  Domain
   DgSubcell
   ErrorHandling
   GeneralRelativity
   Hydro
   Limiters
   Options
+  Utilities
   Valencia
   VariableFixing
+  PRIVATE
+  RootFinding
   )
 
 add_subdirectory(BoundaryConditions)

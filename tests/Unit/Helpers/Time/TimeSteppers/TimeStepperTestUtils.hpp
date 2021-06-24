@@ -10,6 +10,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \cond
 class LtsTimeStepper;

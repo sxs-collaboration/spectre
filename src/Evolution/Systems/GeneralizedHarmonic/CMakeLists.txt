@@ -36,12 +36,16 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Domain
+  DomainBoundaryConditions
   ErrorHandling
   GeneralRelativity
   Options
   Spectral
+  Utilities
   INTERFACE
-  Domain
+  Initialization
+  Parallel
   )
 
 add_subdirectory(BoundaryConditions)

@@ -32,6 +32,10 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
+  PUBLIC
+  DataStructures
+  Domain
+  ErrorHandling
+  GeneralRelativity
+  Utilities
   )

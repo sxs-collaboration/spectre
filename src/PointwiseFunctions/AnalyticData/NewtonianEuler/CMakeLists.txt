@@ -25,8 +25,11 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE Hydro
-  INTERFACE NewtonianEuler
+  PUBLIC
+  DataStructures
+  ErrorHandling
+  Hydro
+  NewtonianEuler
+  Options
+  Utilities
   )

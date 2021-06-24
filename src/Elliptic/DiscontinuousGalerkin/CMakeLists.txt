@@ -27,6 +27,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  DiscontinuousGalerkin
   Domain
   DomainStructure
   ErrorHandling
@@ -34,7 +35,6 @@ target_link_libraries(
   Utilities
   INTERFACE
   Boost::boost
-  DiscontinuousGalerkin
   DomainCreators
   Elliptic
   EllipticSystems

@@ -35,8 +35,15 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  DiscontinuousGalerkin
+  Domain
+  DomainBoundaryConditions
   ErrorHandling
   Options
+  Utilities
+  INTERFACE
+  Initialization
+  Parallel
   )
 
 add_subdirectory(BoundaryConditions)
