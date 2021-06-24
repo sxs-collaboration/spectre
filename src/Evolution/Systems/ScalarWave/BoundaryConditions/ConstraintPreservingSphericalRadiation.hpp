@@ -120,7 +120,7 @@ convert_constraint_preserving_spherical_radiation_type_from_yaml(
  * The Bayliss-Turkel \cite BaylissTurkel boundary conditions are given by:
  *
  * \f{align*}{
- *  \left(\partial_t + \partial_r + r^{-1}\right)^m\Psi=0
+ *  \prod_{l=1}^m\left(\partial_t + \partial_r + \frac{2l-1}{r}\right)\Psi=0
  * \f}
  *
  * The first-order form is
