@@ -51,13 +51,7 @@ namespace Filters {
  * are desired for filtering different tensors, then multiple filters must be
  * inserted into the GlobalCache with different `FilterIndex` values. In
  * the input file these will be specified as `ExpFilterFILTER_INDEX`, e.g.
- * -  Filtering:
- * -    ExpFilter0:
- * -      Alpha: 12
- * -      HalfPower: 32
- * -    ExpFilter1:
- * -      Alpha: 36
- * -      HalfPower: 32
+ * \snippet LinearOperators/Test_Filtering.cpp multiple_exponential_filters
  */
 template <size_t FilterIndex>
 class Exponential {

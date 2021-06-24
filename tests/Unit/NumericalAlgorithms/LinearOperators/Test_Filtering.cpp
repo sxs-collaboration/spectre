@@ -219,11 +219,24 @@ void invoke_test_exponential_filter_action(
 template <size_t Dim>
 void test_exponential_filter_creation() noexcept {
   using Filter = Filters::Exponential<0>;
+  using AnotherFilter = Filters::Exponential<1>;
 
-  const auto filter = TestHelpers::test_creation<Filter>(
-      "Alpha: 36\n"
-      "HalfPower: 32\n"
-      "DisableForDebugging: False\n");
+  using tags =
+      tmpl::list<OptionTags::Filter<Filter>, OptionTags::Filter<AnotherFilter>>;
+  Options::Parser<tags> options("");
+  // [multiple_exponential_filters]
+  options.parse(
+      "Filtering:\n"
+      "  ExpFilter0:\n"
+      "    Alpha: 36\n"
+      "    HalfPower: 32\n"
+      "    DisableForDebugging: False\n"
+      "  ExpFilter1:\n"
+      "    Alpha: 36\n"
+      "    HalfPower: 12\n"
+      "    DisableForDebugging: False\n");
+  // [multiple_exponential_filters]
+  const auto filter = options.get<OptionTags::Filter<Filter>>();
 
   CHECK(filter == Filter{36.0, 32, false});
   CHECK_FALSE(filter == Filter{35.0, 32, false});
