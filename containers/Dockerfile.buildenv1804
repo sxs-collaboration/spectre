@@ -56,7 +56,8 @@ RUN apt-get update -y \
                           lcov cppcheck \
                           libboost-dev libboost-program-options-dev \
                           libboost-thread-dev libboost-tools-dev libssl-dev \
-                          libbenchmark-dev
+                          libbenchmark-dev \
+                          libarpack2-dev
 
 # Add clang 8 and 9
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
