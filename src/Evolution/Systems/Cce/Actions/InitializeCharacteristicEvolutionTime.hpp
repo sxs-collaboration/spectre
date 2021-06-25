@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Tags.hpp"
@@ -58,7 +59,8 @@ namespace Actions {
  */
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag>
 struct InitializeCharacteristicEvolutionTime {
-  using initialization_tags = tmpl::list<InitializationTags::TargetStepSize>;
+  using initialization_tags =
+      tmpl::list<::Initialization::Tags::InitialSlabSize<false>>;
   using const_global_cache_tags =
       tmpl::list<::Tags::TimeStepper<TimeStepper>>;
 
@@ -81,7 +83,8 @@ struct InitializeCharacteristicEvolutionTime {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const double initial_time_value = db::get<Tags::StartTime>(box);
-    const double step_size = db::get<InitializationTags::TargetStepSize>(box);
+    const double step_size =
+        db::get<::Initialization::Tags::InitialSlabSize<false>>(box);
 
     const Slab single_step_slab{initial_time_value,
                                 initial_time_value + step_size};
