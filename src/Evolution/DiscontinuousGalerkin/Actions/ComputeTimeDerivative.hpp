@@ -288,14 +288,9 @@ struct ComputeTimeDerivative {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           Metavariables::volume_dim>>;
-  using const_global_cache_tags = tmpl::append<
-      tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection<
-                                              typename Metavariables::system>>,
-      tmpl::conditional_t<
-          Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepChoosers, ::Tags::StepController,
-                     ::Tags::TimeStepper<LtsTimeStepper>>,
-          tmpl::list<>>>;
+  using const_global_cache_tags = tmpl::append<tmpl::list<
+      ::dg::Tags::Formulation,
+      evolution::Tags::BoundaryCorrection<typename Metavariables::system>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>

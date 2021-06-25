@@ -302,7 +302,7 @@ struct EvolutionMetavars {
   using const_global_cache_tags = tmpl::list<
       initial_data_tag,
       tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>,
-      time_stepper_tag, Tags::EventsAndTriggers,
+      Tags::EventsAndTriggers,
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   static constexpr Options::String help{

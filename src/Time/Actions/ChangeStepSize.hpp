@@ -31,12 +31,6 @@ struct Next;
 
 /// Adjust the step size for local time stepping, returning true if the step
 /// just completed is accepted, and false if it is rejected.
-///
-/// \note this is a free function version of `Actions::ChangeStepSize`.
-/// This free function alternative permits the inclusion of the time step
-/// procedure in the middle of another action. When used as a free function, the
-/// calling action is responsible for specifying the const global cache tags
-/// needed by this function (`Tags::StepChoosers`, `Tags::StepController`).
 template <typename DbTags, typename Metavariables>
 bool change_step_size(
     const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -112,10 +106,9 @@ namespace Actions {
 /// \brief Adjust the step size for local time stepping
 ///
 /// Uses:
-/// - GlobalCache:
+/// - DataBox:
 ///   - Tags::StepChoosers<StepChooserRegistrars>
 ///   - Tags::StepController
-/// - DataBox:
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
@@ -126,9 +119,6 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
 struct ChangeStepSize {
-  using const_global_cache_tags =
-      tmpl::list<Tags::StepChoosers, Tags::StepController>;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

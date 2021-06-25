@@ -52,7 +52,7 @@ struct mock_element {
   using array_index = ElementId<Metavariables::volume_dim>;
   using simple_tags =
       tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                 ::Tags::TimeStep,
+                 ::Tags::TimeStep, ::Tags::TimeStepper<TimeStepper>,
                  domain::Tags::Mesh<Metavariables::volume_dim>,
                  intrp::Tags::InterpPointInfo<Metavariables>>;
   using phase_dependent_action_list = tmpl::list<
@@ -136,8 +136,10 @@ struct initialize_elements_and_queue_simple_actions {
       // 2. emplace element.
       ActionTesting::emplace_component_and_initialize<elem_component>(
           &runner, element_id,
-          {time_step_id_, next_time_step_id_, time_step_, mesh,
-           interp_point_info});
+          {time_step_id_, next_time_step_id_, time_step_,
+           static_cast<std::unique_ptr<TimeStepper>>(
+               std::make_unique<::TimeSteppers::RungeKutta3>()),
+           mesh, interp_point_info});
     }
     ActionTesting::set_phase(make_not_null(&runner),
                              test_metavariables::Phase::Testing);
@@ -193,8 +195,7 @@ void test_send_time_to_cce(const bool substep) noexcept {
                                                                elem_component>(
       initialize_elements_and_queue_simple_actions<metavars, elem_component>{
           time_step_id, next_time_step_id, time_step, expected_next_step,
-          substep},
-      std::make_unique<::TimeSteppers::RungeKutta3>());
+          substep});
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.SendNextTimeToCce",

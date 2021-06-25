@@ -348,7 +348,7 @@ struct EvolutionMetavars {
       dg_element_array_component>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, time_stepper_tag,
+      tmpl::list<initial_data_tag,
                  grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
                  Tags::EventsAndTriggers,
                  PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;

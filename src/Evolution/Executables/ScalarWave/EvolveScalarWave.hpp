@@ -215,7 +215,7 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, time_stepper_tag, Tags::EventsAndTriggers,
+      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
                  PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
