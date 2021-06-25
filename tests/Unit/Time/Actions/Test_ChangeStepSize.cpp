@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
@@ -36,6 +37,31 @@
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
+// a silly step chooser that just always rejects, to test the step rejection
+// control-flow.
+struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
+  using argument_tags = tmpl::list<>;
+  using return_tags = tmpl::list<>;
+  using compute_tags = tmpl::list<>;
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(StepRejector);  // NOLINT
+#pragma GCC diagnostic pop
+  explicit StepRejector(CkMigrateMessage* /*unused*/) noexcept {}
+  StepRejector() = default;
+
+  template <typename Metavariables>
+  std::pair<double, bool> operator()(
+      const double last_step_magnitude,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+    return {last_step_magnitude, false};
+  }
+    void pup(PUP::er& /*p*/) noexcept override {}
+};
+
+PUP::able::PUP_ID StepRejector::my_PUP_ID = 0;
+
 struct Var : db::SimpleTag {
   using type = double;
 };
@@ -46,6 +72,8 @@ struct System {
   using variables_tag = Var;
 };
 
+struct NoOpLabel {};
+
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
@@ -54,6 +82,7 @@ struct Component {
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, Tags::Next<Tags::TimeStep>,
+                                 ::Tags::StepChoosers, ::Tags::StepController,
                                  history_tag, typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -61,22 +90,21 @@ struct Component {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Actions::ChangeStepSize,
+          tmpl::list<Actions::ChangeStepSize, ::Actions::Label<NoOpLabel>,
                      /*UpdateU action is required to satisfy internal checks of
-                        `ChangeStepSize`. It is not used in the test.*/
+                       `ChangeStepSize`. It is not used in the test.*/
                      Actions::UpdateU<>>>>;
 };
 
 struct Metavariables {
   using system = System;
   static constexpr bool local_time_stepping = true;
-  using const_global_cache_tags =
-      Actions::ChangeStepSize::const_global_cache_tags;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
+                              StepRejector>>>;
   };
   using component_list = tmpl::list<Component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
@@ -84,7 +112,8 @@ struct Metavariables {
 
 void check(const bool time_runs_forward,
            std::unique_ptr<LtsTimeStepper> time_stepper, const Time& time,
-           const double request, const TimeDelta& expected_step) noexcept {
+           const double request, const TimeDelta& expected_step,
+           const bool reject_step) noexcept {
   CAPTURE(time);
   CAPTURE(request);
 
@@ -94,13 +123,7 @@ void check(const bool time_runs_forward,
   using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using Constant = StepChoosers::Constant<StepChooserUse::LtsStep>;
-  MockRuntimeSystem runner{
-      {make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
-           std::make_unique<Constant>(2. * request),
-           std::make_unique<Constant>(request),
-           std::make_unique<Constant>(2. * request)),
-       std::make_unique<StepControllers::BinaryFraction>(),
-       std::move(time_stepper)}};
+  MockRuntimeSystem runner{{std::move(time_stepper)}};
 
   // Initialize the component
   ActionTesting::emplace_component_and_initialize<component>(
@@ -110,7 +133,18 @@ void check(const bool time_runs_forward,
            (time_runs_forward ? time.slab().end() : time.slab().start()) -
                initial_step_size),
        TimeStepId(time_runs_forward, 0, time), initial_step_size,
-       initial_step_size, typename history_tag::type{}, 1.});
+       initial_step_size,
+       reject_step
+           ? make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+                 std::make_unique<Constant>(2. * request),
+                 std::make_unique<Constant>(request),
+                 std::make_unique<StepRejector>())
+           : make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+                 std::make_unique<Constant>(2. * request),
+                 std::make_unique<Constant>(request),
+                 std::make_unique<Constant>(2. * request)),
+       std::make_unique<StepControllers::BinaryFraction>(),
+       typename history_tag::type{}, 1.});
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
@@ -119,6 +153,14 @@ void check(const bool time_runs_forward,
       ActionTesting::get_databox<component, typename component::simple_tags>(
           runner, 0);
 
+  const size_t index =
+      ActionTesting::get_next_action_index<component>(runner, 0);
+  if (reject_step) {
+    // if the step is rejected, it should jump to the UpdateU action
+    CHECK(index == 2_st);
+  } else {
+    CHECK(index == 1_st);
+  }
   CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_step);
 }
 }  // namespace
@@ -129,14 +171,18 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
-  check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
-        slab.start() + slab.duration() / 4, slab_length / 5.,
-        slab.duration() / 8);
-  check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
-        slab.start() + slab.duration() / 4, slab_length, slab.duration() / 4);
-  check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
-        slab.end() - slab.duration() / 4, slab_length / 5.,
-        -slab.duration() / 8);
-  check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
-        slab.end() - slab.duration() / 4, slab_length, -slab.duration() / 4);
+  for (auto reject_step : {true, false}) {
+    check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+          slab.start() + slab.duration() / 4, slab_length / 5.,
+          slab.duration() / 8, reject_step);
+    check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+          slab.start() + slab.duration() / 4, slab_length, slab.duration() / 4,
+          reject_step);
+    check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+          slab.end() - slab.duration() / 4, slab_length / 5.,
+          -slab.duration() / 8, reject_step);
+    check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+          slab.end() - slab.duration() / 4, slab_length, -slab.duration() / 4,
+          reject_step);
+  }
 }

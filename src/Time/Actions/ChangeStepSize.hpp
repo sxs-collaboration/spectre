@@ -140,7 +140,7 @@ struct ChangeStepSize {
     const bool step_successful = change_step_size(make_not_null(&box), cache);
     if (step_successful) {
       return {std::move(box), false,
-              tmpl::index_of<ActionList, ChangeStepSize>::value};
+              tmpl::index_of<ActionList, ChangeStepSize>::value + 1};
     } else {
       return {
           std::move(box), false,
