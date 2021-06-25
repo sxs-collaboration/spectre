@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "DataStructures/Variables.hpp"
@@ -77,9 +78,9 @@ void test_observe(
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions) noexcept {
   using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
+  constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
-  static constexpr auto volume_dim = System::volume_dim;
   using coordinates_tag =
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
@@ -166,23 +167,31 @@ void test_observe(
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component =
-      [&element_name, &num_components_observed,
-       tensor_data = &results.in_received_tensor_data, &interpolant](
-          const std::string& component, const DataVector& expected) noexcept {
-        CAPTURE(*tensor_data);
-        CAPTURE(component);
-        const auto it =
-            alg::find_if(*tensor_data, [name = element_name + "/" + component](
-                                           const TensorComponent& tc) noexcept {
-              return tc.name == name;
-            });
-        CHECK(it != tensor_data->end());
-        if (it != tensor_data->end()) {
-          CHECK(it->data == interpolant.interpolate(expected));
-        }
-        ++num_components_observed;
-      };
+  const auto check_component = [&element_name, &num_components_observed,
+                                tensor_data = &results.in_received_tensor_data,
+                                &interpolant](
+                                   const std::string& component,
+                                   const DataVector& expected) noexcept {
+    CAPTURE(*tensor_data);
+    CAPTURE(component);
+    const DataVector interpolated_expected = interpolant.interpolate(expected);
+    const auto it = alg::find_if(
+        *tensor_data,
+        [name = element_name + "/" + component](
+            const TensorComponent& tc) noexcept { return tc.name == name; });
+    CHECK(it != tensor_data->end());
+    if (it != tensor_data->end()) {
+      if (component.substr(0, 6) == "Tensor" or
+          component.substr(6, 7) == "Tensor2") {
+        CHECK(std::get<std::vector<float>>(it->data) ==
+              std::vector<float>{interpolated_expected.begin(),
+                                 interpolated_expected.end()});
+      } else {
+        CHECK(std::get<DataVector>(it->data) == interpolated_expected);
+      }
+    }
+    ++num_components_observed;
+  };
   for (size_t i = 0; i < volume_dim; ++i) {
     check_component(
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
@@ -363,8 +372,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
   TestHelpers::test_creation<
       typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
       "SubfileName: VolumeData\n"
+      "CoordinatesFloatingPointType: Double\n"
       "VariablesToObserve: [NotAVar]\n"
-      "InterpolateToMesh: None");
+      "FloatingPointTypes: [Double]\n"
+      "InterpolateToMesh: None\n");
 }
 
 // [[OutputRegex, Scalar specified multiple times]]
@@ -374,6 +385,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.repeated_field",
   TestHelpers::test_creation<
       typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
       "SubfileName: VolumeData\n"
+      "CoordinatesFloatingPointType: Double\n"
       "VariablesToObserve: [Scalar, Scalar]\n"
-      "InterpolateToMesh: None");
+      "FloatingPointTypes: [Double]\n"
+      "InterpolateToMesh: None\n");
 }

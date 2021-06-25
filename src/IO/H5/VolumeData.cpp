@@ -180,33 +180,60 @@ void VolumeData::write_volume_data(
             << "' which already exists in HDF5 file in group '" << name_ << '/'
             << "ObservationId" << std::to_string(observation_id) << "'");
     }
-    std::vector<double> contiguous_tensor_data{};
-    for (const auto& element : elements) {
-      if (UNLIKELY(i == 0)) {  // True if first tensor component being accessed
-        append_element_name(&grid_names, element);
-        // append element basis
-        alg::transform(element.basis, std::back_inserter(bases),
-                       [](const Spectral::Basis t) noexcept {
-                         return static_cast<int>(t);
-                       });
-        // append element quadraature
-        alg::transform(element.quadrature, std::back_inserter(quadratures),
-                       [](const Spectral::Quadrature t) noexcept {
-                         return static_cast<int>(t);
-                       });
 
-        append_element_extents_and_connectivity(
-            &total_extents, &total_connectivity, &total_points_so_far, dim,
-            element);
-      }
-      const DataVector& tensor_data_on_grid = element.tensor_components[i].data;
-      contiguous_tensor_data.insert(contiguous_tensor_data.end(),
-                                    tensor_data_on_grid.begin(),
-                                    tensor_data_on_grid.end());
+    const auto fill_and_write_contiguous_tensor_data =
+        [&bases, &component_name, &dim, &elements, &grid_names, i,
+         &observation_group, &quadratures, &total_connectivity, &total_extents,
+         &total_points_so_far](const auto contiguous_tensor_data_ptr) noexcept {
+          for (const auto& element : elements) {
+            if (UNLIKELY(i == 0)) {
+              // True if first tensor component being accessed
+              append_element_name(&grid_names, element);
+              // append element basis
+              alg::transform(element.basis, std::back_inserter(bases),
+                             [](const Spectral::Basis t) noexcept {
+                               return static_cast<int>(t);
+                             });
+              // append element quadraature
+              alg::transform(element.quadrature,
+                             std::back_inserter(quadratures),
+                             [](const Spectral::Quadrature t) noexcept {
+                               return static_cast<int>(t);
+                             });
 
-    }  // for each element
-    h5::write_data(observation_group.id(), contiguous_tensor_data,
-                   {contiguous_tensor_data.size()}, component_name);
+              append_element_extents_and_connectivity(
+                  &total_extents, &total_connectivity, &total_points_so_far,
+                  dim, element);
+            }
+            using type_from_variant = tmpl::conditional_t<
+                std::is_same_v<
+                    std::decay_t<decltype(*contiguous_tensor_data_ptr)>,
+                    std::vector<double>>,
+                DataVector, std::vector<float>>;
+            contiguous_tensor_data_ptr->insert(
+                contiguous_tensor_data_ptr->end(),
+                std::get<type_from_variant>(element.tensor_components[i].data)
+                    .begin(),
+                std::get<type_from_variant>(element.tensor_components[i].data)
+                    .end());
+          }  // for each element
+          h5::write_data(observation_group.id(), *contiguous_tensor_data_ptr,
+                         {contiguous_tensor_data_ptr->size()}, component_name);
+        };
+
+    if (elements[0].tensor_components[i].data.index() == 0) {
+      std::vector<double> contiguous_tensor_data{};
+      fill_and_write_contiguous_tensor_data(
+          make_not_null(&contiguous_tensor_data));
+    } else if (elements[0].tensor_components[i].data.index() == 1) {
+      std::vector<float> contiguous_tensor_data{};
+      fill_and_write_contiguous_tensor_data(
+          make_not_null(&contiguous_tensor_data));
+    } else {
+      ERROR("Unknown index value ("
+            << elements[0].tensor_components[i].data.index()
+            << ") in std::variant of tensor component.");
+    }
   }  // for each component
 
   // Write the grid extents contiguously, the first `dim` belong to the

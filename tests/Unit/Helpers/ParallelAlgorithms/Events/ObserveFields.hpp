@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -177,10 +178,16 @@ struct ScalarSystem {
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
-      "  VariablesToObserve: [Scalar]\n";
+      "  CoordinatesFloatingPointType: Double\n"
+      "  VariablesToObserve: [Scalar]\n"
+      "  FloatingPointTypes: [Double]\n";
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh) noexcept {
-    return ObserveEvent{"element_data", {"Scalar"}, interpolating_mesh};
+    return ObserveEvent{"element_data",
+                        FloatingPointType::Double,
+                        {FloatingPointType::Double},
+                        {"Scalar"},
+                        interpolating_mesh};
   }
 };
 
@@ -274,11 +281,15 @@ struct ComplicatedSystem {
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
-      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]\n";
+      "  CoordinatesFloatingPointType: Double\n"
+      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]\n"
+      "  FloatingPointTypes: [Double, Double, Float, Float]\n";
 
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh) noexcept {
-    return ObserveEvent("element_data",
+    return ObserveEvent("element_data", FloatingPointType::Double,
+                        {FloatingPointType::Double, FloatingPointType::Double,
+                         FloatingPointType::Float, FloatingPointType::Float},
                         {"Scalar", "Vector", "Tensor", "Tensor2"},
                         interpolating_mesh);
   }

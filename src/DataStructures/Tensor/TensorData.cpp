@@ -6,6 +6,24 @@
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/StdHelpers.hpp"  // std::vector ostream
+
+TensorComponent::TensorComponent(std::string in_name,
+                                 DataVector in_data) noexcept
+    : name(std::move(in_name)), data(std::move(in_data)) {}
+
+TensorComponent::TensorComponent(std::string in_name,
+                                 std::vector<float> in_data) noexcept
+    : name(std::move(in_name)), data(std::move(in_data)) {}
 
 void TensorComponent::pup(PUP::er& p) noexcept {
   p | name;
@@ -13,7 +31,15 @@ void TensorComponent::pup(PUP::er& p) noexcept {
 }
 
 std::ostream& operator<<(std::ostream& os, const TensorComponent& t) noexcept {
-  return os << "(" << t.name << ", " << t.data << ")";
+  if (t.data.index() == 0) {
+    return os << "(" << t.name << ", " << std::get<DataVector>(t.data) << ")";
+  } else if (t.data.index() == 1) {
+    return os << "(" << t.name << ", " << std::get<std::vector<float>>(t.data)
+              << ")";
+  } else {
+    ERROR("Unknown index value (" << t.data.index()
+                                  << ") in std::variant of tensor component.");
+  }
 }
 
 bool operator==(const TensorComponent& lhs,
@@ -26,10 +52,24 @@ bool operator!=(const TensorComponent& lhs,
   return not(lhs == rhs);
 }
 
+ExtentsAndTensorVolumeData::ExtentsAndTensorVolumeData(
+    std::vector<size_t> extents_in,
+    std::vector<TensorComponent> components) noexcept
+    : extents(std::move(extents_in)),
+      tensor_components(std::move(components)) {}
+
 void ExtentsAndTensorVolumeData::pup(PUP::er& p) noexcept {
   p | extents;
   p | tensor_components;
 }
+
+ElementVolumeData::ElementVolumeData(
+    std::vector<size_t> extents_in, std::vector<TensorComponent> components,
+    std::vector<Spectral::Basis> basis_in,
+    std::vector<Spectral::Quadrature> quadrature_in) noexcept
+    : ExtentsAndTensorVolumeData(std::move(extents_in), std::move(components)),
+      basis(std::move(basis_in)),
+      quadrature(std::move(quadrature_in)) {}
 
 void ElementVolumeData::pup(PUP::er& p) noexcept {
   ExtentsAndTensorVolumeData::pup(p);

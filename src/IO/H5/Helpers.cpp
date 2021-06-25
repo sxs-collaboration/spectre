@@ -368,8 +368,8 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   CHECK_H5(dataspace_id,
            "Failed to open dataspace for attribute '" << name << "'");
   // Get the size of the strings
-  hsize_t legend_dims[1];
-  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, legend_dims, nullptr),
+  std::array<hsize_t, 1> legend_dims{};
+  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, legend_dims.data(), nullptr),
            "Failed to get size of strings");
   // Read the strings as arrays of characters
   std::vector<char*> temp(legend_dims[0]);
@@ -528,7 +528,7 @@ template Index<3> read_extents<3>(const hid_t group_id,
       const std::string& name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
-                        (double, int, unsigned int, long, unsigned long,
+                        (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char))
 
 #define INSTANTIATE_ATTRIBUTE(_, DATA)                                 \
@@ -551,7 +551,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
       const hid_t group_id, const std::string& dataset_name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
-                        (double, int, unsigned int, long, unsigned long,
+                        (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
                         (0))
 
@@ -561,7 +561,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
       const hid_t group_id, const std::string& dataset_name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
-                        (double, int, unsigned int, long, unsigned long,
+                        (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
                         (1))
 

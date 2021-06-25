@@ -28,6 +28,10 @@ template <typename T>
 SPECTRE_ALWAYS_INLINE hid_t h5_type();
 /// \cond HIDDEN_SYMBOLS
 template <>
+SPECTRE_ALWAYS_INLINE hid_t h5_type<float>() {
+  return H5T_NATIVE_FLOAT;  // LCOV_EXCL_LINE
+}
+template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<double>() {
   return H5T_NATIVE_DOUBLE;  // LCOV_EXCL_LINE
 }

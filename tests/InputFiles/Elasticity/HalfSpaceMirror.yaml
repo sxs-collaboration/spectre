@@ -84,3 +84,5 @@ EventsAndTriggers:
           - Displacement
           - PotentialEnergyDensity
         InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]

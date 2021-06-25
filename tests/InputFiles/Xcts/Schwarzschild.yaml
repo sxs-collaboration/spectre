@@ -86,3 +86,5 @@ EventsAndTriggers:
           - LapseTimesConformalFactor
           - ShiftExcess
         InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]

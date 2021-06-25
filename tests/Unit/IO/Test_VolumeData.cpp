@@ -23,7 +23,18 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 
-SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
+namespace {
+template <typename T>
+T multiply(const double obs_value, const T& component) noexcept {
+  T result = component;
+  for (auto& t : result) {
+    t *= obs_value;
+  }
+  return result;
+}
+
+template <typename DataType>
+void test() {
   const std::string h5_file_name("Unit.IO.H5.VolumeData.h5");
   const uint32_t version_number = 4;
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -31,7 +42,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   }
 
   h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-  const std::vector<DataVector> tensor_components_and_coords{
+  const std::vector<DataType> tensor_components_and_coords{
       {8.9, 7.6, 3.9, 2.1, 18.9, 17.6, 13.9, 12.1},
       {0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0},
       {0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0},
@@ -60,52 +71,52 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
           observation_id, observation_value,
           std::vector<ElementVolumeData>{
               {{2, 2, 2},
-               {TensorComponent{
-                    first_grid + "/S",
-                    observation_value * tensor_components_and_coords[0]},
-                TensorComponent{
-                    first_grid + "/x-coord",
-                    observation_value * tensor_components_and_coords[1]},
-                TensorComponent{
-                    first_grid + "/y-coord",
-                    observation_value * tensor_components_and_coords[2]},
-                TensorComponent{
-                    first_grid + "/z-coord",
-                    observation_value * tensor_components_and_coords[3]},
-                TensorComponent{
-                    first_grid + "/T_x",
-                    observation_value * tensor_components_and_coords[4]},
-                TensorComponent{
-                    first_grid + "/T_y",
-                    observation_value * tensor_components_and_coords[5]},
-                TensorComponent{
-                    first_grid + "/T_z",
-                    observation_value * tensor_components_and_coords[6]}},
+               {TensorComponent{first_grid + "/S",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[0])},
+                TensorComponent{first_grid + "/x-coord",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[1])},
+                TensorComponent{first_grid + "/y-coord",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[2])},
+                TensorComponent{first_grid + "/z-coord",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[3])},
+                TensorComponent{first_grid + "/T_x",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[4])},
+                TensorComponent{first_grid + "/T_y",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[5])},
+                TensorComponent{first_grid + "/T_z",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[6])}},
                bases.front(),
                quadratures.front()},
               // Second Element Data
               {{2, 2, 2},
-               {TensorComponent{
-                    last_grid + "/S",
-                    observation_value * tensor_components_and_coords[1]},
-                TensorComponent{
-                    last_grid + "/x-coord",
-                    observation_value * tensor_components_and_coords[0]},
-                TensorComponent{
-                    last_grid + "/y-coord",
-                    observation_value * tensor_components_and_coords[5]},
-                TensorComponent{
-                    last_grid + "/z-coord",
-                    observation_value * tensor_components_and_coords[3]},
-                TensorComponent{
-                    last_grid + "/T_x",
-                    observation_value * tensor_components_and_coords[6]},
-                TensorComponent{
-                    last_grid + "/T_y",
-                    observation_value * tensor_components_and_coords[4]},
-                TensorComponent{
-                    last_grid + "/T_z",
-                    observation_value * tensor_components_and_coords[2]}},
+               {TensorComponent{last_grid + "/S",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[1])},
+                TensorComponent{last_grid + "/x-coord",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[0])},
+                TensorComponent{last_grid + "/y-coord",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[5])},
+                TensorComponent{last_grid + "/z-coord",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[3])},
+                TensorComponent{last_grid + "/T_x",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[6])},
+                TensorComponent{last_grid + "/T_y",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[4])},
+                TensorComponent{last_grid + "/T_z",
+                                multiply(observation_value,
+                                         tensor_components_and_coords[2])}},
                bases.back(),
                quadratures.back()}});
     };
@@ -218,13 +229,13 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
       }
       return read_points;
     }();
-    // Given a DataVector, corresponding to contiguous data read out of a
+    // Given a DataType, corresponding to contiguous data read out of a
     // file, find the data which was written by the grid whose extents are
     // found at position `grid_index` in the vector of extents.
     const auto get_grid_data = [&element_num_points, &read_points_by_element](
-                                   DataVector all_data,
+                                   const DataVector& all_data,
                                    const size_t grid_index) {
-      DataVector result(element_num_points[grid_index]);
+      DataType result(element_num_points[grid_index]);
       // clang-tidy: do not use pointer arithmetic
       std::copy(&all_data[read_points_by_element[grid_index]],
                 &all_data[read_points_by_element[grid_index]] +  // NOLINT
@@ -245,8 +256,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
         CHECK(get_grid_data(
                   volume_file.get_tensor_component(observation_id, component),
                   grid_positions[j]) ==
-              observation_value *
-                  tensor_components_and_coords[grid_data_orders[j][i]]);
+              multiply(observation_value,
+                       tensor_components_and_coords[grid_data_orders[j][i]]));
       }
     }
   };
@@ -275,6 +286,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
 }
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
+  test<DataVector>();
+  test<std::vector<float>>();
+}
 
 // [[OutputRegex, The expected format of the tensor component names is
 // 'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in]]
@@ -292,7 +309,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(100, 10.0,
                                 {{{2},
-                                  {TensorComponent{"S", {1.0, 2.0}}},
+                                  {TensorComponent{"S", DataVector{1.0, 2.0}}},
                                   {Spectral::Basis::Legendre},
                                   {Spectral::Quadrature::Gauss}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -316,12 +333,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
   h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
-  volume_file.write_volume_data(
-      100, 10.0,
-      {{{2},
-        {TensorComponent{"A/S", {1.0, 2.0}}, TensorComponent{"S", {1.0, 2.0}}},
-        {Spectral::Basis::Legendre},
-        {Spectral::Quadrature::Gauss}}});
+  volume_file.write_volume_data(100, 10.0,
+                                {{{2},
+                                  {TensorComponent{"A/S", DataVector{1.0, 2.0}},
+                                   TensorComponent{"S", DataVector{1.0, 2.0}}},
+                                  {Spectral::Basis::Legendre},
+                                  {Spectral::Quadrature::Gauss}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
   // clang-format off
@@ -343,12 +360,13 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
   h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
-  volume_file.write_volume_data(100, 10.0,
-                                {{{2},
-                                  {TensorComponent{"A/S", {1.0, 2.0}},
-                                   TensorComponent{"A/S", {1.0, 2.0}}},
-                                  {Spectral::Basis::Legendre},
-                                  {Spectral::Quadrature::Gauss}}});
+  volume_file.write_volume_data(
+      100, 10.0,
+      {{{2},
+        {TensorComponent{"A/S", DataVector{1.0, 2.0}},
+         TensorComponent{"A/S", DataVector{1.0, 2.0}}},
+        {Spectral::Basis::Legendre},
+        {Spectral::Quadrature::Gauss}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
   // clang-format off
@@ -357,6 +375,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
 // [[OutputRegex, No observation with value]]
 SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.FindNoObservationId",
                   "[Unit][IO][H5]") {
+  // clang-format on
   ERROR_TEST();
   const std::string h5_file_name(
       "Unit.IO.H5.VolumeData.FindNoObservationId.h5");
@@ -369,8 +388,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.FindNoObservationId",
       h5_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(
       100, 10.0,
-      {
-       {{2}, {TensorComponent{"A/S", {1.0, 2.0}}},{Spectral::Basis::Legendre},
+      {{{2},
+        {TensorComponent{"A/S", DataVector{1.0, 2.0}}},
+        {Spectral::Basis::Legendre},
         {Spectral::Quadrature::Gauss}}});
   volume_file.find_observation_id(11.0);
 }

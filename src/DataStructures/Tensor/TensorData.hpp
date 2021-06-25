@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -28,12 +29,12 @@ class er;
  */
 struct TensorComponent {
   TensorComponent() = default;
-  TensorComponent(std::string n, DataVector d) noexcept
-      : name(std::move(n)), data(std::move(d)) {}
+  TensorComponent(std::string in_name, DataVector in_data) noexcept;
+  TensorComponent(std::string in_name, std::vector<float> in_data) noexcept;
 
   void pup(PUP::er& p) noexcept;  // NOLINT
   std::string name{};
-  DataVector data{};
+  std::variant<DataVector, std::vector<float>> data{};
 };
 
 std::ostream& operator<<(std::ostream& os, const TensorComponent& t) noexcept;
@@ -57,9 +58,7 @@ bool operator!=(const TensorComponent& lhs,
 struct ExtentsAndTensorVolumeData {
   ExtentsAndTensorVolumeData() = default;
   ExtentsAndTensorVolumeData(std::vector<size_t> extents_in,
-                             std::vector<TensorComponent> components) noexcept
-      : extents(std::move(extents_in)),
-        tensor_components(std::move(components)) {}
+                             std::vector<TensorComponent> components) noexcept;
 
   void pup(PUP::er& p) noexcept;  // NOLINT
   std::vector<size_t> extents{};
@@ -76,11 +75,7 @@ struct ElementVolumeData : ExtentsAndTensorVolumeData {
   ElementVolumeData(std::vector<size_t> extents_in,
                     std::vector<TensorComponent> components,
                     std::vector<Spectral::Basis> basis_in,
-                    std::vector<Spectral::Quadrature> quadrature_in) noexcept
-      : ExtentsAndTensorVolumeData(std::move(extents_in),
-                                   std::move(components)),
-        basis(std::move(basis_in)),
-        quadrature(std::move(quadrature_in)) {};
+                    std::vector<Spectral::Quadrature> quadrature_in) noexcept;
 
   void pup(PUP::er& p) noexcept;  // NOLINT
   std::vector<Spectral::Basis> basis{};
