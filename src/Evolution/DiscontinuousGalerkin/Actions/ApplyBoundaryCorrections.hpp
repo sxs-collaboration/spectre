@@ -130,7 +130,7 @@ struct ApplyBoundaryCorrections {
       gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
 
   template <typename DbTagsList, typename... InboxTags>
-  static void receive_local_time_stepping(
+  static bool receive_local_time_stepping(
       gsl::not_null<db::DataBox<DbTagsList>*> box,
       gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
 };
@@ -216,7 +216,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
 
 template <typename Metavariables>
 template <typename DbTagsList, typename... InboxTags>
-void ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
+bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
@@ -242,55 +242,84 @@ void ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
   const auto& local_next_temporal_id =
       db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
 
-  db::mutate<evolution::dg::Tags::MortarDataHistory<
-                 volume_dim, typename dt_variables_tag::type>,
-             evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
-      box, [&inbox, &local_next_temporal_id](
-               const gsl::not_null<
-                   std::unordered_map<Key,
-                                      TimeSteppers::BoundaryHistory<
-                                          evolution::dg::MortarData<volume_dim>,
-                                          evolution::dg::MortarData<volume_dim>,
-                                          typename dt_variables_tag::type>,
-                                      boost::hash<Key>>*>
-                   boundary_data_history,
-               const gsl::not_null<
-                   std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-                   mortar_next_time_step_id) noexcept {
-        // Move received boundary data into boundary history.
-        for (auto received_data = inbox.begin();
-             received_data != inbox.end() and
-             received_data->first < local_next_temporal_id;
-             received_data = inbox.erase(received_data)) {
-          const auto& receive_temporal_id = received_data->first;
-          // Loop over all mortars for which we received data at this time
-          for (auto& received_mortar_data : received_data->second) {
-            const auto& mortar_id = received_mortar_data.first;
-            MortarData<Metavariables::volume_dim> neighbor_mortar_data{};
-            // Insert:
-            // - the current TimeStepId of the neighbor
-            // - the current face mesh of the neighbor
-            // - the current boundary correction data of the neighbor
-            ASSERT(std::get<2>(received_mortar_data.second).has_value(),
-                   "Did not receive boundary correction data from the "
-                   "neighbor\nMortarId: "
-                       << mortar_id << "\nTimeStepId: " << receive_temporal_id);
-            ASSERT(
-                mortar_next_time_step_id->at(mortar_id) == receive_temporal_id,
-                "Expected to receive mortar data on mortar "
-                    << mortar_id << " at time "
-                    << mortar_next_time_step_id->at(mortar_id)
-                    << " but actually received at time "
-                    << receive_temporal_id);
-            mortar_next_time_step_id->at(mortar_id) =
-                std::get<3>(received_mortar_data.second);
-            neighbor_mortar_data.insert_neighbor_mortar_data(
-                receive_temporal_id, std::get<0>(received_mortar_data.second),
-                std::move(*std::get<2>(received_mortar_data.second)));
-            boundary_data_history->at(mortar_id).remote_insert(
-                receive_temporal_id, std::move(neighbor_mortar_data));
-          }
-        }
+  const bool have_all_intermediate_messages =
+      db::mutate<evolution::dg::Tags::MortarDataHistory<
+                     volume_dim, typename dt_variables_tag::type>,
+                 evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
+          box,
+          [&inbox, &local_next_temporal_id](
+              const gsl::not_null<
+                  std::unordered_map<Key,
+                                     TimeSteppers::BoundaryHistory<
+                                         evolution::dg::MortarData<volume_dim>,
+                                         evolution::dg::MortarData<volume_dim>,
+                                         typename dt_variables_tag::type>,
+                                     boost::hash<Key>>*>
+                  boundary_data_history,
+              const gsl::not_null<
+                  std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
+                  mortar_next_time_step_id) noexcept {
+            // Move received boundary data into boundary history.
+            for (auto received_data = inbox.begin();
+                 received_data != inbox.end() and
+                 received_data->first < local_next_temporal_id;
+                 received_data = inbox.erase(received_data)) {
+              const auto& receive_temporal_id = received_data->first;
+              // Loop over all mortars for which we received data at this time
+              for (auto received_mortar_data = received_data->second.begin();
+                   received_mortar_data != received_data->second.end();
+                   received_mortar_data =
+                       received_data->second.erase(received_mortar_data)) {
+                const auto& mortar_id = received_mortar_data->first;
+                MortarData<Metavariables::volume_dim> neighbor_mortar_data{};
+                // Insert:
+                // - the current TimeStepId of the neighbor
+                // - the current face mesh of the neighbor
+                // - the current boundary correction data of the neighbor
+                ASSERT(std::get<2>(received_mortar_data->second).has_value(),
+                       "Did not receive boundary correction data from the "
+                       "neighbor\nMortarId: "
+                           << mortar_id
+                           << "\nTimeStepId: " << receive_temporal_id);
+                ASSERT(mortar_next_time_step_id->at(mortar_id) >=
+                           receive_temporal_id,
+                       "Expected to receive mortar data on mortar "
+                           << mortar_id << " at time "
+                           << mortar_next_time_step_id->at(mortar_id)
+                           << " but actually received at time "
+                           << receive_temporal_id);
+                if (mortar_next_time_step_id->at(mortar_id) !=
+                    receive_temporal_id) {
+                  // We've received messages from our neighbor
+                  // out-of-order.  They are always sent in-order, but
+                  // messages are not guaranteed to be received in the
+                  // order they were sent.
+                  return false;
+                }
+                mortar_next_time_step_id->at(mortar_id) =
+                    std::get<3>(received_mortar_data->second);
+                neighbor_mortar_data.insert_neighbor_mortar_data(
+                    receive_temporal_id,
+                    std::get<0>(received_mortar_data->second),
+                    std::move(*std::get<2>(received_mortar_data->second)));
+                boundary_data_history->at(mortar_id).remote_insert(
+                    receive_temporal_id, std::move(neighbor_mortar_data));
+              }
+            }
+            return true;
+          });
+
+  if (not have_all_intermediate_messages) {
+    return false;
+  }
+
+  return alg::all_of(
+      db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box),
+      [&local_next_temporal_id](const std::pair<Key, TimeStepId>&
+                                    mortar_id_and_next_temporal_id) noexcept {
+        return mortar_id_and_next_temporal_id.first.second ==
+                   ElementId<volume_dim>::external_boundary_id() or
+               mortar_id_and_next_temporal_id.second >= local_next_temporal_id;
       });
 }
 
@@ -668,38 +697,10 @@ ApplyBoundaryCorrections<Metavariables>::apply(
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
   } else {
-    const auto& inbox =
-        tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-            Metavariables::volume_dim>>(inboxes);
-
-    const auto& local_next_temporal_id =
-        db::get<::Tags::Next<::Tags::TimeStepId>>(box);
-    const auto& mortars_next_temporal_id = db::get<
-        evolution::dg::Tags::MortarNextTemporalId<Metavariables::volume_dim>>(
-        box);
-
-    for (const auto& [mortar_id, mortar_next_temporal_id] :
-         mortars_next_temporal_id) {
-      // If on an external boundary
-      if (UNLIKELY(mortar_id.second ==
-                   ElementId<volume_dim>::external_boundary_id())) {
-        continue;
-      }
-      auto next_temporal_id = mortar_next_temporal_id;
-      while (next_temporal_id < local_next_temporal_id) {
-        const auto temporal_received = inbox.find(next_temporal_id);
-        if (temporal_received == inbox.end()) {
-          return {std::move(box), Parallel::AlgorithmExecution::Retry};
-        }
-        const auto mortar_received = temporal_received->second.find(mortar_id);
-        if (mortar_received == temporal_received->second.end()) {
-          return {std::move(box), Parallel::AlgorithmExecution::Retry};
-        }
-        next_temporal_id = std::get<3>(mortar_received->second);
-      }
+    if (not receive_local_time_stepping(make_not_null(&box),
+                                        make_not_null(&inboxes))) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
-
-    receive_local_time_stepping(make_not_null(&box), make_not_null(&inboxes));
   }
 
   complete_time_step(make_not_null(&box));
