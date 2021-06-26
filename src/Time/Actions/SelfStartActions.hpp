@@ -126,11 +126,6 @@ struct vars_to_save_impl<System, true> {
 template <typename System>
 using vars_to_save = typename vars_to_save_impl<
     System, System::has_primitive_and_conservative_vars>::type;
-
-template <typename TagList>
-using get_all_history_tags =
-    tmpl::filter<TagList,
-                 tt::is_a_lambda<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
 }  // namespace detail
 
 /// \ingroup ActionsGroup
@@ -327,7 +322,7 @@ struct CheckForOrderIncrease {
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     const auto& time = db::get<::Tags::SubstepTime>(box);
     const auto& time_step = db::get<::Tags::TimeStep>(box);
-    using history_tags = detail::get_all_history_tags<DbTags>;
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
     const size_t history_integration_order =
         db::get<tmpl::front<history_tags>>(box).integration_order();
 
@@ -430,7 +425,7 @@ struct Cleanup {
             *tag_value = std::decay_t<decltype(*tag_value)>{};
           });
         });
-    using history_tags = detail::get_all_history_tags<DbTags>;
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
     tmpl::for_each<history_tags>([&box](auto tag_v) noexcept {
       using tag = typename decltype(tag_v)::type;
       ASSERT(db::get<tag>(box).integration_order() ==
