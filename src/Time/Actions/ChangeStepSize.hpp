@@ -40,9 +40,19 @@ bool change_step_size(
   const auto& step_controller = db::get<Tags::StepController>(*box);
 
   const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
-  const auto& history = db::get<Tags::HistoryEvolvedVariables<>>(*box);
-
-  if (not time_stepper.can_change_step_size(next_time_id, history)) {
+  using history_tags = ::Tags::get_all_history_tags<DbTags>;
+  bool can_change_step_size = true;
+  tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
+                                &next_time_id](auto tag_v) noexcept {
+    if (not can_change_step_size) {
+      return;
+    }
+    using tag = typename decltype(tag_v)::type;
+    const auto& history = db::get<tag>(*box);
+    can_change_step_size =
+        time_stepper.can_change_step_size(next_time_id, history);
+  });
+  if (not can_change_step_size) {
     return true;
   }
 
