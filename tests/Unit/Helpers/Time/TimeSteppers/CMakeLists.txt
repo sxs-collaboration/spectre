@@ -11,8 +11,9 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  PRIVATE
-  ErrorHandling
+  PUBLIC
   Time
   Utilities
+  PRIVATE
+  ErrorHandling
   )

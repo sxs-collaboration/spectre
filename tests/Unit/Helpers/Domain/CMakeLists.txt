@@ -17,8 +17,10 @@ target_link_libraries(
   FunctionsOfTime
 
   PRIVATE
+  DomainBoundaryConditionsHelpers
   DomainCreators
   ErrorHandling
+  Framework
 
   PUBLIC
   DataStructures

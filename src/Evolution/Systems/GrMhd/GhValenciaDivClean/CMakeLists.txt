@@ -25,9 +25,15 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  DiscontinuousGalerkin
+  DomainBoundaryConditions
   GeneralRelativity
+  Utilities
+  ValenciaDivClean
   INTERFACE
-  Domain
+  Hydro
+  Options
+  Parallel
   )
 
 add_subdirectory(BoundaryConditions)

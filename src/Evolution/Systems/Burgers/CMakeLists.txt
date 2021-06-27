@@ -28,8 +28,17 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
+  PUBLIC
+  DataStructures
+  Domain
+  DomainBoundaryConditions
+  DiscontinuousGalerkin
+  ErrorHandling
+  Options
+  Parallel
+  Utilities
+  PRIVATE
+  LinearOperators
   )
 
 add_subdirectory(BoundaryConditions)

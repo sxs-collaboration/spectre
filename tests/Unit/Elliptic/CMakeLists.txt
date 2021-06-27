@@ -18,5 +18,12 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Elliptic;LinearOperators;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataBoxTestHelpers
+  Elliptic
   )

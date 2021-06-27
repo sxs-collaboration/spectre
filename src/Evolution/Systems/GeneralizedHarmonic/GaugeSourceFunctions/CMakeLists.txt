@@ -28,9 +28,15 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  CoordinateMaps
   DataStructures
   Domain
-  INTERFACE
   ErrorHandling
+  FunctionsOfTime
   GeneralizedHarmonic
+  GeneralRelativity
+  Initialization
+  Options
+  Spectral
+  Utilities
   )

@@ -48,6 +48,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  Domain
   DgSubcell
   DiscontinuousGalerkin
   ErrorHandling
@@ -55,8 +56,11 @@ target_link_libraries(
   Hydro
   Limiters
   Options
+  Utilities
   Valencia
   VariableFixing
+  PRIVATE
+  RootFinding
   )
 
 add_subdirectory(BoundaryConditions)
