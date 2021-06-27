@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>  // IWYU pragma: keep
 #include <cstddef>
+#include <string>
 #include <utility>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
@@ -16,7 +17,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvalues.hpp"
+#include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvaluesArpack.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -756,11 +757,18 @@ double dimensionful_spin_magnitude(
       &left_matrix, &right_matrix, inverse_surface_metric,
       trace_christoffel_second_kind, sin_theta, ricci_scalar, ylm);
 
-  DataVector eigenvalues_real_part(matrix_dimension, 0.0);
-  DataVector eigenvalues_im_part(matrix_dimension, 0.0);
-  Matrix eigenvectors(matrix_dimension, matrix_dimension, 0.0);
-  find_generalized_eigenvalues(&eigenvalues_real_part, &eigenvalues_im_part,
-                               &eigenvectors, left_matrix, right_matrix);
+  constexpr std::size_t num_evals_to_find = 3;
+  constexpr double sigma = 0.1;
+  const std::string which = "LM";
+
+  DataVector eigenvalues_real_part(num_evals_to_find, 0.0);
+  DataVector eigenvalues_im_part(num_evals_to_find, 0.0);
+
+  Matrix eigenvectors(matrix_dimension, num_evals_to_find, 0.0);
+
+  find_generalized_eigenvalues_arpack(
+      eigenvalues_real_part, eigenvalues_im_part, eigenvectors, left_matrix,
+      right_matrix, num_evals_to_find, sigma, which);
 
   const std::array<DataVector, 3> smallest_eigenvectors =
       get_eigenvectors_for_3_smallest_magnitude_eigenvalues(

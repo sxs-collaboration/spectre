@@ -91,6 +91,7 @@ include(CheckBrokenArray0)
 include(SetupBlas)
 include(SetupLapack)
 include(SetupLIBXSMM)
+include(SetupArpack)
 
 include(SetupBlaze)
 include(SetupBrigand)

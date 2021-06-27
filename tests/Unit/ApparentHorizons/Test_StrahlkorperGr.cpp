@@ -967,7 +967,7 @@ SPECTRE_TEST_CASE(
       expected_dimensionless_spin_magnitude * square(mass);
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
-  const double aligned_tolerance = 1.e-13;
+  const double aligned_tolerance = 1.e-12;
   const double aligned_l_max = 12;
   const std::array<double, 3> aligned_dimensionless_spin = {
       {0.0, 0.0, expected_dimensionless_spin_magnitude}};
