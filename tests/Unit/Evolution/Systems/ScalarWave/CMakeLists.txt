@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
+  Test_EnergyDensity.cpp
   Test_Equations.cpp
   Test_TimeDerivative.cpp
   Test_UpwindPenaltyCorrection.cpp
