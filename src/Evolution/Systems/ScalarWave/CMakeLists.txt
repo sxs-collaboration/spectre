@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Constraints.cpp
+  EnergyDensity.cpp
   Equations.cpp
   TimeDerivative.cpp
   UpwindPenaltyCorrection.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   HEADERS
   Characteristics.hpp
   Constraints.hpp
+  EnergyDensity.hpp
   Equations.hpp
   Initialize.hpp
   System.hpp
