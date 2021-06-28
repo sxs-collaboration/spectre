@@ -10,37 +10,47 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-template <size_t MaxDerivPlusOne>
-StoredInfo<MaxDerivPlusOne>::StoredInfo(
-    const double t, std::array<DataVector, MaxDerivPlusOne> init_quantities,
-    const bool StoringCoefs) noexcept
+namespace FunctionOfTimeHelpers {
+template <size_t MaxDerivPlusOne, bool StoreCoefs>
+StoredInfo<MaxDerivPlusOne, StoreCoefs>::StoredInfo(
+    const double t,
+    std::array<DataVector, MaxDerivPlusOne> init_quantities) noexcept
     : time(t), stored_quantities{std::move(init_quantities)} {
-  if (StoringCoefs) {
-    // convert derivs to coefficients for polynomial evaluation if storing
-    // coefficients instead of the quantity itself
-    // the coefficient of x^N is the Nth deriv rescaled by 1/factorial(N)
-    double fact = 1.0;
-    for (size_t j = 2; j < MaxDerivPlusOne; j++) {
-      fact *= j;
-      gsl::at(stored_quantities, j) /= fact;
-    }
+  // Convert derivs to coefficients for polynomial evaluation
+  // The coefficient of x^N is the Nth deriv rescaled by 1/factorial(N)
+  double fact = 1.0;
+  for (size_t j = 2; j < MaxDerivPlusOne; j++) {
+    fact *= j;
+    gsl::at(stored_quantities, j) /= fact;
   }
 }
 
 template <size_t MaxDerivPlusOne>
-void StoredInfo<MaxDerivPlusOne>::pup(PUP::er& p) noexcept {
+StoredInfo<MaxDerivPlusOne, false>::StoredInfo(
+    const double t,
+    std::array<DataVector, MaxDerivPlusOne> init_quantities) noexcept
+    : time(t), stored_quantities{std::move(init_quantities)} {}
+
+template <size_t MaxDerivPlusOne, bool StoreCoefs>
+void StoredInfo<MaxDerivPlusOne, StoreCoefs>::pup(PUP::er& p) noexcept {
   p | time;
   p | stored_quantities;
 }
 
 template <size_t MaxDerivPlusOne>
-bool StoredInfo<MaxDerivPlusOne>::operator==(
-    const StoredInfo<MaxDerivPlusOne>& rhs) const noexcept {
+void StoredInfo<MaxDerivPlusOne, false>::pup(PUP::er& p) noexcept {
+  p | time;
+  p | stored_quantities;
+}
+
+template <size_t MaxDerivPlusOne, bool StoreCoefs>
+bool StoredInfo<MaxDerivPlusOne, StoreCoefs>::operator==(
+    const StoredInfo<MaxDerivPlusOne, StoreCoefs>& rhs) const noexcept {
   return time == rhs.time and stored_quantities == rhs.stored_quantities;
 }
 
-void reset_fot_expiration_time(gsl::not_null<double*> prev_expiration_time,
-                               const double next_expiration_time) noexcept {
+void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
+                           const double next_expiration_time) noexcept {
   if (next_expiration_time < *prev_expiration_time) {
     ERROR("Attempted to change expiration time to "
           << next_expiration_time
@@ -50,18 +60,18 @@ void reset_fot_expiration_time(gsl::not_null<double*> prev_expiration_time,
   *prev_expiration_time = next_expiration_time;
 }
 
-template <size_t MaxDerivPlusOne>
-StoredInfo<MaxDerivPlusOne>& stored_info_from_upper_bound(
-    const double t,
-    std::vector<StoredInfo<MaxDerivPlusOne>>& all_stored_infos) noexcept {
+template <size_t MaxDerivPlusOne, bool StoreCoefs>
+const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
+    const double t, const std::vector<StoredInfo<MaxDerivPlusOne, StoreCoefs>>&
+                        all_stored_infos) noexcept {
   // this function assumes that the times in stored_info_at_update_times is
   // sorted, which is enforced by the update function of a piecewise polynomial.
 
-  const auto upper_bound_stored_info =
-      std::upper_bound(all_stored_infos.begin(), all_stored_infos.end(), t,
-                       [](double t0, const StoredInfo<MaxDerivPlusOne>& d) {
-                         return d.time > t0;
-                       });
+  const auto upper_bound_stored_info = std::upper_bound(
+      all_stored_infos.begin(), all_stored_infos.end(), t,
+      [](double t0, const StoredInfo<MaxDerivPlusOne, StoreCoefs>& d) {
+        return d.time > t0;
+      });
 
   if (upper_bound_stored_info == all_stored_infos.begin()) {
     // all elements of times are greater than t
@@ -79,22 +89,29 @@ StoredInfo<MaxDerivPlusOne>& stored_info_from_upper_bound(
   // the desired index.
   return *std::prev(upper_bound_stored_info, 1);
 }
+}  // namespace FunctionOfTimeHelpers
 
 // explicit instantiation of StoredInfo class and stored_info_from_upper_bound
 // function for MaxDerivPlusOne = {1,2,3,4,5}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define STORECOEF(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data) template class StoredInfo<DIM(data)>;
+#define INSTANTIATE(_, data) \
+  template class FunctionOfTimeHelpers::StoredInfo<DIM(data), STORECOEF(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5))
-
-#undef INSTANTIATE
-
-#define INSTANTIATE(_, data)                                    \
-  template StoredInfo<DIM(data)>& stored_info_from_upper_bound( \
-      const double, std::vector<StoredInfo<DIM(data)>>&) noexcept;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5), (true, false))
 
 #undef INSTANTIATE
+
+#define INSTANTIATE(_, data)                                             \
+  template const FunctionOfTimeHelpers::StoredInfo<DIM(data),            \
+                                                   STORECOEF(data)>&     \
+  FunctionOfTimeHelpers::stored_info_from_upper_bound(                   \
+      const double, const std::vector<FunctionOfTimeHelpers::StoredInfo< \
+                        DIM(data), STORECOEF(data)>>&) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5), (true, false))
+
+#undef INSTANTIATE
+#undef STORECOEF
 #undef DIM
