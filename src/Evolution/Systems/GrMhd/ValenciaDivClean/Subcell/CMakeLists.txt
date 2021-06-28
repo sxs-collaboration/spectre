@@ -23,6 +23,7 @@ spectre_target_headers(
   FixConservativesAndComputePrims.hpp
   GrTagsForHydro.hpp
   InitialDataTci.hpp
+  NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
