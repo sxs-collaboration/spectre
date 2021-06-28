@@ -7,6 +7,7 @@ spectre_target_sources(
   ConstraintPreservingSphericalRadiation.cpp
   BoundaryCondition.cpp
   Outflow.cpp
+  RegisterDerivedWithCharm.cpp
 )
 
 spectre_target_headers(
@@ -17,4 +18,5 @@ spectre_target_headers(
   BoundaryCondition.hpp
   Factory.hpp
   Outflow.hpp
+  RegisterDerivedWithCharm.hpp
 )

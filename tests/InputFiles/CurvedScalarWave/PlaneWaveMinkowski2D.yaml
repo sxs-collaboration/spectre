@@ -1,0 +1,94 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveCurvedPlaneWaveMinkowski2D
+# Check: parse
+# Timeout: 1000
+# ExpectedOutput:
+#   CurvedScalarPlaneWaveMinkowski2DVolume0.h5
+
+AnalyticData:
+  ScalarWaveGr:
+    Background:
+    ScalarField:
+      WaveVector: [1.0, 1.0]
+      Center: [0.0, 0.0]
+      Profile:
+        Sinusoid:
+          Amplitude: 1.0
+          Wavenumber: 1.0
+          Phase: 0.0
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepController: BinaryFraction
+  StepChoosers:
+    - Constant: 0.05
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
+
+DomainCreator:
+  Rectangle:
+    LowerBound: [0.0, 0.0]
+    UpperBound: [6.283185307179586, 6.283185307179586]
+    InitialRefinement: [2, 2]
+    InitialGridPoints: [4, 4]
+    TimeDependence: None
+    BoundaryCondition: Periodic
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Filtering:
+  ExpFilter0:
+    Alpha: 12
+    HalfPower: 32
+    DisableForDebugging: true
+
+EventsAndTriggers:
+  ? Slabs:
+      Specified:
+        Values: [30]
+  : - Completion
+  ? Slabs:
+      Specified:
+        Values: [0, 25]
+  : - ObserveFields:
+        SubfileName: VolumePsi0And25
+        VariablesToObserve: ["Psi"]
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 10
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeVarsConstraintsEvery10Slabs
+        VariablesToObserve:
+          - Psi
+          - Pi
+          - Phi
+          - PointwiseL2Norm(OneIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "CurvedScalarPlaneWaveMinkowski2DVolume"
+  ReductionFileName: "CurvedScalarPlaneWaveMinkowski2DReductions"
