@@ -33,6 +33,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ActiveGrid.cpp
+  CartesianFluxDivergence.cpp
   Matrices.cpp
   Mesh.cpp
   NeighborData.cpp
