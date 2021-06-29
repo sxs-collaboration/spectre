@@ -293,6 +293,34 @@ void test_variables_move() noexcept {
       default_for_construction{};
   const auto constructed_from_default = std::move(default_for_construction);
   CHECK(constructed_from_default.size() == 0);
+
+  {
+    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+        reuse_after_move{number_of_grid_points1, initial_fill_values[0]};
+    {
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> constructed{
+          std::move(reuse_after_move)};
+    }
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    reuse_after_move.initialize(number_of_grid_points1, initial_fill_values[1]);
+    CHECK(reuse_after_move ==
+          Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
+              number_of_grid_points1, initial_fill_values[1]});
+    CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
+              reuse_after_move))[0] == initial_fill_values[1]);
+
+    {
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> assigned{};
+      assigned = std::move(reuse_after_move);
+    }
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    reuse_after_move.initialize(number_of_grid_points1, initial_fill_values[0]);
+    CHECK(reuse_after_move ==
+          Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
+              number_of_grid_points1, initial_fill_values[0]});
+    CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
+              reuse_after_move))[0] == initial_fill_values[0]);
+  }
 }
 
 template <typename VectorType>
@@ -492,6 +520,26 @@ void test_variables_prefix_semantics() noexcept {
                                     number_of_grid_points) ==
         gsl::span<const value_type>(prefix_vars_swap.data(),
                                     number_of_grid_points));
+
+  {
+    VariablesType reuse_after_move{number_of_grid_points, 2.0};
+    { PrefixVariablesType constructed{std::move(reuse_after_move)}; }
+    // NOLINTNEXTLINE(bugprone-use-after-move)
+    reuse_after_move.initialize(number_of_grid_points, 3.0);
+    CHECK(reuse_after_move == VariablesType{number_of_grid_points, 3.0});
+    CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
+              reuse_after_move))[0] == 3.0);
+
+    {
+      PrefixVariablesType assigned{};
+      assigned = std::move(reuse_after_move);
+    }
+    // NOLINTNEXTLINE(bugprone-use-after-move)
+    reuse_after_move.initialize(number_of_grid_points, 4.0);
+    CHECK(reuse_after_move == VariablesType{number_of_grid_points, 4.0});
+    CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
+              reuse_after_move))[0] == 4.0);
+  }
 }
 
 template <typename VectorType>
