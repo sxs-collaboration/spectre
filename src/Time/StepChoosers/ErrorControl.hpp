@@ -269,6 +269,9 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
             }
           });
       return result;
+    } else if constexpr (is_any_spin_weighted_v<
+                             std::remove_cv_t<EvolvedType>>) {
+      return error_calc_impl(values.data(), errors.data());
     }
   }
 

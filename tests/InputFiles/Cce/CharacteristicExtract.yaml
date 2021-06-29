@@ -21,6 +21,18 @@ Cce:
       - Constant: 1.0
       - Increase:
           Factor: 2
+      - ErrorControl(SwshVars):
+          AbsoluteTolerance: 1e-8
+          RelativeTolerance: 1e-6
+          MaxFactor: 2
+          MinFactor: 0.25
+          SafetyFactor: 0.9
+      - ErrorControl(CoordVars):
+          AbsoluteTolerance: 1e-8
+          RelativeTolerance: 1e-7
+          MaxFactor: 2
+          MinFactor: 0.25
+          SafetyFactor: 0.9
     StepController:
       BinaryFraction
 

@@ -21,13 +21,17 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace Cce {
 namespace {
@@ -193,6 +197,14 @@ struct test_metavariables {
                                        Spectral::Swsh::Tags::Eth>>>;
 
   using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        StepChooser<StepChooserUse::LtsStep>,
+        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
+                   StepChoosers::Increase<StepChooserUse::LtsStep>>>>;
+  };
 
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,

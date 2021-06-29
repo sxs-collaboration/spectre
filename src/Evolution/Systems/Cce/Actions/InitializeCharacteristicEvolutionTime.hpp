@@ -61,22 +61,6 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using initialization_tags = tmpl::flatten<tmpl::list<
-      Tags::CceEvolutionPrefix<
-          Initialization::Tags::InitialSlabSize<local_time_stepping>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          tmpl::list<
-              ::Tags::IsUsingTimeSteppingErrorControl<
-                  OptionTags::CceEvolutionPrefix>,
-              Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
-              Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
-              Tags::CceEvolutionPrefix<::Tags::StepController>,
-              ::Initialization::Tags::InitialTimeDelta>,
-          tmpl::list<
-              ::Tags::NeverUsingTimeSteppingErrorControl,
-              Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>>>>;
-
   using initialization_tags_to_keep =
       tmpl::flatten<tmpl::list<tmpl::conditional_t<
           local_time_stepping,
@@ -90,6 +74,11 @@ struct InitializeCharacteristicEvolutionTime {
           tmpl::list<
               ::Tags::NeverUsingTimeSteppingErrorControl,
               Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>>>>;
+
+  using initialization_tags = tmpl::push_front<
+      initialization_tags_to_keep,
+      Tags::CceEvolutionPrefix<
+          Initialization::Tags::InitialSlabSize<local_time_stepping>>>;
 
   using const_global_cache_tags = tmpl::list<>;
 
