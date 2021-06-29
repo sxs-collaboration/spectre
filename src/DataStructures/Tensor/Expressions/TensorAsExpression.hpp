@@ -79,7 +79,7 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
   /// \endcode
   /// returned `index_transformation`:
   /// \code
-  /// {1, 2, 0} // positions of RHS indices {c, a, b} in LHS indices {a, b, c}
+  /// {1, 2, 0} // positions of RHS indices {a, b, c} in LHS indices {c, a, b}
   /// \endcode
   ///
   /// \param lhs_tensorindices the TensorIndexs of the LHS tensor
@@ -109,7 +109,7 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
   /// Tensor equation: \f$L_{cab} = R_{abc}\f$
   /// `index_transformation`:
   /// \code
-  /// {1, 2, 0} // positions of RHS indices {c, a, b} in LHS indices {a, b, c}
+  /// {1, 2, 0} // positions of RHS indices {a, b, c} in LHS indices {c, a, b}
   /// \endcode
   /// `lhs_multi_index`:
   /// \code
