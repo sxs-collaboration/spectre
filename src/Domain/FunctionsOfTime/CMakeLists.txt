@@ -23,6 +23,7 @@ spectre_target_headers(
   FunctionOfTime.hpp
   OptionTags.hpp
   PiecewisePolynomial.hpp
+  QuaternionHelpers.hpp
   ReadSpecPiecewisePolynomial.hpp
   RegisterDerivedWithCharm.hpp
   SettleToConstant.hpp
