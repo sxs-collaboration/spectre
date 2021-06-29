@@ -34,7 +34,9 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -59,6 +61,15 @@ struct EvolutionMetavars {
   using evolved_coordinates_variables_tag =
       Tags::Variables<tmpl::list<Cce::Tags::CauchyCartesianCoords,
                                  Cce::Tags::InertialRetardedTime>>;
+
+  struct swsh_vars_selector {
+    static std::string name() noexcept { return "SwshVars"; }
+  };
+
+  struct coord_vars_selector {
+    static std::string name() noexcept { return "CoordVars"; }
+  };
+
   using cce_boundary_communication_tags =
       Cce::Tags::characteristic_worldtube_boundary_tags<
           Cce::Tags::BoundaryValue>;
@@ -122,7 +133,13 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
-                              StepChoosers::Increase<StepChooserUse::LtsStep>>>,
+                              StepChoosers::Increase<StepChooserUse::LtsStep>,
+                              StepChoosers::ErrorControl<
+                                  Tags::Variables<tmpl::list<evolved_swsh_tag>>,
+                                  swsh_vars_selector>,
+                              StepChoosers::ErrorControl<
+                                  evolved_coordinates_variables_tag,
+                                  coord_vars_selector>>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
