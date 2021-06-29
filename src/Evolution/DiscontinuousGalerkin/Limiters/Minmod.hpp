@@ -43,15 +43,10 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-namespace Limiters {
-template <size_t VolumeDim, typename TagsToLimit>
-class Minmod;
-
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
 template <size_t VolumeDim>
 class BufferWrapper;
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail
 
 namespace domain::Tags {
 template <size_t Dim, typename Frame>
@@ -148,7 +143,10 @@ namespace Limiters {
 /// it to operate on h-refined grids.
 ///
 /// \tparam VolumeDim The number of spatial dimensions.
-/// \tparam Tags A typelist of tags specifying the tensors to limit.
+/// \tparam TagsToLimit A typelist of tags specifying the tensors to limit.
+template <size_t VolumeDim, typename TagsToLimit>
+class Minmod;
+
 template <size_t VolumeDim, typename... Tags>
 class Minmod<VolumeDim, tmpl::list<Tags...>> {
  public:
