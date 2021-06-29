@@ -46,11 +46,6 @@ class ElementId;
 namespace PUP {
 class er;
 }  // namespace PUP
-
-namespace Limiters {
-template <size_t VolumeDim, typename TagsToLimit>
-class Weno;
-}  // namespace Limiters
 /// \endcond
 
 namespace Limiters {
@@ -158,6 +153,9 @@ namespace Limiters {
 ///    large error at Block boundaries with discontinuous map changes, and may
 ///    be a small error from smoothly-varying maps that are not sufficiently
 ///    resolved from one element to the next.
+template <size_t VolumeDim, typename TagsToLimit>
+class Weno;
+
 template <size_t VolumeDim, typename... Tags>
 class Weno<VolumeDim, tmpl::list<Tags...>> {
  public:
