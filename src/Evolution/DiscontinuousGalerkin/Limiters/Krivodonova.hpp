@@ -472,8 +472,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       bool disable_for_debugging = false, const Options::Context& context = {});
 
   Krivodonova() = default;
-  Krivodonova(const Krivodonova&) = delete;
-  Krivodonova& operator=(const Krivodonova&) = delete;
+  Krivodonova(const Krivodonova&) = default;
+  Krivodonova& operator=(const Krivodonova&) = default;
   Krivodonova(Krivodonova&&) = default;
   Krivodonova& operator=(Krivodonova&&) = default;
   ~Krivodonova() = default;
