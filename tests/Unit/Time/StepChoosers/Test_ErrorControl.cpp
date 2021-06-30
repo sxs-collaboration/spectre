@@ -91,7 +91,7 @@ std::pair<double, bool> get_suggestion(
           Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
           db::add_tag_prefix<Tags::StepperError, EvolvedVariablesTag>,
           Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>,
-          StepChoosers::Tags::PreviousStepError>,
+          StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>,
       db::AddComputeTags<>>(
       Metavariables<true>{}, std::move(history), error, false,
       std::unique_ptr<TimeStepper>{
@@ -111,8 +111,9 @@ std::pair<double, bool> get_suggestion(
             previous_step_error,
             db::get<Tags::HistoryEvolvedVariables<EvolvedVariablesTag>>(box),
             error, false, time_stepper, previous_step, cache));
-  CHECK(*previous_step_error ==
-        db::get<StepChoosers::Tags::PreviousStepError>(box));
+  CHECK(
+      *previous_step_error ==
+      db::get<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(box));
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
         error_control_base->desired_step(make_not_null(&box), previous_step,
                                          cache));
@@ -128,10 +129,11 @@ std::pair<double, bool> get_suggestion(
       true, time_stepper, previous_step, cache);
   // reset the previous step error so we can reuse the former state on the next
   // re-application
-  *previous_step_error = db::get<StepChoosers::Tags::PreviousStepError>(box);
+  *previous_step_error =
+      db::get<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(box);
   CHECK(error_control_base->desired_step(make_not_null(&box), previous_step,
                                          cache) == result);
-  db::mutate<StepChoosers::Tags::PreviousStepError>(
+  db::mutate<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(
       make_not_null(&box),
       [previous_step_error](const gsl::not_null<std::optional<double>*>
                                 previous_step_error_from_box) noexcept {

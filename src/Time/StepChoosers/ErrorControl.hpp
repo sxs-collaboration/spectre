@@ -26,6 +26,7 @@ class GlobalCache;
 
 namespace StepChoosers {
 namespace Tags {
+template <typename EvolvedVariableTag>
 struct PreviousStepError : db::SimpleTag {
   using type = std::optional<double>;
 };
@@ -169,9 +170,9 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
                  db::add_tag_prefix<::Tags::StepperError, EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
-  using return_tags = tmpl::list<Tags::PreviousStepError>;
+  using return_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
-  using simple_tags = tmpl::list<Tags::PreviousStepError>;
+  using simple_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
   template <typename Metavariables, typename History, typename TimeStepper>
   std::pair<double, bool> operator()(
