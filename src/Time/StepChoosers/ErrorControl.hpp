@@ -26,6 +26,14 @@ class GlobalCache;
 
 namespace StepChoosers {
 namespace Tags {
+/// \brief The stepper error measure computed in the previous application of the
+/// `StepChooser::ErrorControl` step chooser.
+///
+/// \details This tag is templated on `EvolvedVariableTag`, as a separate error
+/// measure should be stored for each evolved variables and corresponding
+/// `TimeSteppers::History` in the system, because the stepper is separately
+/// applied to each `TimeSteppers::History` object.
+template <typename EvolvedVariableTag>
 struct PreviousStepError : db::SimpleTag {
   using type = std::optional<double>;
 };
@@ -72,9 +80,11 @@ struct PreviousStepError : db::SimpleTag {
  * calculation. Intuitively, we should change the step less drastically for a
  * higher order stepper.
  *
- * After the first error calculation, the error \f$E\f$ is recorded, and
- * subsequent error calculations use a simple PI scheme suggested in
- * \cite NumericalRecipes section 17.2.1:
+ * After the first error calculation, the error \f$E\f$ is recorded in the \ref
+ * DataBoxGroup "DataBox" using tag
+ * `StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>`, and subsequent
+ * error calculations use a simple PI scheme suggested in \cite NumericalRecipes
+ * section 17.2.1:
  *
  * \f[
  * h_{\text{new}} = h \cdot \min\left(F_{\text{max}},
@@ -169,9 +179,9 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
                  db::add_tag_prefix<::Tags::StepperError, EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
-  using return_tags = tmpl::list<Tags::PreviousStepError>;
+  using return_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
-  using simple_tags = tmpl::list<Tags::PreviousStepError>;
+  using simple_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
   template <typename Metavariables, typename History, typename TimeStepper>
   std::pair<double, bool> operator()(
