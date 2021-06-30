@@ -2,8 +2,6 @@
 // See LICENSE.txt for details.
 
 #include <cstddef>
-#include <memory>
-#include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -26,19 +24,10 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/Creators/AlignedLattice.hpp"
-#include "Domain/Creators/Brick.hpp"
-#include "Domain/Creators/Cylinder.hpp"
-#include "Domain/Creators/Disk.hpp"
-#include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/FrustalCloak.hpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
-#include "Domain/Creators/RotatedBricks.hpp"
-#include "Domain/Creators/RotatedIntervals.hpp"
-#include "Domain/Creators/RotatedRectangles.hpp"
-#include "Domain/Creators/Shell.hpp"
-#include "Domain/Creators/Sphere.hpp"
+#include "Domain/Creators/Factory.hpp"
+#include "Domain/Creators/Factory1D.hpp"
+#include "Domain/Creators/Factory2D.hpp"
+#include "Domain/Creators/Factory3D.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -60,9 +49,8 @@ struct to_grid_map<CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>> {
 };
 
 template <size_t Dim>
-using maps_from_creators =
-    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-        typename DomainCreator<Dim>::creatable_classes, get_maps<tmpl::_1>>>>;
+using maps_from_creators = tmpl::remove_duplicates<
+    tmpl::flatten<tmpl::transform<domain_creators<Dim>, get_maps<tmpl::_1>>>>;
 }  // namespace
 
 void register_derived_with_charm() {

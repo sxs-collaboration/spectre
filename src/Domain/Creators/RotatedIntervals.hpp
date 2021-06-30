@@ -11,6 +11,7 @@
 #include <limits>
 #include <vector>
 
+#include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"

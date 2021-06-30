@@ -110,12 +110,14 @@ void test_factory() {
         return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3>>(opt_string);
+                MetavariablesWithBoundaryConditions<
+                    3, domain::creators::FrustalCloak>>(opt_string);
       } else {
         return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<3>>(opt_string);
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::FrustalCloak>>(opt_string);
       }
     }();
     test_frustal_cloak_construction(

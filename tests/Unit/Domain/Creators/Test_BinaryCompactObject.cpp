@@ -32,6 +32,9 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace domain::FunctionsOfTime {
 class FunctionOfTime;
@@ -53,6 +56,11 @@ struct Metavariables {
                                          SystemWithBoundaryConditions<Dim>,
                                      TestHelpers::domain::BoundaryConditions::
                                          SystemWithoutBoundaryConditions<Dim>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        DomainCreator<3>, tmpl::list<::domain::creators::BinaryCompactObject>>>;
+  };
 };
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>

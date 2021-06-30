@@ -232,7 +232,8 @@ void test_rectangle_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<2>>(
+            MetavariablesWithoutBoundaryConditions<
+                2, domain::creators::Rectangle>>(
         "Rectangle:\n"
         "  LowerBound: [0,0]\n"
         "  UpperBound: [1,2]\n"
@@ -253,7 +254,8 @@ void test_rectangle_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<2>>(
+            MetavariablesWithBoundaryConditions<
+                2, domain::creators::Rectangle>>(
         "Rectangle:\n"
         "  LowerBound: [0,0]\n"
         "  UpperBound: [1,2]\n"
@@ -279,7 +281,8 @@ void test_rectangle_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<2>>(
+            MetavariablesWithoutBoundaryConditions<
+                2, domain::creators::Rectangle>>(
         "Rectangle:\n"
         "  LowerBound: [0,0]\n"
         "  UpperBound: [1,2]\n"
@@ -318,7 +321,8 @@ void test_rectangle_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<2>>(
+            MetavariablesWithBoundaryConditions<
+                2, domain::creators::Rectangle>>(
         "Rectangle:\n"
         "  LowerBound: [0,0]\n"
         "  UpperBound: [1,2]\n"

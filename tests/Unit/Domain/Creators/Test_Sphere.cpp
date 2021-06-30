@@ -300,9 +300,11 @@ void test_sphere_factory_equiangular() {
         domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
+                                MetavariablesWithBoundaryConditions<
+                                    3, domain::creators::Sphere>,
                             TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+                                MetavariablesWithoutBoundaryConditions<
+                                    3, domain::creators::Sphere>>>(
         "Sphere:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -358,9 +360,11 @@ void test_sphere_factory_equidistant() {
         domain::OptionTags::DomainCreator<3>,
         tmpl::conditional_t<decltype(use_boundary_condition)::value,
                             TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithBoundaryConditions<3>,
+                                MetavariablesWithBoundaryConditions<
+                                    3, domain::creators::Sphere>,
                             TestHelpers::domain::BoundaryConditions::
-                                MetavariablesWithoutBoundaryConditions<3>>>(
+                                MetavariablesWithoutBoundaryConditions<
+                                    3, domain::creators::Sphere>>>(
         "Sphere:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"

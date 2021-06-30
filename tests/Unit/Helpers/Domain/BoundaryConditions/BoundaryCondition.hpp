@@ -11,9 +11,12 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup TestingFrameworkGroup
@@ -125,15 +128,25 @@ template <size_t Dim>
 struct SystemWithoutBoundaryConditions {};
 
 /// Metavariables with a system that has boundary conditions
-template <size_t Dim>
+template <size_t Dim, typename Creator>
 struct MetavariablesWithBoundaryConditions {
   using system = SystemWithBoundaryConditions<Dim>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<DomainCreator<Dim>, tmpl::list<Creator>>>;
+  };
 };
 
 /// Metavariables with a system that doesn't have boundary conditions
-template <size_t Dim>
+template <size_t Dim, typename Creator>
 struct MetavariablesWithoutBoundaryConditions {
   using system = SystemWithoutBoundaryConditions<Dim>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<DomainCreator<Dim>, tmpl::list<Creator>>>;
+  };
 };
 
 void register_derived_with_charm() noexcept;

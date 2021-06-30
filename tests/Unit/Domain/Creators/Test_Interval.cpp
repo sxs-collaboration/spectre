@@ -231,7 +231,8 @@ void test_interval_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<1>>(
+            MetavariablesWithoutBoundaryConditions<
+                1, domain::creators::Interval>>(
         "Interval:\n"
         "  LowerBound: [0]\n"
         "  UpperBound: [1]\n"
@@ -249,7 +250,7 @@ void test_interval_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<1>>(
+            MetavariablesWithBoundaryConditions<1, domain::creators::Interval>>(
         "Interval:\n"
         "  LowerBound: [0]\n"
         "  UpperBound: [1]\n"
@@ -276,7 +277,8 @@ void test_interval_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<1>>(
+            MetavariablesWithoutBoundaryConditions<
+                1, domain::creators::Interval>>(
         "Interval:\n"
         "  LowerBound: [0]\n"
         "  UpperBound: [1]\n"
@@ -308,7 +310,7 @@ void test_interval_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<1>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<1>>(
+            MetavariablesWithBoundaryConditions<1, domain::creators::Interval>>(
         "Interval:\n"
         "  LowerBound: [0]\n"
         "  UpperBound: [1]\n"

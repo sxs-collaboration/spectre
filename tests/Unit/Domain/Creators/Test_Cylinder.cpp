@@ -346,12 +346,14 @@ void test_cylinder_no_refinement() {
             return TestHelpers::test_option_tag<
                 domain::OptionTags::DomainCreator<3>,
                 TestHelpers::domain::BoundaryConditions::
-                    MetavariablesWithBoundaryConditions<3>>(opt_string);
+                    MetavariablesWithBoundaryConditions<
+                        3, domain::creators::Cylinder>>(opt_string);
           } else {
             return TestHelpers::test_option_tag<
                 domain::OptionTags::DomainCreator<3>,
                 TestHelpers::domain::BoundaryConditions::
-                    MetavariablesWithoutBoundaryConditions<3>>(opt_string);
+                    MetavariablesWithoutBoundaryConditions<
+                        3, domain::creators::Cylinder>>(opt_string);
           }
         }();
         test_cylinder_construction(

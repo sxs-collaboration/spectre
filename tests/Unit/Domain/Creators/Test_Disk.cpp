@@ -192,7 +192,7 @@ void test_disk_factory_equiangular() {
   const auto disk = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<2>>(
+          MetavariablesWithoutBoundaryConditions<2, domain::creators::Disk>>(
       "Disk:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -211,7 +211,7 @@ void test_disk_factory_equiangular() {
   const auto disk_boundary_conditions = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<2>>(
+          MetavariablesWithBoundaryConditions<2, domain::creators::Disk>>(
       "Disk:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -273,7 +273,7 @@ void test_disk_factory_equidistant() {
   const auto disk = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<2>>(
+          MetavariablesWithoutBoundaryConditions<2, domain::creators::Disk>>(
       "Disk:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -292,7 +292,7 @@ void test_disk_factory_equidistant() {
   const auto disk_boundary_conditions = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<2>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<2>>(
+          MetavariablesWithBoundaryConditions<2, domain::creators::Disk>>(
       "Disk:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"

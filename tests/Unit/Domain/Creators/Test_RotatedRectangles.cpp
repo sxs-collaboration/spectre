@@ -290,7 +290,8 @@ void test_rotated_rectangles_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<2>>(
+            MetavariablesWithoutBoundaryConditions<
+                2, domain::creators::RotatedRectangles>>(
         "RotatedRectangles:\n"
         "  LowerBound: [0.1, -0.4]\n"
         "  Midpoint:   [2.6, 3.2]\n"
@@ -327,7 +328,8 @@ void test_rotated_rectangles_factory() {
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<2>>(
+            MetavariablesWithBoundaryConditions<
+                2, domain::creators::RotatedRectangles>>(
         "RotatedRectangles:\n"
         "  LowerBound: [0.1, -0.4]\n"
         "  Midpoint:   [2.6, 3.2]\n"

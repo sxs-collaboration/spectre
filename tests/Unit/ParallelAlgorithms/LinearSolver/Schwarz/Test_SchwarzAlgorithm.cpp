@@ -9,6 +9,8 @@
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -20,6 +22,7 @@
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
@@ -31,6 +34,7 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -180,6 +184,12 @@ struct Metavariables {
       LinearSolver::Schwarz::Schwarz<helpers_distributed::fields_tag,
                                      SchwarzSmoother, SubdomainOperator>;
   using preconditioner = void;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>>;
+  };
 
   using Phase = helpers::Phase;
   using observed_reduction_data_tags =

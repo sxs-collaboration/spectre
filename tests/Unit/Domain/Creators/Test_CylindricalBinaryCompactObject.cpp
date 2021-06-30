@@ -330,13 +330,15 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
       return TestHelpers::test_option_tag<
           domain::OptionTags::DomainCreator<3>,
           TestHelpers::domain::BoundaryConditions::
-              MetavariablesWithBoundaryConditions<3>>(
+              MetavariablesWithBoundaryConditions<
+                  3, domain::creators::CylindricalBinaryCompactObject>>(
           create_option_string(true, false, false, with_boundary_conditions));
     } else {
       return TestHelpers::test_option_tag<
           domain::OptionTags::DomainCreator<3>,
           TestHelpers::domain::BoundaryConditions::
-              MetavariablesWithoutBoundaryConditions<3>>(
+              MetavariablesWithoutBoundaryConditions<
+                  3, domain::creators::CylindricalBinaryCompactObject>>(
           create_option_string(true, false, false, with_boundary_conditions));
     }
   }();
@@ -406,12 +408,16 @@ void test_binary_factory() {
         return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3>>(opt_string);
+                MetavariablesWithBoundaryConditions<
+                    3, domain::creators::CylindricalBinaryCompactObject>>(
+            opt_string);
       } else {
         return TestHelpers::test_option_tag<
             domain::OptionTags::DomainCreator<3>,
             TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<3>>(opt_string);
+                MetavariablesWithoutBoundaryConditions<
+                    3, domain::creators::CylindricalBinaryCompactObject>>(
+            opt_string);
       }
     }();
     test_binary_compact_object_construction(

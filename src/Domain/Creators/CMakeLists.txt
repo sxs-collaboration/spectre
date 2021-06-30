@@ -38,6 +38,10 @@ spectre_target_headers(
   Disk.hpp
   DomainCreator.hpp
   ExpandOverBlocks.hpp
+  Factory.hpp
+  Factory1D.hpp
+  Factory2D.hpp
+  Factory3D.hpp
   FrustalCloak.hpp
   Interval.hpp
   Rectangle.hpp

@@ -5,16 +5,20 @@
 
 #include <vector>
 
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -50,6 +54,12 @@ struct Metavariables {
   using preconditioner = LinearSolver::Richardson::Richardson<
       typename linear_solver::operand_tag, Preconditioner,
       typename linear_solver::preconditioner_source_tag>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>>;
+  };
 
   using Phase = helpers::Phase;
   using component_list = helpers_distributed::component_list<Metavariables>;
