@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Composition.cpp
   Test_CubicScale.cpp
   Test_None.cpp
+  Test_SphericalCompression.cpp
   Test_UniformRotationAboutZAxis.cpp
   Test_UniformTranslation.cpp
   )

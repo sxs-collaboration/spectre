@@ -25,13 +25,12 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 template <size_t MeshDim>
 class CubicScale;
 template <size_t MeshDim>
 class None;
+class SphericalCompression;
 template <size_t MeshDim>
 class UniformRotationAboutZAxis;
 template <size_t MeshDim>
@@ -40,13 +39,10 @@ template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 class Composition;
 template <typename TimeDep, size_t Suffix>
 struct TimeDependenceCompositionTag;
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 /// \ingroup ComputationalDomainGroup
 /// \brief Classes and functions for adding time dependence to a domain.
 namespace time_dependence {
@@ -62,7 +58,7 @@ struct TimeDependence {
   using creatable_classes_1d = tmpl::list<>;
   using creatable_classes_2d = tmpl::list<UniformRotationAboutZAxis<2>>;
   using creatable_classes_3d = tmpl::list<
-      UniformRotationAboutZAxis<3>,
+      SphericalCompression, UniformRotationAboutZAxis<3>,
       Composition<
           TimeDependenceCompositionTag<CubicScale<3>,
                                        std::numeric_limits<size_t>::max()>,
@@ -111,8 +107,7 @@ struct TimeDependence {
 template <size_t MeshDim>
 TimeDependence<MeshDim>::~TimeDependence() = default;
 }  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace creators::namespace domain
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -121,5 +116,6 @@ TimeDependence<MeshDim>::~TimeDependence() = default;
 #include "Domain/Creators/TimeDependence/Composition.hpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/SphericalCompression.hpp"
 #include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
