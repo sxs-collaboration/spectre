@@ -142,7 +142,7 @@ class Variables<tmpl::list<Tags...>> {
 
   Variables(size_t number_of_grid_points, value_type value) noexcept;
 
-  Variables(Variables&& rhs) noexcept = default;
+  Variables(Variables&& rhs) noexcept;
   Variables& operator=(Variables&& rhs) noexcept;
 
   Variables(const Variables& rhs) noexcept;
@@ -554,14 +554,33 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 }
 
 template <typename... Tags>
+Variables<tmpl::list<Tags...>>::Variables(
+    Variables<tmpl::list<Tags...>>&& rhs) noexcept
+    : variable_data_impl_(std::move(rhs.variable_data_impl_)),
+      size_(rhs.size()),
+      number_of_grid_points_(rhs.number_of_grid_points()),
+      reference_variable_data_(std::move(rhs.reference_variable_data_)) {
+  rhs.variable_data_impl_.reset();
+  rhs.size_ = 0;
+  rhs.number_of_grid_points_ = 0;
+  if (size_ == 0) {
+    return;
+  }
+  variable_data_.reset(variable_data_impl_.get(), size_);
+}
+
+template <typename... Tags>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     Variables<tmpl::list<Tags...>>&& rhs) noexcept {
   if (this == &rhs) {
     return *this;
   }
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
+  rhs.variable_data_impl_.reset();
   size_ = rhs.size_;
+  rhs.size_ = 0;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  rhs.number_of_grid_points_ = 0;
   add_reference_variable_data();
   return *this;
 }
@@ -613,6 +632,9 @@ Variables<tmpl::list<Tags...>>::Variables(
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
+  rhs.variable_data_impl_.reset();
+  rhs.size_ = 0;
+  rhs.number_of_grid_points_ = 0;
   if (size_ == 0) {
     return;
   }
@@ -630,8 +652,11 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
+  rhs.variable_data_impl_.reset();
   size_ = rhs.size_;
+  rhs.size_ = 0;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  rhs.number_of_grid_points_ = 0;
   add_reference_variable_data();
   return *this;
 }
