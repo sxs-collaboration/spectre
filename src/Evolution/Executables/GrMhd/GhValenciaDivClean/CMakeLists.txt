@@ -58,7 +58,7 @@ add_ghmhd_with_horizon_executable(
 
 add_ghmhd_executable(
   CylindricalBlastWave
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::CylindricalBlastWave>
+  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::BlastWave>
   "${LIBS_TO_LINK}"
   )
 
@@ -100,7 +100,7 @@ add_ghmhd_executable(
 
 add_ghmhd_executable(
   SmoothFlow3D
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::SmoothFlow<3>>
+  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::SmoothFlow>
   "${LIBS_TO_LINK}"
   )
 
