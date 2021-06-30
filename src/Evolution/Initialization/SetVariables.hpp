@@ -105,6 +105,20 @@ struct SetVariables {
                 solution_or_data, inertial_coords, initial_time,
                 typename Metavariables::analytic_variables_tags{}));
           });
+      using non_conservative_variables =
+          typename system::non_conservative_variables;
+      using variables_tag = typename system::variables_tag;
+      if constexpr (not std::is_same_v<non_conservative_variables,
+                                       tmpl::list<>>) {
+        db::mutate<variables_tag>(
+            box, [&initial_time, &inertial_coords, &solution_or_data](
+                     const gsl::not_null<typename variables_tag::type*>
+                         evolved_vars) noexcept {
+              evolved_vars->assign_subset(evolution::initial_data(
+                  solution_or_data, inertial_coords, initial_time,
+                  non_conservative_variables{}));
+            });
+      }
     } else {
       using variables_tag = typename system::variables_tag;
 

@@ -47,6 +47,10 @@ struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+struct NonConservativeVar : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 struct PrimVar : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -57,12 +61,35 @@ struct EquationOfStateTag : db::SimpleTag {
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   template <size_t Dim>
+  tuples::TaggedTuple<Var, NonConservativeVar> variables(
+      const tnsr::I<DataVector, Dim>& x, const double t,
+      tmpl::list<Var, NonConservativeVar> /*meta*/) const noexcept {
+    tuples::TaggedTuple<Var, NonConservativeVar> vars(x.get(0), x.get(0));
+    for (size_t d = 1; d < Dim; ++d) {
+      get(get<Var>(vars)) += square(x.get(d)) + t;
+      get(get<NonConservativeVar>(vars)) += square(x.get(d)) / 5.0 - t;
+    }
+    return vars;
+  }
+
+  template <size_t Dim>
   tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& x,
                                      const double t,
                                      tmpl::list<Var> /*meta*/) const noexcept {
     tuples::TaggedTuple<Var> vars(x.get(0) + t);
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var>(vars)) += x.get(d) + t;
+    }
+    return vars;
+  }
+
+  template <size_t Dim>
+  tuples::TaggedTuple<NonConservativeVar> variables(
+      const tnsr::I<DataVector, Dim>& x, const double t,
+      tmpl::list<NonConservativeVar> /*meta*/) const noexcept {
+    tuples::TaggedTuple<NonConservativeVar> vars(x.get(0));
+    for (size_t d = 1; d < Dim; ++d) {
+      get(get<NonConservativeVar>(vars)) += square(x.get(d)) / 5.0 - t;
     }
     return vars;
   }
@@ -88,11 +115,34 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
 
 struct SystemAnalyticData : public MarkAsAnalyticData {
   template <size_t Dim>
+  tuples::TaggedTuple<Var, NonConservativeVar> variables(
+      const tnsr::I<DataVector, Dim>& x,
+      tmpl::list<Var, NonConservativeVar> /*meta*/) const noexcept {
+    tuples::TaggedTuple<Var, NonConservativeVar> vars(x.get(0), x.get(0));
+    for (size_t d = 1; d < Dim; ++d) {
+      get(get<Var>(vars)) += square(x.get(d));
+      get(get<NonConservativeVar>(vars)) += square(x.get(d)) / 5.0;
+    }
+    return vars;
+  }
+
+  template <size_t Dim>
   tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& x,
                                      tmpl::list<Var> /*meta*/) const noexcept {
     tuples::TaggedTuple<Var> vars(x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var>(vars)) += square(x.get(d));
+    }
+    return vars;
+  }
+
+  template <size_t Dim>
+  tuples::TaggedTuple<NonConservativeVar> variables(
+      const tnsr::I<DataVector, Dim>& x,
+      tmpl::list<NonConservativeVar> /*meta*/) const noexcept {
+    tuples::TaggedTuple<NonConservativeVar> vars(x.get(0));
+    for (size_t d = 1; d < Dim; ++d) {
+      get(get<NonConservativeVar>(vars)) += square(x.get(d)) / 5.0;
     }
     return vars;
   }
@@ -121,8 +171,9 @@ struct System {
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars =
       HasPrimitiveAndConservativeVars;
+  using non_conservative_variables = tmpl::list<NonConservativeVar>;
   static constexpr size_t volume_dim = Dim;
-  using variables_tag = Tags::Variables<tmpl::list<Var>>;
+  using variables_tag = Tags::Variables<tmpl::list<Var, NonConservativeVar>>;
   using primitive_variables_tag = Tags::Variables<tmpl::list<PrimVar>>;
 };
 
@@ -133,13 +184,15 @@ struct component {
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  using initial_tags = tmpl::list<
-      Initialization::Tags::InitialTime, domain::Tags::FunctionsOfTime,
-      domain::Tags::Coordinates<Dim, Frame::Logical>,
-      domain::Tags::ElementMap<Dim, Frame::Grid>,
-      domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                  Frame::Inertial>,
-      Tags::Variables<tmpl::list<Var>>, Tags::Variables<tmpl::list<PrimVar>>>;
+  using initial_tags =
+      tmpl::list<Initialization::Tags::InitialTime,
+                 domain::Tags::FunctionsOfTime,
+                 domain::Tags::Coordinates<Dim, Frame::Logical>,
+                 domain::Tags::ElementMap<Dim, Frame::Grid>,
+                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                             Frame::Inertial>,
+                 Tags::Variables<tmpl::list<Var, NonConservativeVar>>,
+                 Tags::Variables<tmpl::list<PrimVar>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -175,7 +228,8 @@ auto emplace_component(
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time, std::array<DataVector, 3>{{{1.0}, {-0.1}, {0.0}}},
           expiration_time)));
-  Variables<tmpl::list<Var>> var(get<0>(logical_coords).size(), 8.9999);
+  Variables<tmpl::list<Var, NonConservativeVar>> var(
+      get<0>(logical_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(logical_coords).size(),
                                           9.9999);
   ActionTesting::emplace_component_and_initialize<comp>(
@@ -218,7 +272,8 @@ void test_analytic_solution() noexcept {
   const double expiration_time = 2.5;
   const auto inertial_coords = emplace_component<Dim>(
       make_not_null(&runner), initial_time, expiration_time);
-  Variables<tmpl::list<Var>> var(get<0>(inertial_coords).size(), 8.9999);
+  Variables<tmpl::list<Var, NonConservativeVar>> var(
+      get<0>(inertial_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(inertial_coords).size(),
                                           9.9999);
 
@@ -227,11 +282,15 @@ void test_analytic_solution() noexcept {
   if (HasPrimitives) {
     prim_var.assign_subset(SystemAnalyticSolution{}.variables(
         inertial_coords, initial_time, tmpl::list<PrimVar>{}));
+    var.assign_subset(SystemAnalyticSolution{}.variables(
+        inertial_coords, initial_time, tmpl::list<NonConservativeVar>{}));
   } else {
     var.assign_subset(SystemAnalyticSolution{}.variables(
-        inertial_coords, initial_time, tmpl::list<Var>{}));
+        inertial_coords, initial_time, tmpl::list<Var, NonConservativeVar>{}));
   }
   CHECK(ActionTesting::get_databox_tag<comp, Var>(runner, 0) == get<Var>(var));
+  CHECK(ActionTesting::get_databox_tag<comp, NonConservativeVar>(runner, 0) ==
+        get<NonConservativeVar>(var));
   CHECK(ActionTesting::get_databox_tag<comp, PrimVar>(runner, 0) ==
         get<PrimVar>(prim_var));
 }
@@ -262,7 +321,8 @@ void test_analytic_data() noexcept {
   const double expiration_time = 2.5;
   const auto inertial_coords = emplace_component<Dim>(
       make_not_null(&runner), initial_time, expiration_time);
-  Variables<tmpl::list<Var>> var(get<0>(inertial_coords).size(), 8.9999);
+  Variables<tmpl::list<Var, NonConservativeVar>> var(
+      get<0>(inertial_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(inertial_coords).size(),
                                           9.9999);
 
@@ -271,11 +331,15 @@ void test_analytic_data() noexcept {
   if (HasPrimitives) {
     prim_var.assign_subset(
         SystemAnalyticData{}.variables(inertial_coords, tmpl::list<PrimVar>{}));
+    var.assign_subset(SystemAnalyticData{}.variables(
+        inertial_coords, tmpl::list<NonConservativeVar>{}));
   } else {
-    var.assign_subset(
-        SystemAnalyticData{}.variables(inertial_coords, tmpl::list<Var>{}));
+    var.assign_subset(SystemAnalyticData{}.variables(
+        inertial_coords, tmpl::list<Var, NonConservativeVar>{}));
   }
   CHECK(ActionTesting::get_databox_tag<comp, Var>(runner, 0) == get<Var>(var));
+  CHECK(ActionTesting::get_databox_tag<comp, NonConservativeVar>(runner, 0) ==
+        get<NonConservativeVar>(var));
   CHECK(ActionTesting::get_databox_tag<comp, PrimVar>(runner, 0) ==
         get<PrimVar>(prim_var));
 }

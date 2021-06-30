@@ -134,7 +134,7 @@ struct ProductOfCorrectionsImpl<
  * application is inconsequential.
  */
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
-class ProductOfCorrections : public BoundaryCorrection {
+class ProductOfCorrections final : public BoundaryCorrection {
  public:
   using dg_package_field_tags =
       tmpl::append<typename DerivedGhCorrection::dg_package_field_tags,

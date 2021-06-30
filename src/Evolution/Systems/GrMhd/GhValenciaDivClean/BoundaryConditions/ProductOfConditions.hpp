@@ -313,7 +313,7 @@ struct ProductOfConditionsImpl<
  * sytems.
  */
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
-class ProductOfConditions : public BoundaryCondition {
+class ProductOfConditions final : public BoundaryCondition {
  public:
   using dg_interior_evolved_variables_tags = tmpl::append<
       typename DerivedGhCondition::dg_interior_evolved_variables_tags,

@@ -40,6 +40,7 @@ struct System {
       tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>>;
   using flux_variables =
       tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>;
+  using non_conservative_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
   // Source for TildeD is zero
   using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<Dim>>;
