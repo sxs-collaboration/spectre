@@ -43,11 +43,13 @@ AnalyticSolution:
     PressureStarTol: 1e-9
 
 Limiter:
-  Minmod:
+  NewtonianEulerMinmod:
     Type: LambdaPiN
+    VariablesToLimit: Characteristic
     # The optimal value of the TVB constant is problem-dependent.
     # This test uses 0 to favor robustness over accuracy.
     TvbConstant: 0.0
+    ApplyFlattener: true
     DisableForDebugging: false
 
 EventsAndTriggers:
