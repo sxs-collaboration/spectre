@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank4TestHelpers.hpp"

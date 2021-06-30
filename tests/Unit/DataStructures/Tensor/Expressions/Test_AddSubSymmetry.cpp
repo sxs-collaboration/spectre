@@ -13,10 +13,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <auto&... TensorIndices>
-using make_tensorindex_list =
-    tmpl::list<std::decay_t<decltype(TensorIndices)>...>;
-
 void test_impl_consistency() {
   const std::string error_msg =
       "Symmetry and AddSubSymmetry are no longer using the same canonical "
