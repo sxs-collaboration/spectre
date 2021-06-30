@@ -36,6 +36,7 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
+#include "Options/FactoryHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -96,31 +97,11 @@ struct EvolutionMetavars
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields,
-                                               analytic_solution_fields>,
-                Events::time_events<system>,
-                intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
-                intrp::Events::Interpolate<3, InterpolationTargetTags,
-                                           interpolator_source_vars>...>>>,
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::Slab>,
-            StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
-        tmpl::pair<StepController, StepControllers::standard_step_controllers>,
-        tmpl::pair<TimeSequence<double>,
-                   TimeSequences::all_time_sequences<double>>,
-        tmpl::pair<TimeSequence<std::uint64_t>,
-                   TimeSequences::all_time_sequences<std::uint64_t>>,
-
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+    using factory_classes = Options::add_factory_classes<
+        typename GhValenciaDivCleanTemplateBase<
+            EvolutionMetavars>::factory_creation::factory_classes,
+        tmpl::pair<Event, tmpl::list<intrp::Events::Interpolate<
+                              3, AhA, interpolator_source_vars>>>>;
   };
 
   using phase_changes =
