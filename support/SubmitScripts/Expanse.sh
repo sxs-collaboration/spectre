@@ -33,14 +33,15 @@
 #   sbatch Expanse.sh
 
 # Replace these paths with the path to your build directory, to the source root
-# directory, and to the directory where you want the output to appear, i.e. the
-# run directory.
+# directory, the spectre dependencies module directory, and to the directory
+# where you want the output to appear, i.e. the run directory.
 # E.g., if you cloned spectre in your home directory, set
 # SPECTRE_BUILD_DIR to ${HOME}/spectre/build. If you want to run in a
 # directory called "Run" in the current directory, set
 # SPECTRE_RUN_DIR to ${PWD}/Run
 export SPECTRE_BUILD_DIR=${HOME}/spectre-build/
 export SPECTRE_HOME=${HOME}/spectre/
+export SPECTRE_MODULE_DIR=${HOME}/Codes/spectre_deps/modules/
 export SPECTRE_RUN_DIR=${PWD}/Run
 
 # Choose the executable and input file to run
@@ -52,6 +53,7 @@ export SPECTRE_INPUT_FILE=${PWD}/KerrSchild.yaml
 # These commands load the relevant modules and cd into the run directory,
 # creating it if it doesn't exist
 source ${SPECTRE_HOME}/support/Environments/expanse_gcc.sh
+module use ${SPECTRE_MODULE_DIR}
 spectre_load_modules
 module list
 
@@ -100,6 +102,7 @@ SPECTRE_COMMAND="${SPECTRE_EXECUTABLE} \
 # spectre executable
 echo "#!/bin/sh
 source ${SPECTRE_HOME}/support/Environments/expanse_gcc.sh
+module use ${SPECTRE_MODULE_DIR}
 spectre_load_modules
 \$@
 " > runscript
