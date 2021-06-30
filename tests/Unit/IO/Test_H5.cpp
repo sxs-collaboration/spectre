@@ -548,7 +548,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
   h5::write_data(group_id, std::vector<double>{1.0 / 3.0}, {},
                  "scalar_dataset");
   CHECK(h5::read_data<0, double>(group_id, "scalar_dataset") == 1.0 / 3.0);
-  h5::write_data(group_id, std::vector<float>{1.0 / 3.0}, {},
+  h5::write_data(group_id, std::vector<float>{1.0f / 3.0f}, {},
                  "scalar_dataset_float");
   CHECK(h5::read_data<0, float>(group_id, "scalar_dataset_float") ==
         static_cast<float>(1.0 / 3.0));
