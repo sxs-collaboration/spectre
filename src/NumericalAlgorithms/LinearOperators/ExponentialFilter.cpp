@@ -24,12 +24,19 @@ Exponential<FilterIndex>::Exponential(const double alpha,
 template <size_t FilterIndex>
 const Matrix& Exponential<FilterIndex>::filter_matrix(const Mesh<1>& mesh) const
     noexcept {
-  const auto cache_function = [this](
-      const size_t extents, const Spectral::Basis basis,
-      const Spectral::Quadrature quadrature) noexcept {
-    return Spectral::filtering::exponential_filter(
-        Mesh<1>{extents, basis, quadrature}, alpha_, half_power_);
-  };
+  const static double cached_alpha = alpha_;
+
+  ASSERT(cached_alpha == alpha_, "Filter was cached with alpha = "
+                                     << cached_alpha << ", but alpha is now "
+                                     << alpha_
+                                     << ".\nUse a different FilterIndex if you "
+                                        "need a filter with new parameters\n");
+  const static double cached_half_power = half_power_;
+  ASSERT(cached_half_power == half_power_,
+         "Filter was cached with half power = "
+             << cached_half_power << ", but half power is now " << half_power_
+             << ".\nUse a different FilterIndex if you need a filter with new "
+                "parameters\n");
 
   const static auto cache = make_static_cache<
       CacheRange<1_st,
@@ -38,7 +45,13 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(const Mesh<1>& mesh) const
       CacheEnumeration<Spectral::Basis, Spectral::Basis::Legendre,
                        Spectral::Basis::Chebyshev>,
       CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,
-                       Spectral::Quadrature::GaussLobatto>>(cache_function);
+                       Spectral::Quadrature::GaussLobatto>>(
+      [alpha = alpha_, half_power = half_power_](
+          const size_t extents, const Spectral::Basis basis,
+          const Spectral::Quadrature quadrature) noexcept {
+        return Spectral::filtering::exponential_filter(
+            Mesh<1>{extents, basis, quadrature}, alpha, half_power);
+      });
   return cache(mesh.extents(0), mesh.basis(0), mesh.quadrature(0));
 }
 
