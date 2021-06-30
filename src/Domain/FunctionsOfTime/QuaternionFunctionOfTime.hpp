@@ -16,6 +16,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace domain::FunctionsOfTime {
 /// \ingroup ComputationalDomainGroup
@@ -34,7 +35,7 @@ namespace domain::FunctionsOfTime {
 /// the same number of stored quaternions as the angular velocity
 /// `PiecewisePolynomial` has stored omegas. This is to ensure we have all the
 /// data necessary to solve the ODE at any time `t`. Other than these few, but
-/// important, differences, the `QuaternionFuntionOfTime` is essentially
+/// important, differences, the `QuaternionFunctionOfTime` is essentially
 /// identical to the `PiecewisePolynomial`.
 template <size_t MaxDerivReturned>
 class QuaternionFunctionOfTime : public FunctionOfTime {
@@ -81,7 +82,6 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
 
   /// Returns the quaternion and the first two derivatives at an arbitrary
   /// time `t`.
-
   std::array<DataVector, 3> func_and_2_derivs(double t) const noexcept override;
 
   /// Returns the quaternion and the first three derivatives at an arbitrary
@@ -89,16 +89,19 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   std::array<DataVector, 4> func_and_3_derivs(double t) const noexcept;
 
  private:
-  mutable std::vector<StoredInfo<1>> stored_quaternions_and_times_;
+  mutable std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
+      stored_quaternions_and_times_;
+
   domain::FunctionsOfTime::PiecewisePolynomial<MaxDerivReturned>*
       omega_f_of_t_ptr_;
   double expiration_time_{std::numeric_limits<double>::lowest()};
 
-  /// Solves the ODE \f$ \dot{q} = \frac{1}{2} q \times \omega \f$ at time `t`
-  /// and stores the result in `quaternion_to_integrate`
+  /// Integrates the ODE \f$ \dot{q} = \frac{1}{2} q \times \omega \f$ from time
+  /// `t0` to time `t`. On input, `quaternion_to_integrate` is the initial
+  /// quaternion at time `t0` and on output, it stores the result at time `t`
   void solve_quaternion_ode(
-      const double t, const double t0,
-      std::array<DataVector, 1>& quaternion_to_integrate) const noexcept;
+      const gsl::not_null<std::array<DataVector, 1>*> quaternion_to_integrate,
+      const double t, const double t0) const noexcept;
 
   /// Updates the `std::vector<StoredInfo>` to have the same number of stored
   /// quaternions as the `omega_f_of_t_ptr` has stored omegas. This is necessary

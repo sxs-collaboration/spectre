@@ -26,7 +26,7 @@ QuaternionFunctionOfTime<MaxDerivReturned>::QuaternionFunctionOfTime(
         domain::FunctionsOfTime::PiecewisePolynomial<MaxDerivReturned>*>
         omega_f_of_t_ptr,
     double expiration_time) noexcept
-    : stored_quaternions_and_times_{{t, std::move(initial_func), false}},
+    : stored_quaternions_and_times_{{t, std::move(initial_func)}},
       omega_f_of_t_ptr_(omega_f_of_t_ptr),
       expiration_time_(expiration_time) {}
 
@@ -41,6 +41,11 @@ void QuaternionFunctionOfTime<MaxDerivReturned>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   p | stored_quaternions_and_times_;
   p | expiration_time_;
+  if (p.isUnpacking()) {
+    omega_f_of_t_ptr_ =
+        new domain::FunctionsOfTime::PiecewisePolynomial<MaxDerivReturned>;
+  }
+  p | omega_f_of_t_ptr_;
 }
 
 template <size_t MaxDerivReturned>
@@ -73,15 +78,16 @@ void QuaternionFunctionOfTime<MaxDerivReturned>::update_stored_info()
     quaternion_to_integrate =
         stored_quaternions_and_times_[i - 1].stored_quantities;
 
-    solve_quaternion_ode(t, t0, quaternion_to_integrate);
+    solve_quaternion_ode(&quaternion_to_integrate, t, t0);
 
     // normalize quaternion
     boost::math::quaternion<double> quat =
-        datavector_to_quaternion<double>(quaternion_to_integrate[0]);
+        datavector_to_quaternion(quaternion_to_integrate[0]);
     normalize_quaternion(make_not_null(&quat));
 
     stored_quaternions_and_times_.emplace_back(
-        t, std::array<DataVector, 1>{quaternion_to_datavector(quat)}, false);
+      //  FunctionOfTimeHelpers::StoredInfo<1, false>{
+            t, std::array<DataVector, 1>{quaternion_to_datavector(quat)});
   }
 
   ASSERT(omega_deriv_info.size() == stored_quaternions_and_times_.size(),
@@ -93,8 +99,8 @@ void QuaternionFunctionOfTime<MaxDerivReturned>::update_stored_info()
 
 template <size_t MaxDerivReturned>
 void QuaternionFunctionOfTime<MaxDerivReturned>::solve_quaternion_ode(
-    const double t, const double t0,
-    std::array<DataVector, 1>& quaternion_to_integrate) const noexcept {
+    const gsl::not_null<std::array<DataVector, 1>*> quaternion_to_integrate,
+    const double t, const double t0) const noexcept {
   // lambda that stores the internals of the ode
   const auto quaternion_ode_system =
       [this](const std::array<DataVector, 1>& state,
@@ -122,10 +128,10 @@ void QuaternionFunctionOfTime<MaxDerivReturned>::solve_quaternion_ode(
               std::array<DataVector, 1>>{});
 
   // Initialize the stepper with initial quaternion (which is the quaternion
-  // passed in), intial time, and intial time step = 1e-3
-  dense_stepper.initialize(quaternion_to_integrate, t0, 1e-3);
+  // passed in), initial time, and initial time step = 1e-3
+  dense_stepper.initialize(*quaternion_to_integrate, t0, 1e-3);
 
-  // Do an intial step
+  // Do an initial step
   std::pair<double, double> step_range =
       dense_stepper.do_step(quaternion_ode_system);
   while (step_range.first <= t) {
@@ -135,7 +141,7 @@ void QuaternionFunctionOfTime<MaxDerivReturned>::solve_quaternion_ode(
   // Store result in quaternion_to_integrate
   // Have to calculate state at t, because stepper has now advanced past t so
   // the current state isn't correct
-  dense_stepper.calc_state(t, quaternion_to_integrate);
+  dense_stepper.calc_state(t, *quaternion_to_integrate);
 }
 
 template <size_t MaxDerivReturned>
@@ -152,11 +158,11 @@ QuaternionFunctionOfTime<MaxDerivReturned>::setup_func(
       stored_info_at_t0.stored_quantities;
 
   // Solve the ode and store the result in quat_to_integrate
-  solve_quaternion_ode(t, stored_info_at_t0.time, quat_to_integrate);
+  solve_quaternion_ode(&quat_to_integrate, t, stored_info_at_t0.time);
 
   // Transform DataVector quaternion to boost quaternion for easy manipulation
   boost::math::quaternion<double> quat =
-      datavector_to_quaternion<double>(quat_to_integrate[0]);
+      datavector_to_quaternion(quat_to_integrate[0]);
   normalize_quaternion(make_not_null(&quat));
 
   return quat;
@@ -165,22 +171,22 @@ QuaternionFunctionOfTime<MaxDerivReturned>::setup_func(
 template <size_t MaxDerivReturned>
 std::array<DataVector, 1> QuaternionFunctionOfTime<MaxDerivReturned>::func(
     double t) const noexcept {
-  boost::math::quaternion<double> quat = setup_func(t);
-
-  return std::array<DataVector, 1>{quaternion_to_datavector(quat)};
+  return std::array<DataVector, 1>{quaternion_to_datavector(setup_func(t))};
 }
 
 template <size_t MaxDerivReturned>
 std::array<DataVector, 2>
 QuaternionFunctionOfTime<MaxDerivReturned>::func_and_deriv(
     double t) const noexcept {
+  ASSERT(MaxDerivReturned >= 1,
+         "Asking for too many derivatives than templated.");
   boost::math::quaternion<double> quat = setup_func(t);
 
   // Get omega and however many derivatives we need
   std::array<DataVector, 1> omega_func = omega_f_of_t_ptr_->func(t);
 
   boost::math::quaternion<double> omega =
-      datavector_to_quaternion<double>(omega_func[0]);
+      datavector_to_quaternion(omega_func[0]);
 
   boost::math::quaternion<double> dtquat = 0.5 * quat * omega;
 
@@ -192,6 +198,8 @@ template <size_t MaxDerivReturned>
 std::array<DataVector, 3>
 QuaternionFunctionOfTime<MaxDerivReturned>::func_and_2_derivs(
     double t) const noexcept {
+  ASSERT(MaxDerivReturned >= 2,
+         "Asking for too many derivatives than templated.");
   boost::math::quaternion<double> quat = setup_func(t);
 
   // Get omega and however many derivatives we need
@@ -199,9 +207,9 @@ QuaternionFunctionOfTime<MaxDerivReturned>::func_and_2_derivs(
       omega_f_of_t_ptr_->func_and_deriv(t);
 
   boost::math::quaternion<double> omega =
-      datavector_to_quaternion<double>(omega_func_and_deriv[0]);
+      datavector_to_quaternion(omega_func_and_deriv[0]);
   boost::math::quaternion<double> dtomega =
-      datavector_to_quaternion<double>(omega_func_and_deriv[1]);
+      datavector_to_quaternion(omega_func_and_deriv[1]);
 
   boost::math::quaternion<double> dtquat = 0.5 * quat * omega;
   boost::math::quaternion<double> dt2quat =
@@ -216,6 +224,8 @@ template <size_t MaxDerivReturned>
 std::array<DataVector, 4>
 QuaternionFunctionOfTime<MaxDerivReturned>::func_and_3_derivs(
     double t) const noexcept {
+  ASSERT(MaxDerivReturned >= 3,
+         "Asking for too many derivatives than templated.");
   boost::math::quaternion<double> quat = setup_func(t);
 
   // Get omega and however many derivatives we need
@@ -223,11 +233,11 @@ QuaternionFunctionOfTime<MaxDerivReturned>::func_and_3_derivs(
       omega_f_of_t_ptr_->func_and_2_derivs(t);
 
   boost::math::quaternion<double> omega =
-      datavector_to_quaternion<double>(omega_func_and_2_derivs[0]);
+      datavector_to_quaternion(omega_func_and_2_derivs[0]);
   boost::math::quaternion<double> dtomega =
-      datavector_to_quaternion<double>(omega_func_and_2_derivs[1]);
+      datavector_to_quaternion(omega_func_and_2_derivs[1]);
   boost::math::quaternion<double> dt2omega =
-      datavector_to_quaternion<double>(omega_func_and_2_derivs[2]);
+      datavector_to_quaternion(omega_func_and_2_derivs[2]);
 
   boost::math::quaternion<double> dtquat = 0.5 * quat * omega;
   boost::math::quaternion<double> dt2quat =
@@ -243,8 +253,8 @@ QuaternionFunctionOfTime<MaxDerivReturned>::func_and_3_derivs(
 template <size_t MaxDerivReturned>
 void QuaternionFunctionOfTime<MaxDerivReturned>::reset_expiration_time(
     double next_expiration_time) noexcept {
-  reset_fot_expiration_time(make_not_null(&expiration_time_),
-                            next_expiration_time);
+  FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expiration_time_),
+                                               next_expiration_time);
 }
 
 // do explicit instantiation of MaxDerivReturned = {0,1,2,3}
