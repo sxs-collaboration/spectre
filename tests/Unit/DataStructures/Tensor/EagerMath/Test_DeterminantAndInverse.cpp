@@ -318,31 +318,40 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
       get<3, 2>(t) = DataVector({-4.0, -2.0});
       get<3, 3>(t) = DataVector({5.0, 3.0});
       const auto det_inv = determinant_and_inverse<MyDetTag, MyInvTag>(t);
-      CHECK(get(get<MyDetTag>(det_inv)) == DataVector({-960.0, 720.0}));
-      CHECK((get<0, 0>(get<MyInvTag>(det_inv))) ==
-            DataVector({0.0, 1.0 / 6.0}));
-      CHECK((get<0, 1>(get<MyInvTag>(det_inv))) ==
-            DataVector({0.25, -1.0 / 6.0}));
-      CHECK((get<0, 2>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
-      CHECK((get<0, 3>(get<MyInvTag>(det_inv))) == DataVector({0.25, 0.0}));
-      CHECK((get<1, 0>(get<MyInvTag>(det_inv))) ==
-            DataVector({1.0 / 6.0, 0.1}));
-      CHECK((get<1, 1>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
-      CHECK((get<1, 2>(get<MyInvTag>(det_inv))) ==
-            DataVector({-1.0 / 6.0, -0.1}));
-      CHECK((get<1, 3>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
-      CHECK((get<2, 0>(get<MyInvTag>(det_inv))) == DataVector({0.125, 0.25}));
-      CHECK((get<2, 1>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
-      CHECK((get<2, 2>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
-      CHECK((get<2, 3>(get<MyInvTag>(det_inv))) == DataVector({-0.125, -0.25}));
-      CHECK((get<3, 0>(get<MyInvTag>(det_inv))) ==
-            DataVector({0.0, -1.0 / 6.0}));
-      CHECK((get<3, 1>(get<MyInvTag>(det_inv))) ==
-            DataVector({-0.1, 1.0 / 6.0}));
-      CHECK((get<3, 2>(get<MyInvTag>(det_inv))) ==
-            DataVector({0.1, 1.0 / 6.0}));
-      CHECK((get<3, 3>(get<MyInvTag>(det_inv))) ==
-            DataVector({0.0, 1.0 / 6.0}));
+      CHECK_ITERABLE_APPROX(get(get<MyDetTag>(det_inv)),
+                            DataVector({-960.0, 720.0}));
+      CHECK_ITERABLE_APPROX((get<0, 0>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 1.0 / 6.0}));
+      CHECK_ITERABLE_APPROX((get<0, 1>(get<MyInvTag>(det_inv))),
+                            DataVector({0.25, -1.0 / 6.0}));
+      CHECK_ITERABLE_APPROX((get<0, 2>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 0.0}));
+      CHECK_ITERABLE_APPROX((get<0, 3>(get<MyInvTag>(det_inv))),
+                            DataVector({0.25, 0.0}));
+      CHECK_ITERABLE_APPROX((get<1, 0>(get<MyInvTag>(det_inv))),
+                            DataVector({1.0 / 6.0, 0.1}));
+      CHECK_ITERABLE_APPROX((get<1, 1>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 0.0}));
+      CHECK_ITERABLE_APPROX((get<1, 2>(get<MyInvTag>(det_inv))),
+                            DataVector({-1.0 / 6.0, -0.1}));
+      CHECK_ITERABLE_APPROX((get<1, 3>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 0.0}));
+      CHECK_ITERABLE_APPROX((get<2, 0>(get<MyInvTag>(det_inv))),
+                            DataVector({0.125, 0.25}));
+      CHECK_ITERABLE_APPROX((get<2, 1>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 0.0}));
+      CHECK_ITERABLE_APPROX((get<2, 2>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 0.0}));
+      CHECK_ITERABLE_APPROX((get<2, 3>(get<MyInvTag>(det_inv))),
+                            DataVector({-0.125, -0.25}));
+      CHECK_ITERABLE_APPROX((get<3, 0>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, -1.0 / 6.0}));
+      CHECK_ITERABLE_APPROX((get<3, 1>(get<MyInvTag>(det_inv))),
+                            DataVector({-0.1, 1.0 / 6.0}));
+      CHECK_ITERABLE_APPROX((get<3, 2>(get<MyInvTag>(det_inv))),
+                            DataVector({0.1, 1.0 / 6.0}));
+      CHECK_ITERABLE_APPROX((get<3, 3>(get<MyInvTag>(det_inv))),
+                            DataVector({0.0, 1.0 / 6.0}));
     }
   }
 }
