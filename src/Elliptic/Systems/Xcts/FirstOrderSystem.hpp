@@ -9,12 +9,14 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Flatness.hpp"
 #include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Elliptic/Systems/Xcts/Geometry.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts {
@@ -35,14 +37,8 @@ namespace Xcts {
  * longitudinal operator by essentially removing its trace (see
  * `Xcts::longitudinal_operator`).
  *
- * When we cast the equations in first-order flux-form
- *
- * \f[
- * -\partial_i F^i_A + S_A = f_A(x)
- * \f]
- *
- * (see also `Poisson::FirstOrderSystem`), the fluxes \f$F^i_A\f$, sources
- * \f$S_A\f$ and fixed-sources \f$f_A\f$ are:
+ * The system can be formulated in terms of these fluxes and sources (see
+ * `elliptic::protocols::FirstOrderSystem`):
  *
  * \f{align}
  * F^i_{v_j} ={} &\delta^i_j \psi \\
@@ -139,7 +135,8 @@ namespace Xcts {
  */
 template <Equations EnabledEquations, Geometry ConformalGeometry,
           int ConformalMatterScale>
-struct FirstOrderSystem {
+struct FirstOrderSystem
+    : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
  private:
   using conformal_factor = Tags::ConformalFactor<DataVector>;
   using conformal_factor_gradient =
@@ -157,7 +154,6 @@ struct FirstOrderSystem {
  public:
   static constexpr size_t volume_dim = 3;
 
-  // The physical fields to solve for
   using primal_fields = tmpl::flatten<tmpl::list<
       conformal_factor,
       tmpl::conditional_t<EnabledEquations == Equations::HamiltonianAndLapse or
@@ -196,7 +192,6 @@ struct FirstOrderSystem {
   using auxiliary_fluxes = db::wrap_tags_in<::Tags::Flux, auxiliary_fields,
                                             tmpl::size_t<3>, Frame::Inertial>;
 
-  // The variable-independent fields in the equations
   using background_fields = tmpl::flatten<tmpl::list<
       // Quantities for Hamiltonian constraint
       Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
@@ -258,6 +253,9 @@ struct FirstOrderSystem {
                                                            Frame::Inertial>>,
                   tmpl::list<>>>,
           tmpl::list<>>>>;
+  using inv_metric_tag = tmpl::conditional_t<
+      ConformalGeometry == Geometry::FlatCartesian, void,
+      Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>;
 
   using fluxes_computer = Fluxes<EnabledEquations, ConformalGeometry>;
   using sources_computer =
@@ -266,24 +264,11 @@ struct FirstOrderSystem {
       LinearizedSources<EnabledEquations, ConformalGeometry,
                         ConformalMatterScale>;
 
-  // The supported boundary conditions. Boundary conditions can be
-  // factory-created from this base class.
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<
           3, tmpl::list<elliptic::BoundaryConditions::Registrars::
                             AnalyticSolution<FirstOrderSystem>,
                         BoundaryConditions::Registrars::Flatness>>;
-
-  // The tag of the operator to compute magnitudes on the manifold, e.g. to
-  // normalize vectors on the faces of an element
-  using inv_metric_tag = tmpl::conditional_t<
-      ConformalGeometry == Geometry::FlatCartesian, void,
-      Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>;
-  template <typename Tag>
-  using magnitude_tag =
-      tmpl::conditional_t<ConformalGeometry == Geometry::FlatCartesian,
-                          ::Tags::EuclideanMagnitude<Tag>,
-                          ::Tags::NonEuclideanMagnitude<Tag, inv_metric_tag>>;
 };
 
 }  // namespace Xcts

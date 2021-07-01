@@ -8,6 +8,7 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
@@ -15,6 +16,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/Elliptic/FirstOrderSystem.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace helpers = TestHelpers::elliptic;
 
@@ -41,6 +43,8 @@ template <size_t Dim, Poisson::Geometry BackgroundGeometry>
 void test_computers(const DataVector& used_for_size) {
   CAPTURE(Dim);
   using system = Poisson::FirstOrderSystem<Dim, BackgroundGeometry>;
+  static_assert(
+      tt::assert_conforms_to<system, elliptic::protocols::FirstOrderSystem>);
   helpers::test_first_order_fluxes_computer<system>(used_for_size);
   helpers::test_first_order_sources_computer<system>(used_for_size);
 }
