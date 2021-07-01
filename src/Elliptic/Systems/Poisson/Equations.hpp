@@ -78,6 +78,7 @@ void auxiliary_fluxes(
 template <size_t Dim>
 struct Fluxes<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
+  using volume_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                     const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
   static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
@@ -96,6 +97,7 @@ template <size_t Dim>
 struct Fluxes<Dim, Geometry::Curved> {
   using argument_tags = tmpl::list<
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+  using volume_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
                     const tnsr::i<DataVector, Dim>& field_gradient) noexcept;

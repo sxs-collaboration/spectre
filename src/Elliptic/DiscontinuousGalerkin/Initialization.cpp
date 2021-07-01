@@ -18,6 +18,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -70,30 +71,13 @@ void InitializeGeometry<Dim>::operator()(
 
 template <size_t Dim>
 void InitializeFacesAndMortars<Dim>::operator()(
-    const gsl::not_null<std::unordered_set<Direction<Dim>>*>
-        internal_directions,
-    const gsl::not_null<std::unordered_set<Direction<Dim>>*>
-        external_directions,
-    const gsl::not_null<std::unordered_map<Direction<Dim>, Direction<Dim>>*>
-        face_directions_internal,
-    const gsl::not_null<
-        std::unordered_map<Direction<Dim>, tnsr::I<DataVector, Dim>>*>
-        face_inertial_coords_internal,
-    const gsl::not_null<
-        std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>*>
-        face_normals_internal,
-    const gsl::not_null<std::unordered_map<Direction<Dim>, Scalar<DataVector>>*>
-    /*face_normal_magnitudes_internal*/,
-    const gsl::not_null<std::unordered_map<Direction<Dim>, Direction<Dim>>*>
-        face_directions_external,
-    const gsl::not_null<
-        std::unordered_map<Direction<Dim>, tnsr::I<DataVector, Dim>>*>
-        face_inertial_coords_external,
-    const gsl::not_null<
-        std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>*>
-        face_normals_external,
-    const gsl::not_null<std::unordered_map<Direction<Dim>, Scalar<DataVector>>*>
-    /*face_normal_magnitudes_external*/,
+    const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
+    const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
+        face_inertial_coords,
+    const gsl::not_null<DirectionMap<Dim, tnsr::i<DataVector, Dim>>*>
+        face_normals,
+    const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
+    /*face_normal_magnitudes*/,
     const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
     const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
         mortar_sizes,
@@ -102,23 +86,24 @@ void InitializeFacesAndMortars<Dim>::operator()(
     const std::vector<std::array<size_t, Dim>>& initial_extents)
     const noexcept {
   const Spectral::Quadrature quadrature = mesh.quadrature(0);
-  const auto& element_id = element.id();
-  *internal_directions = element.internal_boundaries();
-  *external_directions = element.external_boundaries();
-  // Internal faces and mortars
-  for (const auto& [direction, neighbors] : element.neighbors()) {
+  // Faces
+  for (const auto& direction : Direction<Dim>::all_directions()) {
     const auto face_mesh = mesh.slice_away(direction.dimension());
-    (*face_directions_internal)[direction] = direction;
+    (*face_directions)[direction] = direction;
     // Possible optimization: Not all systems need the coordinates on internal
     // faces.
-    (*face_inertial_coords_internal)[direction] = element_map.operator()(
+    (*face_inertial_coords)[direction] = element_map.operator()(
         interface_logical_coordinates(face_mesh, direction));
-    (*face_normals_internal)[direction] =
+    (*face_normals)[direction] =
         unnormalized_face_normal(face_mesh, element_map, direction);
+  }
+  // Mortars
+  const auto& element_id = element.id();
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    const auto face_mesh = mesh.slice_away(direction.dimension());
     const auto& orientation = neighbors.orientation();
     for (const auto& neighbor_id : neighbors) {
       const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
-      // Geometry on this side of the mortar
       mortar_meshes->emplace(
           mortar_id, ::dg::mortar_mesh(
                          face_mesh, domain::Initialization::create_initial_mesh(
@@ -130,14 +115,8 @@ void InitializeFacesAndMortars<Dim>::operator()(
                                        direction.dimension(), orientation));
     }  // neighbors
   }    // internal directions
-  // External faces and mortars
   for (const auto& direction : element.external_boundaries()) {
     const auto face_mesh = mesh.slice_away(direction.dimension());
-    (*face_directions_external)[direction] = direction;
-    (*face_inertial_coords_external)[direction] = element_map.operator()(
-        interface_logical_coordinates(face_mesh, direction));
-    (*face_normals_external)[direction] =
-        unnormalized_face_normal(face_mesh, element_map, direction);
     const auto mortar_id =
         std::make_pair(direction, ElementId<Dim>::external_boundary_id());
     mortar_meshes->emplace(mortar_id, face_mesh);

@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include <boost/range/join.hpp>
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
@@ -22,7 +21,6 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/InterfaceHelpers.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -31,6 +29,8 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/FaceNormal.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
@@ -63,16 +63,16 @@ namespace detail {
 // Initialize the geometry of a neighbor into which an overlap extends
 template <size_t Dim>
 struct InitializeOverlapGeometry {
-  using return_tags = tmpl::list<
-      elliptic::dg::subdomain_operator::Tags::ExtrudingExtent,
-      elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-          domain::Tags::Mesh<Dim>, Dim>,
-      elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-          ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>, Dim>,
-      elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-          domain::Tags::Mesh<Dim - 1>, Dim>,
-      elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-          ::Tags::MortarSize<Dim - 1>, Dim>>;
+  using return_tags =
+      tmpl::list<elliptic::dg::subdomain_operator::Tags::ExtrudingExtent,
+                 elliptic::dg::subdomain_operator::Tags::NeighborMortars<
+                     domain::Tags::Mesh<Dim>, Dim>,
+                 elliptic::dg::subdomain_operator::Tags::NeighborMortars<
+                     domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>, Dim>,
+                 elliptic::dg::subdomain_operator::Tags::NeighborMortars<
+                     domain::Tags::Mesh<Dim - 1>, Dim>,
+                 elliptic::dg::subdomain_operator::Tags::NeighborMortars<
+                     ::Tags::MortarSize<Dim - 1>, Dim>>;
   using argument_tags =
       tmpl::list<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>>;
   void operator()(
@@ -161,10 +161,7 @@ struct InitializeSubdomain {
               has_background_fields,
               tmpl::list<::Tags::Variables<typename System::background_fields>>,
               tmpl::list<>>,
-          make_interface_tags<background_fields_internal,
-                              domain::Tags::InternalDirections<Dim>>,
-          make_interface_tags<background_fields_external,
-                              domain::Tags::BoundaryDirectionsInterior<Dim>>>>;
+          domain::make_faces_tags<Dim, typename System::background_fields>>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DataBox, typename... InboxTags, typename Metavariables,
@@ -247,8 +244,7 @@ struct InitializeSubdomain {
             tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                        domain::Tags::Mesh<Dim>,
                        domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                     Frame::Inertial>,
-                       domain::Tags::Element<Dim>>>,
+                                                     Frame::Inertial>>>,
         tmpl::list<>>(
         [&background, &face_background_fields](
             const gsl::not_null<Variables<typename System::background_fields>*>
@@ -256,14 +252,11 @@ struct InitializeSubdomain {
             const tnsr::I<DataVector, Dim>& inertial_coords,
             const Mesh<Dim>& mesh,
             const InverseJacobian<DataVector, Dim, Frame::Logical,
-                                  Frame::Inertial>& inv_jacobian,
-            const Element<Dim>& element) noexcept {
+                                  Frame::Inertial>& inv_jacobian) noexcept {
           *background_fields = variables_from_tagged_tuple(
               background.variables(inertial_coords, mesh, inv_jacobian,
                                    typename System::background_fields{}));
-          for (const auto& direction :
-               boost::join(element.internal_boundaries(),
-                           element.external_boundaries())) {
+          for (const auto& direction : Direction<Dim>::all_directions()) {
             // Slice the background fields to the face instead of evaluating
             // them on the face coords to avoid re-computing them, and because
             // this is also what the DG operator currently does. The result is
@@ -279,12 +272,9 @@ struct InitializeSubdomain {
     // Move face background fields into DataBox
     const auto mutate_assign_face_background_field =
         [&box, &overlap_id, &face_background_fields](
-            auto tag_v, auto directions_tag_v,
-            const Direction<Dim>& direction) noexcept {
+            auto tag_v, const Direction<Dim>& direction) noexcept {
           using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-          using directions_tag = std::decay_t<decltype(directions_tag_v)>;
-          db::mutate<
-              overlaps_tag<domain::Tags::Interface<directions_tag, tag>>>(
+          db::mutate<overlaps_tag<domain::Tags::Faces<Dim, tag>>>(
               box, [&face_background_fields, &overlap_id,
                     &direction](const auto stored_value) noexcept {
                 (*stored_value)[overlap_id][direction] =
@@ -297,17 +287,14 @@ struct InitializeSubdomain {
       tmpl::for_each<background_fields_internal>(
           [&mutate_assign_face_background_field,
            &direction](auto tag_v) noexcept {
-            mutate_assign_face_background_field(
-                tag_v, domain::Tags::InternalDirections<Dim>{}, direction);
+            mutate_assign_face_background_field(tag_v, direction);
           });
     }
     for (const auto& direction : element.external_boundaries()) {
       tmpl::for_each<background_fields_external>(
           [&mutate_assign_face_background_field,
            &direction](auto tag_v) noexcept {
-            mutate_assign_face_background_field(
-                tag_v, domain::Tags::BoundaryDirectionsInterior<Dim>{},
-                direction);
+            mutate_assign_face_background_field(tag_v, direction);
           });
     }
   }
@@ -319,29 +306,15 @@ struct InitializeSubdomain {
     // Faces of the overlapped element (internal and external)
     const auto& element =
         db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);
-    for (const auto& direction : element.internal_boundaries()) {
-      elliptic::util::mutate_apply_at<
-          db::wrap_tags_in<
-              overlaps_tag,
-              make_interface_tags<typename NormalizeFaceNormal::return_tags,
-                                  domain::Tags::InternalDirections<Dim>>>,
-          db::wrap_tags_in<
-              overlaps_tag,
-              make_interface_tags<typename NormalizeFaceNormal::argument_tags,
-                                  domain::Tags::InternalDirections<Dim>>>,
-          tmpl::list<>>(NormalizeFaceNormal{}, box,
-                        std::make_tuple(overlap_id, direction));
-    }
-    for (const auto& direction : element.external_boundaries()) {
+    for (const auto& direction : Direction<Dim>::all_directions()) {
       elliptic::util::mutate_apply_at<
           db::wrap_tags_in<overlaps_tag,
-                           make_interface_tags<
-                               typename NormalizeFaceNormal::return_tags,
-                               domain::Tags::BoundaryDirectionsInterior<Dim>>>,
-          db::wrap_tags_in<overlaps_tag,
-                           make_interface_tags<
-                               typename NormalizeFaceNormal::argument_tags,
-                               domain::Tags::BoundaryDirectionsInterior<Dim>>>,
+                           domain::make_faces_tags<
+                               Dim, typename NormalizeFaceNormal::return_tags>>,
+          db::wrap_tags_in<
+              overlaps_tag,
+              domain::make_faces_tags<
+                  Dim, typename NormalizeFaceNormal::argument_tags>>,
           tmpl::list<>>(NormalizeFaceNormal{}, box,
                         std::make_tuple(overlap_id, direction));
     }
@@ -366,8 +339,7 @@ struct InitializeSubdomain {
             neighbor_face_mesh, neighbor_element_map, direction_from_neighbor);
         using neighbor_face_normal_magnitudes_tag = overlaps_tag<
             elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-                ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>,
-                Dim>>;
+                domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>, Dim>>;
         if constexpr (is_curved) {
           const auto& background = db::get<BackgroundTag>(*box);
           const auto neighbor_face_inertial_coords =

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/range/join.hpp>
 #include <cstddef>
 #include <string>
 #include <tuple>
@@ -275,24 +274,15 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const Element<Dim>& element, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
           inv_jacobian,
-      const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
-          internal_face_normals,
-      const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
-          external_face_normals,
-      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
-          internal_face_normal_magnitudes,
-      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
-          external_face_normal_magnitudes,
+      const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
+      const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const TemporalId& temporal_id,
       const ApplyBoundaryCondition& apply_boundary_condition,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
-      const DirectionMap<Dim, std::tuple<FluxesArgs...>>&
-          fluxes_args_on_internal_faces,
-      const DirectionMap<Dim, std::tuple<FluxesArgs...>>&
-          fluxes_args_on_external_faces,
+      const DirectionMap<Dim, std::tuple<FluxesArgs...>>& fluxes_args_on_faces,
       const DirectionsPredicate& directions_predicate =
           AllDirections{}) noexcept {
     static_assert(
@@ -385,14 +375,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
     // Populate the mortar data on this element's side of the boundary so it's
     // ready to be sent to neighbors.
-    for (const auto& direction : [&element]() noexcept -> decltype(auto) {
+    for (const auto& direction : [&element]() noexcept -> const auto& {
            if constexpr (DataIsZero) {
              // Skipping internal boundaries for zero data because they won't
              // contribute boundary corrections anyway.
              return element.external_boundaries();
            } else {
-             return boost::join(element.internal_boundaries(),
-                                element.external_boundaries());
+             (void)element;
+             return Direction<Dim>::all_directions();
            };
          }()) {
       if (not directions_predicate(direction)) {
@@ -401,15 +391,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const bool is_internal = element.neighbors().contains(direction);
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const size_t face_num_points = face_mesh.number_of_grid_points();
-      const auto& face_normal = is_internal
-                                    ? internal_face_normals.at(direction)
-                                    : external_face_normals.at(direction);
-      const auto& face_normal_magnitude =
-          is_internal ? internal_face_normal_magnitudes.at(direction)
-                      : external_face_normal_magnitudes.at(direction);
-      const auto& fluxes_args_on_face =
-          is_internal ? fluxes_args_on_internal_faces.at(direction)
-                      : fluxes_args_on_external_faces.at(direction);
+      const auto& face_normal = face_normals.at(direction);
+      const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
+      const auto& fluxes_args_on_face = fluxes_args_on_faces.at(direction);
       const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
       Variables<tmpl::list<PrimalFluxesVars..., AuxiliaryFluxesVars...>>
           fluxes_on_face{face_num_points};
@@ -622,10 +606,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
           inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
-      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
-          internal_face_normal_magnitudes,
-      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
-          external_face_normal_magnitudes,
+      const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const double penalty_parameter, const bool massive,
@@ -706,9 +687,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
       const auto& local_data = mortar_data.local_data(temporal_id);
       const auto& remote_data = mortar_data.remote_data(temporal_id);
-      const auto& face_normal_magnitude =
-          is_internal ? internal_face_normal_magnitudes.at(direction)
-                      : external_face_normal_magnitudes.at(direction);
+      const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
       const auto& mortar_mesh =
           is_internal ? all_mortar_meshes.at(mortar_id) : face_mesh;
       const auto& mortar_size =
@@ -787,9 +766,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
       const auto [local_data, remote_data] = mortar_data.extract();
-      const auto& face_normal_magnitude =
-          is_internal ? internal_face_normal_magnitudes.at(direction)
-                      : external_face_normal_magnitudes.at(direction);
+      const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
       const auto& mortar_mesh =
           is_internal ? all_mortar_meshes.at(mortar_id) : face_mesh;
       const auto& mortar_size =
@@ -873,10 +850,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
           inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
-      const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
-          external_face_normals,
-      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
-          external_face_normal_magnitudes,
+      const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
+      const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const double penalty_parameter, const bool massive,
@@ -884,9 +859,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
       const DirectionMap<Dim, std::tuple<FluxesArgs...>>&
-          fluxes_args_on_internal_faces,
-      const DirectionMap<Dim, std::tuple<FluxesArgs...>>&
-          fluxes_args_on_external_faces) noexcept {
+          fluxes_args_on_faces) noexcept {
     // We just feed zero variables through the nonlinear operator to extract the
     // constant contribution at external boundaries. Since the variables are
     // zero the operator simplifies quite a lot. The simplification is probably
@@ -915,15 +888,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         make_not_null(&unused_aux_vars_buffer),
         make_not_null(&unused_aux_fluxes_buffer),
         make_not_null(&primal_fluxes_buffer), make_not_null(&all_mortar_data),
-        zero_primal_vars, element, mesh, inv_jacobian, {},
-        external_face_normals, {}, external_face_normal_magnitudes,
-        all_mortar_meshes, all_mortar_sizes, temporal_id,
-        apply_boundary_condition, fluxes_args, sources_args,
-        fluxes_args_on_internal_faces, fluxes_args_on_external_faces);
+        zero_primal_vars, element, mesh, inv_jacobian, face_normals,
+        face_normal_magnitudes, all_mortar_meshes, all_mortar_sizes,
+        temporal_id, apply_boundary_condition, fluxes_args, sources_args,
+        fluxes_args_on_faces);
     apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
                          make_not_null(&all_mortar_data), zero_primal_vars,
                          primal_fluxes_buffer, mesh, inv_jacobian,
-                         det_inv_jacobian, {}, external_face_normal_magnitudes,
+                         det_inv_jacobian, face_normal_magnitudes,
                          all_mortar_meshes, all_mortar_sizes, penalty_parameter,
                          massive, temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on

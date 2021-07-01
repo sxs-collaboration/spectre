@@ -15,11 +15,13 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Index.hpp"
-#include "Domain/InterfaceHelpers.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
@@ -180,8 +182,7 @@ struct InitializeElement {
   using simple_tags =
       tmpl::list<Tags::IntrudingExtents<Dim, OptionsGroup>,
                  Tags::Weight<OptionsGroup>,
-                 domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
-                                         Tags::Weight<OptionsGroup>>,
+                 domain::Tags::Faces<Dim, Tags::Weight<OptionsGroup>>,
                  SubdomainDataBufferTag<SubdomainData, OptionsGroup>>;
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -224,8 +225,7 @@ struct InitializeElement {
     }
 
     // Intruding overlap weights
-    std::unordered_map<Direction<Dim>, Scalar<DataVector>>
-        intruding_overlap_weights{};
+    DirectionMap<Dim, Scalar<DataVector>> intruding_overlap_weights{};
     for (const auto& direction : element.internal_boundaries()) {
       const size_t dim = direction.dimension();
       if (gsl::at(intruding_extents, dim) > 0) {
@@ -487,7 +487,7 @@ struct ReceiveOverlapSolution {
         [&received_overlap_solutions](
             const auto fields, const Index<Dim>& full_extents,
             const std::array<size_t, Dim>& all_intruding_extents,
-            const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
+            const DirectionMap<Dim, Scalar<DataVector>>&
                 all_intruding_overlap_weights) noexcept {
           for (const auto& [overlap_id, overlap_solution] :
                received_overlap_solutions) {
@@ -503,8 +503,7 @@ struct ReceiveOverlapSolution {
         },
         db::get<domain::Tags::Mesh<Dim>>(box).extents(),
         db::get<Tags::IntrudingExtents<Dim, OptionsGroup>>(box),
-        db::get<domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
-                                        Tags::Weight<OptionsGroup>>>(box));
+        db::get<domain::Tags::Faces<Dim, Tags::Weight<OptionsGroup>>>(box));
     return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };

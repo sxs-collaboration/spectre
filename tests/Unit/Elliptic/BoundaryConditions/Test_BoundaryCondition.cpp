@@ -13,7 +13,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/TestCreation.hpp"
@@ -117,15 +119,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.Base", "[Unit][Elliptic]") {
       dynamic_cast<const BoundaryConditionType&>(*boundary_condition_base);
 
   // Test applying boundary conditions
-  const auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<1>,
-                              ArgumentTag>,
-      VolumeArgumentTag,
-      domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<1>,
-                              NonlinearArgumentTag>>>(
-      std::unordered_map<Direction<1>, int>{{Direction<1>::lower_xi(), 1}},
-      true,
-      std::unordered_map<Direction<1>, int>{{Direction<1>::lower_xi(), 2}});
+  const auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Faces<1, ArgumentTag>, VolumeArgumentTag,
+                        domain::Tags::Faces<1, NonlinearArgumentTag>>>(
+      DirectionMap<1, int>{{Direction<1>::lower_xi(), 1}}, true,
+      DirectionMap<1, int>{{Direction<1>::lower_xi(), 2}});
   const size_t num_points = 3;
   Scalar<DataVector> boundary_field{num_points};
   Scalar<DataVector> boundary_n_dot_flux{num_points};
