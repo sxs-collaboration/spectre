@@ -113,18 +113,24 @@ namespace Actions {
 namespace detail {
 template <typename System, bool HasPrimitives>
 struct vars_to_save_impl {
-  using type = tmpl::list<typename System::variables_tag>;
+  using type = tmpl::flatten<tmpl::list<typename System::variables_tag>>;
 };
 
 template <typename System>
 struct vars_to_save_impl<System, true> {
-  using type = tmpl::list<typename System::variables_tag,
-                          typename System::primitive_variables_tag>;
+  using type =
+      tmpl::flatten<tmpl::list<typename System::variables_tag,
+                               typename System::primitive_variables_tag>>;
 };
 
 template <typename System>
 using vars_to_save = typename vars_to_save_impl<
     System, System::has_primitive_and_conservative_vars>::type;
+
+template <typename TagList>
+using get_all_history_tags =
+    tmpl::filter<TagList,
+                 tt::is_a_lambda<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
 }  // namespace detail
 
 /// \ingroup ActionsGroup
@@ -250,7 +256,7 @@ struct Initialize {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename ExitTag>
+template <typename ExitTag, typename System>
 struct CheckForCompletion {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -261,13 +267,12 @@ struct CheckForCompletion {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
 
     const bool done_with_order =
         db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
 
     if (done_with_order) {
-      tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {
+      tmpl::for_each<detail::vars_to_save<System>>([&box](auto tag) noexcept {
         using Tag = tmpl::type_from<decltype(tag)>;
         db::mutate<Tag>(
             make_not_null(&box),
@@ -322,20 +327,19 @@ struct CheckForOrderIncrease {
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     const auto& time = db::get<::Tags::SubstepTime>(box);
     const auto& time_step = db::get<::Tags::TimeStep>(box);
-    const auto& history = db::get<::Tags::HistoryEvolvedVariables<>>(box);
+    using history_tags = detail::get_all_history_tags<DbTags>;
+    const size_t history_integration_order =
+        db::get<tmpl::front<history_tags>>(box).integration_order();
 
     const Time required_time =
         (time_step.is_positive() ? time.slab().start() : time.slab().end()) +
-        history.integration_order() * time_step;
+        history_integration_order * time_step;
     const bool done_with_order = time == required_time;
 
     if (done_with_order) {
-      db::mutate<::Tags::Next<::Tags::TimeStepId>,
-                 ::Tags::HistoryEvolvedVariables<>>(
+      db::mutate<::Tags::Next<::Tags::TimeStepId>>(
           make_not_null(&box),
           [](const gsl::not_null<::TimeStepId*> next_time_id,
-             const gsl::not_null<std::decay_t<decltype(history)>*>
-                 mutable_history,
              const ::TimeStepId& current_time_id) noexcept {
             const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
@@ -343,12 +347,27 @@ struct CheckForOrderIncrease {
                            current_time_id.slab_number() + 1,
                            current_time_id.time_runs_forward() ? slab.start()
                                                                : slab.end());
-            mutable_history->integration_order(
-                mutable_history->integration_order() + 1);
           },
           db::get<::Tags::TimeStepId>(box));
+      tmpl::for_each<history_tags>([&box, &history_integration_order](
+                                       auto tag_v) noexcept {
+        using history_tag = typename decltype(tag_v)::type;
+        db::mutate<history_tag>(
+            make_not_null(&box),
+            [&history_integration_order](
+                const gsl::not_null<typename history_tag::type*>
+                    mutable_history) noexcept {
+              ASSERT(mutable_history->integration_order() ==
+                         history_integration_order,
+                     "Using multiple histories of different integration "
+                     "orders. When using multiple histories sharing the same "
+                     "time stepper, all histories must maintain identical "
+                     "integration order.");
+              mutable_history->integration_order(
+                  mutable_history->integration_order() + 1);
+            });
+      });
     }
-
     return {std::move(box)};
   }
 };
@@ -411,16 +430,18 @@ struct Cleanup {
             *tag_value = std::decay_t<decltype(*tag_value)>{};
           });
         });
-    ASSERT(
-        db::get<::Tags::HistoryEvolvedVariables<>>(box).integration_order() ==
-            db::get<::Tags::TimeStepper<>>(box).order(),
-        "Volume history order is: "
-            << db::get<::Tags::HistoryEvolvedVariables<>>(box)
-                   .integration_order()
-            << " but time stepper requires order: "
-            << db::get<::Tags::TimeStepper<>>(box).order()
-            << ". This may indicate that the step size has varied during "
-               "self-start, which should not be permitted.");
+    using history_tags = detail::get_all_history_tags<DbTags>;
+    tmpl::for_each<history_tags>([&box](auto tag_v) noexcept {
+      using tag = typename decltype(tag_v)::type;
+      ASSERT(db::get<tag>(box).integration_order() ==
+                 db::get<::Tags::TimeStepper<>>(box).order(),
+             "Volume history order is: "
+                 << db::get<tag>(box).integration_order()
+                 << " but time stepper requires order: "
+                 << db::get<::Tags::TimeStepper<>>(box).order()
+                 << ". This may indicate that the step size has varied during "
+                    "self-start, which should not be permitted.");
+    });
     return std::make_tuple(std::move(box));
   }
 };
@@ -444,7 +465,7 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
 // clang-format off
     SelfStart::Actions::Initialize<System>,
     ::Actions::Label<detail::PhaseStart>,
-    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
+    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System>,
     ::Actions::AdvanceTime,
     SelfStart::Actions::CheckForOrderIncrease,
     StepActions,

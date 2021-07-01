@@ -4,6 +4,8 @@
 # Executable: AnalyticTestCharacteristicExtract
 # Check: parse;execute_check_output
 # Timeout: 8
+# ExpectedOutput:
+#   CharacteristicExtractVolume0.h5
 # OutputFileChecks:
 #   - Label: "check_news"
 #     Subfile: "/News_Noninertial.dat"
@@ -21,12 +23,12 @@ Observers:
   ReductionFileName: "CharacteristicExtractUnusedReduction"
 
 Cce:
-  LMax: 12
-  NumberOfRadialPoints: 12
+  LMax: 10
+  NumberOfRadialPoints: 8
   ObservationLMax: 8
 
   StartTime: 0.0
-  EndTime: 0.6
+  EndTime: 0.5
   TargetStepSize: 0.1
   ExtractionRadius: 40.0
 
@@ -42,14 +44,14 @@ Cce:
         # l = 2
         - [0.01, 0.005]
       ExtractionRadius: 40.0
-      LMax: 12
+      LMax: 10
       Tolerance: 1e-10
       StartTime: 0.0
 
   Filtering:
     RadialFilterHalfPower: 24
     RadialFilterAlpha: 35.0
-    FilterLMax: 10
+    FilterLMax: 8
 
-  ScriInterpOrder: 5
+  ScriInterpOrder: 4
   ScriOutputDensity: 1

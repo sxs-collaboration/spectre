@@ -9,6 +9,8 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Time/TimeStepId.hpp"
 
@@ -368,6 +370,19 @@ struct InterpolationManager : db::SimpleTag {
   using type = ScriPlusInterpolationManager<ToInterpolate, ObservationTag>;
   static std::string name() noexcept {
     return "InterpolationManager(" + db::tag_name<ObservationTag>() + ")";
+  }
+};
+
+/// During self-start, we must be in lockstep with the GH system (if running
+/// concurrently), because the step size is unchangable during self-start.
+struct SelfStartGhInterfaceManager : db::SimpleTag {
+  using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
+  using option_tags = tmpl::list<>;
+
+  static constexpr bool pass_metavariables = false;
+  static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
+  create_from_options() noexcept {
+    return std::make_unique<Cce::InterfaceManagers::GhLockstep>();
   }
 };
 }  // namespace Tags

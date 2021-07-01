@@ -57,7 +57,7 @@ RobinsonTrautman::RobinsonTrautman(
   initialize_stepper_from_start();
 }
 
-void RobinsonTrautman::initialize_stepper_from_start() noexcept {
+void RobinsonTrautman::initialize_stepper_from_start() const noexcept {
   // create the initial data
   SpinWeighted<ComplexModalVector, 0> goldberg_modes{square(l_max_ + 1), 0.0};
   for (size_t i = 0; i < std::min(initial_modes_.size(), goldberg_modes.size());
@@ -140,11 +140,7 @@ void RobinsonTrautman::prepare_solution(const size_t l_max,
          "specified at construction, as it must internally store the evolved "
          "scalar at the desired resolution");
   if (step_range_.first > time) {
-    ERROR(
-        "The Robinson-Trautman solution does not support stepping backwards in "
-        "time during the internal evolution. This error likely means that the "
-        "corresponding evolution test should be using a multistep time-stepper "
-        "so that the requested boundary data is monotonic.");
+    initialize_stepper_from_start();
   }
   // step until the target time is within the current timestep
   const auto rt_system = [this](const ComplexDataVector& local_rt_scalar,

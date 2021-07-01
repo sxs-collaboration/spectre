@@ -24,6 +24,7 @@
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
 #include "Evolution/Systems/Cce/ScriPlusValues.hpp"
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
+#include "Evolution/Systems/Cce/System.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -33,6 +34,7 @@
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -157,8 +159,27 @@ struct CharacteristicEvolution {
                  ::Actions::UpdateU<
                      typename Metavariables::evolved_coordinates_variables_tag>,
                  ::Actions::UpdateU<::Tags::Variables<
-                     tmpl::list<typename Metavariables::evolved_swsh_tag>>>,
-                 ::Actions::AdvanceTime>;
+                     tmpl::list<typename Metavariables::evolved_swsh_tag>>>>;
+
+  using self_start_extract_action_list = tmpl::list<
+      Actions::RequestBoundaryData<
+          typename Metavariables::cce_boundary_component,
+          CharacteristicEvolution<Metavariables>>,
+      Actions::ReceiveWorldtubeData<Metavariables>,
+      // note that the initialization will only actually happen on the
+      // iterations immediately following restarts
+      Actions::InitializeFirstHypersurface, Actions::UpdateGauge,
+      Actions::PrecomputeGlobalCceDependencies,
+      tmpl::transform<bondi_hypersurface_step_tags,
+                      tmpl::bind<hypersurface_computation, tmpl::_1>>,
+      Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      ::Actions::MutateApply<
+          CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>>,
+      Actions::CalculateScriInputs,
+      tmpl::transform<typename metavariables::cce_scri_tags,
+                      tmpl::bind<::Actions::MutateApply,
+                                 tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
+      record_time_stepper_data_and_step>;
 
   using extract_action_list = tmpl::list<
       Actions::RequestBoundaryData<
@@ -175,17 +196,21 @@ struct CharacteristicEvolution {
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe, record_time_stepper_data_and_step,
-      Actions::ExitIfEndTimeReached,
+      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
       Actions::ReceiveWorldtubeData<Metavariables>,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        initialize_action_list>,
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Evolve,
-                                        extract_action_list>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             initialize_action_list>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::InitializeTimeStepperHistory,
+                             SelfStart::self_start_procedure<
+                                 self_start_extract_action_list, Cce::System>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Evolve,
+                             extract_action_list>>;
 
   using const_global_cache_tag_list =
       Parallel::get_const_global_cache_tags_from_actions<

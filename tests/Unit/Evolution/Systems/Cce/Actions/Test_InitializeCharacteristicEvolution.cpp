@@ -30,6 +30,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -52,6 +53,9 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
+      // advance the time so that the current `TimeStepId` is valid without
+      // having to perform self-start.
+      ::Actions::AdvanceTime,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe, NoSuchType>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
@@ -170,7 +174,7 @@ SPECTRE_TEST_CASE(
                                               scri_plus_interpolation_order);
 
   // this should run the initialization
-  for(size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner),

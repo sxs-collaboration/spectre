@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>  // IWYU pragma: keep
@@ -55,6 +56,10 @@ struct Var : db::SimpleTag {
   using type = double;
 };
 
+struct ComplexVar : db::SimpleTag {
+  using type = std::complex<double>;
+};
+
 struct PrimitiveVar : db::SimpleTag {
   using type = double;
 };
@@ -104,13 +109,15 @@ struct System<true> : SystemBase<true> {
 };
 
 using history_tag = Tags::HistoryEvolvedVariables<Var>;
+using additional_history_tag = Tags::HistoryEvolvedVariables<ComplexVar>;
 
 template <typename Metavariables>
 struct Component;  // IWYU pragma: keep
 
-template <bool HasPrimitives = false>
+template <bool HasPrimitives = false, bool MultipleHistories = false>
 struct Metavariables {
   static constexpr bool has_primitives = HasPrimitives;
+  static constexpr bool multiple_histories = MultipleHistories;
   using system = System<HasPrimitives>;
   using component_list = tmpl::list<Component<Metavariables>>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
@@ -130,8 +137,11 @@ struct Component {
       typename metavariables::system::test_primitive_variables_tags,
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
-      history_tag, Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-      Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time>>;
+      history_tag,
+      tmpl::conditional_t<Metavariables::multiple_histories,
+                          additional_history_tag, tmpl::list<>>,
+      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+      Tags::Next<Tags::TimeStep>, Tags::Time>>;
   using compute_tags = db::AddComputeTags<Tags::SubstepTimeCompute>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
@@ -158,18 +168,19 @@ struct Component {
                              Metavariables::Phase::Testing, action_list>>;
 };
 
-template <bool HasPrimitives = false>
-using MockRuntimeSystem =
-    ActionTesting::MockRuntimeSystem<Metavariables<HasPrimitives>>;
+template <bool HasPrimitives = false, bool MultipleHistories = false>
+using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<
+    Metavariables<HasPrimitives, MultipleHistories>>;
 
-template <bool HasPrimitives = false>
+template <bool HasPrimitives = false, bool MultipleHistories = false>
 void emplace_component_and_initialize(
-    const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner,
+    const gsl::not_null<MockRuntimeSystem<HasPrimitives, MultipleHistories>*>
+        runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
     const double initial_value) noexcept {
   ActionTesting::emplace_component_and_initialize<
-      Component<Metavariables<HasPrimitives>>>(
+      Component<Metavariables<HasPrimitives, MultipleHistories>>>(
       runner, 0,
       {initial_value, 0., typename history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
@@ -179,16 +190,50 @@ void emplace_component_and_initialize(
 }
 
 template <>
-void emplace_component_and_initialize<true>(
-    const gsl::not_null<MockRuntimeSystem<true>*> runner,
+void emplace_component_and_initialize<true, false>(
+    const gsl::not_null<MockRuntimeSystem<true, false>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
     const double initial_value) noexcept {
   ActionTesting::emplace_component_and_initialize<
-      Component<Metavariables<true>>>(
+      Component<Metavariables<true, false>>>(
       runner, 0,
       {initial_value, initial_value, 0., typename history_tag::type{1},
        TimeStepId{},
+       TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
+                  initial_time),
+       initial_time_step, initial_time_step,
+       std::numeric_limits<double>::signaling_NaN()});
+}
+
+template <>
+void emplace_component_and_initialize<false, true>(
+    const gsl::not_null<MockRuntimeSystem<false, true>*> runner,
+    const bool forward_in_time, const Time& initial_time,
+    const TimeDelta& initial_time_step, const size_t order,
+    const double initial_value) noexcept {
+  ActionTesting::emplace_component_and_initialize<
+      Component<Metavariables<false, true>>>(
+      runner, 0,
+      {initial_value, 0., typename history_tag::type{1},
+       typename additional_history_tag::type{1}, TimeStepId{},
+       TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
+                  initial_time),
+       initial_time_step, initial_time_step,
+       std::numeric_limits<double>::signaling_NaN()});
+}
+
+template <>
+void emplace_component_and_initialize<true, true>(
+    const gsl::not_null<MockRuntimeSystem<true, true>*> runner,
+    const bool forward_in_time, const Time& initial_time,
+    const TimeDelta& initial_time_step, const size_t order,
+    const double initial_value) noexcept {
+  ActionTesting::emplace_component_and_initialize<
+      Component<Metavariables<true, true>>>(
+      runner, 0,
+      {initial_value, initial_value, 0., typename history_tag::type{1},
+       typename additional_history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
@@ -205,17 +250,19 @@ using not_self_start_action = std::negation<std::disjunction<
 // Fail a REQUIRE if any action not passing the Whitelist metalambda
 // is run first (as that would often lead to an infinite loop).
 // Returns true if the last action jumped.
-template <typename Stop, typename Whitelist, bool HasPrimitives>
+template <typename Stop, typename Whitelist, bool MultipleHistories,
+          bool HasPrimitives>
 bool run_past(
-    const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner) noexcept {
+    const gsl::not_null<MockRuntimeSystem<HasPrimitives, MultipleHistories>*>
+        runner) noexcept {
   for (;;) {
     bool done = false;
     const size_t current_action = ActionTesting::get_next_action_index<
-        Component<Metavariables<HasPrimitives>>>(*runner, 0);
+        Component<Metavariables<HasPrimitives, MultipleHistories>>>(*runner, 0);
     size_t action_to_check = current_action;
-    tmpl::for_each<
-        typename Component<Metavariables<HasPrimitives>>::action_list>(
-        [&action_to_check, &done ](const auto action) noexcept {
+    tmpl::for_each<typename Component<
+        Metavariables<HasPrimitives, MultipleHistories>>::action_list>(
+        [&action_to_check, &done](const auto action) noexcept {
           using Action = tmpl::type_from<decltype(action)>;
           if (action_to_check-- == 0) {
             INFO(pretty_type::get_name<Action>());
@@ -223,15 +270,16 @@ bool run_past(
             REQUIRE((done or tmpl::apply<Whitelist, Action>::value));
           }
         });
-    ActionTesting::next_action<Component<Metavariables<HasPrimitives>>>(runner,
-                                                                        0);
+    ActionTesting::next_action<
+        Component<Metavariables<HasPrimitives, MultipleHistories>>>(runner, 0);
     // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.Branch) false positive
     if (done) {
       // Self-start does not use the automatic algorithm looping, so
       // we don't have to check for the end.
       return current_action + 1 !=
              ActionTesting::get_next_action_index<
-                 Component<Metavariables<HasPrimitives>>>(*runner, 0);
+                 Component<Metavariables<HasPrimitives, MultipleHistories>>>(
+                 *runner, 0);
     }
   }
 }
@@ -345,7 +393,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
   }
 }
 
-template <bool TestPrimitives>
+template <bool TestPrimitives, bool MultipleHistories>
 double error_in_step(const size_t order, const double step) noexcept {
   const bool forward_in_time = step > 0.;
   const auto slab = forward_in_time ? Slab::with_duration_from_start(1., step)
@@ -355,33 +403,36 @@ double error_in_step(const size_t order, const double step) noexcept {
   const Time initial_time = forward_in_time ? slab.start() : slab.end();
   const double initial_value = -1.;
 
-  using component = Component<Metavariables<TestPrimitives>>;
-  MockRuntimeSystem<TestPrimitives> runner{
+  using component = Component<Metavariables<TestPrimitives, MultipleHistories>>;
+  MockRuntimeSystem<TestPrimitives, MultipleHistories> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
-  emplace_component_and_initialize<TestPrimitives>(
+  emplace_component_and_initialize<TestPrimitives, MultipleHistories>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
-  ActionTesting::next_action<Component<Metavariables<TestPrimitives>>>(
+  ActionTesting::next_action<
+      Component<Metavariables<TestPrimitives, MultipleHistories>>>(
       make_not_null(&runner), 0);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables<TestPrimitives>::Phase::Testing);
+  ActionTesting::set_phase(
+      make_not_null(&runner),
+      Metavariables<TestPrimitives, MultipleHistories>::Phase::Testing);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
-           tmpl::bool_<true>>(make_not_null(&runner));
+           tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
   run_past<std::is_same<tmpl::pin<Actions::UpdateU<>>, tmpl::_1>,
-           tmpl::bool_<true>>(make_not_null(&runner));
+           tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
 
   const double exact = -log(exp(-initial_value) - step);
   return ActionTesting::get_databox_tag<component, Var>(runner, 0) - exact;
 }
 
-template <bool TestPrimitives>
+template <bool TestPrimitives, bool MultipleHistories>
 void test_convergence(const size_t order, const bool forward_in_time) noexcept {
   const double step = forward_in_time ? 0.1 : -0.1;
   const double convergence_rate =
-      (log(abs(error_in_step<TestPrimitives>(order, step))) -
-       log(abs(error_in_step<TestPrimitives>(order, 0.5 * step)))) /
+      (log(abs(error_in_step<TestPrimitives, MultipleHistories>(order, step))) -
+       log(abs(error_in_step<TestPrimitives, MultipleHistories>(order,
+                                                                0.5 * step)))) /
       log(2.);
   // This measures the local truncation error, so order + 1.  It
   // should be converging to an integer, so just check that it looks
@@ -401,8 +452,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
     }
     for (const bool forward_in_time : {true, false}) {
       CAPTURE(forward_in_time);
-      test_convergence<false>(order, forward_in_time);
-      test_convergence<true>(order, forward_in_time);
+      test_convergence<false, false>(order, forward_in_time);
+      test_convergence<true, false>(order, forward_in_time);
+      test_convergence<false, true>(order, forward_in_time);
+      test_convergence<true, true>(order, forward_in_time);
     }
   }
 }

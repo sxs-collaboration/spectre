@@ -38,6 +38,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -106,6 +107,9 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
+      // advance the time so that the current `TimeStepId` is valid without
+      // having to perform self-start.
+      ::Actions::AdvanceTime,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -241,7 +245,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
           false, false, std::optional<double>{}));
 
   // this should run the initializations
-  for (size_t i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
   for (size_t i = 0; i < 2; ++i) {

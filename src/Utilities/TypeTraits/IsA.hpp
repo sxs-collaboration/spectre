@@ -55,16 +55,16 @@ using is_a_t = typename is_a<U, Args...>::type;
 /// @}
 
 namespace detail {
-template <template <typename> class U>
+template <template <typename...> class U>
 struct is_a_wrapper;
 
 template <typename U, typename T>
 struct wrapped_is_a;
 
-template <template <typename> class U, typename T>
+template <template <typename...> class U, typename T>
 struct wrapped_is_a<is_a_wrapper<U>, T> : tt::is_a<U, T> {};
 }  // namespace detail
 
-template <template <typename> class U, typename T>
+template <template <typename...> class U, typename T>
 using is_a_lambda = detail::wrapped_is_a<detail::is_a_wrapper<U>, T>;
 }  // namespace tt

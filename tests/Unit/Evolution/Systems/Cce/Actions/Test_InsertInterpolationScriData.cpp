@@ -143,6 +143,9 @@ struct MockCharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
+      // advance the time so that the current `TimeStepId` is valid without
+      // having to perform self-start.
+      ::Actions::AdvanceTime,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
@@ -273,7 +276,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component<MockObserver<test_metavariables>>(&runner,
                                                                       0);
   // the initialization actions
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
   runner.set_phase(test_metavariables::Phase::Evolve);

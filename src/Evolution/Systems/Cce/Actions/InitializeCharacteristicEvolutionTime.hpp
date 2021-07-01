@@ -88,10 +88,7 @@ struct InitializeCharacteristicEvolutionTime {
     const Time initial_time = single_step_slab.start();
     const TimeDelta fixed_time_step =
         TimeDelta{single_step_slab, Rational{1, 1}};
-    TimeStepId initial_time_id{true, 0, initial_time};
     const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
-    TimeStepId second_time_id =
-        time_stepper.next_time_id(initial_time_id, fixed_time_step);
 
     const size_t starting_order =
         time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
@@ -102,9 +99,10 @@ struct InitializeCharacteristicEvolutionTime {
     typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
         swsh_history(starting_order);
     Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box),
-        std::move(initial_time_id),  // NOLINT
-        std::move(second_time_id),   // NOLINT
+        make_not_null(&box), TimeStepId{},
+        TimeStepId{true,
+                   -static_cast<int64_t>(time_stepper.number_of_past_steps()),
+                   initial_time},
         fixed_time_step, fixed_time_step, initial_time_value,
         std::move(coordinate_history), std::move(swsh_history));
     return std::make_tuple(std::move(box));
