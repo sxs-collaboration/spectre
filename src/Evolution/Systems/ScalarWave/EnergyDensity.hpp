@@ -5,7 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -37,4 +39,21 @@ Scalar<DataVector> energy_density(
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept;
 /// @}
+
+namespace Tags {
+/// \brief Computes the energy density using ScalarWave::energy_density()
+template <size_t SpatialDim>
+struct EnergyDensityCompute : EnergyDensity<SpatialDim>, db::ComputeTag {
+  using argument_tags = tmpl::list<ScalarWave::Pi, ScalarWave::Phi<SpatialDim>>;
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataVector>*> result, const Scalar<DataVector>&,
+      const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&) noexcept>(
+      &energy_density<SpatialDim>);
+
+  using base = EnergyDensity<SpatialDim>;
+};
+}  // namespace Tags
 }  // namespace ScalarWave
