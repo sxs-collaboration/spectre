@@ -377,10 +377,10 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
       [&dg_formulation, &face_normal_covector_and_magnitude,
        local_time_stepping, &mortar_meshes, &mortar_sizes, &time_step,
        &time_stepper, using_gauss_lobatto_points, &volume_det_jacobian,
-       &volume_det_inv_jacobian, &volume_mesh](
-          const auto dt_variables_ptr, const auto variables_ptr,
-          const auto mortar_data_ptr, const auto mortar_data_history_ptr,
-          const auto& boundary_correction) noexcept {
+       &volume_det_inv_jacobian,
+       &volume_mesh](const auto dt_variables_ptr, const auto variables_ptr,
+                     const auto mortar_data_ptr,
+                     const auto& boundary_correction) noexcept {
         using mortar_tags_list = typename std::decay_t<decltype(
             boundary_correction)>::dg_package_field_tags;
 
@@ -562,27 +562,27 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           }
         };
 
-        if constexpr (Metavariables::local_time_stepping) {
-          (void)dt_variables_ptr;
-          (void)mortar_data_ptr;
+        for (auto& mortar_id_and_data : *mortar_data_ptr) {
+          const auto& mortar_id = mortar_id_and_data.first;
+          mortar_id_ptr = &mortar_id;
+          const auto& direction = mortar_id.first;
+          if (UNLIKELY(mortar_id.second ==
+                       ElementId<volume_dim>::external_boundary_id())) {
+            ERROR(
+                "Cannot impose boundary conditions on external boundary in "
+                "direction "
+                << direction
+                << " in the ApplyBoundaryCorrections action. Boundary "
+                   "conditions are applied in the ComputeTimeDerivative "
+                   "action "
+                   "instead. You may have unintentionally added external "
+                   "mortars in one of the initialization actions.");
+          }
 
-          for (auto& mortar_id_and_data : *mortar_data_history_ptr) {
-            const auto& mortar_id = mortar_id_and_data.first;
+          if constexpr (Metavariables::local_time_stepping) {
+            (void)dt_variables_ptr;
+
             auto& mortar_data_history = mortar_id_and_data.second;
-            const auto& direction = mortar_id.first;
-            if (UNLIKELY(mortar_id.second ==
-                         ElementId<volume_dim>::external_boundary_id())) {
-              ERROR(
-                  "Cannot impose boundary conditions on external boundary in "
-                  "direction "
-                  << direction
-                  << " in the ApplyBoundaryCorrections action. Boundary "
-                     "conditions are applied in the ComputeTimeDerivative "
-                     "action "
-                     "instead. You may have unintentionally added external "
-                     "mortars in one of the initialization actions.");
-            }
-            mortar_id_ptr = &mortar_id;
             auto lifted_volume_data = time_stepper.compute_boundary_delta(
                 compute_correction_coupling,
                 make_not_null(&mortar_data_history), time_step);
@@ -596,33 +596,12 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             } else {
               *variables_ptr += lifted_volume_data;
             }
-          }
-        } else {
-          (void)time_step;
-          (void)time_stepper;
-          (void)variables_ptr;
-          (void)mortar_data_history_ptr;
+          } else {
+            (void)time_step;
+            (void)time_stepper;
+            (void)variables_ptr;
 
-          for (auto& mortar_id_and_data : *mortar_data_ptr) {
-            // Cannot use structured bindings because of a compiler bug where
-            // they cannot be captured by lambdas.
-            const auto& mortar_id = mortar_id_and_data.first;
             const auto& mortar_data = mortar_id_and_data.second;
-            const auto& direction = mortar_id.first;
-            if (UNLIKELY(mortar_id.second ==
-                         ElementId<volume_dim>::external_boundary_id())) {
-              ERROR(
-                  "Cannot impose boundary conditions on external boundary in "
-                  "direction "
-                  << direction
-                  << " in the ApplyBoundaryCorrections action. Boundary "
-                     "conditions are applied in the ComputeTimeDerivative "
-                     "action "
-                     "instead. You may have unintentionally added external "
-                     "mortars in one of the initialization actions.");
-            }
-            mortar_id_ptr = &mortar_id;
-
             // Choose an allocation cache that may be empty, so we might
             // be able to reuse the allocation obtained for the lifted
             // data.
@@ -671,10 +650,11 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         // Compute internal boundary quantities on the mortar for sides of
         // the element that have neighbors, i.e. they are not an external
         // side.
-        db::mutate<
-            dt_variables_tag, variables_tag,
-            evolution::dg::Tags::MortarData<volume_dim>,
-            evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>>(
+        using mortar_data_tag = tmpl::conditional_t<
+            local_time_stepping,
+            evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>,
+            evolution::dg::Tags::MortarData<volume_dim>>;
+        db::mutate<dt_variables_tag, variables_tag, mortar_data_tag>(
             box, compute_and_lift_boundary_corrections,
             *typed_boundary_correction);
       });
