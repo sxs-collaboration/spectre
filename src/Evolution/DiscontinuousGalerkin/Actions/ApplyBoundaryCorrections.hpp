@@ -331,8 +331,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using variables_tag = typename Metavariables::system::variables_tag;
-  using variables_tags = typename variables_tag::tags_list;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  using DtVariables = typename dt_variables_tag::type;
 
   // Set up helper lambda that will compute and lift the boundary corrections
   const Mesh<volume_dim>& volume_mesh =
@@ -384,10 +384,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         using mortar_tags_list = typename std::decay_t<decltype(
             boundary_correction)>::dg_package_field_tags;
 
-        Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>
-            dt_boundary_correction_on_mortar{};
-        Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>
-            dt_boundary_correction_projected_onto_face{};
+        DtVariables dt_boundary_correction_on_mortar{};
+        DtVariables dt_boundary_correction_projected_onto_face{};
 
         const std::pair<Direction<Metavariables::volume_dim>,
                         ElementId<Metavariables::volume_dim>>* mortar_id_ptr =
@@ -403,7 +401,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
              &volume_det_inv_jacobian, &volume_mesh](
                 const MortarData<volume_dim>& local_mortar_data,
                 const MortarData<volume_dim>& neighbor_mortar_data) noexcept
-            -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>> {
+            -> DtVariables {
           // Clang thinks we don't need to capture local_time_stepping.
           (void)local_time_stepping;
           ASSERT(mortar_id_ptr != nullptr,
@@ -467,8 +465,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           auto& dt_boundary_correction =
               [&dt_boundary_correction_on_mortar,
                &dt_boundary_correction_projected_onto_face, &face_mesh,
-               &mortar_mesh, &mortar_size]() noexcept
-              -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>& {
+               &mortar_mesh, &mortar_size]() noexcept -> DtVariables& {
             if (Spectral::needs_projection(face_mesh, mortar_mesh,
                                            mortar_size)) {
               dt_boundary_correction_projected_onto_face =
@@ -534,9 +531,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               local_mortar_data.get_local_face_det_jacobian(
                   make_not_null(&face_det_jacobian));
 
-              Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>
-                  volume_dt_correction{
-                      dt_variables_ptr->number_of_grid_points(), 0.0};
+              DtVariables volume_dt_correction{
+                  dt_variables_ptr->number_of_grid_points(), 0.0};
               evolution::dg::lift_boundary_terms_gauss_points(
                   make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
                   volume_mesh, direction, dt_boundary_correction,
@@ -661,10 +657,10 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         // Compute internal boundary quantities on the mortar for sides of
         // the element that have neighbors, i.e. they are not an external
         // side.
-        db::mutate<dt_variables_tag, variables_tag,
-                   evolution::dg::Tags::MortarData<volume_dim>,
-                   evolution::dg::Tags::MortarDataHistory<
-                       volume_dim, typename dt_variables_tag::type>>(
+        db::mutate<
+            dt_variables_tag, variables_tag,
+            evolution::dg::Tags::MortarData<volume_dim>,
+            evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>>(
             box, compute_and_lift_boundary_corrections,
             *typed_boundary_correction);
       });
