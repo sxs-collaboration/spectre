@@ -4,10 +4,12 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <map>
 #include <optional>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -347,13 +349,14 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
   const bool local_time_stepping = Metavariables::local_time_stepping;
   Scalar<DataVector> volume_det_inv_jacobian{};
   Scalar<DataVector> volume_det_jacobian{};
-  if (not local_time_stepping and not using_gauss_lobatto_points) {
-    get(volume_det_inv_jacobian)
-        .set_data_ref(make_not_null(&const_cast<DataVector&>(
-            get(db::get<
-                domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-                *box)))));
-    get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+  if constexpr (not local_time_stepping) {
+    if (not using_gauss_lobatto_points) {
+      get(volume_det_inv_jacobian)
+          .set_data_ref(make_not_null(&const_cast<DataVector&>(get(
+              db::get<domain::Tags::DetInvJacobian<Frame::Logical,
+                                                   Frame::Inertial>>(*box)))));
+      get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+    }
   }
 
   const auto& mortar_meshes = db::get<Tags::MortarMesh<volume_dim>>(*box);
@@ -461,11 +464,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             // local_data_on_mortar and neighbor_data_on_mortar could be
             // allocated fewer times, as well as `needs_projection` section
             // below could do an in-place projection.
-            if (dt_boundary_correction_on_mortar.number_of_grid_points() !=
-                mortar_mesh.number_of_grid_points()) {
-              dt_boundary_correction_on_mortar.initialize(
-                  mortar_mesh.number_of_grid_points());
-            }
+            dt_boundary_correction_on_mortar.initialize(
+                mortar_mesh.number_of_grid_points());
 
             detail::boundary_correction(
                 make_not_null(&dt_boundary_correction_on_mortar),
@@ -497,7 +497,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
             // Both paths initialize this to be non-owning.
             Scalar<DataVector> magnitude_of_face_normal{};
-            if (local_time_stepping) {
+            if constexpr (Metavariables::local_time_stepping) {
+              (void)face_normal_covector_and_magnitude;
               local_mortar_data.get_local_face_normal_magnitude(
                   &magnitude_of_face_normal);
             } else {
@@ -535,7 +536,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               //   with projecting from mortars to the face, then lift off the
               //   faces. With non-owning Variables memory allocations could be
               //   significantly reduced in this code.
-              if (local_time_stepping) {
+              if constexpr (Metavariables::local_time_stepping) {
                 ASSERT(get(volume_det_inv_jacobian).size() > 0,
                        "For local time stepping the volume determinant of the "
                        "inverse Jacobian has not been set.");
