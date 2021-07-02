@@ -104,5 +104,11 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
     return "EvolvedFieldsFromCharacteristicFields";
   }
 };
+
+/// The energy density of the scalar wave
+template <size_t Dim>
+struct EnergyDensity : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
 }  // namespace Tags
 }  // namespace ScalarWave

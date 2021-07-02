@@ -28,4 +28,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Tags",
   TestHelpers::db::test_simple_tag<
       ScalarWave::Tags::EvolvedFieldsFromCharacteristicFields<3>>(
       "EvolvedFieldsFromCharacteristicFields");
+  TestHelpers::db::test_simple_tag<ScalarWave::Tags::EnergyDensity<SpatialDim>>(
+      "EnergyDensity");
 }
