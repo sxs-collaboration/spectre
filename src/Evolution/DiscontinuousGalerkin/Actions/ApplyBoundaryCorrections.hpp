@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <map>
 #include <optional>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -33,6 +35,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -120,8 +123,8 @@ struct ApplyBoundaryCorrections {
         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
         const ParallelComponent* const /*meta*/) noexcept;
 
- private:
-  template <typename DbTagsList, typename... InboxTags>
+  template <bool DenseOutput = false, typename DbTagsList,
+            typename... InboxTags>
   static void complete_time_step(
       gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
 
@@ -130,7 +133,8 @@ struct ApplyBoundaryCorrections {
       gsl::not_null<db::DataBox<DbTagsList>*> box,
       gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
 
-  template <typename DbTagsList, typename... InboxTags>
+  template <bool DenseOutput = false, typename DbTagsList,
+            typename... InboxTags>
   static bool receive_local_time_stepping(
       gsl::not_null<db::DataBox<DbTagsList>*> box,
       gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
@@ -216,7 +220,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
 }
 
 template <typename Metavariables>
-template <typename DbTagsList, typename... InboxTags>
+template <bool DenseOutput, typename DbTagsList, typename... InboxTags>
 bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept {
@@ -240,15 +244,31 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
           boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
-  const auto& local_next_temporal_id =
-      db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+
+  const auto needed_time = [&box]() noexcept {
+    const auto& local_next_temporal_id =
+        db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+    if constexpr (DenseOutput) {
+      const auto& dense_output_time = db::get<::Tags::Time>(*box);
+      return [&dense_output_time,
+              &local_next_temporal_id](const TimeStepId& id) noexcept {
+        return evolution_less<double>{
+            local_next_temporal_id.time_runs_forward()}(id.step_time().value(),
+                                                        dense_output_time);
+      };
+    } else {
+      return [&local_next_temporal_id](const TimeStepId& id) noexcept {
+        return id < local_next_temporal_id;
+      };
+    }
+  }();
 
   const bool have_all_intermediate_messages =
       db::mutate<evolution::dg::Tags::MortarDataHistory<
                      volume_dim, typename dt_variables_tag::type>,
                  evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
           box,
-          [&inbox, &local_next_temporal_id](
+          [&inbox, &needed_time](
               const gsl::not_null<
                   std::unordered_map<Key,
                                      TimeSteppers::BoundaryHistory<
@@ -263,7 +283,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
             // Move received boundary data into boundary history.
             for (auto received_data = inbox.begin();
                  received_data != inbox.end() and
-                 received_data->first < local_next_temporal_id;
+                 needed_time(received_data->first);
                  received_data = inbox.erase(received_data)) {
               const auto& receive_temporal_id = received_data->first;
               // Loop over all mortars for which we received data at this time
@@ -316,16 +336,16 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
 
   return alg::all_of(
       db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box),
-      [&local_next_temporal_id](const std::pair<Key, TimeStepId>&
-                                    mortar_id_and_next_temporal_id) noexcept {
+      [&needed_time](const std::pair<Key, TimeStepId>&
+                         mortar_id_and_next_temporal_id) noexcept {
         return mortar_id_and_next_temporal_id.first.second ==
                    ElementId<volume_dim>::external_boundary_id() or
-               mortar_id_and_next_temporal_id.second >= local_next_temporal_id;
+               not needed_time(mortar_id_and_next_temporal_id.second);
       });
 }
 
 template <typename Metavariables>
-template <typename DbTagsList, typename... InboxTags>
+template <bool DenseOutput, typename DbTagsList, typename... InboxTags>
 void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
     const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
@@ -345,15 +365,19 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
       volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto;
 
   const bool local_time_stepping = Metavariables::local_time_stepping;
+  static_assert(local_time_stepping or not DenseOutput,
+                "GTS does not use complete_time_step for dense output.");
+
   Scalar<DataVector> volume_det_inv_jacobian{};
   Scalar<DataVector> volume_det_jacobian{};
-  if (not local_time_stepping and not using_gauss_lobatto_points) {
-    get(volume_det_inv_jacobian)
-        .set_data_ref(make_not_null(&const_cast<DataVector&>(
-            get(db::get<
-                domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-                *box)))));
-    get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+  if constexpr (not local_time_stepping) {
+    if (not using_gauss_lobatto_points) {
+      get(volume_det_inv_jacobian)
+          .set_data_ref(make_not_null(&const_cast<DataVector&>(get(
+              db::get<domain::Tags::DetInvJacobian<Frame::Logical,
+                                                   Frame::Inertial>>(*box)))));
+      get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+    }
   }
 
   const auto& mortar_meshes = db::get<Tags::MortarMesh<volume_dim>>(*box);
@@ -369,12 +393,20 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
               *box);
 
-  const TimeDelta& time_step = db::get<::Tags::TimeStep>(*box);
-  const auto& time_stepper =
-      db::get<typename Metavariables::time_stepper_tag>(*box);
+  const auto& time_stepper = db::get<::Tags::TimeStepper<>>(*box);
+  const auto time_step_and_dense_output_time = [&box]() noexcept {
+    if constexpr (DenseOutput) {
+      return std::pair{TimeDelta{}, db::get<::Tags::Time>(*box)};
+    } else {
+      return std::pair{db::get<::Tags::TimeStep>(*box),
+                       std::numeric_limits<double>::signaling_NaN()};
+    };
+  }();
+  const auto& time_step = time_step_and_dense_output_time.first;
+  const auto& dense_output_time = time_step_and_dense_output_time.second;
 
   const auto compute_and_lift_boundary_corrections =
-      [&dg_formulation, &face_normal_covector_and_magnitude,
+      [&dense_output_time, &dg_formulation, &face_normal_covector_and_magnitude,
        local_time_stepping, &mortar_meshes, &mortar_sizes, &time_step,
        &time_stepper, using_gauss_lobatto_points, &volume_det_jacobian,
        &volume_det_inv_jacobian, &volume_mesh](
@@ -461,11 +493,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             // local_data_on_mortar and neighbor_data_on_mortar could be
             // allocated fewer times, as well as `needs_projection` section
             // below could do an in-place projection.
-            if (dt_boundary_correction_on_mortar.number_of_grid_points() !=
-                mortar_mesh.number_of_grid_points()) {
-              dt_boundary_correction_on_mortar.initialize(
-                  mortar_mesh.number_of_grid_points());
-            }
+            dt_boundary_correction_on_mortar.initialize(
+                mortar_mesh.number_of_grid_points());
 
             detail::boundary_correction(
                 make_not_null(&dt_boundary_correction_on_mortar),
@@ -535,7 +564,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               //   with projecting from mortars to the face, then lift off the
               //   faces. With non-owning Variables memory allocations could be
               //   significantly reduced in this code.
-              if (local_time_stepping) {
+              if constexpr (local_time_stepping) {
                 ASSERT(get(volume_det_inv_jacobian).size() > 0,
                        "For local time stepping the volume determinant of the "
                        "inverse Jacobian has not been set.");
@@ -577,14 +606,23 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           auto& lifted_data = using_gauss_lobatto_points
                                   ? dt_boundary_correction_on_mortar
                                   : volume_dt_correction;
-          if constexpr (Metavariables::local_time_stepping) {
+          if constexpr (local_time_stepping) {
             auto& mortar_data_history = mortar_id_and_data.second;
-            lifted_data = time_stepper.compute_boundary_delta(
-                compute_correction_coupling,
-                make_not_null(&mortar_data_history), time_step);
+            if constexpr (DenseOutput) {
+              (void)time_step;
+              lifted_data = time_stepper.boundary_dense_output(
+                  compute_correction_coupling, mortar_data_history,
+                  dense_output_time);
+            } else {
+              (void)dense_output_time;
+              lifted_data = time_stepper.compute_boundary_delta(
+                  compute_correction_coupling,
+                  make_not_null(&mortar_data_history), time_step);
+            }
           } else {
             (void)time_step;
             (void)time_stepper;
+            (void)dense_output_time;
 
             const auto& mortar_data = mortar_id_and_data.second;
             // This may be a self assignment, depending on the code
