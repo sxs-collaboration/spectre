@@ -402,12 +402,12 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
         const auto compute_correction_coupling =
             [&boundary_correction, dg_formulation,
-             &dt_boundary_correction_on_mortar, &dt_variables_ptr,
-             &face_det_jacobian, &face_normal_covector_and_magnitude,
-             &local_data_on_mortar, local_time_stepping, &mortar_id_ptr,
-             &mortar_meshes, &mortar_sizes, &neighbor_data_on_mortar,
-             using_gauss_lobatto_points, &volume_det_jacobian,
-             &volume_det_inv_jacobian, &volume_dt_correction, &volume_mesh](
+             &dt_boundary_correction_on_mortar, &face_det_jacobian,
+             &face_normal_covector_and_magnitude, &local_data_on_mortar,
+             local_time_stepping, &mortar_id_ptr, &mortar_meshes, &mortar_sizes,
+             &neighbor_data_on_mortar, using_gauss_lobatto_points,
+             &volume_det_jacobian, &volume_det_inv_jacobian,
+             &volume_dt_correction, &volume_mesh](
                 const MortarData<volume_dim>& local_mortar_data,
                 const MortarData<volume_dim>& neighbor_mortar_data) noexcept
             -> DtVariables {
@@ -512,15 +512,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             ::dg::lift_flux(make_not_null(&dt_boundary_correction),
                             volume_mesh.extents(direction.dimension()),
                             magnitude_of_face_normal);
-            if (local_time_stepping) {
-              return dt_boundary_correction;
-            } else {
-              // Add the flux contribution to the volume data
-              add_slice_to_data(
-                  dt_variables_ptr, dt_boundary_correction,
-                  volume_mesh.extents(), direction.dimension(),
-                  index_to_slice_at(volume_mesh.extents(), direction));
-            }
+            return std::move(dt_boundary_correction);
           } else {
             // We are using Gauss points.
             //
@@ -541,14 +533,6 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
               local_mortar_data.get_local_face_det_jacobian(
                   make_not_null(&face_det_jacobian));
-
-              volume_dt_correction.initialize(
-                  dt_variables_ptr->number_of_grid_points(), 0.0);
-              evolution::dg::lift_boundary_terms_gauss_points(
-                  make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
-                  volume_mesh, direction, dt_boundary_correction,
-                  magnitude_of_face_normal, face_det_jacobian);
-              return volume_dt_correction;
             } else {
               // Project the determinant of the Jacobian to the face. This
               // could be optimized by caching in the time-independent case.
@@ -566,23 +550,20 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               apply_matrices(make_not_null(&get(face_det_jacobian)),
                              interpolation_matrices, get(volume_det_jacobian),
                              volume_mesh.extents());
-
-              evolution::dg::lift_boundary_terms_gauss_points(
-                  dt_variables_ptr, volume_det_inv_jacobian, volume_mesh,
-                  direction, dt_boundary_correction, magnitude_of_face_normal,
-                  face_det_jacobian);
             }
-          }
 
-          ASSERT(
-              not local_time_stepping,
-              "Must return lifted data when using local time stepping. It's "
-              "likely a missing return statement or incorrect if-else logical "
-              "related to whether or not we are doing local time stepping.");
-          return {};
+            volume_dt_correction.initialize(volume_mesh.number_of_grid_points(),
+                                            0.0);
+            evolution::dg::lift_boundary_terms_gauss_points(
+                make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
+                volume_mesh, direction, dt_boundary_correction,
+                magnitude_of_face_normal, face_det_jacobian);
+            return std::move(volume_dt_correction);
+          }
         };
 
         if constexpr (Metavariables::local_time_stepping) {
+          (void)dt_variables_ptr;
           (void)mortar_data_ptr;
 
           for (auto& mortar_id_and_data : *mortar_data_history_ptr) {
@@ -641,7 +622,29 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                      "mortars in one of the initialization actions.");
             }
             mortar_id_ptr = &mortar_id;
-            compute_correction_coupling(mortar_data, mortar_data);
+
+            // Choose an allocation cache that may be empty, so we might
+            // be able to reuse the allocation obtained for the lifted
+            // data.
+            auto& lifted_data = using_gauss_lobatto_points
+                                    ? dt_boundary_correction_on_mortar
+                                    : volume_dt_correction;
+            // This may be a self assignment, depending on the code
+            // paths taken, but handling the results this way makes
+            // the GTS and LTS paths more similar because the LTS code
+            // always stores the result in the history and so
+            // sometimes benefits from moving into the return value of
+            // compute_correction_coupling.
+            lifted_data = compute_correction_coupling(mortar_data, mortar_data);
+            if (using_gauss_lobatto_points) {
+              // Add the flux contribution to the volume data
+              add_slice_to_data(
+                  dt_variables_ptr, lifted_data, volume_mesh.extents(),
+                  direction.dimension(),
+                  index_to_slice_at(volume_mesh.extents(), direction));
+            } else {
+              *dt_variables_ptr += lifted_data;
+            }
             // Remove data since it's tagged with the time. In the future we
             // _might_ be able to reuse allocations, but this optimization
             // should only be done after profiling.
