@@ -377,10 +377,9 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
       [&dg_formulation, &face_normal_covector_and_magnitude,
        local_time_stepping, &mortar_meshes, &mortar_sizes, &time_step,
        &time_stepper, using_gauss_lobatto_points, &volume_det_jacobian,
-       &volume_det_inv_jacobian,
-       &volume_mesh](const auto dt_variables_ptr, const auto variables_ptr,
-                     const auto mortar_data_ptr,
-                     const auto& boundary_correction) noexcept {
+       &volume_det_inv_jacobian, &volume_mesh](
+          const auto variables_or_dt_variables_ptr, const auto mortar_data_ptr,
+          const auto& boundary_correction) noexcept {
         using mortar_tags_list = typename std::decay_t<decltype(
             boundary_correction)>::dg_package_field_tags;
 
@@ -579,35 +578,22 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                    "mortars in one of the initialization actions.");
           }
 
+          // Choose an allocation cache that may be empty, so we might
+          // be able to reuse the allocation obtained for the lifted
+          // data.
+          auto& lifted_data = using_gauss_lobatto_points
+                                  ? dt_boundary_correction_on_mortar
+                                  : volume_dt_correction;
           if constexpr (Metavariables::local_time_stepping) {
-            (void)dt_variables_ptr;
-
             auto& mortar_data_history = mortar_id_and_data.second;
-            auto lifted_volume_data = time_stepper.compute_boundary_delta(
+            lifted_data = time_stepper.compute_boundary_delta(
                 compute_correction_coupling,
                 make_not_null(&mortar_data_history), time_step);
-
-            if (using_gauss_lobatto_points) {
-              // Add the flux contribution to the volume data
-              add_slice_to_data(
-                  variables_ptr, lifted_volume_data, volume_mesh.extents(),
-                  direction.dimension(),
-                  index_to_slice_at(volume_mesh.extents(), direction));
-            } else {
-              *variables_ptr += lifted_volume_data;
-            }
           } else {
             (void)time_step;
             (void)time_stepper;
-            (void)variables_ptr;
 
             const auto& mortar_data = mortar_id_and_data.second;
-            // Choose an allocation cache that may be empty, so we might
-            // be able to reuse the allocation obtained for the lifted
-            // data.
-            auto& lifted_data = using_gauss_lobatto_points
-                                    ? dt_boundary_correction_on_mortar
-                                    : volume_dt_correction;
             // This may be a self assignment, depending on the code
             // paths taken, but handling the results this way makes
             // the GTS and LTS paths more similar because the LTS code
@@ -615,19 +601,20 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             // sometimes benefits from moving into the return value of
             // compute_correction_coupling.
             lifted_data = compute_correction_coupling(mortar_data, mortar_data);
-            if (using_gauss_lobatto_points) {
-              // Add the flux contribution to the volume data
-              add_slice_to_data(
-                  dt_variables_ptr, lifted_data, volume_mesh.extents(),
-                  direction.dimension(),
-                  index_to_slice_at(volume_mesh.extents(), direction));
-            } else {
-              *dt_variables_ptr += lifted_data;
-            }
             // Remove data since it's tagged with the time. In the future we
             // _might_ be able to reuse allocations, but this optimization
             // should only be done after profiling.
             mortar_id_and_data.second.extract();
+          }
+
+          if (using_gauss_lobatto_points) {
+            // Add the flux contribution to the volume data
+            add_slice_to_data(
+                variables_or_dt_variables_ptr, lifted_data,
+                volume_mesh.extents(), direction.dimension(),
+                index_to_slice_at(volume_mesh.extents(), direction));
+          } else {
+            *variables_or_dt_variables_ptr += lifted_data;
           }
         }
       };
@@ -650,11 +637,14 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         // Compute internal boundary quantities on the mortar for sides of
         // the element that have neighbors, i.e. they are not an external
         // side.
+        using tag_to_update =
+            tmpl::conditional_t<local_time_stepping, variables_tag,
+                                dt_variables_tag>;
         using mortar_data_tag = tmpl::conditional_t<
             local_time_stepping,
             evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>,
             evolution::dg::Tags::MortarData<volume_dim>>;
-        db::mutate<dt_variables_tag, variables_tag, mortar_data_tag>(
+        db::mutate<tag_to_update, mortar_data_tag>(
             box, compute_and_lift_boundary_corrections,
             *typed_boundary_correction);
       });
