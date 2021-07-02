@@ -12,7 +12,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/ScalarWave/EnergyDensity.hpp"
 #include "Evolution/Systems/ScalarWave/TagsDeclarations.hpp"
 
 class DataVector;
@@ -106,8 +105,8 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   }
 };
 
-/// The energy density of the scalar wave
-template <size_t SpatialDim>
+/// The energy density of the scalar wave system
+template <size_t Dim>
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
