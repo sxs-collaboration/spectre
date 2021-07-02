@@ -395,175 +395,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         Variables<mortar_tags_list> local_data_on_mortar{};
         Variables<mortar_tags_list> neighbor_data_on_mortar{};
 
-        const std::pair<Direction<Metavariables::volume_dim>,
-                        ElementId<Metavariables::volume_dim>>* mortar_id_ptr =
-            nullptr;
-
-        const auto compute_correction_coupling =
-            [&boundary_correction, dg_formulation,
-             &dt_boundary_correction_on_mortar, &face_det_jacobian,
-             &face_normal_covector_and_magnitude, &local_data_on_mortar,
-             local_time_stepping, &mortar_id_ptr, &mortar_meshes, &mortar_sizes,
-             &neighbor_data_on_mortar, using_gauss_lobatto_points,
-             &volume_det_jacobian, &volume_det_inv_jacobian,
-             &volume_dt_correction, &volume_mesh](
-                const MortarData<volume_dim>& local_mortar_data,
-                const MortarData<volume_dim>& neighbor_mortar_data) noexcept
-            -> DtVariables {
-          // Clang thinks we don't need to capture local_time_stepping.
-          (void)local_time_stepping;
-          ASSERT(mortar_id_ptr != nullptr,
-                 "Mortar ID pointer should never be nullptr, it must not have "
-                 "been set before invoking the lambda.");
-          if (local_time_stepping and not using_gauss_lobatto_points) {
-            // This needs to be updated every call because the Jacobian may be
-            // time-dependent. In the case of time-independent maps and local
-            // time stepping we could first perform the integral on the
-            // boundaries, and then lift to the volume. This is left as a future
-            // optimization.
-            local_mortar_data.get_local_volume_det_inv_jacobian(
-                make_not_null(&volume_det_inv_jacobian));
-            get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
-          }
-          const auto& mortar_id = *mortar_id_ptr;
-          const auto& direction = mortar_id.first;
-          const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-
-          // Extract local and neighbor data, copy into Variables because
-          // we store them in a std::vector for type erasure.
-          const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
-              local_mesh_and_data = *local_mortar_data.local_mortar_data();
-          const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
-              neighbor_mesh_and_data =
-                  *neighbor_mortar_data.neighbor_mortar_data();
-          local_data_on_mortar.initialize(mortar_mesh.number_of_grid_points());
-          neighbor_data_on_mortar.initialize(
-              mortar_mesh.number_of_grid_points());
-          std::copy(std::get<1>(local_mesh_and_data).begin(),
-                    std::get<1>(local_mesh_and_data).end(),
-                    local_data_on_mortar.data());
-          std::copy(std::get<1>(neighbor_mesh_and_data).begin(),
-                    std::get<1>(neighbor_mesh_and_data).end(),
-                    neighbor_data_on_mortar.data());
-
-          // The boundary computations and lifting can be further
-          // optimized by in the h-refinement case having only one
-          // allocation for the face and having the projection from the
-          // mortar to the face be done in place. E.g.
-          // local_data_on_mortar and neighbor_data_on_mortar could be
-          // allocated fewer times, as well as `needs_projection` section
-          // below could do an in-place projection.
-          if (dt_boundary_correction_on_mortar.number_of_grid_points() !=
-              mortar_mesh.number_of_grid_points()) {
-            dt_boundary_correction_on_mortar.initialize(
-                mortar_mesh.number_of_grid_points());
-          }
-
-          detail::boundary_correction(
-              make_not_null(&dt_boundary_correction_on_mortar),
-              local_data_on_mortar, neighbor_data_on_mortar,
-              boundary_correction, dg_formulation);
-
-          const std::array<Spectral::MortarSize, volume_dim - 1>& mortar_size =
-              mortar_sizes.at(mortar_id);
-          const Mesh<volume_dim - 1> face_mesh =
-              volume_mesh.slice_away(direction.dimension());
-
-          // This cannot reuse an allocation because it is initialized
-          // via move-assignment.  (If it is used at all.)
-          DtVariables dt_boundary_correction_projected_onto_face{};
-          auto& dt_boundary_correction =
-              [&dt_boundary_correction_on_mortar,
-               &dt_boundary_correction_projected_onto_face, &face_mesh,
-               &mortar_mesh, &mortar_size]() noexcept -> DtVariables& {
-            if (Spectral::needs_projection(face_mesh, mortar_mesh,
-                                           mortar_size)) {
-              dt_boundary_correction_projected_onto_face =
-                  ::dg::project_from_mortar(dt_boundary_correction_on_mortar,
-                                            face_mesh, mortar_mesh,
-                                            mortar_size);
-              return dt_boundary_correction_projected_onto_face;
-            }
-            return dt_boundary_correction_on_mortar;
-          }();
-
-          // Both paths initialize this to be non-owning.
-          Scalar<DataVector> magnitude_of_face_normal{};
-          if (local_time_stepping) {
-            local_mortar_data.get_local_face_normal_magnitude(
-                &magnitude_of_face_normal);
-          } else {
-            ASSERT(face_normal_covector_and_magnitude.count(direction) == 1 and
-                       face_normal_covector_and_magnitude.at(direction)
-                           .has_value(),
-                   "Face normal covector and magnitude not set in "
-                   "direction: "
-                       << direction);
-            get(magnitude_of_face_normal)
-                .set_data_ref(make_not_null(&const_cast<DataVector&>(
-                    get(get<evolution::dg::Tags::MagnitudeOfNormal>(
-                        *face_normal_covector_and_magnitude.at(direction))))));
-          }
-
-          if (using_gauss_lobatto_points) {
-            // The lift_flux function lifts only on the slice, it does not add
-            // the contribution to the volume.
-            ::dg::lift_flux(make_not_null(&dt_boundary_correction),
-                            volume_mesh.extents(direction.dimension()),
-                            magnitude_of_face_normal);
-            return std::move(dt_boundary_correction);
-          } else {
-            // We are using Gauss points.
-            //
-            // Notes:
-            // - We should really lift both sides simultaneously since this
-            //   reduces memory accesses. Lifting all sides at the same time
-            //   is unlikely to improve performance since we lift by jumping
-            //   through slices. There may also be compatibility issues with
-            //   local time stepping.
-            // - If we lift both sides at the same time we first need to deal
-            //   with projecting from mortars to the face, then lift off the
-            //   faces. With non-owning Variables memory allocations could be
-            //   significantly reduced in this code.
-            if (local_time_stepping) {
-              ASSERT(get(volume_det_inv_jacobian).size() > 0,
-                     "For local time stepping the volume determinant of the "
-                     "inverse Jacobian has not been set.");
-
-              local_mortar_data.get_local_face_det_jacobian(
-                  make_not_null(&face_det_jacobian));
-            } else {
-              // Project the determinant of the Jacobian to the face. This
-              // could be optimized by caching in the time-independent case.
-              get(face_det_jacobian)
-                  .destructive_resize(face_mesh.number_of_grid_points());
-              const Matrix identity{};
-              auto interpolation_matrices =
-                  make_array<volume_dim>(std::cref(identity));
-              const std::pair<Matrix, Matrix>& matrices =
-                  Spectral::boundary_interpolation_matrices(
-                      volume_mesh.slice_through(direction.dimension()));
-              gsl::at(interpolation_matrices, direction.dimension()) =
-                  direction.side() == Side::Upper ? matrices.second
-                                                  : matrices.first;
-              apply_matrices(make_not_null(&get(face_det_jacobian)),
-                             interpolation_matrices, get(volume_det_jacobian),
-                             volume_mesh.extents());
-            }
-
-            volume_dt_correction.initialize(volume_mesh.number_of_grid_points(),
-                                            0.0);
-            evolution::dg::lift_boundary_terms_gauss_points(
-                make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
-                volume_mesh, direction, dt_boundary_correction,
-                magnitude_of_face_normal, face_det_jacobian);
-            return std::move(volume_dt_correction);
-          }
-        };
-
         for (auto& mortar_id_and_data : *mortar_data_ptr) {
           const auto& mortar_id = mortar_id_and_data.first;
-          mortar_id_ptr = &mortar_id;
           const auto& direction = mortar_id.first;
           if (UNLIKELY(mortar_id.second ==
                        ElementId<volume_dim>::external_boundary_id())) {
@@ -577,6 +410,166 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                    "instead. You may have unintentionally added external "
                    "mortars in one of the initialization actions.");
           }
+
+          const auto compute_correction_coupling =
+              [&boundary_correction, &direction, dg_formulation,
+               &dt_boundary_correction_on_mortar, &face_det_jacobian,
+               &face_normal_covector_and_magnitude, &local_data_on_mortar,
+               local_time_stepping, &mortar_id, &mortar_meshes, &mortar_sizes,
+               &neighbor_data_on_mortar, using_gauss_lobatto_points,
+               &volume_det_jacobian, &volume_det_inv_jacobian,
+               &volume_dt_correction, &volume_mesh](
+                  const MortarData<volume_dim>& local_mortar_data,
+                  const MortarData<volume_dim>& neighbor_mortar_data) noexcept
+              -> DtVariables {
+            // Clang thinks we don't need to capture local_time_stepping.
+            (void)local_time_stepping;
+            if (local_time_stepping and not using_gauss_lobatto_points) {
+              // This needs to be updated every call because the Jacobian may be
+              // time-dependent. In the case of time-independent maps and local
+              // time stepping we could first perform the integral on the
+              // boundaries, and then lift to the volume. This is left as a
+              // future optimization.
+              local_mortar_data.get_local_volume_det_inv_jacobian(
+                  make_not_null(&volume_det_inv_jacobian));
+              get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+            }
+            const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+
+            // Extract local and neighbor data, copy into Variables because
+            // we store them in a std::vector for type erasure.
+            const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
+                local_mesh_and_data = *local_mortar_data.local_mortar_data();
+            const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
+                neighbor_mesh_and_data =
+                    *neighbor_mortar_data.neighbor_mortar_data();
+            local_data_on_mortar.initialize(
+                mortar_mesh.number_of_grid_points());
+            neighbor_data_on_mortar.initialize(
+                mortar_mesh.number_of_grid_points());
+            std::copy(std::get<1>(local_mesh_and_data).begin(),
+                      std::get<1>(local_mesh_and_data).end(),
+                      local_data_on_mortar.data());
+            std::copy(std::get<1>(neighbor_mesh_and_data).begin(),
+                      std::get<1>(neighbor_mesh_and_data).end(),
+                      neighbor_data_on_mortar.data());
+
+            // The boundary computations and lifting can be further
+            // optimized by in the h-refinement case having only one
+            // allocation for the face and having the projection from the
+            // mortar to the face be done in place. E.g.
+            // local_data_on_mortar and neighbor_data_on_mortar could be
+            // allocated fewer times, as well as `needs_projection` section
+            // below could do an in-place projection.
+            if (dt_boundary_correction_on_mortar.number_of_grid_points() !=
+                mortar_mesh.number_of_grid_points()) {
+              dt_boundary_correction_on_mortar.initialize(
+                  mortar_mesh.number_of_grid_points());
+            }
+
+            detail::boundary_correction(
+                make_not_null(&dt_boundary_correction_on_mortar),
+                local_data_on_mortar, neighbor_data_on_mortar,
+                boundary_correction, dg_formulation);
+
+            const std::array<Spectral::MortarSize, volume_dim - 1>&
+                mortar_size = mortar_sizes.at(mortar_id);
+            const Mesh<volume_dim - 1> face_mesh =
+                volume_mesh.slice_away(direction.dimension());
+
+            // This cannot reuse an allocation because it is initialized
+            // via move-assignment.  (If it is used at all.)
+            DtVariables dt_boundary_correction_projected_onto_face{};
+            auto& dt_boundary_correction =
+                [&dt_boundary_correction_on_mortar,
+                 &dt_boundary_correction_projected_onto_face, &face_mesh,
+                 &mortar_mesh, &mortar_size]() noexcept -> DtVariables& {
+              if (Spectral::needs_projection(face_mesh, mortar_mesh,
+                                             mortar_size)) {
+                dt_boundary_correction_projected_onto_face =
+                    ::dg::project_from_mortar(dt_boundary_correction_on_mortar,
+                                              face_mesh, mortar_mesh,
+                                              mortar_size);
+                return dt_boundary_correction_projected_onto_face;
+              }
+              return dt_boundary_correction_on_mortar;
+            }();
+
+            // Both paths initialize this to be non-owning.
+            Scalar<DataVector> magnitude_of_face_normal{};
+            if (local_time_stepping) {
+              local_mortar_data.get_local_face_normal_magnitude(
+                  &magnitude_of_face_normal);
+            } else {
+              ASSERT(
+                  face_normal_covector_and_magnitude.count(direction) == 1 and
+                      face_normal_covector_and_magnitude.at(direction)
+                          .has_value(),
+                  "Face normal covector and magnitude not set in "
+                  "direction: "
+                      << direction);
+              get(magnitude_of_face_normal)
+                  .set_data_ref(make_not_null(&const_cast<DataVector&>(
+                      get(get<evolution::dg::Tags::MagnitudeOfNormal>(
+                          *face_normal_covector_and_magnitude.at(
+                              direction))))));
+            }
+
+            if (using_gauss_lobatto_points) {
+              // The lift_flux function lifts only on the slice, it does not add
+              // the contribution to the volume.
+              ::dg::lift_flux(make_not_null(&dt_boundary_correction),
+                              volume_mesh.extents(direction.dimension()),
+                              magnitude_of_face_normal);
+              return std::move(dt_boundary_correction);
+            } else {
+              // We are using Gauss points.
+              //
+              // Notes:
+              // - We should really lift both sides simultaneously since this
+              //   reduces memory accesses. Lifting all sides at the same time
+              //   is unlikely to improve performance since we lift by jumping
+              //   through slices. There may also be compatibility issues with
+              //   local time stepping.
+              // - If we lift both sides at the same time we first need to deal
+              //   with projecting from mortars to the face, then lift off the
+              //   faces. With non-owning Variables memory allocations could be
+              //   significantly reduced in this code.
+              if (local_time_stepping) {
+                ASSERT(get(volume_det_inv_jacobian).size() > 0,
+                       "For local time stepping the volume determinant of the "
+                       "inverse Jacobian has not been set.");
+
+                local_mortar_data.get_local_face_det_jacobian(
+                    make_not_null(&face_det_jacobian));
+              } else {
+                // Project the determinant of the Jacobian to the face. This
+                // could be optimized by caching in the time-independent case.
+                get(face_det_jacobian)
+                    .destructive_resize(face_mesh.number_of_grid_points());
+                const Matrix identity{};
+                auto interpolation_matrices =
+                    make_array<volume_dim>(std::cref(identity));
+                const std::pair<Matrix, Matrix>& matrices =
+                    Spectral::boundary_interpolation_matrices(
+                        volume_mesh.slice_through(direction.dimension()));
+                gsl::at(interpolation_matrices, direction.dimension()) =
+                    direction.side() == Side::Upper ? matrices.second
+                                                    : matrices.first;
+                apply_matrices(make_not_null(&get(face_det_jacobian)),
+                               interpolation_matrices, get(volume_det_jacobian),
+                               volume_mesh.extents());
+              }
+
+              volume_dt_correction.initialize(
+                  volume_mesh.number_of_grid_points(), 0.0);
+              evolution::dg::lift_boundary_terms_gauss_points(
+                  make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
+                  volume_mesh, direction, dt_boundary_correction,
+                  magnitude_of_face_normal, face_det_jacobian);
+              return std::move(volume_dt_correction);
+            }
+          };
 
           // Choose an allocation cache that may be empty, so we might
           // be able to reuse the allocation obtained for the lifted
