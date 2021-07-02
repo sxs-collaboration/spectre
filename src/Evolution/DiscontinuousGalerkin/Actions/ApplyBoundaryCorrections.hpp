@@ -384,8 +384,17 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         using mortar_tags_list = typename std::decay_t<decltype(
             boundary_correction)>::dg_package_field_tags;
 
+        // Variables for reusing allocations.  The actual values are
+        // not reused.
         DtVariables dt_boundary_correction_on_mortar{};
-        DtVariables dt_boundary_correction_projected_onto_face{};
+        DtVariables volume_dt_correction{};
+        // These variables may change size for each mortar and require
+        // a new memory allocation, but they may also happen to need
+        // to be the same size twice in a row, in which case holding
+        // on to the allocation is a win.
+        Scalar<DataVector> face_det_jacobian{};
+        Variables<mortar_tags_list> local_data_on_mortar{};
+        Variables<mortar_tags_list> neighbor_data_on_mortar{};
 
         const std::pair<Direction<Metavariables::volume_dim>,
                         ElementId<Metavariables::volume_dim>>* mortar_id_ptr =
@@ -393,12 +402,12 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
         const auto compute_correction_coupling =
             [&boundary_correction, dg_formulation,
-             &dt_boundary_correction_on_mortar,
-             &dt_boundary_correction_projected_onto_face, &dt_variables_ptr,
-             &face_normal_covector_and_magnitude, local_time_stepping,
-             &mortar_id_ptr, &mortar_meshes, &mortar_sizes,
+             &dt_boundary_correction_on_mortar, &dt_variables_ptr,
+             &face_det_jacobian, &face_normal_covector_and_magnitude,
+             &local_data_on_mortar, local_time_stepping, &mortar_id_ptr,
+             &mortar_meshes, &mortar_sizes, &neighbor_data_on_mortar,
              using_gauss_lobatto_points, &volume_det_jacobian,
-             &volume_det_inv_jacobian, &volume_mesh](
+             &volume_det_inv_jacobian, &volume_dt_correction, &volume_mesh](
                 const MortarData<volume_dim>& local_mortar_data,
                 const MortarData<volume_dim>& neighbor_mortar_data) noexcept
             -> DtVariables {
@@ -428,10 +437,9 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
               neighbor_mesh_and_data =
                   *neighbor_mortar_data.neighbor_mortar_data();
-          Variables<mortar_tags_list> local_data_on_mortar{
-              mortar_mesh.number_of_grid_points()};
-          Variables<mortar_tags_list> neighbor_data_on_mortar{
-              mortar_mesh.number_of_grid_points()};
+          local_data_on_mortar.initialize(mortar_mesh.number_of_grid_points());
+          neighbor_data_on_mortar.initialize(
+              mortar_mesh.number_of_grid_points());
           std::copy(std::get<1>(local_mesh_and_data).begin(),
                     std::get<1>(local_mesh_and_data).end(),
                     local_data_on_mortar.data());
@@ -462,6 +470,9 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           const Mesh<volume_dim - 1> face_mesh =
               volume_mesh.slice_away(direction.dimension());
 
+          // This cannot reuse an allocation because it is initialized
+          // via move-assignment.  (If it is used at all.)
+          DtVariables dt_boundary_correction_projected_onto_face{};
           auto& dt_boundary_correction =
               [&dt_boundary_correction_on_mortar,
                &dt_boundary_correction_projected_onto_face, &face_mesh,
@@ -477,6 +488,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             return dt_boundary_correction_on_mortar;
           }();
 
+          // Both paths initialize this to be non-owning.
           Scalar<DataVector> magnitude_of_face_normal{};
           if (local_time_stepping) {
             local_mortar_data.get_local_face_normal_magnitude(
@@ -527,12 +539,11 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                      "For local time stepping the volume determinant of the "
                      "inverse Jacobian has not been set.");
 
-              Scalar<DataVector> face_det_jacobian{};
               local_mortar_data.get_local_face_det_jacobian(
                   make_not_null(&face_det_jacobian));
 
-              DtVariables volume_dt_correction{
-                  dt_variables_ptr->number_of_grid_points(), 0.0};
+              volume_dt_correction.initialize(
+                  dt_variables_ptr->number_of_grid_points(), 0.0);
               evolution::dg::lift_boundary_terms_gauss_points(
                   make_not_null(&volume_dt_correction), volume_det_inv_jacobian,
                   volume_mesh, direction, dt_boundary_correction,
@@ -541,8 +552,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             } else {
               // Project the determinant of the Jacobian to the face. This
               // could be optimized by caching in the time-independent case.
-              Scalar<DataVector> face_det_jacobian{
-                  face_mesh.number_of_grid_points()};
+              get(face_det_jacobian)
+                  .destructive_resize(face_mesh.number_of_grid_points());
               const Matrix identity{};
               auto interpolation_matrices =
                   make_array<volume_dim>(std::cref(identity));
