@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/ScalarWave/EnergyDensity.hpp"
 #include "Evolution/Systems/ScalarWave/TagsDeclarations.hpp"
 
 class DataVector;
@@ -103,6 +104,12 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   static std::string name() noexcept {
     return "EvolvedFieldsFromCharacteristicFields";
   }
+};
+
+/// The energy density of the scalar wave
+template <size_t SpatialDim>
+struct EnergyDensity : db::SimpleTag {
+  using type = Scalar<DataVector>;
 };
 }  // namespace Tags
 }  // namespace ScalarWave

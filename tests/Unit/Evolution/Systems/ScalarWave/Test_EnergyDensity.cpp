@@ -17,6 +17,9 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 
 namespace {
+template <size_t SpatialDim, typename DataType>
+void test_compute_item_in_databox() noexcept {
+}
 template <size_t SpatialDim>
 void test_energy_density(const DataVector& used_for_size) {
   void (*f)(const gsl::not_null<Scalar<DataVector>*>, const Scalar<DataVector>&,
