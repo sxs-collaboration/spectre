@@ -32,7 +32,7 @@ struct mock_lock_retrieval_action {
                     .ckLocalBranch()
                     ->template local_synchronous_action<
                         observers::Actions::GetLockPointer<LockTag>>();
-    if constexpr(std::is_same_v<LockTag, observers::Tags::H5FileLock>) {
+    if constexpr (std::is_same_v<LockTag, observers::Tags::H5FileLock>) {
       h5_lock_to_check = lock;
     } else {
       volume_lock_to_check = lock;
@@ -57,7 +57,7 @@ struct mock_observer_writer {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-    tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
 template <typename Metavariables>

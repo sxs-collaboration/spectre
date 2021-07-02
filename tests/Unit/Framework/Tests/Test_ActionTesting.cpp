@@ -396,9 +396,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
-      tmpl::list<Actions::SendValue>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Testing,
+                                        tmpl::list<Actions::SendValue>>>;
 };
 
 struct Metavariables {
@@ -593,7 +594,7 @@ struct NumNodes {
   }
 };
 
-template<int NodeIndex>
+template <int NodeIndex>
 struct ProcsOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
@@ -601,7 +602,7 @@ struct ProcsOnNode {
   }
 };
 
-template<int NodeIndex>
+template <int NodeIndex>
 struct FirstProcOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
@@ -683,7 +684,7 @@ void test_parallel_info_functions() {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == -5);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == -3);
 
-  for(size_t i=0;i<5;++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::simple_action<component_a, ActionSetValueTo<MyProc>>(
         make_not_null(&runner), i);
   }
@@ -705,7 +706,7 @@ void test_parallel_info_functions() {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 0);
 
-  for(size_t i=0;i<5;++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRank>>(
         make_not_null(&runner), i);
   }
@@ -811,7 +812,7 @@ void test_group_emplace() {
   using component = GroupComponent<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
 
   ActionTesting::emplace_group_component_and_initialize<component>(&runner,
                                                                    {-3});
@@ -888,7 +889,7 @@ void test_nodegroup_emplace() {
   using component = NodeGroupComponent<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
 
   ActionTesting::emplace_nodegroup_component_and_initialize<component>(&runner,
                                                                        {-3});

@@ -161,7 +161,7 @@ struct InsertInterpolationScriData {
 
       const double this_time = time_span_deque.back().first;
       double time_delta_estimate = db::get<::Tags::TimeStep>(box).value();
-      if(time_span_deque.size() > 1) {
+      if (time_span_deque.size() > 1) {
         time_delta_estimate =
             this_time - time_span_deque[time_span_deque.size() - 2].first;
       }

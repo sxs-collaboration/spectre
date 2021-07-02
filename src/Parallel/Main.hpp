@@ -244,24 +244,24 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     make_overloader(
         [&command_line_options](std::true_type /*meta*/, auto mv,
                                 int /*gcc_bug*/)
-            -> std::void_t<decltype(
-                tmpl::type_from<decltype(mv)>::input_file)> {
+            -> std::void_t<
+                decltype(tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has options and default input file name
-          command_line_options.add_options()
-              ("input-file",
-               bpo::value<std::string>()->default_value(
-                   tmpl::type_from<decltype(mv)>::input_file),
-               "Input file name");
+          command_line_options.add_options()(
+              "input-file",
+              bpo::value<std::string>()->default_value(
+                  tmpl::type_from<decltype(mv)>::input_file),
+              "Input file name");
         },
         [&command_line_options](std::true_type /*meta*/, auto /*mv*/,
                                 auto... /*unused*/) {
           // Metavariables has options and no default input file name
-          command_line_options.add_options()
-              ("input-file", bpo::value<std::string>(), "Input file name");
+          command_line_options.add_options()(
+              "input-file", bpo::value<std::string>(), "Input file name");
         },
         [](std::false_type /*meta*/, auto mv, int /*gcc_bug*/)
-            -> std::void_t<decltype(
-                tmpl::type_from<decltype(mv)>::input_file)> {
+            -> std::void_t<
+                decltype(tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has no options and default input file name
 
           // always false, but must depend on mv
@@ -279,10 +279,10 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
     const bool ignore_unrecognized_command_line_options = make_overloader(
         [](auto mv, int /*gcc_bug*/)
-            -> decltype(tmpl::type_from<decltype(
-                            mv)>::ignore_unrecognized_command_line_options) {
-          return tmpl::type_from<decltype(
-              mv)>::ignore_unrecognized_command_line_options;
+            -> decltype(tmpl::type_from<decltype(mv)>::
+                            ignore_unrecognized_command_line_options) {
+          return tmpl::type_from<
+              decltype(mv)>::ignore_unrecognized_command_line_options;
         },
         [](auto /*mv*/, auto... /*meta*/) { return false; })(
         tmpl::type_<Metavariables>{}, 0);
@@ -448,8 +448,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
                 Parallel::is_node_group_proxy<tmpl::bind<
                     Parallel::proxy_from_parallel_component, tmpl::_1>>>>;
   CkEntryOptions global_cache_dependency;
-  global_cache_dependency.setGroupDepID(
-      global_cache_proxy_.ckGetGroupID());
+  global_cache_dependency.setGroupDepID(global_cache_proxy_.ckGetGroupID());
 
   tmpl::for_each<group_component_list>([this, &the_parallel_components,
                                         &global_cache_dependency](
@@ -470,20 +469,17 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
       tmpl::filter<component_list,
                    Parallel::is_chare_proxy<tmpl::bind<
                        Parallel::proxy_from_parallel_component, tmpl::_1>>>;
-  tmpl::for_each<singleton_component_list>(
-      [this, &the_parallel_components](auto parallel_component_v) {
-        using parallel_component =
-            tmpl::type_from<decltype(parallel_component_v)>;
-        using ParallelComponentProxy =
-            Parallel::proxy_from_parallel_component<parallel_component>;
-        tuples::get<tmpl::type_<ParallelComponentProxy>>(
-            the_parallel_components) =
-            ParallelComponentProxy::ckNew(
-                global_cache_proxy_,
-                Parallel::create_from_options<Metavariables>(
-                    options_,
-                    typename parallel_component::initialization_tags{}));
-      });
+  tmpl::for_each<singleton_component_list>([this, &the_parallel_components](
+                                               auto parallel_component_v) {
+    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
+    using ParallelComponentProxy =
+        Parallel::proxy_from_parallel_component<parallel_component>;
+    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
+        ParallelComponentProxy::ckNew(
+            global_cache_proxy_,
+            Parallel::create_from_options<Metavariables>(
+                options_, typename parallel_component::initialization_tags{}));
+  });
 
   // Create proxies for empty array chares (whose elements will be created by
   // the allocate functions of the array components during
@@ -528,7 +524,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
           allocate_array_components_and_execute_initialization_phase(),
       this->thisProxy);
   global_cache_proxy_.set_parallel_components(the_parallel_components,
-                                                    callback);
+                                              callback);
 
   PhaseControl::initialize_phase_change_decision_data(
       make_not_null(&phase_change_decision_data_),
@@ -824,7 +820,8 @@ void Main<Metavariables>::check_future_checkpoint_dirs_available() const {
   if (not found_older_checkpoints_only) {
     ERROR(
         "Can't start run: found checkpoints that may be overwritten!\n"
-        "Dirs from " << checkpoint_dir << " onward must not exist.\n");
+        "Dirs from "
+        << checkpoint_dir << " onward must not exist.\n");
   }
 }
 
