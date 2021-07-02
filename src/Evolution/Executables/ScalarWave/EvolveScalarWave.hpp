@@ -31,6 +31,7 @@
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/ScalarWave/EnergyDensity.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
@@ -235,8 +236,9 @@ struct EvolutionMetavars {
                  ScalarWave::Actions::InitializeConstraints<volume_dim>,
                  Initialization::Actions::AddComputeTags<tmpl::push_back<
                      StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
-                     evolution::Tags::AnalyticCompute<
-                         Dim, initial_data_tag, analytic_solution_fields>>>,
+                     evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
+                                                      analytic_solution_fields>,
+                     ScalarWave::Tags::EnergyDensityCompute<volume_dim>>>,
                  ::evolution::dg::Initialization::Mortars<volume_dim, system>,
                  evolution::Actions::InitializeRunEventsAndDenseTriggers,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
