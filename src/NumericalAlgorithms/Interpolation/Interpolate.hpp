@@ -31,7 +31,8 @@ namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
-template <size_t Dim> class Mesh;
+template <size_t Dim>
+class Mesh;
 template <size_t VolumeDim>
 class ElementId;
 namespace intrp {
@@ -88,7 +89,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
       get<tensor_tag>(interp_vars) = tensor;
       return 0;
     };
-    (void) copy_to_variables; // GCC warns unused variable if Tensors is empty.
+    (void)copy_to_variables;  // GCC warns unused variable if Tensors is empty.
     expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
 
     // Send volume data to the Interpolator, to trigger interpolation.

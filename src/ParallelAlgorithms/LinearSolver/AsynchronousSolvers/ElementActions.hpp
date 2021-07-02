@@ -66,8 +66,8 @@ template <typename OptionsGroup>
 struct ResidualReductionFormatter
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = async_solvers::reduction_data;
-  std::string operator()(const size_t iteration_id, const double residual) const
-      noexcept {
+  std::string operator()(const size_t iteration_id,
+                         const double residual) const noexcept {
     if (iteration_id == 0) {
       return Options::name<OptionsGroup>() +
              " initialized with residual: " + get_output(residual);

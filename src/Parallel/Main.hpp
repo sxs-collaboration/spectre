@@ -425,8 +425,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                 Parallel::is_node_group_proxy<tmpl::bind<
                     Parallel::proxy_from_parallel_component, tmpl::_1>>>>;
   CkEntryOptions global_cache_dependency;
-  global_cache_dependency.setGroupDepID(
-      global_cache_proxy_.ckGetGroupID());
+  global_cache_dependency.setGroupDepID(global_cache_proxy_.ckGetGroupID());
 
   tmpl::for_each<group_component_list>([this, &the_parallel_components,
                                         &global_cache_dependency](
@@ -505,7 +504,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
           allocate_array_components_and_execute_initialization_phase(),
       this->thisProxy);
   global_cache_proxy_.set_parallel_components(the_parallel_components,
-                                                    callback);
+                                              callback);
 
   if constexpr (detail::has_initialize_phase_change_decision_data_v<
                 Metavariables>) {

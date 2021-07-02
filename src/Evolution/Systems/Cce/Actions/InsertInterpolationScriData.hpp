@@ -138,7 +138,7 @@ struct InsertInterpolationScriData {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    if constexpr(tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>) {
+    if constexpr (tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>) {
       if (db::get<Tags::OutputNoninertialNews>(box) and
           db::get<::Tags::TimeStepId>(box).substep() == 0 and
           std::is_same_v<Tag, Tags::News>) {
@@ -161,7 +161,7 @@ struct InsertInterpolationScriData {
 
       const double this_time = time_span_deque.back().first;
       double time_delta_estimate = db::get<::Tags::TimeStep>(box).value();
-      if(time_span_deque.size() > 1) {
+      if (time_span_deque.size() > 1) {
         time_delta_estimate =
             this_time - time_span_deque[time_span_deque.size() - 2].first;
       }

@@ -563,7 +563,7 @@ class MockCollectionOfDistributedObjectsProxy {
       return std::addressof(mock_distributed_objects_->at(mock_node_));
     } else {
       static_assert(std::is_same_v<Component, NoSuchType>,
-                  "Do not call ckLocalBranch for arrays or singletons");
+                    "Do not call ckLocalBranch for arrays or singletons");
     }
   }
 

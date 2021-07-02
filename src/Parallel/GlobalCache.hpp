@@ -488,10 +488,9 @@ GlobalCache<Metavariables>::get_this_proxy() noexcept {
 }
 
 template <typename Metavariables>
-std::optional<
-    typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
+std::optional<typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
 GlobalCache<Metavariables>::get_main_proxy() noexcept {
-  if(main_proxy_.has_value()) {
+  if (main_proxy_.has_value()) {
     return main_proxy_;
   } else {
     ERROR(

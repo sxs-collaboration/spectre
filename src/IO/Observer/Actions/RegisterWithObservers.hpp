@@ -66,6 +66,7 @@ struct RegisterWithObservers {
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
         type_of_observation);
   }
+
  public:
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>

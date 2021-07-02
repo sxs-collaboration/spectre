@@ -4,7 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "NumericalAlgorithms/Interpolation/Tags.hpp" // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
