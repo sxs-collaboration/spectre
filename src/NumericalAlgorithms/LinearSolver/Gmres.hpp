@@ -258,10 +258,12 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   }
 
   template <typename LinearOperator, typename SourceType,
+            typename... OperatorArgs,
             typename IterationCallback = NoIterationCallback>
   Convergence::HasConverged solve(
       gsl::not_null<VarsType*> initial_guess_in_solution_out,
       const LinearOperator& linear_operator, const SourceType& source,
+      const std::tuple<OperatorArgs...>& operator_args = std::tuple{},
       const IterationCallback& iteration_callback =
           NoIterationCallback{}) const noexcept;
 
@@ -355,11 +357,12 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
 template <typename LinearOperator, typename SourceType,
-          typename IterationCallback>
+          typename... OperatorArgs, typename IterationCallback>
 Convergence::HasConverged
 Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> initial_guess_in_solution_out,
     const LinearOperator& linear_operator, const SourceType& source,
+    const std::tuple<OperatorArgs...>& operator_args,
     const IterationCallback& iteration_callback) const noexcept {
   constexpr bool use_preconditioner =
       not std::is_same_v<Preconditioner, NoPreconditioner>;
@@ -378,7 +381,11 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
   while (not has_converged) {
     const auto& initial_guess = *initial_guess_in_solution_out;
     auto& initial_operand = basis_history_[0];
-    linear_operator(make_not_null(&initial_operand), initial_guess);
+    std::apply(
+        linear_operator,
+        std::tuple_cat(std::forward_as_tuple(make_not_null(&initial_operand),
+                                             initial_guess),
+                       operator_args));
     initial_operand *= -1.;
     initial_operand += source;
     const double initial_residual_magnitude =
@@ -405,13 +412,16 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
               make_with_value<VarsType>(initial_operand, 0.);
           this->preconditioner().solve(
               make_not_null(&preconditioned_basis_history_[k]), linear_operator,
-              basis_history_[k]);
+              basis_history_[k], operator_args);
         }
       }
-      linear_operator(make_not_null(&operand),
-                      this->has_preconditioner()
-                          ? preconditioned_basis_history_[k]
-                          : basis_history_[k]);
+      std::apply(linear_operator,
+                 std::tuple_cat(std::forward_as_tuple(
+                                    make_not_null(&operand),
+                                    this->has_preconditioner()
+                                        ? preconditioned_basis_history_[k]
+                                        : basis_history_[k]),
+                                operator_args));
       // Find a new orthogonal basis vector of the Krylov subspace
       gmres::detail::arnoldi_orthogonalize(
           make_not_null(&operand), make_not_null(&orthogonalization_history_),

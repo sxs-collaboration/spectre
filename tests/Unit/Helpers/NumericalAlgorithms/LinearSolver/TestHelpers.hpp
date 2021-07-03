@@ -30,7 +30,8 @@ struct ApplyMatrix {
 struct ExactInversePreconditioner {
   void solve(const gsl::not_null<DenseVector<double>*> solution,
              const ApplyMatrix& linear_operator,
-             const DenseVector<double>& source) const noexcept {
+             const DenseVector<double>& source,
+             const std::tuple<>& /*operator_args*/) const noexcept {
     if (not inv_matrix_.has_value()) {
       inv_matrix_ = blaze::inv(linear_operator.matrix);
     }
@@ -53,7 +54,8 @@ struct ExactInversePreconditioner {
 struct JacobiPreconditioner {
   void solve(const gsl::not_null<DenseVector<double>*> solution,
              const ApplyMatrix& linear_operator,
-             const DenseVector<double>& source) const noexcept {
+             const DenseVector<double>& source,
+             const std::tuple<>& /*operator_args*/) const noexcept {
     if (not inv_diagonal_.has_value()) {
       inv_diagonal_ = DenseVector<double>(source.size(), 1.);
       for (size_t i = 0; i < source.size(); ++i) {
@@ -84,8 +86,8 @@ struct RichardsonPreconditioner {
 
   void solve(
       const gsl::not_null<DenseVector<double>*> initial_guess_in_solution_out,
-      const ApplyMatrix& linear_operator,
-      const DenseVector<double>& source) const noexcept {
+      const ApplyMatrix& linear_operator, const DenseVector<double>& source,
+      const std::tuple<>& /*operator_args*/) const noexcept {
     for (size_t i = 0; i < num_iterations_; ++i) {
       linear_operator(make_not_null(&correction_buffer_),
                       *initial_guess_in_solution_out);

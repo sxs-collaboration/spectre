@@ -56,6 +56,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     std::vector<double> recorded_residuals;
     const auto has_converged = gmres.solve(
         make_not_null(&initial_guess_in_solution_out), linear_operator, source,
+        std::tuple{},
         [&recorded_residuals](
             const Convergence::HasConverged& local_has_converged) {
           recorded_residuals.push_back(
@@ -217,7 +218,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       std::vector<double> local_recorded_residuals;
       const auto local_has_converged = local_gmres.solve(
           make_not_null(&local_initial_guess_in_solution_out), linear_operator,
-          source,
+          source, std::tuple{},
           [&local_recorded_residuals](
               const Convergence::HasConverged& recorded_has_converged) {
             local_recorded_residuals.push_back(

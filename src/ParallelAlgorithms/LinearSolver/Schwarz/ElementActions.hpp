@@ -366,16 +366,6 @@ struct SolveSubdomain {
     // Allocate workspace memory for repeatedly applying the subdomain operator
     const SubdomainOperator subdomain_operator{};
 
-    // Construct the subdomain operator
-    const auto apply_subdomain_operator =
-        [&box, &subdomain_operator](const gsl::not_null<SubdomainData*> result,
-                                    const SubdomainData& operand) noexcept {
-      // The subdomain operator can retrieve any information on the subdomain
-      // geometry that is available through the DataBox. The user is responsible
-      // for communicating this information across neighbors if necessary.
-      subdomain_operator(result, operand, box);
-    };
-
     // Solve the subdomain problem
     const auto& subdomain_solver =
         get<Tags::SubdomainSolverBase<OptionsGroup>>(box);
@@ -383,7 +373,7 @@ struct SolveSubdomain {
         make_with_value<SubdomainData>(subdomain_residual, 0.);
     const auto subdomain_solve_has_converged = subdomain_solver.solve(
         make_not_null(&subdomain_solve_initial_guess_in_solution_out),
-        apply_subdomain_operator, subdomain_residual);
+        subdomain_operator, subdomain_residual, std::forward_as_tuple(box));
     // Re-naming the solution buffer for the code below
     auto& subdomain_solution = subdomain_solve_initial_guess_in_solution_out;
 
