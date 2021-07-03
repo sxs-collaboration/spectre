@@ -15,6 +15,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Functional.hpp"
@@ -58,7 +59,7 @@ void contribute_to_reduction_observer(
       // Node 0 is always the writer, so directly call the component on that
       // node
       reduction_writer[0], observation_id,
-      static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())),
+      static_cast<size_t>(Parallel::my_node(*Parallel::local(my_proxy))),
       // When multiple linear solves are performed, e.g. for the nonlinear
       // solver, we'll need to write into separate subgroups, e.g.:
       // `/linear_residuals/<nonlinear_iteration_id>`

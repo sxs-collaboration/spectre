@@ -9,6 +9,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -31,8 +32,8 @@ struct error_call_single_action_from_action {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     // [bad_recursive_call]
-    auto& local_parallel_component =
-        *Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal();
+    auto& local_parallel_component = *Parallel::local(
+        Parallel::get_parallel_component<ParallelComponent>(cache));
     Parallel::simple_action<error_call_single_action_from_action>(
         local_parallel_component);
     // [bad_recursive_call]
@@ -56,8 +57,9 @@ struct Component {
           global_cache) noexcept {
     if (next_phase == Metavariables::Phase::Execute) {
       auto& local_cache = *(global_cache.ckLocalBranch());
-      Parallel::simple_action<error_call_single_action_from_action>(*(
-          Parallel::get_parallel_component<Component>(local_cache).ckLocal()));
+      Parallel::simple_action<error_call_single_action_from_action>(
+          *Parallel::local(
+              Parallel::get_parallel_component<Component>(local_cache)));
     }
   }
 };

@@ -14,6 +14,7 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -61,7 +62,7 @@ void contribute_to_reduction_observer(
       // Node 0 is always the writer, so directly call the component on that
       // node
       reduction_writer[0], observation_id,
-      static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())),
+      static_cast<size_t>(Parallel::my_node(*Parallel::local(my_proxy))),
       std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "GlobalizationStep", "Residual",
                                "StepLength"},

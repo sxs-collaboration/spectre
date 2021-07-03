@@ -15,6 +15,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
@@ -113,7 +114,7 @@ struct ObserveTimeSeriesOnSurface {
         proxy[0],
         observers::ObservationId(temporal_id.substep_time().value(),
                                  pretty_type::get_name<ObservationType>()),
-        static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())),
+        static_cast<size_t>(Parallel::my_node(*Parallel::local(my_proxy))),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
         detail::make_reduction_data(box, temporal_id.substep_time().value(),

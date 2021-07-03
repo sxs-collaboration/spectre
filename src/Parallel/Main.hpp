@@ -20,6 +20,7 @@
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/Printf.hpp"
@@ -712,8 +713,8 @@ void contribute_to_phase_change_reduction(
                 PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
         cache.get_main_proxy().value());
     reduction_data_type reduction_data{data_for_reduction};
-    Parallel::get_parallel_component<SenderComponent>(cache)[array_index]
-        .ckLocal()
+    Parallel::local(
+        Parallel::get_parallel_component<SenderComponent>(cache)[array_index])
         ->contribute(static_cast<int>(reduction_data.size()),
                      reduction_data.packed().get(),
                      Parallel::charmxx::charm_reducer_functions.at(

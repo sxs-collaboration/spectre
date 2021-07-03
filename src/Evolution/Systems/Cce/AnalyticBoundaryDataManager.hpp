@@ -22,6 +22,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -106,8 +107,8 @@ void AnalyticBoundaryDataManager::write_news(
   }
   auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   auto observer_proxy = Parallel::get_parallel_component<
-      observers::ObserverWriter<Metavariables>>(
-      cache)[static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal()))];
+      observers::ObserverWriter<Metavariables>>(cache)[static_cast<size_t>(
+      Parallel::my_node(*Parallel::local(my_proxy)))];
   const std::string prefix =
       generator_->use_noninertial_news() ? "Noninertial_" : "";
   Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(

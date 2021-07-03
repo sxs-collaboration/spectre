@@ -22,6 +22,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
@@ -75,8 +76,8 @@ struct StoreNewSlabSize {
                     const ArrayIndex& array_index, const int64_t slab_number,
                     const double slab_size) noexcept {
     Parallel::receive_data<ChangeSlabSize_detail::NewSlabSizeInbox>(
-        *Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-             .ckLocal(),
+        *Parallel::local(Parallel::get_parallel_component<ParallelComponent>(
+            cache)[array_index]),
         slab_number, slab_size);
   }
 };
@@ -293,7 +294,7 @@ class ChangeSlabSize : public Event {
     // arrive before the ChangeSlabSize action is called.
     Parallel::receive_data<
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox>(
-        *self_proxy.ckLocal(), slab_to_change,
+        *Parallel::local(self_proxy), slab_to_change,
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox::NoData{});
     Parallel::contribute_to_reduction<ChangeSlabSize_detail::StoreNewSlabSize>(
         ReductionData(slab_to_change, desired_slab_size), self_proxy,
