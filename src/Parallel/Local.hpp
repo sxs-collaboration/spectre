@@ -25,4 +25,17 @@ auto* local(Proxy&& proxy) noexcept {
   return proxy.ckLocal();
 }
 
+/// Wrapper for calling Charm++'s `.ckLocalBranch()` on a proxy
+///
+/// The Proxy must be to a Charm++ group chare or nodegroup chare.
+///
+/// The function returns a pointer to the local group/nodegroup chare.
+template <typename Proxy>
+auto* local_branch(Proxy&& proxy) noexcept {
+  // It only makes sense to call .ckLocalBranch() on some kinds of proxies
+  static_assert(is_group_proxy<std::decay_t<Proxy>>::value or
+                is_node_group_proxy<std::decay_t<Proxy>>::value);
+  return proxy.ckLocalBranch();
+}
+
 }  // namespace Parallel
