@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <optional>
 #include <ostream>
+#include <pup.h>
 #include <tuple>
 #include <utility>
 
@@ -29,6 +30,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/SubdomainOperator.hpp"
@@ -90,6 +92,20 @@ struct make_neighbor_mortars_tag_impl {
  * `LinearSolver::Schwarz::Actions::ReceiveOverlapFields`, setting
  * `RestrictToOverlap` to `false`. See
  * `LinearSolver::Schwarz::SubdomainOperator` for details.
+ *
+ * \par Overriding boundary conditions
+ * Sometimes the subdomain operator should not use the boundary conditions that
+ * have been selected when setting up the domain. For example, when the
+ * subdomain operator is cached between non-linear solver iterations but the
+ * boundary conditions depend on the non-linear fields, the preconditioning can
+ * become ineffective (see
+ * `LinearSolver::Schwarz::Actions::ResetSubdomainSolver`). Another example is
+ * `elliptic::subdomain_preconditioners::MinusLaplacian`, where an auxiliary
+ * Poisson system is used for preconditioning that doesn't have boundary
+ * conditions set up in the domain. In these cases, the boundary conditions used
+ * for the subdomain operator can be overridden with the
+ * `override_boundary_conditions` argument in the constructor. Note that the
+ * subdomain operator always applies the _linearized_ boundary conditions.
  *
  * \warning The subdomain operator hasn't been tested with periodic boundary
  * conditions so far.
@@ -172,6 +188,11 @@ struct SubdomainOperator
                                              tmpl::pin<tmpl::size_t<Dim>>>;
 
  public:
+  SubdomainOperator(std::optional<std::unique_ptr<BoundaryConditionsBase>>
+                        override_boundary_conditions = std::nullopt) noexcept
+      : override_boundary_conditions_(std::move(override_boundary_conditions)) {
+  }
+
   /// \warning This function is not thread-safe because it accesses mutable
   /// memory buffers.
   template <typename ResultTags, typename OperandTags, typename DbTagsList>
@@ -234,31 +255,43 @@ struct SubdomainOperator
 
     // Setup boundary conditions
     const auto apply_boundary_condition =
-        [&box, &local_domain = domain](
+        [&box, &local_domain = domain,
+         &override_boundary_conditions = override_boundary_conditions_](
             const ElementId<Dim>& local_element_id,
             const Direction<Dim>& local_direction, auto is_overlap,
             const auto& map_keys, const auto... fields_and_fluxes) noexcept {
           constexpr bool is_overlap_v =
               std::decay_t<decltype(is_overlap)>::value;
-          const auto& boundary_conditions = local_domain.blocks()
-                                                .at(local_element_id.block_id())
-                                                .external_boundary_conditions();
-          ASSERT(boundary_conditions.contains(local_direction),
-                 "No boundary condition is available in block "
-                     << local_element_id.block_id() << " in direction "
-                     << local_direction
-                     << ". Make sure you are setting up boundary conditions "
-                        "when creating the domain.");
-          ASSERT(dynamic_cast<const BoundaryConditionsBase*>(
-                     boundary_conditions.at(local_direction).get()) != nullptr,
-                 "The boundary condition in block "
-                     << local_element_id.block_id() << " in direction "
-                     << local_direction
-                     << " has an unexpected type. Make sure it derives off the "
-                        "'boundary_conditions_base' class set in the system.");
+          // Get boundary conditions from domain, or use overridden boundary
+          // conditions
           const auto& boundary_condition =
-              dynamic_cast<const BoundaryConditionsBase&>(
-                  *boundary_conditions.at(local_direction));
+              [&local_domain, &local_element_id, &local_direction,
+               &override_boundary_conditions]() noexcept
+              -> const BoundaryConditionsBase& {
+            if (override_boundary_conditions.has_value()) {
+              return **override_boundary_conditions;
+            }
+            const auto& boundary_conditions =
+                local_domain.blocks()
+                    .at(local_element_id.block_id())
+                    .external_boundary_conditions();
+            ASSERT(boundary_conditions.contains(local_direction),
+                   "No boundary condition is available in block "
+                       << local_element_id.block_id() << " in direction "
+                       << local_direction
+                       << ". Make sure you are setting up boundary conditions "
+                          "when creating the domain.");
+            ASSERT(
+                dynamic_cast<const BoundaryConditionsBase*>(
+                    boundary_conditions.at(local_direction).get()) != nullptr,
+                "The boundary condition in block "
+                    << local_element_id.block_id() << " in direction "
+                    << local_direction
+                    << " has an unexpected type. Make sure it derives off the "
+                       "'boundary_conditions_base' class set in the system.");
+            return dynamic_cast<const BoundaryConditionsBase&>(
+                *boundary_conditions.at(local_direction));
+          }();
           elliptic::apply_boundary_condition<
               linearized,
               tmpl::conditional_t<is_overlap_v, make_overlap_tag, void>>(
@@ -584,7 +617,15 @@ struct SubdomainOperator
     }    // loop over directions
   }
 
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) noexcept {
+    p | override_boundary_conditions_;
+  }
+
  private:
+  std::optional<std::unique_ptr<BoundaryConditionsBase>>
+      override_boundary_conditions_{};
+
   // Memory buffers for repeated operator applications
   mutable Variables<typename System::auxiliary_fields>
       central_auxiliary_vars_{};
