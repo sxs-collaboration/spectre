@@ -20,6 +20,7 @@
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -244,8 +245,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     make_overloader(
         [&command_line_options](std::true_type /*meta*/, auto mv,
                                 int /*gcc_bug*/)
-            -> std::void_t<
-                decltype(tmpl::type_from<decltype(mv)>::input_file)> {
+            -> std::void_t<decltype(
+                tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has options and default input file name
           command_line_options.add_options()(
               "input-file",
@@ -260,8 +261,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
               "input-file", bpo::value<std::string>(), "Input file name");
         },
         [](std::false_type /*meta*/, auto mv, int /*gcc_bug*/)
-            -> std::void_t<
-                decltype(tmpl::type_from<decltype(mv)>::input_file)> {
+            -> std::void_t<decltype(
+                tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has no options and default input file name
 
           // always false, but must depend on mv
@@ -279,10 +280,10 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
     const bool ignore_unrecognized_command_line_options = make_overloader(
         [](auto mv, int /*gcc_bug*/)
-            -> decltype(tmpl::type_from<decltype(mv)>::
-                            ignore_unrecognized_command_line_options) {
-          return tmpl::type_from<
-              decltype(mv)>::ignore_unrecognized_command_line_options;
+            -> decltype(tmpl::type_from<decltype(
+                            mv)>::ignore_unrecognized_command_line_options) {
+          return tmpl::type_from<decltype(
+              mv)>::ignore_unrecognized_command_line_options;
         },
         [](auto /*mv*/, auto... /*meta*/) { return false; })(
         tmpl::type_<Metavariables>{}, 0);
@@ -717,18 +718,18 @@ void contribute_to_phase_change_reduction(
     const ArrayIndex& array_index) {
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<Metavariables>;
-  using reduction_data_type = PhaseControl::reduction_data<
-      tmpl::list<Ts...>, phase_change_tags_and_combines_list>;
+  using reduction_data_type =
+      PhaseControl::reduction_data<tmpl::list<Ts...>,
+                                   phase_change_tags_and_combines_list>;
   (void)Parallel::charmxx::RegisterReducerFunction<
       reduction_data_type::combine>::registrar;
-  CkCallback callback(
-      CProxy_Main<Metavariables>::index_t::
-          template redn_wrapper_phase_change_reduction<
-              PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
-      cache.get_main_proxy().value());
+  CkCallback callback(CProxy_Main<Metavariables>::index_t::
+                          template redn_wrapper_phase_change_reduction<
+                              PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
+                      cache.get_main_proxy().value());
   reduction_data_type reduction_data{data_for_reduction};
-  Parallel::get_parallel_component<SenderComponent>(cache)[array_index]
-      .ckLocal()
+  Parallel::local(
+      Parallel::get_parallel_component<SenderComponent>(cache)[array_index])
       ->contribute(static_cast<int>(reduction_data.size()),
                    reduction_data.packed().get(),
                    Parallel::charmxx::charm_reducer_functions.at(
@@ -742,15 +743,15 @@ void contribute_to_phase_change_reduction(
     Parallel::GlobalCache<Metavariables>& cache) {
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<Metavariables>;
-  using reduction_data_type = PhaseControl::reduction_data<
-      tmpl::list<Ts...>, phase_change_tags_and_combines_list>;
+  using reduction_data_type =
+      PhaseControl::reduction_data<tmpl::list<Ts...>,
+                                   phase_change_tags_and_combines_list>;
   (void)Parallel::charmxx::RegisterReducerFunction<
       reduction_data_type::combine>::registrar;
-  CkCallback callback(
-      CProxy_Main<Metavariables>::index_t::
-          template redn_wrapper_phase_change_reduction<
-              PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
-      cache.get_main_proxy().value());
+  CkCallback callback(CProxy_Main<Metavariables>::index_t::
+                          template redn_wrapper_phase_change_reduction<
+                              PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
+                      cache.get_main_proxy().value());
   reduction_data_type reduction_data{data_for_reduction};
   // Note that Singletons could be supported by directly calling the main
   // entry function, but due to this and other peculiarities with

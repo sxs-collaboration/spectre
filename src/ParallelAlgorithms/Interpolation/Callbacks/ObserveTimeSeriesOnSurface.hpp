@@ -14,6 +14,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Utilities/Functional.hpp"
