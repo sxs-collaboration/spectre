@@ -52,6 +52,7 @@ class LinearSolver : public PUP::able {
   WRAPPED_PUPable_abstract(LinearSolver);  // NOLINT
   /// \endcond
 
+  using registrars = LinearSolverRegistrars;
   using creatable_classes = Registration::registrants<LinearSolverRegistrars>;
 
   virtual std::unique_ptr<LinearSolver<LinearSolverRegistrars>> get_clone()
