@@ -174,15 +174,18 @@ struct SubdomainDataBufferTag : db::SimpleTag {
 // Allow factory-creating any of these serial linear solvers for use as
 // subdomain solver
 template <typename FieldsTag, typename SubdomainOperator,
+          typename SubdomainPreconditioners,
           typename SubdomainData = ElementCenteredSubdomainData<
               SubdomainOperator::volume_dim,
               typename db::add_tag_prefix<LinearSolver::Tags::Residual,
                                           FieldsTag>::tags_list>>
-using subdomain_solver = LinearSolver::Serial::LinearSolver<
+using subdomain_solver = LinearSolver::Serial::LinearSolver<tmpl::append<
     tmpl::list<::LinearSolver::Serial::Registrars::Gmres<SubdomainData>,
-               ::LinearSolver::Serial::Registrars::ExplicitInverse>>;
+               ::LinearSolver::Serial::Registrars::ExplicitInverse>,
+    SubdomainPreconditioners>>;
 
-template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator>
+template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
+          typename SubdomainPreconditioners>
 struct InitializeElement {
  private:
   using fields_tag = FieldsTag;
@@ -192,7 +195,8 @@ struct InitializeElement {
   using SubdomainData =
       ElementCenteredSubdomainData<Dim, typename residual_tag::tags_list>;
   using subdomain_solver_tag = Tags::SubdomainSolver<
-      std::unique_ptr<subdomain_solver<FieldsTag, SubdomainOperator>>,
+      std::unique_ptr<subdomain_solver<FieldsTag, SubdomainOperator,
+                                       SubdomainPreconditioners>>,
       OptionsGroup>;
 
  public:

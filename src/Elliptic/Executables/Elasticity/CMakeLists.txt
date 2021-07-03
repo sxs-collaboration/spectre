@@ -15,6 +15,7 @@ set(LIBS_TO_LINK
   Elliptic
   EllipticDg
   EllipticDgSubdomainOperator
+  EllipticSubdomainPreconditioners
   Events
   EventsAndTriggers
   Informer

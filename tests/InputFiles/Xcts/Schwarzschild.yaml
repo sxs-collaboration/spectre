@@ -69,7 +69,7 @@ LinearSolver:
   Gmres:
     ConvergenceCriteria:
       MaxIterations: 2
-      RelativeResidual: 1.e-3
+      RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
     Verbosity: Quiet
 
@@ -80,12 +80,14 @@ LinearSolver:
     SubdomainSolver:
       Gmres:
         ConvergenceCriteria:
-          MaxIterations: 30
-          RelativeResidual: 1.e-2
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
           AbsoluteResidual: 1.e-12
         Verbosity: Silent
         Restart: None
-        Preconditioner: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver: ExplicitInverse
     SkipResets: True
 
 EventsAndTriggers:

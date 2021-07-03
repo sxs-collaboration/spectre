@@ -115,14 +115,15 @@ namespace LinearSolver::Schwarz {
  * GMRES or Conjugate Gradient, ideally with an appropriate preconditioner (yes,
  * this would be preconditioned Krylov-methods solving the subdomains of the
  * Schwarz solver, which might in turn precondition a global Krylov-solver -
- * it's preconditioners all the way down). Currently, we use
- * `LinearSolver::Serial::Gmres` to solve subdomains. It supports
- * preconditioning, and adding useful subdomain preconditioners will be the
- * subject of future work. Note that the choice of subdomain solver (and, by
- * extension, the choice of subdomain preconditioner) affects only the
- * _performance_ of the Schwarz solver, not its convergence or parallelization
- * properties (assuming the subdomain solutions it produces are sufficiently
- * precise).
+ * it's preconditioners all the way down). Currently, the linear solvers listed
+ * in `LinearSolver::Serial` are available to solve subdomains. They include
+ * Krylov-type methods that support nested preconditioning with any other linear
+ * solver. Additional problem-specific subdomain preconditioners can be added
+ * with the `SubdomainPreconditioners` template parameter. Note that the choice
+ * of subdomain solver (and, by extension, the choice of subdomain
+ * preconditioner) affects only the _performance_ of the Schwarz solver, not its
+ * convergence or parallelization properties (assuming the subdomain solutions
+ * it produces are sufficiently precise).
  *
  * \par Weighting:
  * Once the subdomain solutions \f$\delta x_s\f$ have been found they must be
@@ -147,9 +148,9 @@ namespace LinearSolver::Schwarz {
  * - Specify the number of overlap points as a fraction of the element width
  * instead of a fixed number. This was shown in \cite Stiller2016b to achieve
  * scale-independent convergence at the cost of increasing subdomain sizes.
- * - Subdomain preconditioning (see paragraph on subdomain solves above)
  */
 template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
+          typename SubdomainPreconditioners = tmpl::list<>,
           typename SourceTag =
               db::add_tag_prefix<::Tags::FixedSource, FieldsTag>,
           typename ArraySectionIdTag = void>
@@ -163,11 +164,13 @@ struct Schwarz {
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<async_solvers::reduction_data, detail::reduction_data>>;
   using subdomain_solver =
-      detail::subdomain_solver<FieldsTag, SubdomainOperator>;
+      detail::subdomain_solver<FieldsTag, SubdomainOperator,
+                               SubdomainPreconditioners>;
 
   using initialize_element = tmpl::list<
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>,
-      detail::InitializeElement<FieldsTag, OptionsGroup, SubdomainOperator>>;
+      detail::InitializeElement<FieldsTag, OptionsGroup, SubdomainOperator,
+                                SubdomainPreconditioners>>;
 
   using register_element =
       tmpl::list<async_solvers::RegisterElement<FieldsTag, OptionsGroup,

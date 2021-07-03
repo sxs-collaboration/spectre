@@ -145,7 +145,7 @@ struct Metavariables {
   using schwarz_smoother = LinearSolver::Schwarz::Schwarz<
       typename linear_solver::operand_tag,
       SolvePoisson::OptionTags::SchwarzSmootherGroup, subdomain_operator,
-      typename linear_solver::preconditioner_source_tag>;
+      tmpl::list<>, typename linear_solver::preconditioner_source_tag>;
   // For the GMRES linear solver we need to apply the DG operator to its
   // internal "operand" in every iteration of the algorithm.
   using vars_tag = typename linear_solver::operand_tag;
