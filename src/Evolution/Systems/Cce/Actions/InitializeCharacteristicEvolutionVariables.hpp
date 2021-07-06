@@ -55,6 +55,8 @@ namespace Actions {
  *  - `Tags::Variables<metavariables::cce_transform_buffer_tags>`
  *  - `Tags::Variables<metavariables::cce_swsh_derivative_tags>`
  *  - `Spectral::Swsh::Tags::SwshInterpolator< Tags::CauchyAngularCoords>`
+ *  - `Spectral::Swsh::Tags::SwshInterpolator<
+ * Tags::PartiallyFlatAngularCoords>`
  * - Removes: nothing
  *
  * \note This action relies on the `SetupDataBox` aggregated initialization
@@ -92,53 +94,54 @@ struct InitializeCharacteristicEvolutionVariables {
     using evolved_swsh_dt_variables_tag =
         db::add_tag_prefix<::Tags::dt, evolved_swsh_variables_tag>;
 
-  using simple_tags = tmpl::list<
-      boundary_value_variables_tag, coordinate_variables_tag,
-      dt_coordinate_variables_tag, evolved_swsh_variables_tag,
-      evolved_swsh_dt_variables_tag, angular_coordinates_variables_tag,
-      scri_variables_tag, volume_variables_tag,
-      pre_swsh_derivatives_variables_tag, transform_buffer_variables_tag,
-      swsh_derivative_variables_tag,
-      Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>;
+    using simple_tags = tmpl::list<
+        boundary_value_variables_tag, coordinate_variables_tag,
+        dt_coordinate_variables_tag, evolved_swsh_variables_tag,
+        evolved_swsh_dt_variables_tag, angular_coordinates_variables_tag,
+        scri_variables_tag, volume_variables_tag,
+        pre_swsh_derivatives_variables_tag, transform_buffer_variables_tag,
+        swsh_derivative_variables_tag,
+        Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
+        Spectral::Swsh::Tags::SwshInterpolator<
+            Tags::PartiallyFlatAngularCoords>>;
 
-  using compute_tags = tmpl::list<>;
+    using compute_tags = tmpl::list<>;
 
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+    template <typename DbTags, typename... InboxTags, typename ArrayIndex,
+              typename ActionList, typename ParallelComponent>
+    static auto apply(db::DataBox<DbTags>& box,
+                      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                      const ArrayIndex& /*array_index*/,
+                      const ActionList /*meta*/,
+                      const ParallelComponent* const /*meta*/) noexcept {
+      const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(box);
+      const size_t number_of_radial_points =
+          db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(box);
+      const size_t boundary_size =
+          Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+      const size_t volume_size = boundary_size * number_of_radial_points;
+      const size_t transform_buffer_size =
+          number_of_radial_points *
+          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
+      Initialization::mutate_assign<simple_tags>(
+          make_not_null(&box),
+          typename boundary_value_variables_tag::type{boundary_size},
+          typename coordinate_variables_tag::type{boundary_size},
+          typename dt_coordinate_variables_tag::type{boundary_size},
+          typename evolved_swsh_variables_tag::type{volume_size},
+          typename evolved_swsh_dt_variables_tag::type{volume_size},
+          typename angular_coordinates_variables_tag::type{boundary_size},
+          typename scri_variables_tag::type{boundary_size},
+          typename volume_variables_tag::type{volume_size},
+          typename pre_swsh_derivatives_variables_tag::type{volume_size, 0.0},
+          typename transform_buffer_variables_tag::type{transform_buffer_size,
+                                                        0.0},
+          typename swsh_derivative_variables_tag::type{volume_size, 0.0},
+          Spectral::Swsh::SwshInterpolator{},
+          Spectral::Swsh::SwshInterpolator{});
 
-    const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(box);
-    const size_t number_of_radial_points =
-        db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(box);
-    const size_t boundary_size =
-        Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-    const size_t volume_size = boundary_size * number_of_radial_points;
-    const size_t transform_buffer_size =
-        number_of_radial_points *
-        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
-    Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box),
-        typename boundary_value_variables_tag::type{boundary_size},
-        typename coordinate_variables_tag::type{boundary_size},
-        typename dt_coordinate_variables_tag::type{boundary_size},
-        typename evolved_swsh_variables_tag::type{volume_size},
-        typename evolved_swsh_dt_variables_tag::type{volume_size},
-        typename angular_coordinates_variables_tag::type{boundary_size},
-        typename scri_variables_tag::type{boundary_size},
-        typename volume_variables_tag::type{volume_size},
-        typename pre_swsh_derivatives_variables_tag::type{volume_size, 0.0},
-        typename transform_buffer_variables_tag::type{transform_buffer_size,
-                                                      0.0},
-        typename swsh_derivative_variables_tag::type{volume_size, 0.0},
-        Spectral::Swsh::SwshInterpolator{});
-
-    return std::make_tuple(std::move(box));
+      return std::make_tuple(std::move(box));
   }
 };
 

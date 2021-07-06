@@ -67,7 +67,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiR> {
   using return_tags =
       tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>;
   using argument_tags = tmpl::list<
-      Tags::BoundaryValue<Tags::BondiR>, Tags::GaugeOmega,
+      Tags::BoundaryValue<Tags::BondiR>, Tags::PartiallyFlatGaugeOmega,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>;
 
   static void apply(
@@ -105,8 +105,8 @@ struct GaugeAdjustedBoundaryValue<Tags::DuRDividedByR> {
       tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::DuRDividedByR>>;
   using argument_tags = tmpl::list<
       Tags::BoundaryValue<Tags::DuRDividedByR>, Tags::BondiUAtScri,
-      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>, Tags::GaugeOmega,
-      Tags::Du<Tags::GaugeOmega>,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>,
+      Tags::PartiallyFlatGaugeOmega, Tags::Du<Tags::PartiallyFlatGaugeOmega>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Tags::LMax>;
 
@@ -145,8 +145,8 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiJ> {
   using return_tags =
       tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>>;
   using argument_tags = tmpl::list<
-      Tags::BoundaryValue<Tags::BondiJ>, Tags::GaugeC, Tags::GaugeD,
-      Tags::GaugeOmega,
+      Tags::BoundaryValue<Tags::BondiJ>, Tags::PartiallyFlatGaugeC,
+      Tags::PartiallyFlatGaugeD, Tags::PartiallyFlatGaugeOmega,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>;
 
   static void apply(
@@ -174,8 +174,8 @@ struct GaugeAdjustedBoundaryValue<Tags::Dr<Tags::BondiJ>> {
       tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::Dr<Tags::BondiJ>>>;
   using argument_tags = tmpl::list<
       Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
-      Tags::BoundaryValue<Tags::BondiJ>, Tags::GaugeC, Tags::GaugeD,
-      Tags::GaugeOmega,
+      Tags::BoundaryValue<Tags::BondiJ>, Tags::PartiallyFlatGaugeC,
+      Tags::PartiallyFlatGaugeD, Tags::PartiallyFlatGaugeOmega,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Tags::LMax>;
 
@@ -210,7 +210,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiBeta> {
   using return_tags =
       tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>>;
   using argument_tags = tmpl::list<
-      Tags::BoundaryValue<Tags::BondiBeta>, Tags::GaugeOmega,
+      Tags::BoundaryValue<Tags::BondiBeta>, Tags::PartiallyFlatGaugeOmega,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>;
 
   static void apply(
@@ -257,9 +257,10 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiQ> {
   using argument_tags = tmpl::list<
       Tags::BoundaryValue<Tags::Dr<Tags::BondiU>>, Tags::BondiJ,
       Tags::Dy<Tags::BondiJ>, Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>,
-      Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>, Tags::GaugeC,
-      Tags::GaugeD, Tags::GaugeOmega,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>,
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::PartiallyFlatGaugeOmega,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Tags::LMax>;
@@ -340,9 +341,10 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiU> {
   using argument_tags = tmpl::list<
       Tags::BoundaryValue<Tags::BondiU>, Tags::BondiJ,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>,
-      Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>, Tags::GaugeC,
-      Tags::GaugeD, Tags::GaugeOmega,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>,
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::PartiallyFlatGaugeOmega,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Tags::LMax>;
@@ -391,9 +393,9 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiW> {
       Tags::BoundaryValue<Tags::BondiW>, Tags::BondiJ,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiU>,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>, Tags::BondiUAtScri,
-      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>, Tags::GaugeOmega,
-      Tags::Du<Tags::GaugeOmega>,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>,
+      Tags::PartiallyFlatGaugeOmega, Tags::Du<Tags::PartiallyFlatGaugeOmega>,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Tags::LMax>;
@@ -469,9 +471,10 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiH> {
   using argument_tags = tmpl::list<
       Tags::BondiJ, Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>,
       Tags::Dy<Tags::BondiJ>, Tags::BondiUAtScri,
-      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>, Tags::GaugeC,
-      Tags::GaugeD, Tags::GaugeOmega, Tags::Du<Tags::GaugeOmega>,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>,
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::PartiallyFlatGaugeOmega, Tags::Du<Tags::PartiallyFlatGaugeOmega>,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Tags::EvolutionGaugeBoundaryValue<Tags::DuRDividedByR>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
@@ -566,10 +569,10 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiH> {
 struct GaugeUpdateTimeDerivatives {
   using return_tags =
       tmpl::list<::Tags::dt<Tags::CauchyCartesianCoords>, Tags::BondiUAtScri,
-                 Tags::BondiU, Tags::Du<Tags::GaugeOmega>>;
+                 Tags::BondiU, Tags::Du<Tags::PartiallyFlatGaugeOmega>>;
   using argument_tags =
-      tmpl::list<Tags::CauchyCartesianCoords, Tags::GaugeOmega,
-                 Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      tmpl::list<Tags::CauchyCartesianCoords, Tags::PartiallyFlatGaugeOmega,
+                 Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                                   Spectral::Swsh::Tags::Eth>,
                  Tags::LMax>;
 
@@ -583,6 +586,54 @@ struct GaugeUpdateTimeDerivatives {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
       size_t l_max) noexcept;
+};
+
+/*!
+ * \brief Update the inertial gauge cartesian coordinate derivative
+ * \f$\partial_u \hat x(x)\f$.
+ *
+ * \details For the asymptotically inertial angular coordinates
+ * \f$\hat{x}^{\hat{A}}\f$, we have:
+ *
+ * \f{align*}{
+ * \partial_u \hat{x}^{\hat{A}} = -U^{(0)B}\partial_B \hat{x}^{\hat{A}}
+ * \f}
+ *
+ * and the Cartesian version reads
+ *
+ * \f{align*}{
+ * \partial_u \hat{x}^{\hat{i}}= - \text{Re}(\bar{U}^{(0)}
+ * \eth \hat{x}^{\hat{i}})
+ * \f}
+ *
+ * Note that \f$U^{0}\f$ and \f$\mathcal U^{(0)}\f$ are related by
+ *
+ * \f{align*}{
+ * U^{(0)} &= \frac{1}{2\omega^2} \left( \bar{d} \mathcal U^{(0)} -
+ * c \bar{\mathcal U}^{(0)} \right) \\
+ * &= \frac{\hat \omega^2}{2} \left( \bar{d} \mathcal U^{(0)} -
+ * c \bar{\mathcal U}^{(0)} \right)
+ * \f}
+ *
+ * see Eq. (79) of \cite Moxon2020gha.
+ */
+struct GaugeUpdateInertialTimeDerivatives {
+  using return_tags = tmpl::list<::Tags::dt<Tags::PartiallyFlatCartesianCoords>,
+                                 Tags::BondiUAtScri>;
+  using argument_tags = tmpl::list<
+      Tags::PartiallyFlatCartesianCoords, Tags::CauchyGaugeC,
+      Tags::PartiallyFlatGaugeOmega, Tags::CauchyGaugeD, Tags::LMax,
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>>;
+  static void apply(
+      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_inertial_du_x,
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+          evolution_gauge_u_at_scri,
+      const tnsr::i<DataVector, 3>& cartesian_inertial_coordinates,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_cauchy_c,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_cauchy_d,
+      size_t l_max,
+      const Spectral::Swsh::SwshInterpolator& interpolator) noexcept;
 };
 
 /*!
@@ -726,12 +777,12 @@ struct GaugeUpdateInterpolator {
  * \hat \omega = \frac{1}{2} \sqrt{\hat d \hat{\bar d} - \hat c \hat{\bar c}}.
  * \f}
  */
+template <typename GaugeC, typename GaugeD, typename GaugeOmega>
 struct GaugeUpdateOmega {
-  using argument_tags = tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::LMax>;
-  using return_tags =
-      tmpl::list<Tags::GaugeOmega,
-                 Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
-                                                  Spectral::Swsh::Tags::Eth>>;
+  using argument_tags = tmpl::list<GaugeC, GaugeD, Tags::LMax>;
+  using return_tags = tmpl::list<
+      GaugeOmega,
+      Spectral::Swsh::Tags::Derivative<GaugeOmega, Spectral::Swsh::Tags::Eth>>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
@@ -762,7 +813,8 @@ struct GaugeUpdateOmega {
 struct InitializeGauge {
   using return_tags =
       tmpl::list<Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords,
-                 Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>;
+                 Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                 Tags::PartiallyFlatGaugeOmega>;
   using argument_tags = tmpl::list<Tags::LMax>;
 
   static void apply(

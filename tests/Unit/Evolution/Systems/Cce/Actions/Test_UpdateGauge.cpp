@@ -31,22 +31,29 @@
 namespace Cce {
 
 namespace {
-using real_tags_to_generate = tmpl::list<Tags::CauchyCartesianCoords>;
+using real_tags_to_generate =
+    tmpl::list<Tags::CauchyCartesianCoords, Tags::PartiallyFlatCartesianCoords>;
 
-using real_tags_to_compute = tmpl::list<Tags::CauchyAngularCoords>;
+using real_tags_to_compute =
+    tmpl::list<Tags::CauchyAngularCoords, Tags::PartiallyFlatAngularCoords>;
 
 using swsh_tags_to_compute =
-    tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-               Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+    tmpl::list<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+               Tags::PartiallyFlatGaugeOmega, Tags::CauchyGaugeC,
+               Tags::CauchyGaugeD, Tags::CauchyGaugeOmega,
+               Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
+                                                Spectral::Swsh::Tags::Eth>,
+               Spectral::Swsh::Tags::Derivative<Tags::CauchyGaugeOmega,
                                                 Spectral::Swsh::Tags::Eth>>;
 
 template <typename Metavariables>
 struct mock_characteristic_evolution {
   using simple_tags = tmpl::push_back<
-      db::AddSimpleTags<::Tags::Variables<tmpl::append<
-                            real_tags_to_generate, real_tags_to_compute>>,
+      db::AddSimpleTags<::Tags::Variables<tmpl::append<real_tags_to_generate,
+                                                       real_tags_to_compute>>,
                         ::Tags::Variables<swsh_tags_to_compute>>,
-      Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>;
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -56,12 +63,14 @@ struct mock_characteristic_evolution {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve,
-                             tmpl::list<Actions::UpdateGauge>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          tmpl::list<Actions::UpdateGauge<
+              Metavariables::uses_partially_flat_cartesian_coordinates>>>>;
 };
 
 struct metavariables {
+  static constexpr bool uses_partially_flat_cartesian_coordinates = true;
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
   enum class Phase { Initialization, Evolve, Exit };
@@ -109,11 +118,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
 
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {real_variables, swsh_variables, Spectral::Swsh::SwshInterpolator{}});
+      {real_variables, swsh_variables, Spectral::Swsh::SwshInterpolator{},
+       Spectral::Swsh::SwshInterpolator{}});
   auto expected_box = db::create<
       tmpl::append<component::simple_tags, db::AddSimpleTags<Tags::LMax>>>(
       std::move(real_variables), std::move(swsh_variables),
-      Spectral::Swsh::SwshInterpolator{}, l_max);
+      Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
+      l_max);
 
   runner.set_phase(metavariables::Phase::Evolve);
   // apply the `UpdateGauge` action
@@ -124,11 +135,30 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      make_not_null(&expected_box));
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       make_not_null(&expected_box));
-  db::mutate_apply<GaugeUpdateOmega>(make_not_null(&expected_box));
+  db::mutate_apply<
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(
+      make_not_null(&expected_box));
+
+  if (metavariables::uses_partially_flat_cartesian_coordinates) {
+    db::mutate_apply<GaugeUpdateAngularFromCartesian<
+        Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
+        make_not_null(&expected_box));
+    db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
+        Tags::CauchyGaugeC, Tags::CauchyGaugeD,
+        Tags::PartiallyFlatAngularCoords, Tags::PartiallyFlatCartesianCoords>>(
+        make_not_null(&expected_box));
+    db::mutate_apply<GaugeUpdateInterpolator<Tags::PartiallyFlatAngularCoords>>(
+        make_not_null(&expected_box));
+    db::mutate_apply<GaugeUpdateOmega<Tags::CauchyGaugeC, Tags::CauchyGaugeD,
+                                      Tags::CauchyGaugeOmega>>(
+        make_not_null(&expected_box));
+  }
 
   tmpl::for_each<
       tmpl::append<real_tags_to_compute, swsh_tags_to_compute>>(
@@ -169,5 +199,31 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
       Spectral::Swsh::libsharp_to_goldberg_modes(generated_modes, l_max));
   CHECK_ITERABLE_APPROX(interpolated_points_from_computed,
                         interpolated_points_from_expected);
+
+  if (metavariables::uses_partially_flat_cartesian_coordinates) {
+    const Spectral::Swsh::SwshInterpolator& computed_interpolator_inertial =
+        ActionTesting::get_databox_tag<component,
+                                       Spectral::Swsh::Tags::SwshInterpolator<
+                                           Tags::PartiallyFlatAngularCoords>>(
+            runner, 0);
+    const Spectral::Swsh::SwshInterpolator& expected_interpolator_inertial =
+        db::get<Spectral::Swsh::Tags::SwshInterpolator<
+            Tags::PartiallyFlatAngularCoords>>(expected_box);
+
+    SpinWeighted<ComplexDataVector, 2>
+        interpolated_points_from_computed_inertial{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    SpinWeighted<ComplexDataVector, 2>
+        interpolated_points_from_expected_inertial{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    computed_interpolator_inertial.interpolate(
+        make_not_null(&interpolated_points_from_computed_inertial),
+        Spectral::Swsh::libsharp_to_goldberg_modes(generated_modes, l_max));
+    expected_interpolator_inertial.interpolate(
+        make_not_null(&interpolated_points_from_expected_inertial),
+        Spectral::Swsh::libsharp_to_goldberg_modes(generated_modes, l_max));
+    CHECK_ITERABLE_APPROX(interpolated_points_from_computed_inertial,
+                          interpolated_points_from_expected_inertial);
+  }
 }
 }  // namespace Cce

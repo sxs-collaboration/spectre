@@ -16,10 +16,11 @@ struct LinearizedBondiSachs;
 
 /// A function for registering all of the InitializeJ derived classes with
 /// charm, including the ones not intended to be directly option-creatable
+template <bool uses_inertial_coordinates>
 void register_initialize_j_with_charm() noexcept {
   PUPable_reg(SINGLE_ARG(Solutions::LinearizedBondiSachs_detail::InitializeJ::
                          LinearizedBondiSachs));
   Parallel::register_derived_classes_with_charm<
-      Cce::InitializeJ::InitializeJ>();
+      Cce::InitializeJ::InitializeJ<uses_inertial_coordinates>>();
 }
 }  // namespace Cce

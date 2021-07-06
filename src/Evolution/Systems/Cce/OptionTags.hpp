@@ -189,13 +189,14 @@ struct ScriOutputDensity {
   using group = Cce;
 };
 
+template <bool uses_inertial_coordinates>
 struct InitializeJ {
-  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ>;
+  using type = std::unique_ptr<
+      ::Cce::InitializeJ::InitializeJ<uses_inertial_coordinates>>;
   static constexpr Options::String help{
       "The initialization for the first hypersurface for J"};
   using group = Cce;
 };
-
 }  // namespace OptionTags
 
 namespace InitializationTags {
@@ -499,14 +500,18 @@ struct InitializeJBase : db::BaseTag {};
 
 /// Tag for first-hypersurface initialization procedure specified by input
 /// options.
+template <bool uses_inertial_coordinates>
 struct InitializeJ : db::SimpleTag, InitializeJBase {
-  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ>;
-  using option_tags = tmpl::list<OptionTags::InitializeJ>;
+  using type = std::unique_ptr<
+      ::Cce::InitializeJ::InitializeJ<uses_inertial_coordinates>>;
+  using option_tags =
+      tmpl::list<OptionTags::InitializeJ<uses_inertial_coordinates>>;
 
   static constexpr bool pass_metavariables = false;
-  static std::unique_ptr<::Cce::InitializeJ::InitializeJ> create_from_options(
-      const std::unique_ptr<::Cce::InitializeJ::InitializeJ>&
-          initialize_j) noexcept {
+  static std::unique_ptr<
+      ::Cce::InitializeJ::InitializeJ<uses_inertial_coordinates>>
+  create_from_options(const std::unique_ptr<::Cce::InitializeJ::InitializeJ<
+                          uses_inertial_coordinates>>& initialize_j) noexcept {
     return initialize_j->get_clone();
   }
 };
@@ -514,11 +519,12 @@ struct InitializeJ : db::SimpleTag, InitializeJBase {
 // Tags that generates an `Cce::InitializeJ::InitializeJ` derived class from an
 // analytic solution.
 struct AnalyticInitializeJ : db::SimpleTag, InitializeJBase {
-  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ>;
+  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>;
   using option_tags =
       tmpl::list<OptionTags::AnalyticSolution, OptionTags::StartTime>;
   static constexpr bool pass_metavariables = false;
-  static std::unique_ptr<::Cce::InitializeJ::InitializeJ> create_from_options(
+  static std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>
+  create_from_options(
       const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data,
       const std::optional<double> start_time) noexcept {
     return worldtube_data->get_initialize_j(*start_time);

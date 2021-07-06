@@ -234,7 +234,8 @@ double adjust_angular_coordinates_for_j(
       get<1>(*angular_cauchy_coordinates), l_max};
 
     GaugeUpdateJacobianFromCoordinates<
-        Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+        Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+        Tags::CauchyAngularCoords,
         Tags::CauchyCartesianCoords>::apply(make_not_null(&gauge_c),
                                             make_not_null(&gauge_d),
                                             angular_cauchy_coordinates,
@@ -321,7 +322,8 @@ double adjust_angular_coordinates_for_j(
 
   if (adjust_volume_gauge) {
     GaugeUpdateJacobianFromCoordinates<
-        Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+        Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+        Tags::CauchyAngularCoords,
         Tags::CauchyCartesianCoords>::apply(make_not_null(&gauge_c),
                                             make_not_null(&gauge_d),
                                             angular_cauchy_coordinates,

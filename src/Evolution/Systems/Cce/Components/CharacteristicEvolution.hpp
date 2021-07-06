@@ -129,6 +129,10 @@ struct CharacteristicEvolution {
           std::is_same_v<BondiTag, Tags::BondiU>,
           tmpl::list<
               ::Actions::MutateApply<GaugeUpdateTimeDerivatives>,
+              std::conditional_t<
+                  Metavariables::uses_partially_flat_cartesian_coordinates,
+                  ::Actions::MutateApply<GaugeUpdateInertialTimeDerivatives>,
+                  tmpl::list<>>,
               ::Actions::MutateApply<
                   GaugeAdjustedBoundaryValue<Tags::DuRDividedByR>>,
               ::Actions::MutateApply<PrecomputeCceDependencies<
@@ -168,7 +172,10 @@ struct CharacteristicEvolution {
       Actions::ReceiveWorldtubeData<Metavariables>,
       // note that the initialization will only actually happen on the
       // iterations immediately following restarts
-      Actions::InitializeFirstHypersurface, Actions::UpdateGauge,
+      Actions::InitializeFirstHypersurface<
+          Metavariables::uses_partially_flat_cartesian_coordinates>,
+      Actions::UpdateGauge<
+          Metavariables::uses_partially_flat_cartesian_coordinates>,
       Actions::PrecomputeGlobalCceDependencies,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
@@ -186,12 +193,15 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
       Actions::ReceiveWorldtubeData<Metavariables>,
-      Actions::InitializeFirstHypersurface,
+      Actions::InitializeFirstHypersurface<
+          Metavariables::uses_partially_flat_cartesian_coordinates>,
       ::Actions::Label<CceEvolutionLabelTag>,
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
-      Actions::UpdateGauge, Actions::PrecomputeGlobalCceDependencies,
+      Actions::UpdateGauge<
+          Metavariables::uses_partially_flat_cartesian_coordinates>,
+      Actions::PrecomputeGlobalCceDependencies,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,

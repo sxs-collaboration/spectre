@@ -140,7 +140,7 @@ struct SphericalSolutionWrapper : public SphericalSolution {
 void test_initialize_j(
     size_t l_max, size_t number_of_radial_points, double extraction_radius,
     double time,
-    std::unique_ptr<InitializeJ::InitializeJ> expected_initialize_j,
+    std::unique_ptr<InitializeJ::InitializeJ<false>> expected_initialize_j,
     std::unique_ptr<WorldtubeData> analytic_solution) noexcept;
 
 // This function determines the Bondi-Sachs scalars from a Cartesian spacetime

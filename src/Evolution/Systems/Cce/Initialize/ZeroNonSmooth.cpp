@@ -25,7 +25,7 @@ ZeroNonSmooth::ZeroNonSmooth(const double angular_coordinate_tolerance,
       max_iterations_{max_iterations},
       require_convergence_{require_convergence} {}
 
-std::unique_ptr<InitializeJ> ZeroNonSmooth::get_clone() const noexcept {
+std::unique_ptr<InitializeJ<false>> ZeroNonSmooth::get_clone() const noexcept {
   return std::make_unique<ZeroNonSmooth>(angular_coordinate_tolerance_,
                                          max_iterations_);
 }

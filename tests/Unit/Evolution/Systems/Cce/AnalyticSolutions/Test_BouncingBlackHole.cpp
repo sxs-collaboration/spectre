@@ -304,7 +304,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
       d_spacetime_metric);
   Solutions::TestHelpers::test_initialize_j(
       l_max, 5_st, extraction_radius, time,
-      std::make_unique<InitializeJ::InverseCubic>(),
+      std::make_unique<InitializeJ::InverseCubic<false>>(),
       analytic_solution.get_clone());
 }
 }  // namespace Cce

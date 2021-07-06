@@ -34,7 +34,7 @@ namespace InitializeJ {
  * have vanishing first radial derivative, and so will typically not be smooth
  * (only continuous) with the provided Cauchy data at the worldtube boundary.
  */
-struct ZeroNonSmooth : InitializeJ {
+struct ZeroNonSmooth : InitializeJ<false> {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() noexcept { return "AngularCoordTolerance"; }

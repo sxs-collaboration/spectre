@@ -61,16 +61,18 @@ struct mock_characteristic_evolution {
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime, Actions::ReceiveWorldtubeData<Metavariables>,
-      Actions::InitializeFirstHypersurface,
+      Actions::InitializeFirstHypersurface<false>,
       ::Actions::MutateApply<InitializeGauge>,
       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
           Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
       ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
-          Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-          Tags::CauchyCartesianCoords>>,
+          Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+          Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
       ::Actions::MutateApply<
           GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>,
-      ::Actions::MutateApply<GaugeUpdateOmega>,
+      ::Actions::MutateApply<
+          GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                           Tags::PartiallyFlatGaugeOmega>>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -106,13 +108,13 @@ struct metavariables {
                      Tags::Dr<Tags::BondiJ>, Tags::BondiBeta, Tags::BondiQ,
                      Tags::BondiU, Tags::BondiW, Tags::BondiH>,
           tmpl::bind<Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
-      Tags::BondiUAtScri, Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-      Tags::Du<Tags::GaugeOmega>,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::BondiUAtScri, Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::PartiallyFlatGaugeOmega, Tags::Du<Tags::PartiallyFlatGaugeOmega>,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
   using const_global_cache_tags =
-      tmpl::list<Tags::SpecifiedStartTime, Tags::InitializeJ>;
+      tmpl::list<Tags::SpecifiedStartTime, Tags::InitializeJ<false>>;
 
   using scri_values_to_observe = tmpl::list<>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
@@ -127,6 +129,7 @@ struct metavariables {
   using cce_transform_buffer_tags = all_transform_buffer_tags;
   using cce_swsh_derivative_tags = all_swsh_derivative_tags;
   using cce_angular_coordinate_tags = tmpl::list<Tags::CauchyAngularCoords>;
+
   using cce_scri_tags =
       tmpl::list<Cce::Tags::News, Cce::Tags::ScriPlus<Cce::Tags::Strain>,
                  Cce::Tags::ScriPlus<Cce::Tags::Psi0>,
@@ -162,7 +165,8 @@ struct TestSendToEvolution {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.CharacteristicBondiCalculations",
     "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<InitializeJ::InitializeJ>();
+  Parallel::register_derived_classes_with_charm<
+      InitializeJ::InitializeJ<false>>();
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
@@ -192,7 +196,7 @@ SPECTRE_TEST_CASE(
   const double target_step_size = 0.01 * value_dist(gen);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {start_time, std::make_unique<InitializeJ::InverseCubic>(), l_max,
+      {start_time, std::make_unique<InitializeJ::InverseCubic<false>>(), l_max,
        number_of_radial_points,
        std::make_unique<::TimeSteppers::RungeKutta3>()}};
 
@@ -295,20 +299,24 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   // perform the expected transformations on the `boundary_box`
-  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                   InitializeJ::InitializeJ::argument_tags>(
-      InitializeJ::InverseCubic{}, make_not_null(&boundary_box));
+  db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
+                   InitializeJ::InitializeJ<false>::argument_tags>(
+      InitializeJ::InverseCubic<false>{}, make_not_null(&boundary_box));
 
   db::mutate_apply<InitializeGauge>(make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>>(make_not_null(&boundary_box));
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
       make_not_null(&boundary_box));
-  db::mutate_apply<GaugeUpdateOmega>(make_not_null(&boundary_box));
+  db::mutate_apply<
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(
+      make_not_null(&boundary_box));
 
   tmpl::for_each<gauge_adjustments_setup_tags>([&boundary_box](auto tag_v) {
     using tag = typename decltype(tag_v)::type;

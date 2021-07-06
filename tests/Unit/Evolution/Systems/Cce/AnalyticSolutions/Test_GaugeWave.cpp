@@ -40,9 +40,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GaugeWave", "[Unit][Cce]") {
       frequency, amplitude, peak_time, duration);
   boundary_solution.test_serialize_and_deserialize(l_max,
                                                    peak_time - 0.1 * duration);
-  TestHelpers::test_initialize_j(l_max, 5_st, extraction_radius,
-                                 peak_time - 0.1 * duration,
-                                 std::make_unique<InitializeJ::InverseCubic>(),
-                                 boundary_solution.get_clone());
+  TestHelpers::test_initialize_j(
+      l_max, 5_st, extraction_radius, peak_time - 0.1 * duration,
+      std::make_unique<InitializeJ::InverseCubic<false>>(),
+      boundary_solution.get_clone());
 }
 }  // namespace Cce::Solutions
