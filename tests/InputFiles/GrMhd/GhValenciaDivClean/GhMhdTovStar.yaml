@@ -3,6 +3,7 @@
 
 # Executable: EvolveGhValenciaDivCleanTovStar
 # Check: parse;execute
+# Timeout: 8
 # ExpectedOutput:
 #   GhMhdTovStarVolume0.h5
 #   GhMhdTovStarReductions.h5
