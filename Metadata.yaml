@@ -130,6 +130,14 @@ Authors:
         Orcid: 0000-0002-5767-3949
         Affiliations: [*aei]
         GitHub: nilsleiffischer
+      - Name: Hébert, François
+        Orcid: 0000-0001-9009-6955
+        Affiliations: [*caltech]
+        GitHub: fmahebert
+      - Name: Moxon, Jordan
+        Orcid: 0000-0001-9891-8677
+        Affiliations: [*caltech]
+        GitHub: moxcodes
 
   Developers:
     Description: |
@@ -162,10 +170,6 @@ Authors:
         Orcid: 0000-0003-4502-528X
         Affiliations: [*cornell]
         GitHub: gsb76
-      - Name: Hébert, François
-        Orcid: 0000-0001-9009-6955
-        Affiliations: [*caltech]
-        GitHub: fmahebert
       - Name: Kumar, Prayush
         Orcid: 0000-0001-5523-4603
         Affiliations: [*cornell]
@@ -174,10 +178,6 @@ Authors:
         Orcid: 0000-0002-7084-1070
         Affiliations: [*fullerton]
         GitHub: geoffrey4444
-      - Name: Moxon, Jordan
-        Orcid: 0000-0001-9891-8677
-        Affiliations: [*caltech]
-        GitHub: moxcodes
       - Name: O'Shea, Eamonn
         Affiliations: [*cornell]
         GitHub: osheamonn
@@ -237,10 +237,16 @@ Authors:
         Orcid: 0000-0003-2300-893X
         Affiliations: [*cornell]
         GitHub: mgiesler
+      - Name: Guo, Jason S.
+        Affiliations: [*cornell]
+        GitHub: erfz
       - Name: Iozzo, Dante A. B.
         Orcid: 0000-0002-7244-1900
         Affiliations: [*cornell]
         GitHub: "10220"
+      - Name: Kim, Yoonsoo
+        Affiliations: [*caltech]
+        GitHub: yoonso0-0
       - Name: Legred, Isaac
         Orcid: 0000-0002-9523-9617
         Affiliations: [*caltech]
@@ -261,6 +267,10 @@ Authors:
         Orcid: 0000-0002-0593-4318
         Affiliations: [*fullerton]
         GitHub: MarloMo
+      - Name: Nelli, Kyle C.
+        Orcid: 0000-0003-2426-8768
+        Affiliations: [*caltech]
+        GitHub: knelli2
       - Name: Ramirez, Teresita
         Orcid: 0000-0003-0994-115X
         Affiliations: [*fullerton]
@@ -277,6 +287,10 @@ Authors:
         Orcid: 0000-0003-3574-2090
         Affiliations: [*fullerton]
         GitHub: sierracthomas
+      - Name: Wittek, Nikolas A.
+        Orcid: 0000-0001-8575-5450
+        Affiliations: [*aei]
+        GitHub: nikwit
       - Name: Wlodarczyk, Tom
         Affiliations: [*aei]
         GitHub: tomwlodarczyk
