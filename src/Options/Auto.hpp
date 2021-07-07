@@ -13,9 +13,12 @@
 
 namespace Options {
 /// The label representing the absence of a value for `Options::Auto`
-enum class AutoLabel { Auto, None };
-
-std::ostream& operator<<(std::ostream& os, AutoLabel label) noexcept;
+namespace AutoLabel {
+/// 'Auto' label
+struct Auto {};
+/// 'None' label
+struct None {};
+}  // namespace AutoLabel
 
 /// \ingroup OptionParsingGroup
 /// \brief A class indicating that a parsed value can be automatically
@@ -29,7 +32,7 @@ std::ostream& operator<<(std::ostream& os, AutoLabel label) noexcept;
 ///
 /// \snippet Test_Auto.cpp example_class
 /// \snippet Test_Auto.cpp example_create
-template <typename T, AutoLabel Label = AutoLabel::Auto>
+template <typename T, typename Label = AutoLabel::Auto>
 class Auto {
  public:
   Auto() = default;
@@ -46,33 +49,33 @@ class Auto {
   std::optional<T> value_{};
 };
 
-template <typename T, AutoLabel Label>
+template <typename T, typename Label>
 bool operator==(const Auto<T, Label>& a, const Auto<T, Label>& b) noexcept {
   return static_cast<const std::optional<T>&>(a) ==
          static_cast<const std::optional<T>&>(b);
 }
 
-template <typename T, AutoLabel Label>
+template <typename T, typename Label>
 bool operator!=(const Auto<T, Label>& a, const Auto<T, Label>& b) noexcept {
   return not(a == b);
 }
 
-template <typename T, AutoLabel Label>
+template <typename T, typename Label>
 std::ostream& operator<<(std::ostream& os, const Auto<T, Label>& x) noexcept {
   const std::optional<T>& value = x;
   if (value) {
     return os << get_output(*value);
   } else {
-    return os << Label;
+    return os << Options::name<Label>();
   }
 }
 
-template <typename T, AutoLabel Label>
+template <typename T, typename Label>
 struct create_from_yaml<Auto<T, Label>> {
   template <typename Metavariables>
   static Auto<T, Label> create(const Option& options) {
     try {
-      if (options.parse_as<std::string>() == get_output(Label)) {
+      if (options.parse_as<std::string>() == Options::name<Label>()) {
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 10
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
