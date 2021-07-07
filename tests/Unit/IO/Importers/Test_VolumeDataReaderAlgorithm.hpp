@@ -91,32 +91,65 @@ struct VolumeDataOptions {
 };
 /// [option_group]
 
-template <Grid TheGrid>
+template <size_t Dim, Grid TheGrid>
 struct TestVolumeData {
   static constexpr size_t num_elements = number_of_elements<TheGrid>;
-  std::array<std::array<size_t, 3>, num_elements> extents;
+  std::array<std::array<size_t, Dim>, num_elements> extents;
   std::array<DataVector, num_elements> scalar_field_data;
-  std::array<std::array<DataVector, 3>, num_elements> vector_field_data;
+  std::array<std::array<DataVector, Dim>, num_elements> vector_field_data;
 };
 
-const TestVolumeData<Grid::Fine> fine_volume_data{
+template <size_t Dim>
+const TestVolumeData<Dim, Grid::Fine> fine_volume_data{};
+template <>
+const TestVolumeData<1, Grid::Fine> fine_volume_data<1>{
     {{// Grid extents on first element
-      {{2, 1, 1}},
+      {{2}},
       // Grid extents on second element
-      {{3, 1, 1}}}},
+      {{3}}}},
     {{// Field on first element
       {{1., 2.}},
       // Field on second element
       {{3., 4., 5.}}}},
     {{// Vector components on first element
-      {{{{1., 2.}}, {{3., 4.}}, {{5., 6.}}}},
+      {{{{1., 2.}}}},
       // Vector components on second element
-      {{{{7., 8., 9.}}, {{10., 11., 12.}}, {{13., 14., 16.}}}}}}};
+      {{{{7., 8., 9.}}}}}}};
+template <>
+const TestVolumeData<2, Grid::Fine> fine_volume_data<2>{
+    {{{{2, 2}}, {{3, 2}}}},
+    {{{{1., 2., 3., 4.}}, {{3., 4., 5., 6., 7., 8.}}}},
+    {{{{{{1., 2., 3., 4.}}, {{3., 4., 5., 6.}}}},
+      {{{{7., 8., 9., 10., 11., 12.}}, {{10., 11., 12., 13., 14., 15.}}}}}}};
+template <>
+const TestVolumeData<3, Grid::Fine> fine_volume_data<3>{
+    {{{{2, 2, 2}}, {{3, 2, 2}}}},
+    {{{{1., 2., 3., 4., 5., 6., 7., 8.}},
+      {{3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14.}}}},
+    {{{{{{1., 2., 3., 4., 5., 6., 7., 8.}},
+        {{3., 4., 5., 6., 7., 8., 9., 10.}},
+        {{5., 6., 7., 8., 9., 10., 11., 12.}}}},
+      {{{{7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18.}},
+        {{10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20., 21.}},
+        {{13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.}}}}}}};
 
-const TestVolumeData<Grid::Coarse> coarse_volume_data{
-    {{{{2, 1, 1}}}},
-    {{{{17., 18.}}}},
-    {{{{{{19., 20.}}, {{21., 22.}}, {{23., 24.}}}}}}};
+template <size_t Dim>
+const TestVolumeData<Dim, Grid::Coarse> coarse_volume_data{};
+template <>
+const TestVolumeData<1, Grid::Coarse> coarse_volume_data<1>{
+    {{{{2}}}}, {{{{17., 18.}}}}, {{{{{{19., 20.}}}}}}};
+template <>
+const TestVolumeData<2, Grid::Coarse> coarse_volume_data<2>{
+    {{{{2, 2}}}},
+    {{{{17., 18., 19., 20.}}}},
+    {{{{{{19., 20., 21., 22.}}, {{21., 22., 23., 24.}}}}}}};
+template <>
+const TestVolumeData<3, Grid::Coarse> coarse_volume_data<3>{
+    {{{{2, 2, 2}}}},
+    {{{{17., 18., 19., 20., 21., 22., 23., 24.}}}},
+    {{{{{{19., 20., 21., 22., 23., 24., 25., 26.}},
+        {{21., 22., 23., 24., 25., 26., 27., 28.}},
+        {{23., 24., 25., 26., 27., 28., 29., 30.}}}}}}};
 
 template <bool Check>
 void clean_test_data(const std::string& data_file_name) noexcept {
@@ -131,7 +164,7 @@ template <size_t Dim, Grid TheGrid>
 void write_test_data(const std::string& data_file_name,
                      const std::string& subgroup,
                      const double observation_value,
-                     const TestVolumeData<TheGrid>& test_data) noexcept {
+                     const TestVolumeData<Dim, TheGrid>& test_data) noexcept {
   // Open file for test data
   h5::H5File<h5::AccessType::ReadWrite> data_file{data_file_name, true};
   auto& test_data_file = data_file.insert<h5::VolumeData>("/" + subgroup);
@@ -184,13 +217,13 @@ struct WriteTestData {
         get<importers::Tags::Subgroup<VolumeDataOptions<Grid::Fine>>>(box),
         get<importers::Tags::ObservationValue<VolumeDataOptions<Grid::Fine>>>(
             box),
-        fine_volume_data);
+        fine_volume_data<Dim>);
     write_test_data<Dim>(
         get<importers::Tags::FileName<VolumeDataOptions<Grid::Coarse>>>(box),
         get<importers::Tags::Subgroup<VolumeDataOptions<Grid::Coarse>>>(box),
         get<importers::Tags::ObservationValue<VolumeDataOptions<Grid::Coarse>>>(
             box),
-        coarse_volume_data);
+        coarse_volume_data<Dim>);
     return {std::move(box), true};
   }
 };
@@ -263,7 +296,7 @@ struct InitializeElement {
 
 template <size_t Dim, Grid TheGrid>
 void test_result(const ElementId<Dim>& element_index,
-                 const TestVolumeData<TheGrid>& test_data,
+                 const TestVolumeData<Dim, TheGrid>& test_data,
                  const Scalar<DataVector>& scalar_field,
                  const tnsr::I<DataVector, Dim>& vector_field) noexcept {
   const size_t raw_element_index = ElementId<Dim>{element_index}.block_id();
@@ -289,11 +322,11 @@ struct TestResult {
       const ElementId<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if (TheGrid == Grid::Fine) {
-      test_result(array_index, fine_volume_data, get<ScalarFieldTag>(box),
+      test_result(array_index, fine_volume_data<Dim>, get<ScalarFieldTag>(box),
                   get<VectorFieldTag<Dim>>(box));
     } else {
-      test_result(array_index, coarse_volume_data, get<ScalarFieldTag>(box),
-                  get<VectorFieldTag<Dim>>(box));
+      test_result(array_index, coarse_volume_data<Dim>,
+                  get<ScalarFieldTag>(box), get<VectorFieldTag<Dim>>(box));
     }
     return {std::move(box), true};
   }
