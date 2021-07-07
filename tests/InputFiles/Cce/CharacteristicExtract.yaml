@@ -5,13 +5,25 @@
 # Check: parse
 
 Evolution:
-  TimeStepper: RungeKutta3
+  InitialTimeStep: 0.25
 
 Observers:
   VolumeFileName: "CharacteristicExtractVolume"
   ReductionFileName: "CharacteristicExtractUnusedReduction"
 
 Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforthN:
+        Order: 3
+    InitialSlabSize: 10.0
+    StepChoosers:
+      - Constant: 1.0
+      - Increase:
+          Factor: 2
+    StepController:
+      BinaryFraction
+
   LMax: 12
   NumberOfRadialPoints: 12
   ObservationLMax: 8
@@ -21,7 +33,6 @@ Cce:
 
   StartTime: 0.0
   EndTime: 1000.0
-  TargetStepSize: 1.0
   BoundaryDataFilename: CceR0257.h5
   H5IsBondiData: false
   H5Interpolator:

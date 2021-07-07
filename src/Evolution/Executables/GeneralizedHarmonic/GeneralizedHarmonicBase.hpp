@@ -271,7 +271,7 @@ struct GeneralizedHarmonicTemplateBase<
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags = tmpl::list<
-      analytic_solution_tag, time_stepper_tag, Tags::EventsAndTriggers,
+      analytic_solution_tag, Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, frame>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<

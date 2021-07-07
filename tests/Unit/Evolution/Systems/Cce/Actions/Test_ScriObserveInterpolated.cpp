@@ -120,7 +120,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag, false>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
@@ -153,6 +153,7 @@ struct mock_characteristic_evolution {
 struct test_metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  static constexpr bool local_time_stepping = false;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -261,15 +262,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {start_time, filename, l_max, l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), scri_output_density,
-       false}};
+       scri_output_density, false}};
 
   runner.set_phase(test_metavariables::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, scri_interpolation_size,
-      serialize_and_deserialize(analytic_manager));
+      &runner, 0, target_step_size,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::RungeKutta3>()),
+      scri_interpolation_size, serialize_and_deserialize(analytic_manager));
   if (file_system::check_if_file_exists(filename + "0.h5")) {
     file_system::rm(filename + "0.h5", true);
   }

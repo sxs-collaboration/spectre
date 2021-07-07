@@ -103,6 +103,14 @@ struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
 };
 /// \endcond
 
+/// \ingroup TimeGroup
+/// From a list of tags `TagList`, extract all tags that are template
+/// specializations of `HistoryEvolvedVariables`.
+template <typename TagList>
+using get_all_history_tags =
+    tmpl::filter<TagList,
+                 tt::is_a_lambda<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
+
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for the stepper error measure.

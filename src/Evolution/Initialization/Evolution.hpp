@@ -23,6 +23,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -34,21 +35,21 @@ struct Inertial;
 
 namespace Evolution_detail {
 // Global time stepping
-template <typename Metavariables,
+template <typename Metavariables, typename DbTagsList,
           Requires<not Metavariables::local_time_stepping> = nullptr>
 TimeDelta get_initial_time_step(
     const Time& initial_time, const double initial_dt_value,
-    const Parallel::GlobalCache<Metavariables>& /*cache*/) noexcept {
+    const db::DataBox<DbTagsList>& /*box*/) noexcept {
   return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
 }
 
 // Local time stepping
-template <typename Metavariables,
+template <typename Metavariables, typename DbTagsList,
           Requires<Metavariables::local_time_stepping> = nullptr>
-TimeDelta get_initial_time_step(
-    const Time& initial_time, const double initial_dt_value,
-    const Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  const auto& step_controller = Parallel::get<Tags::StepController>(cache);
+TimeDelta get_initial_time_step(const Time& initial_time,
+                                const double initial_dt_value,
+                                const db::DataBox<DbTagsList>& box) noexcept {
+  const auto& step_controller = db::get<Tags::StepController>(box);
   return step_controller.choose_step(initial_time, initial_dt_value);
 }
 }  // namespace Evolution_detail
@@ -78,9 +79,20 @@ namespace Actions {
 /// `Initialization` phase action list prior to this action.
 template <typename Metavariables>
 struct TimeAndTimeStep {
-  using initialization_tags =
+  using initialization_tags = tmpl::flatten<
       tmpl::list<Tags::InitialTime, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<Metavariables::local_time_stepping>>;
+                 Tags::InitialSlabSize<Metavariables::local_time_stepping>,
+                 tmpl::conditional_t<
+                     Metavariables::local_time_stepping,
+                     tmpl::list<::Tags::TimeStepper<LtsTimeStepper>,
+                                ::Tags::StepChoosers, ::Tags::StepController>,
+                     ::Tags::TimeStepper<TimeStepper>>>>;
+
+  using initialization_tags_to_keep = tmpl::conditional_t<
+      Metavariables::local_time_stepping,
+      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
+                 ::Tags::StepController>,
+      tmpl::list<::Tags::TimeStepper<TimeStepper>>>;
 
   using simple_tags =
       tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
@@ -106,7 +118,7 @@ struct TimeAndTimeStep {
           nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const double initial_time_value = db::get<Tags::InitialTime>(box);
@@ -122,8 +134,9 @@ struct TimeAndTimeStep {
             : Slab::with_duration_to_end(initial_time_value, initial_slab_size);
     const Time initial_time =
         time_runs_forward ? initial_slab.start() : initial_slab.end();
-    const TimeDelta initial_dt = Evolution_detail::get_initial_time_step(
-        initial_time, initial_dt_value, cache);
+    const TimeDelta initial_dt =
+        Evolution_detail::get_initial_time_step<Metavariables>(
+            initial_time, initial_dt_value, box);
 
     // The slab number is increased in the self-start phase each
     // time one order of accuracy is obtained, and the evolution

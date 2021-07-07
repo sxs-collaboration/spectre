@@ -115,7 +115,6 @@ struct EvolutionMetavars
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
-      time_stepper_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<

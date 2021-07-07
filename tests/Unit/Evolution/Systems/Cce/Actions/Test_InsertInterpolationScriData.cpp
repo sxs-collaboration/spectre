@@ -81,12 +81,12 @@ struct SetRandomBoundaryValues {
     MAKE_GENERATOR(gen);
     UniformCustomDistribution<double> value_dist{0.1, 0.5};
     tmpl::for_each<typename Metavariables::cce_scri_tags>(
-        [&gen, &value_dist, &box ](auto tag_v) noexcept {
+        [&gen, &value_dist, &box](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
-              make_not_null(&box), [
-                &gen, &value_dist
-              ](const gsl::not_null<typename tag::type*> scri_value) noexcept {
+              make_not_null(&box),
+              [&gen, &value_dist](const gsl::not_null<typename tag::type*>
+                                      scri_value) noexcept {
                 fill_with_random_values(make_not_null(&get(*scri_value).data()),
                                         make_not_null(&gen),
                                         make_not_null(&value_dist));
@@ -94,9 +94,9 @@ struct SetRandomBoundaryValues {
         });
 
     db::mutate<Tags::InertialRetardedTime>(
-        make_not_null(&box), [
-          &gen, &value_dist
-        ](const gsl::not_null<Scalar<DataVector>*> scri_value) noexcept {
+        make_not_null(&box),
+        [&gen, &value_dist](
+            const gsl::not_null<Scalar<DataVector>*> scri_value) noexcept {
           fill_with_random_values(make_not_null(&get(*scri_value)),
                                   make_not_null(&gen),
                                   make_not_null(&value_dist));
@@ -142,7 +142,7 @@ struct MockCharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -176,6 +176,7 @@ struct MockCharacteristicEvolution {
 struct test_metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  static constexpr bool local_time_stepping = false;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -252,7 +253,6 @@ SPECTRE_TEST_CASE(
   const size_t l_max = 8;
   const size_t scri_output_density = 5;
 
-
   const double start_time = value_dist(gen);
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t buffer_size = 5;
@@ -263,18 +263,18 @@ SPECTRE_TEST_CASE(
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius, analytic_solution.get_clone()};
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {start_time, l_max, l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), scri_output_density,
+      {start_time, l_max, l_max, number_of_radial_points, scri_output_density,
        true}};
-
   runner.set_phase(test_metavariables::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, buffer_size,
-      serialize_and_deserialize(analytic_manager));
+      &runner, 0, target_step_size,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::RungeKutta3>()),
+      buffer_size, serialize_and_deserialize(analytic_manager));
   ActionTesting::emplace_component<MockObserver<test_metavariables>>(&runner,
-                                                                      0);
+                                                                     0);
   // the initialization actions
   for (size_t i = 0; i < 6; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

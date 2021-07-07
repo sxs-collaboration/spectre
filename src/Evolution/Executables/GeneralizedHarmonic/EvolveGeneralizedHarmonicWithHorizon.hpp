@@ -105,7 +105,7 @@ struct EvolutionMetavars
   using const_global_cache_tags = tmpl::list<
       typename GeneralizedHarmonicTemplateBase<
           EvolutionMetavars>::analytic_solution_tag,
-      time_stepper_tag, Tags::EventsAndTriggers,
+      Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, frame>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<

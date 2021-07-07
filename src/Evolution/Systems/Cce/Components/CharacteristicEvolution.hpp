@@ -33,6 +33,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -103,7 +104,8 @@ struct CharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag,
+          Metavariables::local_time_stepping>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
@@ -196,7 +198,8 @@ struct CharacteristicEvolution {
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe, record_time_stepper_data_and_step,
-      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
+      ::Actions::ChangeStepSize, ::Actions::AdvanceTime,
+      Actions::ExitIfEndTimeReached,
       Actions::ReceiveWorldtubeData<Metavariables>,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 
@@ -212,12 +215,8 @@ struct CharacteristicEvolution {
                              Metavariables::Phase::Evolve,
                              extract_action_list>>;
 
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags_from_actions<
-          phase_dependent_action_list>;
-
-  static void initialize(Parallel::CProxy_GlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  static void initialize(
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,

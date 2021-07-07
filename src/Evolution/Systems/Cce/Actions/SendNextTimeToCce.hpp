@@ -52,7 +52,6 @@ struct ReceiveNextElementTime;
  */
 template <typename InterpolationTargetTag>
 struct SendNextTimeToCce {
-  using const_global_cache_tags = tmpl::list<::Tags::TimeStepper<TimeStepper>>;
   template <typename DbTags, typename Metavariables, typename... InboxTags,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

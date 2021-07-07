@@ -19,6 +19,7 @@
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Printf.hpp"
+#include "Time/Tags.hpp"
 
 namespace Cce {
 namespace OptionTags {
@@ -33,6 +34,24 @@ struct Cce {
 struct Filtering {
   static constexpr Options::String help = {"Options for the filtering in Cce"};
   using group = Cce;
+};
+
+/// %Option group for evolution-related quantities in the CCE system
+struct Evolution {
+  static constexpr Options::String help = {"Options for the CCE evolution"};
+  using group = Cce;
+};
+
+/// A prefix for common tags (e.g. from Time/Tags.hpp) that are specific to CCE,
+/// so should be in the Cce::Evolution group.
+template <typename OptionTag>
+struct CceEvolutionPrefix {
+  using type = typename OptionTag::type;
+  static std::string name() noexcept {
+    return Options::template name<OptionTag>();
+  }
+  static constexpr Options::String help = OptionTag::help;
+  using group = Evolution;
 };
 
 struct LMax {
@@ -105,13 +124,6 @@ struct StartTime {
   static constexpr Options::String help{
       "Cce Start time (default to earliest possible time)."};
   static type suggested_value() noexcept { return {}; }
-  using group = Cce;
-};
-
-struct TargetStepSize {
-  using type = double;
-  static constexpr Options::String help{
-      "Target time step size for Cce Evolution"};
   using group = Cce;
 };
 
@@ -210,16 +222,6 @@ struct ScriInterpolationOrder : db::SimpleTag {
   }
 };
 
-struct TargetStepSize : db::SimpleTag {
-  using type = double;
-  using option_tags = tmpl::list<OptionTags::TargetStepSize>;
-
-  static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double target_step_size) noexcept {
-    return target_step_size;
-  }
-};
-
 struct ExtractionRadius : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
@@ -242,6 +244,27 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
+/// Tag for duplicating functionality of another tag, but allows creation from
+/// options in the Cce::Evolution option group.
+template <typename Tag>
+struct CceEvolutionPrefix : Tag {
+  using type = typename Tag::type;
+  using option_tags = db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
+                                       typename Tag::option_tags>;
+  static std::string name() noexcept { return Options::template name<Tag>(); }
+
+  static constexpr bool pass_metavariables = Tag::pass_metavariables;
+  template <typename Metavariables, typename... Args>
+  static type create_from_options(const Args&... args) noexcept {
+    return Tag::template create_from_options<Metavariables>(args...);
+  }
+
+  template <typename... Args>
+  static type create_from_options(const Args&... args) noexcept {
+    return Tag::create_from_options(args...);
+  }
+};
+
 /// A tag that constructs a `MetricWorldtubeDataManager` from options
 struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using type = std::unique_ptr<WorldtubeDataManager>;

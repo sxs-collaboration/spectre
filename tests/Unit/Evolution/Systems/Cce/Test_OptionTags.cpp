@@ -38,8 +38,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::InitializationTags::ScriInterpolationOrder>(
       "ScriInterpolationOrder");
-  TestHelpers::db::test_simple_tag<Cce::InitializationTags::TargetStepSize>(
-      "TargetStepSize");
   TestHelpers::db::test_simple_tag<Cce::InitializationTags::ExtractionRadius>(
       "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::InitializationTags::ScriOutputDensity>(
@@ -77,6 +75,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "AnalyticInitializeJ");
   TestHelpers::db::test_simple_tag<Cce::Tags::OutputNoninertialNews>(
       "OutputNoninertialNews");
+  TestHelpers::db::test_simple_tag<
+      Cce::Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
+      "TimeStepper");
 
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::LMax>("8") == 8_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::FilterLMax>("7") == 7_st);
@@ -99,8 +100,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
         Options::Auto<double>{2.0});
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::StartTime>("Auto") ==
         Options::Auto<double>{});
-  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::TargetStepSize>("0.5") ==
-        0.5);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::BoundaryDataFilename>(
             "OptionTagsCceR0100.h5") == "OptionTagsCceR0100.h5");
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::H5LookaheadTimes>("5") ==
@@ -160,6 +159,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  ExtractionRadius: 40.0\n"
       "  Amplitude: 0.1\n"
       "  Duration: 3.0");
+  TestHelpers::test_option_tag<Cce::OptionTags::CceEvolutionPrefix<
+      ::OptionTags::TimeStepper<TimeStepper>>>("RungeKutta3:");
 
   const std::string filename = "OptionTagsTestCceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
@@ -196,8 +197,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
             std::optional<double>(40.0)) == 40.0);
 
   CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);
-  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
-        0.2);
 
   CHECK(Cce::InitializationTags::ScriInterpolationOrder::create_from_options(
             6_st) == 6_st);
@@ -205,8 +204,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::InitializationTags::ScriOutputDensity::create_from_options(4_st) ==
         4_st);
 
-  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
-        0.2);
   CHECK(Cce::Tags::AnalyticBoundaryDataManager::create_from_options(
             10.0, 8,
             std::make_unique<Cce::Solutions::RotatingSchwarzschild>(10.0, 1.0,

@@ -106,7 +106,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag>,
+          typename Metavariables::evolved_swsh_tag, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -224,8 +224,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {l_max,
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
-       start_time, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>()}};
+       start_time, number_of_radial_points}};
 
   // create the test file, because on initialization the manager will need
   // to get basic data out of the file
@@ -235,8 +234,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
                            test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<writer_component>(
       &runner, 0, {Parallel::NodeLock{}});
-  ActionTesting::emplace_component<evolution_component>(&runner, 0,
-                                                        target_step_size);
+  ActionTesting::emplace_component<evolution_component>(
+      &runner, 0, target_step_size,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<::TimeSteppers::RungeKutta3>()));
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(

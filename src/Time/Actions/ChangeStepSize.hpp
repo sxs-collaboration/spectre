@@ -31,12 +31,6 @@ struct Next;
 
 /// Adjust the step size for local time stepping, returning true if the step
 /// just completed is accepted, and false if it is rejected.
-///
-/// \note this is a free function version of `Actions::ChangeStepSize`.
-/// This free function alternative permits the inclusion of the time step
-/// procedure in the middle of another action. When used as a free function, the
-/// calling action is responsible for specifying the const global cache tags
-/// needed by this function (`Tags::StepChoosers`, `Tags::StepController`).
 template <typename DbTags, typename Metavariables>
 bool change_step_size(
     const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -46,9 +40,19 @@ bool change_step_size(
   const auto& step_controller = db::get<Tags::StepController>(*box);
 
   const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
-  const auto& history = db::get<Tags::HistoryEvolvedVariables<>>(*box);
-
-  if (not time_stepper.can_change_step_size(next_time_id, history)) {
+  using history_tags = ::Tags::get_all_history_tags<DbTags>;
+  bool can_change_step_size = true;
+  tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
+                                &next_time_id](auto tag_v) noexcept {
+    if (not can_change_step_size) {
+      return;
+    }
+    using tag = typename decltype(tag_v)::type;
+    const auto& history = db::get<tag>(*box);
+    can_change_step_size =
+        time_stepper.can_change_step_size(next_time_id, history);
+  });
+  if (not can_change_step_size) {
     return true;
   }
 
@@ -112,10 +116,9 @@ namespace Actions {
 /// \brief Adjust the step size for local time stepping
 ///
 /// Uses:
-/// - GlobalCache:
+/// - DataBox:
 ///   - Tags::StepChoosers<StepChooserRegistrars>
 ///   - Tags::StepController
-/// - DataBox:
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
@@ -126,9 +129,6 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
 struct ChangeStepSize {
-  using const_global_cache_tags =
-      tmpl::list<Tags::StepChoosers, Tags::StepController>;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -150,7 +150,7 @@ struct ChangeStepSize {
     const bool step_successful = change_step_size(make_not_null(&box), cache);
     if (step_successful) {
       return {std::move(box), false,
-              tmpl::index_of<ActionList, ChangeStepSize>::value};
+              tmpl::index_of<ActionList, ChangeStepSize>::value + 1};
     } else {
       return {
           std::move(box), false,

@@ -195,8 +195,7 @@ struct Metavariables {
     static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
   };
 
-  using const_global_cache_tags =
-      tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::EventsAndTriggers>;
+  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
 
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "
