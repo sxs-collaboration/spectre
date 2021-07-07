@@ -24,6 +24,7 @@
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
@@ -365,10 +366,11 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
                             "    InitialExpirationDeltaT: 9.0\n"
                             "    ExpansionMap: \n"
                             "      OuterBoundary: 25.0\n"
-                            "      InitialExpansion: [1.0, 1.0]\n"
-                            "      InitialExpansionVelocity: [-0.1, -0.1]\n"
-                            "      FunctionOfTimeNames: ['ExpansionFactor', "
-                            "'ExpansionFactor']\n"
+                            "      InitialExpansion: 1.0\n"
+                            "      InitialExpansionVelocity: -0.1\n"
+                            "      FunctionOfTimeName: 'ExpansionFactor'\n"
+                            "      AsymptoticVelocityOuterBoundary: -0.1\n"
+                            "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
                             "    RotationAboutZAxisMap:\n"
                             "      InitialRotationAngle: 2.0\n"
                             "      InitialAngularVelocity: -0.2\n"
@@ -462,6 +464,12 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
   constexpr double expected_time = 1.0; // matches InitialTime: 1.0 above
   constexpr double expected_update_delta_t =
       9.0;  // matches InitialExpirationDeltaT: 9.0 above
+  constexpr double expected_initial_function_value =
+      1.0;  // hard-coded in BinaryCompactObject.cpp
+  constexpr double expected_asymptotic_velocity_outer_boundary =
+      -0.1;  // matches AsymptoticVelocityOuterBoundary: -0.1 above
+  constexpr double expected_decay_timescale_outer_boundary_velocity =
+      5.0;  // matches DecayTimescaleOuterBoundaryVelocity: 5.0 above
   std::array<DataVector, 3> expansion_factor_coefs{{{1.0}, {-0.1}, {0.0}}};
   std::array<DataVector, 4> rotation_angle_coefs{{{2.0}, {-0.2}, {0.0}, {0.0}}};
   std::array<DataVector, 4> lambda_factor_a0_coefs{
@@ -473,6 +481,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
+      std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>>
       expected_functions_of_time = std::make_tuple(
           std::pair<std::string,
@@ -490,6 +499,11 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
               "ExpansionFactor"s,
               {expected_time, expansion_factor_coefs,
                expected_time + expected_update_delta_t}},
+          std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>{
+              "ExpansionFactorOuterBoundary"s,
+              {expected_initial_function_value, expected_time,
+               expected_asymptotic_velocity_outer_boundary,
+               expected_decay_timescale_outer_boundary_velocity}},
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<3>>{
               "RotationAngle"s,
@@ -501,6 +515,11 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
   functions_of_time["ExpansionFactor"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time, expansion_factor_coefs, expiration_time);
+  functions_of_time["ExpansionFactorOuterBoundary"] =
+      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+          expected_initial_function_value, initial_time,
+          expected_asymptotic_velocity_outer_boundary,
+          expected_decay_timescale_outer_boundary_velocity);
   functions_of_time["RotationAngle"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
           initial_time, rotation_angle_coefs, expiration_time);
