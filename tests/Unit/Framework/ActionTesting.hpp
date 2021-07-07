@@ -419,8 +419,8 @@ bool InitializeDataBox<tmpl::list<SimpleTags...>,
 /// \endcond
 
 namespace ActionTesting_detail {
-// A mock class for the Charm++ generated CProxyElement_AlgorithmArray (we use
-// an array for everything, so no need to mock groups, nodegroups, singletons).
+// A mock class for the Charm++ generated CProxyElement_AlgorithmArray. This
+// is each element obtained by indexing a CProxy_AlgorithmArray.
 template <typename Component, typename InboxTagList>
 class MockDistributedObjectProxy {
  public:
@@ -495,9 +495,8 @@ class MockDistributedObjectProxy {
 };
 
 // A mock class for the Charm++ generated CProxy_AlgorithmArray or
-// CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup. (for singletons, just
-// use an array with a single element).
-// Here ChareType is MockArrayChare or MockGroupChare or MockNodeGroupChare.
+// CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup or
+// CProxy_AlgorithmSingleton.
 template <typename Component, typename Index, typename InboxTagList,
           typename ChareType>
 class MockCollectionOfDistributedObjectsProxy {
