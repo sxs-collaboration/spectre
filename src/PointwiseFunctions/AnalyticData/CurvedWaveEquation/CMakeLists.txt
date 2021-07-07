@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   PlaneWave3DKerrSchild.cpp
+  PlaneWaveMinkowski.cpp
   RegularSphericalWave3DKerrSchild.cpp
   )
 
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   AnalyticData.hpp
   PlaneWave3DKerrSchild.hpp
+  PlaneWaveMinkowski.hpp
   RegularSphericalWave3DKerrSchild.hpp
   ScalarWaveGr.hpp
   ScalarWaveGr.tpp

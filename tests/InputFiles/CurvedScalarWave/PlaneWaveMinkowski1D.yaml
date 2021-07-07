@@ -1,0 +1,81 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveCurvedPlaneWaveMinkowski1D
+# Check: parse;execute
+
+AnalyticData:
+  ScalarWaveGr:
+    Background:
+    ScalarField:
+      WaveVector: [1.0]
+      Center: [0.0]
+      Profile:
+        Sinusoid:
+          Amplitude: 1.0
+          Wavenumber: 1.0
+          Phase: 0.0
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepController: BinaryFraction
+  StepChoosers:
+    - Constant: 0.05
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
+
+DomainCreator:
+  Interval:
+    LowerBound: [0.0]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [2]
+    InitialGridPoints: [7]
+    TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary: Periodic
+      UpperBoundary: Periodic
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+# If filtering is enabled in the executable the filter can be controlled using:
+# Filtering:
+#   ExpFilter0:
+#     Alpha: 12
+#     HalfPower: 32
+
+EventsAndTriggers:
+  ? Slabs:
+      Specified:
+        Values: [5]
+  : - Completion
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
+        Offset: 0
+  : - ChangeSlabSize:
+        DelayChange: 3
+        StepChoosers:
+          # Based on the step size choices above, this should aim for
+          # about 100 steps per slab.
+          - Cfl:
+              SafetyFactor: 20
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "CurvedScalarPlaneWaveMinkowski1DVolume"
+  ReductionFileName: "CurvedScalarPlaneWaveMinkowski1DReductions"

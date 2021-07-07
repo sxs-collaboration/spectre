@@ -23,6 +23,7 @@ spectre_target_headers(
   Characteristics.hpp
   Constraints.hpp
   Equations.hpp
+  Initialize.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
@@ -39,3 +40,6 @@ target_link_libraries(
   GeneralRelativity
   Utilities
   )
+
+add_subdirectory(BoundaryConditions)
+add_subdirectory(BoundaryCorrections)
