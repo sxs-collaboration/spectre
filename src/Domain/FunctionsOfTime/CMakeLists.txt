@@ -9,7 +9,9 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FixedSpeedCubic.cpp
+  FunctionOfTimeHelpers.cpp
   PiecewisePolynomial.cpp
+  QuaternionFunctionOfTime.cpp
   ReadSpecPiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
@@ -21,8 +23,10 @@ spectre_target_headers(
   HEADERS
   FixedSpeedCubic.hpp
   FunctionOfTime.hpp
+  FunctionOfTimeHelpers.hpp
   OptionTags.hpp
   PiecewisePolynomial.hpp
+  QuaternionFunctionOfTime.hpp
   QuaternionHelpers.hpp
   ReadSpecPiecewisePolynomial.hpp
   RegisterDerivedWithCharm.hpp
