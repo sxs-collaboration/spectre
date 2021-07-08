@@ -714,8 +714,8 @@ namespace PUP {
 // provided _only_ to enable putting a `GlobalCache*` in the DataBox.
 //
 // SpECTRE parallel components with a `GlobalCache*` in their DataBox should
-// use a compute item that sets the pointer by calling `.ckLocalBranch` on a
-// stored proxy. When deserializing the DataBox, these components should call
+// set this pointer using a compute item that calls `Parallel::local_branch` on
+// a stored proxy. When deserializing the DataBox, these components should call
 // `db:mutate<GlobalCacheProxy>(box)` to force the DataBox to update the
 // pointer from the new Charm++ proxy.
 //
@@ -723,13 +723,13 @@ namespace PUP {
 // outside of a DataBox. But if this need arises, it will be necessary to
 // provide a non-kludgey pupper here.
 //
-// Correctly (de)serializing the `GlobalCache` pointer would require obtaining
-// a `CProxy_GlobalCache` item and calling `.ckLocalBranch()` on it --- just as
-// in the workflow described above, but within the pupper vs in the DataBox).
-// But this strategy fails when restarting from a checkpoint file, because
-// calling `.ckLocalBranch()` may not be well-defined in the unpacking pup call
-// when all Charm++ components may not yet be fully restored. This difficulty
-// is why we instead write an invalid pupper here.
+// Correctly (de)serializing the `GlobalCache*` would require obtaining a
+// `CProxy_GlobalCache` item and calling `Parallel::local_branch` on it ---
+// just as in the workflow described above, but within the pupper vs in the
+// DataBox. But this strategy fails when restarting from a checkpoint file,
+// because calling `Parallel::local_branch` may not be well-defined in the
+// unpacking pup call when all Charm++ components may not yet be fully restored.
+// This difficulty is why we instead write an invalid pupper here.
 //
 // In future versions of Charm++, the pup function may know whether it is
 // called in the context of checkpointing, load balancing, etc. This knowledge
