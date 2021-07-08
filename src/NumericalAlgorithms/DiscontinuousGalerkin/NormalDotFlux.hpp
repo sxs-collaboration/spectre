@@ -49,6 +49,19 @@ void normal_dot_flux(
   }
 }
 
+template <typename... ReturnTags, typename... FluxTags, size_t VolumeDim,
+          typename Fr>
+void normal_dot_flux(
+    const gsl::not_null<Variables<tmpl::list<ReturnTags...>>*> result,
+    const tnsr::i<DataVector, VolumeDim, Fr>& normal,
+    const Variables<tmpl::list<FluxTags...>>& fluxes) noexcept {
+  if (result->number_of_grid_points() != fluxes.number_of_grid_points()) {
+    result->initialize(fluxes.number_of_grid_points());
+  }
+  EXPAND_PACK_LEFT_TO_RIGHT(normal_dot_flux(
+      make_not_null(&get<ReturnTags>(*result)), normal, get<FluxTags>(fluxes)));
+}
+
 template <typename TagsList, size_t VolumeDim, typename Fr>
 auto normal_dot_flux(
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
@@ -57,13 +70,7 @@ auto normal_dot_flux(
         fluxes) noexcept {
   auto result = make_with_value<
       Variables<db::wrap_tags_in<::Tags::NormalDotFlux, TagsList>>>(fluxes, 0.);
-  tmpl::for_each<TagsList>([&result, &fluxes,
-                            &normal](auto local_tag) noexcept {
-    using tensor_tag = tmpl::type_from<decltype(local_tag)>;
-    normal_dot_flux(
-        make_not_null(&get<::Tags::NormalDotFlux<tensor_tag>>(result)), normal,
-        get<::Tags::Flux<tensor_tag, tmpl::size_t<VolumeDim>, Fr>>(fluxes));
-  });
+  normal_dot_flux(make_not_null(&result), normal, fluxes);
   return result;
 }
 /// @}
