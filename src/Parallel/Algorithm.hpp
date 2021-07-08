@@ -164,8 +164,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   using metavariables = typename ParallelComponent::metavariables;
   /// List off all the Tags that can be received into the Inbox
   using inbox_tags_list = Parallel::get_inbox_tags<all_actions_list>;
-  /// The type of the object used to identify the element of the array, group
-  /// or nodegroup spatially. The default should be an `int`.
+  /// The type of the object used to uniquely identify the element of the array,
+  /// group, or nodegroup. The default depends on the component, see
+  /// ParallelComponentHelpers.
   using array_index = typename get_array_index<
       typename ParallelComponent::chare_type>::template f<ParallelComponent>;
 
@@ -407,8 +408,6 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   double non_action_time_start_;
 #endif
 
-  static constexpr bool is_singleton =
-      std::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
   Parallel::CProxy_GlobalCache<metavariables> global_cache_proxy_;
   bool performing_action_ = false;
   PhaseType phase_{};
@@ -972,13 +971,11 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     set_array_index() {
-  if constexpr (not is_singleton) {
-    // down cast to the algorithm_type, so that the `thisIndex` method can be
-    // called, which is defined in the CBase class
-    array_index_ = static_cast<typename chare_type::template algorithm_type<
-        ParallelComponent, array_index>&>(*this)
-                       .thisIndex;
-  }
+  // down cast to the algorithm_type, so that the `thisIndex` method can be
+  // called, which is defined in the CBase class
+  array_index_ = static_cast<typename chare_type::template algorithm_type<
+      ParallelComponent, array_index>&>(*this)
+                     .thisIndex;
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>

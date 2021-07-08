@@ -152,7 +152,7 @@ correctly with Charm++ 7.0.0. Disabling the test for now until this is \
 resolved.")
 else()
   add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
-    "AlgorithmParallel" "Objects migrating: 14")
+    "AlgorithmParallel" "Objects migrating: 15")
 endif()
 
 add_algorithm_test(

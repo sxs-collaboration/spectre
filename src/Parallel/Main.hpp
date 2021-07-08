@@ -465,23 +465,6 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
             &global_cache_dependency);
   });
 
-  // Construct the proxies for the single chares
-  using singleton_component_list =
-      tmpl::filter<component_list,
-                   Parallel::is_chare_proxy<tmpl::bind<
-                       Parallel::proxy_from_parallel_component, tmpl::_1>>>;
-  tmpl::for_each<singleton_component_list>([this, &the_parallel_components](
-                                               auto parallel_component_v) {
-    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
-    using ParallelComponentProxy =
-        Parallel::proxy_from_parallel_component<parallel_component>;
-    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
-        ParallelComponentProxy::ckNew(
-            global_cache_proxy_,
-            Parallel::create_from_options<Metavariables>(
-                options_, typename parallel_component::initialization_tags{}));
-  });
-
   // Create proxies for empty array chares (whose elements will be created by
   // the allocate functions of the array components during
   // execute_initialization_phase)
@@ -594,12 +577,40 @@ void Main<Metavariables>::
       tmpl::filter<component_list,
                    Parallel::is_array_proxy<tmpl::bind<
                        Parallel::proxy_from_parallel_component, tmpl::_1>>>;
-  tmpl::for_each<array_component_list>([this](auto parallel_component_v) {
+  // Put each singleton on a different proc. In the future, this should be
+  // changed so that no DG elements get placed on these procs so singletons have
+  // their own procs.
+  int singleton_which_proc = 0;
+  const int number_of_procs = sys::number_of_procs();
+  tmpl::for_each<array_component_list>([this, &singleton_which_proc,
+                                        &number_of_procs](
+                                           auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
-    parallel_component::allocate_array(
-        global_cache_proxy_,
-        Parallel::create_from_options<Metavariables>(
-            options_, typename parallel_component::initialization_tags{}));
+    if constexpr (std::is_same<typename parallel_component::chare_type,
+                               Parallel::Algorithms::Singleton>::value) {
+      // This is a Spectre singleton component built on a Charm++ array chare,
+      // so we allocate a single element.
+      auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
+      auto& array_proxy =
+          Parallel::get_parallel_component<parallel_component>(local_cache);
+      array_proxy[0].insert(
+          global_cache_proxy_,
+          Parallel::create_from_options<Metavariables>(
+              options_, typename parallel_component::initialization_tags{}),
+          singleton_which_proc);
+      array_proxy.doneInserting();
+      singleton_which_proc = singleton_which_proc + 1 == number_of_procs
+                                 ? 0
+                                 : singleton_which_proc + 1;
+    } else {
+      // This is a Spectre array component built on a Charm++ array chare. The
+      // component is in charge of allocating and distributing its elements over
+      // the computing system.
+      parallel_component::allocate_array(
+          global_cache_proxy_,
+          Parallel::create_from_options<Metavariables>(
+              options_, typename parallel_component::initialization_tags{}));
+    }
   });
 
   // Free any resources from the initial option parsing.

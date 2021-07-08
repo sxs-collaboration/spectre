@@ -5,7 +5,7 @@
 
 #include "Parallel/ArrayIndex.hpp"
 
-#include "Parallel/Algorithms/AlgorithmSingleton.decl.h"
+#include "Parallel/Algorithms/AlgorithmArray.decl.h"
 
 namespace Parallel {
 namespace Algorithms {
@@ -27,25 +27,17 @@ namespace Algorithms {
  *   https://charm.readthedocs.io/en/latest/charm++/manual.html#creating-a-ckcallback-object
  */
 struct Singleton {
-  template <typename ParallelComponent,
-            typename SpectreArrayIndex>
-  using cproxy = CProxy_AlgorithmSingleton<ParallelComponent,
-                                           SpectreArrayIndex>;
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  using cproxy = CProxy_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
 
-  template <typename ParallelComponent,
-            typename SpectreArrayIndex>
-  using cbase = CBase_AlgorithmSingleton<ParallelComponent,
-                                         SpectreArrayIndex>;
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  using cbase = CBase_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
 
-  template <typename ParallelComponent,
-            typename SpectreArrayIndex>
-  using algorithm_type = AlgorithmSingleton<ParallelComponent,
-                                            SpectreArrayIndex>;
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  using algorithm_type = AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
 
-  template <typename ParallelComponent,
-            typename SpectreArrayIndex>
-  using ckindex = CkIndex_AlgorithmSingleton<ParallelComponent,
-                                             SpectreArrayIndex>;
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  using ckindex = CkIndex_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
   using cproxy_section = void;

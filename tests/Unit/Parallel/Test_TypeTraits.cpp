@@ -42,8 +42,6 @@ struct NodegroupParallelComponent {
   using initialization_tags = tmpl::list<>;
 };
 
-using singleton_proxy =
-    CProxy_AlgorithmSingleton<SingletonParallelComponent, int>;
 // If passing proxy to a full array, we expect it to be from a
 // Parallel::Algorithms::Singleton. If passing proxy to an element, we expect it
 // to be from a Parallel::Algorithms::Array.
@@ -59,8 +57,6 @@ static_assert(Parallel::is_array_proxy<array_proxy>::value,
               "Failed testing type trait is_array_proxy");
 static_assert(not Parallel::is_array_proxy<array_element_proxy>::value,
               "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<singleton_proxy>::value,
-              "Failed testing type trait is_array_proxy");
 static_assert(not Parallel::is_array_proxy<group_proxy>::value,
               "Failed testing type trait is_array_proxy");
 static_assert(not Parallel::is_array_proxy<nodegroup_proxy>::value,
@@ -70,29 +66,14 @@ static_assert(not Parallel::is_array_element_proxy<array_proxy>::value,
               "Failed testing type trait is_array_element_proxy");
 static_assert(Parallel::is_array_element_proxy<array_element_proxy>::value,
               "Failed testing type trait is_array_element_proxy");
-static_assert(not Parallel::is_array_element_proxy<singleton_proxy>::value,
-              "Failed testing type trait is_array_element_proxy");
 static_assert(not Parallel::is_array_element_proxy<group_proxy>::value,
               "Failed testing type trait is_array_element_proxy");
 static_assert(not Parallel::is_array_element_proxy<nodegroup_proxy>::value,
               "Failed testing type trait is_array_element_proxy");
 
-static_assert(not Parallel::is_chare_proxy<array_proxy>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(not Parallel::is_chare_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(Parallel::is_chare_proxy<singleton_proxy>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(not Parallel::is_chare_proxy<group_proxy>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(not Parallel::is_chare_proxy<nodegroup_proxy>::value,
-              "Failed testing type trait is_chare_proxy");
-
 static_assert(not Parallel::is_group_proxy<array_proxy>::value,
               "Failed testing type trait is_group_proxy");
 static_assert(not Parallel::is_group_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(not Parallel::is_group_proxy<singleton_proxy>::value,
               "Failed testing type trait is_group_proxy");
 static_assert(Parallel::is_group_proxy<group_proxy>::value,
               "Failed testing type trait is_group_proxy");
@@ -102,8 +83,6 @@ static_assert(not Parallel::is_group_proxy<nodegroup_proxy>::value,
 static_assert(not Parallel::is_node_group_proxy<array_proxy>::value,
               "Failed testing type trait is_node_group_proxy");
 static_assert(not Parallel::is_node_group_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_node_group_proxy");
-static_assert(not Parallel::is_node_group_proxy<singleton_proxy>::value,
               "Failed testing type trait is_node_group_proxy");
 static_assert(not Parallel::is_node_group_proxy<group_proxy>::value,
               "Failed testing type trait is_node_group_proxy");

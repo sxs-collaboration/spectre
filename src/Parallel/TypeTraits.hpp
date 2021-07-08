@@ -26,11 +26,6 @@ struct is_array_element_proxy
     : std::is_base_of<CProxyElement_ArrayElement, T>::type {};
 
 /// \ingroup ParallelGroup
-/// Check if `T` is a Charm++ proxy for a chare
-template <typename T>
-struct is_chare_proxy : std::is_base_of<CProxy_Chare, T>::type {};
-
-/// \ingroup ParallelGroup
 /// Check if `T` is a Charm++ proxy for a group chare
 template <typename T>
 struct is_group_proxy : std::is_base_of<CProxy_IrrGroup, T>::type {};
