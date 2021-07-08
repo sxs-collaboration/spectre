@@ -23,7 +23,7 @@ lines below.
 - [ ] The code follows the stylistic and code quality guidelines listed in the
   [code review guide](https://spectre-code.org/code_review_guide.html).
 - [ ] The PR lists upgrade instructions and is labeled `bugfix` or
-  `major new feature` if appropriate.
+  `new feature` if appropriate.
 
 ### Further comments
 

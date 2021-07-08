@@ -109,12 +109,12 @@ class TestCompileReleaseNotes(unittest.TestCase):
         major_pr1 = PullRequest(id=3,
                                 title="This is big",
                                 author="author2",
-                                group='major new feature',
+                                group='new feature',
                                 upgrade_instructions="- Do this.\n- And that.")
         major_pr2 = PullRequest(id=4,
                                 title="Another feature",
                                 author="author3",
-                                group='major new feature')
+                                group='new feature')
         bugfix_pr1 = PullRequest(
             id=5,
             title="Fixed this bug",
@@ -143,7 +143,7 @@ class TestCompileReleaseNotes(unittest.TestCase):
 
                 ## Merged pull-requests (6)
 
-                **Major new features (2):**
+                **New features (2):**
 
                 - This is big (#3)
                 - Another feature (#4)

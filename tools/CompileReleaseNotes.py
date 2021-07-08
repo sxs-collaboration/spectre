@@ -53,7 +53,7 @@ class PullRequest:
 
 
 # These should correspond to labels on GitHub
-PULL_REQUEST_GROUPS = ['major new feature', None, 'bugfix']
+PULL_REQUEST_GROUPS = ['new feature', None, 'bugfix']
 
 
 def get_merged_pull_requests(repo: git.Repo, from_rev: Revision,
@@ -159,7 +159,7 @@ def compile_release_notes(merged_prs: List[PullRequest]) -> str:
     if len(merged_prs) > 0:
         for group, prs_iterator in grouped_prs:
             group_header = {
-                'major new feature': "Major new features",
+                'new feature': "New features",
                 'bugfix': "Bugfixes",
                 None: "General changes",
             }[group]

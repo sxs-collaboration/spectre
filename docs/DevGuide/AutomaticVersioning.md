@@ -27,7 +27,7 @@ matches the date at the time the "Release version" job runs.
 
 The release notes are compiled automatically based on the activity in the
 repository since the last release. They will contain a list of merged
-pull-requests. Pull-requests labeled "major new feature" or "bugfix" on GitHub
+pull-requests. Pull-requests labeled "new feature" or "bugfix" on GitHub
 will be classified as such in the release notes.
 
 The script `tools/CompileReleaseNotes.py` generates the release notes and can
