@@ -529,7 +529,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 
   PhaseControl::initialize_phase_change_decision_data(
       make_not_null(&phase_change_decision_data_),
-      *global_cache_proxy_.ckLocalBranch());
+      *Parallel::local_branch(global_cache_proxy_));
 }
 
 template <typename Metavariables>
@@ -608,7 +608,7 @@ void Main<Metavariables>::
   tmpl::for_each<component_list>([this](auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     Parallel::get_parallel_component<parallel_component>(
-        *(global_cache_proxy_.ckLocalBranch()))
+        *Parallel::local_branch(global_cache_proxy_))
         .start_phase(current_phase_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
@@ -762,8 +762,8 @@ void contribute_to_phase_change_reduction(
       "Phase change reduction is not supported for singleton chares. "
       "Consider constructing your chare as a length-1 array chare if you "
       "need to contribute to phase change data");
-  Parallel::get_parallel_component<SenderComponent>(cache)
-      .ckLocalBranch()
+  Parallel::local_branch(
+      Parallel::get_parallel_component<SenderComponent>(cache))
       ->contribute(static_cast<int>(reduction_data.size()),
                    reduction_data.packed().get(),
                    Parallel::charmxx::charm_reducer_functions.at(

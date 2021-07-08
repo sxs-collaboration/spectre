@@ -13,6 +13,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
 #include "Parallel/Section.hpp"
@@ -86,7 +87,7 @@ struct ElementsAllocator
             serialize<tuples::TaggedTuple<InitializationTags...>>(
                 original_initialization_items)
                 .data());
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& element_array =
         Parallel::get_parallel_component<ElementArray>(local_cache);
     const auto& domain = get<domain::Tags::Domain<Dim>>(local_cache);

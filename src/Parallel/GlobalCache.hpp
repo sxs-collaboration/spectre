@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -461,7 +462,7 @@ template <typename GlobalCacheTag, typename Function>
 bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     const Function& function) {
   if (mutable_global_cache_proxy_is_set()) {
-    return mutable_global_cache_proxy_.ckLocalBranch()
+    return Parallel::local_branch(mutable_global_cache_proxy_)
         ->template mutable_cache_item_is_ready<GlobalCacheTag>(function);
   } else {
     return mutable_global_cache_
@@ -582,7 +583,7 @@ auto get(const GlobalCache<Metavariables>& cache)
     // Tag is not in the const tags, so use MutableGlobalCache
     if (cache.mutable_global_cache_proxy_is_set()) {
       const auto& local_mutable_cache =
-          *cache.mutable_global_cache_proxy_.ckLocalBranch();
+          *Parallel::local_branch(cache.mutable_global_cache_proxy_);
       return local_mutable_cache.template get<GlobalCacheTag>();
     } else {
       return cache.mutable_global_cache_->template get<GlobalCacheTag>();
@@ -670,7 +671,7 @@ struct GlobalCacheImplCompute : GlobalCacheImpl<Metavariables>, db::ComputeTag {
       const gsl::not_null<Parallel::GlobalCache<Metavariables>**>
           local_branch_of_global_cache,
       const CProxy_GlobalCache<Metavariables>& global_cache_proxy) {
-    *local_branch_of_global_cache = global_cache_proxy.ckLocalBranch();
+    *local_branch_of_global_cache = Parallel::local_branch(global_cache_proxy);
   }
 };
 

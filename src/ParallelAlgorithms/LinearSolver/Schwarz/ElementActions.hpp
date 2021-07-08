@@ -42,6 +42,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
@@ -138,10 +139,10 @@ void contribute_to_subdomain_stats_observation(
     const size_t iteration_id, const size_t subdomain_solve_num_iterations,
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
     const std::string& section_observation_key, const bool observe_per_core) {
-  auto& local_observer =
-      *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-           cache)
-           .ckLocalBranch();
+  auto& local_observer = *Parallel::local_branch(
+      Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+          cache));
+
   auto formatter =
       UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                ::Verbosity::Verbose)

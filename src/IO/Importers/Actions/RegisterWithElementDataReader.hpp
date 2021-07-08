@@ -13,6 +13,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
@@ -51,10 +52,9 @@ struct RegisterWithElementDataReader {
       const ParallelComponent* const /*meta*/) {
     const std::string element_name = MakeString{}
                                      << ElementId<Dim>(array_index);
-    auto& local_reader_component =
-        *Parallel::get_parallel_component<
-             importers::ElementDataReader<Metavariables>>(cache)
-             .ckLocalBranch();
+    auto& local_reader_component = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            importers::ElementDataReader<Metavariables>>(cache));
     Parallel::simple_action<importers::Actions::RegisterElementWithSelf>(
         local_reader_component,
         observers::ArrayComponentId(

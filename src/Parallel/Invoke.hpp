@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "Parallel/Local.hpp"
 #include "Parallel/MaxInlineMethodsReached.hpp"
 #include "Parallel/TypeTraits.hpp"
 
@@ -68,8 +69,8 @@ void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) {
  */
 template <typename Action, typename Proxy, typename... Args>
 decltype(auto) local_synchronous_action(Proxy&& proxy, Args&&... args) {
-  return proxy.ckLocalBranch()->template local_synchronous_action<Action>(
-      std::forward<Args>(args)...);
+  return Parallel::local_branch(proxy)
+      ->template local_synchronous_action<Action>(std::forward<Args>(args)...);
 }
 
 /// @{

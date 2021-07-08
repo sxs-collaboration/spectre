@@ -75,6 +75,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -359,7 +360,7 @@ struct GhValenciaDivCleanTemplateBase<
       const Parallel::CProxy_GlobalCache<derived_metavars>& cache_proxy) {
     const auto next_phase = PhaseControl::arbitrate_phase_change(
         phase_change_decision_data, current_phase,
-        *(cache_proxy.ckLocalBranch()));
+        *Parallel::local_branch(cache_proxy));
     if (next_phase.has_value()) {
       return next_phase.value();
     }

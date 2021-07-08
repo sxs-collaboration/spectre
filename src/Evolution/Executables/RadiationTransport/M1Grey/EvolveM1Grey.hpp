@@ -48,6 +48,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
@@ -295,8 +296,8 @@ struct EvolutionMetavars {
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
     const auto next_phase = PhaseControl::arbitrate_phase_change(
-            phase_change_decision_data, current_phase,
-            *(cache_proxy.ckLocalBranch()));
+        phase_change_decision_data, current_phase,
+        *Parallel::local_branch(cache_proxy));
     if (next_phase.has_value()) {
       return next_phase.value();
     }
@@ -325,7 +326,8 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &setup_error_handling,
+    &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
