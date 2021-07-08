@@ -9,6 +9,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -55,7 +56,7 @@ struct Component {
       const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     if (next_phase == Metavariables::Phase::Execute) {
-      auto& local_cache = *(global_cache.ckLocalBranch());
+      auto& local_cache = *Parallel::local_branch(global_cache);
       Parallel::simple_action<error_size_zero>(
           Parallel::get_parallel_component<Component>(local_cache));
     }

@@ -7,6 +7,7 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -113,10 +114,9 @@ struct RegisterElementWithInterpolator {
   static void register_or_deregister_impl(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/) noexcept {
-    auto& interpolator =
-        *Parallel::get_parallel_component<::intrp::Interpolator<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& interpolator = *Parallel::local_branch(
+        Parallel::get_parallel_component<::intrp::Interpolator<Metavariables>>(
+            cache));
     Parallel::simple_action<RegisterOrDeregisterAction>(interpolator);
   }
 

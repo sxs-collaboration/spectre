@@ -13,6 +13,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -58,7 +59,8 @@ struct WriteSimpleData {
           Parallel::get_parallel_component<ParallelComponent>(cache);
       h5::H5File<h5::AccessType::ReadWrite> h5file(
           file_prefix +
-              std::to_string(Parallel::my_node(*my_proxy.ckLocalBranch())) +
+              std::to_string(
+                  Parallel::my_node(*Parallel::local_branch(my_proxy))) +
               ".h5",
           true);
       const size_t version_number = 0;

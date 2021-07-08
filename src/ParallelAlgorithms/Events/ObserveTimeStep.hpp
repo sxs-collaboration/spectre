@@ -25,6 +25,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
@@ -171,10 +172,9 @@ class ObserveTimeStep : public Event {
     const double step_size = abs(time_step.value());
     const double wall_time = sys::wall_time();
 
-    auto& local_observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     auto formatter =
         output_time_ ? std::make_optional(Events::detail::FormatTimeOutput{})
                      : std::nullopt;

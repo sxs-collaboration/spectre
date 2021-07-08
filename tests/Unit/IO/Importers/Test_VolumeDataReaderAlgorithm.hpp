@@ -32,6 +32,7 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
@@ -237,7 +238,7 @@ struct TestDataWriter {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_component = Parallel::get_parallel_component<TestDataWriter>(
-        *(global_cache.ckLocalBranch()));
+        *Parallel::local_branch(global_cache));
     local_component.start_phase(next_phase);
   }
 };
@@ -335,7 +336,7 @@ struct ElementArray {
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
           initialization_items) noexcept {
     auto& array_proxy = Parallel::get_parallel_component<ElementArray>(
-        *(global_cache.ckLocalBranch()));
+        *Parallel::local_branch(global_cache));
 
     for (size_t i = 0, which_proc = 0,
                 number_of_procs = static_cast<size_t>(sys::number_of_procs());
@@ -351,7 +352,7 @@ struct ElementArray {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ElementArray>(local_cache)
         .start_phase(next_phase);
   }

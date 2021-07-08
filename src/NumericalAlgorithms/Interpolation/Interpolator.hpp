@@ -9,6 +9,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
@@ -36,7 +37,7 @@ struct Interpolator {
       typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<Interpolator>(local_cache)
         .start_phase(next_phase);
   };

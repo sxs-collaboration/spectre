@@ -15,6 +15,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 
 /// \cond
 template <class... Tags>
@@ -51,10 +52,9 @@ struct RegisterWithObservers {
   static void register_or_deregister_impl(
       db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index) noexcept {
-    auto& observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     const auto [type_of_observation, observation_id] =
         RegisterHelper::template register_info<ParallelComponent>(box,
                                                                   array_index);

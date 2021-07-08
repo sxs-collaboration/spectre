@@ -60,7 +60,7 @@ struct Component {
       const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     if (next_phase == Metavariables::Phase::Execute) {
-      auto& local_cache = *(global_cache.ckLocalBranch());
+      auto& local_cache = *Parallel::local_branch(global_cache);
       Parallel::simple_action<error_call_single_action_from_action>(
           *Parallel::local(
               Parallel::get_parallel_component<Component>(local_cache)));

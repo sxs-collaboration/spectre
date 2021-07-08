@@ -10,6 +10,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
@@ -51,7 +52,7 @@ struct ElementDataReader {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ElementDataReader>(local_cache)
         .start_phase(next_phase);
   }

@@ -14,6 +14,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
@@ -398,7 +399,7 @@ struct InterpolationTarget {
   static void execute_next_phase(
       typename metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<
         InterpolationTarget<metavariables, InterpolationTargetTag>>(local_cache)
         .start_phase(next_phase);

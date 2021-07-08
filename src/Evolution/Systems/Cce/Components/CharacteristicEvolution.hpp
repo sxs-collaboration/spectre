@@ -29,6 +29,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -198,7 +199,7 @@ struct CharacteristicEvolution {
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<CharacteristicEvolution<Metavariables>>(
         local_cache)
         .start_phase(next_phase);

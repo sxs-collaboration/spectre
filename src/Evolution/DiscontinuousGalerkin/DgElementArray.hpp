@@ -16,6 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
@@ -65,7 +66,7 @@ struct DgElementArray {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<DgElementArray>(local_cache)
         .start_phase(next_phase);
   }
@@ -76,7 +77,7 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
     Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
     const tuples::tagged_tuple_from_typelist<initialization_tags>&
         initialization_items) noexcept {
-  auto& local_cache = *(global_cache.ckLocalBranch());
+  auto& local_cache = *Parallel::local_branch(global_cache);
   auto& dg_element_array =
       Parallel::get_parallel_component<DgElementArray>(local_cache);
   const auto& domain =

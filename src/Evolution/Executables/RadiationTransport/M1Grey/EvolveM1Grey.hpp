@@ -51,6 +51,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -302,7 +303,7 @@ struct EvolutionMetavars {
     const auto next_phase =
         PhaseControl::arbitrate_phase_change<phase_changes>(
             phase_change_decision_data, current_phase,
-            *(cache_proxy.ckLocalBranch()));
+            *Parallel::local_branch(cache_proxy));
     if (next_phase.has_value()) {
       return next_phase.value();
     }
