@@ -21,8 +21,18 @@ template <typename Proxy>
 auto* local(Proxy&& proxy) noexcept {
   // It only makes sense to call .ckLocal() on some kinds of proxies
   static_assert(is_chare_proxy<std::decay_t<Proxy>>::value or
-                is_array_element_proxy<std::decay_t<Proxy>>::value);
-  return proxy.ckLocal();
+                is_array_element_proxy<std::decay_t<Proxy>>::value or
+                is_array_proxy<std::decay_t<Proxy>>::value);
+  if constexpr (is_array_proxy<std::decay_t<Proxy>>::value) {
+    // The array case should be a single-element array serving as a singleton
+    //
+    // TODO for code review: can we check this somehow? Using an int as the
+    // array_index is a good start, because most of our array chares use a
+    // different array index type, but this isn't robust...
+    return proxy[0].ckLocal();
+  } else {
+    return proxy.ckLocal();
+  }
 }
 
 /// Wrapper for calling Charm++'s `.ckLocalBranch()` on a proxy
