@@ -11,15 +11,6 @@
 #include "Parallel/TypeTraits.hpp"
 
 namespace Parallel {
-namespace detail {
-template <typename T, typename = std::void_t<>>
-struct has_ckLocal_method : std::false_type {};
-
-template <typename T>
-struct has_ckLocal_method<T, std::void_t<decltype(std::declval<T>().ckLocal())>>
-    : std::true_type {};
-}  // namespace detail
-
 /*!
  * \ingroup ParallelGroup
  * \brief Send the data `args...` to the algorithm running on `proxy`, and tag
@@ -42,7 +33,7 @@ void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
   // each function argument, ensuring a redundant template parameter for the
   // `ReceiveDataType`. Then, that template parameter cannot be inferred so must
   // be explicitly specified.
-  if constexpr (detail::has_ckLocal_method<std::decay_t<Proxy>>::value) {
+  if constexpr (is_array_proxy<std::decay_t<Proxy>>::value) {
     proxy.template receive_data<ReceiveTag, std::decay_t<ReceiveDataType>>(
         std::move(temporal_id), std::forward<ReceiveDataType>(receive_data),
         enable_if_disabled);
