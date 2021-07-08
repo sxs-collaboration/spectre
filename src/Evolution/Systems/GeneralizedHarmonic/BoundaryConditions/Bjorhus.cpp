@@ -290,7 +290,10 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   if (face_mesh_velocity.has_value()) {
     const auto radial_mesh_velocity =
         get(dot_product(normal_covector, *face_mesh_velocity));
-    if (max(radial_mesh_velocity) > 0.) {
+    // we use 1e-10 instead of 0 below to allow for purely tangentially
+    // moving grids, eg a rotating sphere, with some leeway for
+    // floating-point errors.
+    if (max(radial_mesh_velocity) > 1.e-10) {
       return {
           "We found the radial mesh velocity points in the direction "
           "of the outward normal, i.e. we possibly have an expanding "
