@@ -99,6 +99,27 @@ struct NegateCompute : Negate, db::ComputeTag {
 };
 }  // namespace Tags
 
+
+// Structs for compute_vars_to_interpolate.
+struct ComputeSquare {
+  template <typename SrcTag, typename DestTag>
+  static void apply(
+      const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
+      const Variables<tmpl::list<SrcTag>>& src_vars,
+      const Mesh<3>& /* mesh */) noexcept {
+    get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
+  }
+};
+struct ComputeNegate {
+  template <typename SrcTag, typename DestTag>
+  static void apply(
+      const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
+      const Variables<tmpl::list<SrcTag>>& src_vars,
+      const Mesh<3>& /* mesh */) noexcept {
+    get(get<DestTag>(*target_vars)) = -get(get<SrcTag>(src_vars));
+  }
+};
+
 // Functions for testing whether we have
 // interpolated correctly.  These encode the
 // number of points and the coordinates (chosen by hand to
@@ -215,7 +236,7 @@ struct mock_interpolator {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
-    using compute_items_on_source = tmpl::list<Tags::SquareCompute>;
+    using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
@@ -224,7 +245,7 @@ struct MockMetavariables {
         TestFunction<InterpolationTargetA, Tags::Square>;
   };
   struct InterpolationTargetB {
-    using compute_items_on_source = tmpl::list<Tags::SquareCompute>;
+    using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<Tags::NegateCompute>;
     using compute_target_points =
@@ -233,7 +254,6 @@ struct MockMetavariables {
         TestFunction<InterpolationTargetB, Tags::Negate>;
   };
   struct InterpolationTargetC {
-    using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
