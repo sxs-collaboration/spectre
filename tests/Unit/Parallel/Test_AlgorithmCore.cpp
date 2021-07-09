@@ -24,6 +24,7 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -215,7 +216,7 @@ struct NoOpsComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     // [start_phase]
     Parallel::get_parallel_component<NoOpsComponent>(local_cache)
         .start_phase(next_phase);
@@ -381,7 +382,7 @@ struct MutateComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<MutateComponent>(local_cache)
         .start_phase(next_phase);
     if (next_phase == Metavariables::Phase::MutateFinish) {
@@ -556,7 +557,7 @@ struct ReceiveComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ReceiveComponent>(local_cache)
         .start_phase(next_phase);
     if (next_phase == Metavariables::Phase::ReceiveStart) {
@@ -666,7 +667,7 @@ struct AnyOrderComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
         .start_phase(next_phase);
     if (next_phase == Metavariables::Phase::AnyOrderFinish) {

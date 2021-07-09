@@ -19,6 +19,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
@@ -149,7 +150,7 @@ struct ArrayComponent {
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       tuples::tagged_tuple_from_typelist<initialization_tags>
           initialization_items) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
 
@@ -200,7 +201,7 @@ struct ArrayComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ArrayComponent>(local_cache)
         .start_phase(next_phase);
   }

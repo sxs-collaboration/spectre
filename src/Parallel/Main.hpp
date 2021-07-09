@@ -20,6 +20,7 @@
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/Printf.hpp"
@@ -425,8 +426,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                 Parallel::is_node_group_proxy<tmpl::bind<
                     Parallel::proxy_from_parallel_component, tmpl::_1>>>>;
   CkEntryOptions global_cache_dependency;
-  global_cache_dependency.setGroupDepID(
-      global_cache_proxy_.ckGetGroupID());
+  global_cache_dependency.setGroupDepID(global_cache_proxy_.ckGetGroupID());
 
   tmpl::for_each<group_component_list>([this, &the_parallel_components,
                                         &global_cache_dependency](
@@ -441,26 +441,6 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                 options_, typename parallel_component::initialization_tags{}),
             &global_cache_dependency);
   });
-
-  // Construct the proxies for the single chares
-  using singleton_component_list =
-      tmpl::filter<component_list,
-                   Parallel::is_chare_proxy<tmpl::bind<
-                       Parallel::proxy_from_parallel_component, tmpl::_1>>>;
-  tmpl::for_each<singleton_component_list>(
-      [this, &the_parallel_components](auto parallel_component_v) noexcept {
-        using parallel_component =
-            tmpl::type_from<decltype(parallel_component_v)>;
-        using ParallelComponentProxy =
-            Parallel::proxy_from_parallel_component<parallel_component>;
-        tuples::get<tmpl::type_<ParallelComponentProxy>>(
-            the_parallel_components) =
-            ParallelComponentProxy::ckNew(
-                global_cache_proxy_,
-                Parallel::create_from_options<Metavariables>(
-                    options_,
-                    typename parallel_component::initialization_tags{}));
-      });
 
   // Create proxies for empty array chares (whose elements will be created by
   // the allocate functions of the array components during
@@ -505,13 +485,13 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
           allocate_array_components_and_execute_initialization_phase(),
       this->thisProxy);
   global_cache_proxy_.set_parallel_components(the_parallel_components,
-                                                    callback);
+                                              callback);
 
   if constexpr (detail::has_initialize_phase_change_decision_data_v<
                 Metavariables>) {
     Metavariables::initialize_phase_change_decision_data::apply(
         make_not_null(&phase_change_decision_data_),
-        *global_cache_proxy_.ckLocalBranch());
+        *Parallel::local_branch(global_cache_proxy_));
   }
 }
 
@@ -580,10 +560,28 @@ void Main<Metavariables>::
   tmpl::for_each<array_component_list>([this](
                                            auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
-    parallel_component::allocate_array(
-        global_cache_proxy_,
-        Parallel::create_from_options<Metavariables>(
-            options_, typename parallel_component::initialization_tags{}));
+    if constexpr (std::is_same<typename parallel_component::chare_type,
+                               Parallel::Algorithms::Singleton>::value) {
+      // This is a Spectre singleton component built on a Charm++ array chare,
+      // so we allocate a single element on proc 0.
+      auto& local_cache = *(global_cache_proxy_.ckLocalBranch());
+      auto& array_proxy =
+          Parallel::get_parallel_component<parallel_component>(local_cache);
+      array_proxy[0].insert(
+          global_cache_proxy_,
+          Parallel::create_from_options<Metavariables>(
+              options_, typename parallel_component::initialization_tags{}),
+          0);
+      array_proxy.doneInserting();
+    } else {
+      // This is a Spectre array component build on a Charm++ array chare. The
+      // component is in charge of allocating and distributing its elements over
+      // the computing system.
+      parallel_component::allocate_array(
+          global_cache_proxy_,
+          Parallel::create_from_options<Metavariables>(
+              options_, typename parallel_component::initialization_tags{}));
+    }
   });
 
   // Free any resources from the initial option parsing.
@@ -592,7 +590,7 @@ void Main<Metavariables>::
   tmpl::for_each<component_list>([this](auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     Parallel::get_parallel_component<parallel_component>(
-        *(global_cache_proxy_.ckLocalBranch()))
+        *Parallel::local_branch(global_cache_proxy_))
         .start_phase(current_phase_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
@@ -713,8 +711,8 @@ void contribute_to_phase_change_reduction(
                 PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
         cache.get_main_proxy().value());
     reduction_data_type reduction_data{data_for_reduction};
-    Parallel::get_parallel_component<SenderComponent>(cache)[array_index]
-        .ckLocal()
+    Parallel::local(
+        Parallel::get_parallel_component<SenderComponent>(cache)[array_index])
         ->contribute(static_cast<int>(reduction_data.size()),
                      reduction_data.packed().get(),
                      Parallel::charmxx::charm_reducer_functions.at(
@@ -753,8 +751,8 @@ void contribute_to_phase_change_reduction(
         "Phase change reduction is not supported for singleton chares. "
         "Consider constructing your chare as a length-1 array chare if you "
         "need to contribute to phase change data");
-    Parallel::get_parallel_component<SenderComponent>(cache)
-        .ckLocalBranch()
+    Parallel::local_branch(
+        Parallel::get_parallel_component<SenderComponent>(cache))
         ->contribute(static_cast<int>(reduction_data.size()),
                      reduction_data.packed().get(),
                      Parallel::charmxx::charm_reducer_functions.at(

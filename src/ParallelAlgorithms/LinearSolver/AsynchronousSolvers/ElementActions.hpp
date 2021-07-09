@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -66,8 +67,8 @@ template <typename OptionsGroup>
 struct ResidualReductionFormatter
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = async_solvers::reduction_data;
-  std::string operator()(const size_t iteration_id, const double residual) const
-      noexcept {
+  std::string operator()(const size_t iteration_id,
+                         const double residual) const noexcept {
     if (iteration_id == 0) {
       return Options::name<OptionsGroup>() +
              " initialized with residual: " + get_output(residual);
@@ -87,10 +88,9 @@ void contribute_to_residual_observation(
     const size_t iteration_id, const double residual_magnitude_square,
     Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index) noexcept {
-  auto& local_observer =
-      *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-           cache)
-           .ckLocalBranch();
+  auto& local_observer = *Parallel::local_branch(
+      Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+          cache));
   auto formatter =
       UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                ::Verbosity::Quiet)

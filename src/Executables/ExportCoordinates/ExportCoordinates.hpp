@@ -37,6 +37,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -130,10 +131,9 @@ struct ExportCoordinates {
                                                       Frame::Inertial>>(),
         get(det_inv_jac));
     // Send data to volume observer
-    auto& local_observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
@@ -166,10 +166,9 @@ struct FindGlobalMinimumGridSpacing {
     const double time = get<Tags::Time>(box);
     const double local_min_grid_spacing =
         get<domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>(box);
-    auto& local_observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer, observers::ObservationId(time, "min_grid_spacing"),
         observers::ArrayComponentId{

@@ -307,7 +307,7 @@ struct get_array_index;
 template <>
 struct get_array_index<Parallel::Algorithms::Singleton> {
   template <class ParallelComponent>
-  using f = char;
+  using f = int;
 };
 
 template <>

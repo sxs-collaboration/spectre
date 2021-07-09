@@ -23,6 +23,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
@@ -169,9 +170,9 @@ struct ContributeReductionData {
                     contributed_array_ids.size() ==
                     observations_registered.at(observation_id.observation_key())
                         .size())) {
-              auto& local_writer = *Parallel::get_parallel_component<
-                                        ObserverWriter<Metavariables>>(cache)
-                                        .ckLocalBranch();
+              auto& local_writer = *Parallel::local_branch(
+                  Parallel::get_parallel_component<
+                      ObserverWriter<Metavariables>>(cache));
               Parallel::threaded_action<
                   ThreadedActions::CollectReductionDataOnNode>(
                   local_writer, observation_id,
@@ -365,7 +366,8 @@ struct CollectReductionDataOnNode {
             Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                 cache)[0],
             observation_id,
-            static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocalBranch())),
+            static_cast<size_t>(
+                Parallel::my_node(*Parallel::local_branch(my_proxy))),
             subfile_name,
             // NOLINTNEXTLINE(bugprone-use-after-move)
             std::move(reduction_names), std::move(received_reduction_data),

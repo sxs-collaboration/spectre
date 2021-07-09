@@ -19,6 +19,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -130,7 +131,7 @@ struct ArrayComponent {
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
       /*initialization_items*/) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
 
@@ -145,7 +146,7 @@ struct ArrayComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ArrayComponent>(local_cache)
         .start_phase(next_phase);
   }
@@ -172,7 +173,7 @@ struct GroupComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<GroupComponent>(local_cache)
         .start_phase(next_phase);
   }
@@ -199,7 +200,7 @@ struct NodegroupComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<NodegroupComponent>(local_cache)
         .start_phase(next_phase);
   }
@@ -226,7 +227,7 @@ struct SingletonComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<SingletonComponent>(local_cache)
         .start_phase(next_phase);
   }

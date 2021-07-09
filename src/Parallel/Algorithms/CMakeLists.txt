@@ -4,7 +4,7 @@
 add_charm_module(AlgorithmArray)
 add_charm_module(AlgorithmGroup)
 add_charm_module(AlgorithmNodegroup)
-add_charm_module(AlgorithmSingleton)
+# No Singleton because Spectre's Singleton is built on Charm++'s Array
 
 spectre_target_headers(
   ${LIBRARY}
@@ -25,5 +25,5 @@ add_dependencies(
   module_AlgorithmArray
   module_AlgorithmGroup
   module_AlgorithmNodegroup
-  module_AlgorithmSingleton
+  # No Singleton because Spectre's Singleton is built on Charm++'s Array
   )

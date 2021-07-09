@@ -21,6 +21,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -139,9 +140,9 @@ struct ContributeVolumeData {
           // Check if we have received all "volume" data from the registered
           // elements. If so we copy it to the nodegroup volume writer.
           if (contributed_array_ids.size() == registered_ids.size()) {
-            auto& local_writer = *Parallel::get_parallel_component<
-                                      ObserverWriter<Metavariables>>(cache)
-                                      .ckLocalBranch();
+            auto& local_writer = *Parallel::local_branch(
+                Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
+                    cache));
             Parallel::threaded_action<
                 ThreadedActions::ContributeVolumeDataToWriter>(
                 local_writer, observation_id,
@@ -304,7 +305,8 @@ struct ContributeVolumeDataToWriter {
               Parallel::get_parallel_component<ParallelComponent>(cache);
           h5::H5File<h5::AccessType::ReadWrite> h5file(
               file_prefix +
-                  std::to_string(Parallel::my_node(*my_proxy.ckLocalBranch())) +
+                  std::to_string(
+                      Parallel::my_node(*Parallel::local_branch(my_proxy))) +
                   ".h5",
               true);
           constexpr size_t version_number = 0;

@@ -25,6 +25,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags.hpp"
@@ -357,10 +358,9 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>>::operator()(
                 norm_values_and_names["L2Norm"].second.end());
 
   // Send data to reduction observer
-  auto& local_observer =
-      *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-           cache)
-           .ckLocalBranch();
+  auto& local_observer = *Parallel::local_branch(
+      Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+          cache));
 
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer, observers::ObservationId(time, subfile_path_ + ".dat"),

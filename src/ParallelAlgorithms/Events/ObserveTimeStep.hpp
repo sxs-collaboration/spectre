@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <pup.h>
 #include <pup_stl.h>
-#include <string>
 #include <sstream>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -25,6 +25,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
@@ -64,8 +65,7 @@ struct FormatTimeOutput
                          const double /* max_time_step */,
                          const double /* effective_time_step */,
                          const double min_wall_time,
-                         const double max_wall_time) const
-      noexcept {
+                         const double max_wall_time) const noexcept {
     std::stringstream ss;
     ss  << "Simulation time: " << std::to_string(time)
         << "\n  Wall time: " << std::to_string(min_wall_time)
@@ -172,10 +172,9 @@ class ObserveTimeStep : public Event {
     const double step_size = abs(time_step.value());
     const double wall_time = sys::wall_time();
 
-    auto& local_observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     auto formatter =
         output_time_ ? std::make_optional(Events::detail::FormatTimeOutput{})
                      : std::nullopt;
@@ -227,7 +226,7 @@ class ObserveTimeStep : public Event {
 
 template <typename System>
 ObserveTimeStep<System>::ObserveTimeStep(const std::string& subfile_name,
-                                                const bool output_time) noexcept
+                                         const bool output_time) noexcept
     : subfile_path_("/" + subfile_name), output_time_(output_time) {}
 
 /// \cond

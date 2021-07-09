@@ -20,6 +20,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -239,7 +240,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
       /*initialization_items*/) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
@@ -254,7 +255,7 @@ struct ArrayParallelComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
       Parallel::simple_action<ArrayReduce>(
           Parallel::get_parallel_component<ArrayParallelComponent>(

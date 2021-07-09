@@ -12,6 +12,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
@@ -84,7 +85,7 @@ void HelloWorld<Metavariables>::execute_next_phase(
     Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
   Parallel::simple_action<Actions::PrintMessage>(
       Parallel::get_parallel_component<HelloWorld>(
-          *(global_cache.ckLocalBranch())));
+          *Parallel::local_branch(global_cache)));
 }
 /// [executable_example_singleton]
 

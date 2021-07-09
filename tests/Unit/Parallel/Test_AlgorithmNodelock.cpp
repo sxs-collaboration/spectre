@@ -18,6 +18,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -223,10 +224,9 @@ struct reduce_to_nodegroup {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    auto& local_nodegroup =
-        *(Parallel::get_parallel_component<
-              NodegroupParallelComponent<Metavariables>>(cache)
-              .ckLocalBranch());
+    auto& local_nodegroup = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            NodegroupParallelComponent<Metavariables>>(cache));
     Parallel::simple_action<nodegroup_receive>(local_nodegroup, array_index);
   }
 };
@@ -240,10 +240,9 @@ struct reduce_threaded_method {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    auto& local_nodegroup =
-        *(Parallel::get_parallel_component<
-              NodegroupParallelComponent<Metavariables>>(cache)
-              .ckLocalBranch());
+    auto& local_nodegroup = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            NodegroupParallelComponent<Metavariables>>(cache));
     Parallel::threaded_action<nodegroup_threaded_receive>(local_nodegroup,
                                                           array_index);
   }
@@ -271,7 +270,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
       /*initialization_items*/) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
@@ -289,7 +288,7 @@ struct ArrayParallelComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
     if (next_phase == Metavariables::Phase::ArrayToNodegroup) {
@@ -327,7 +326,7 @@ struct NodegroupParallelComponent {
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
+    auto& local_cache = *Parallel::local_branch(global_cache);
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<NodegroupParallelComponent>(
             local_cache);

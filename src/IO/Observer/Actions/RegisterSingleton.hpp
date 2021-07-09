@@ -15,6 +15,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -61,7 +62,7 @@ struct RegisterSingletonWithObserverWriter {
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
         observation_key,
-        static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())));
+        static_cast<size_t>(Parallel::my_node(*Parallel::local(my_proxy))));
     return {std::move(box), true};
   }
 };

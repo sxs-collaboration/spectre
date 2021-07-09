@@ -71,6 +71,8 @@ if any of the following are true:
       Doxygen)
     * contains the string `return Py_None;` (bug prone, use `Py_RETURN_NONE`
       instead)
+    * contains `.ckLocal()` or `.ckLocalBranch()` (use `Parallel::local` or
+      `Parallel::local_branch` instead)
   - A `c++` test,
     * uses `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
     * uses `Approx` (use `approx` instead)

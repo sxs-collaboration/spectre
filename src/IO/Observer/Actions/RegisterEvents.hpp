@@ -15,6 +15,7 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -119,10 +120,9 @@ struct RegisterEventsWithObservers {
       const db::DataBox<DbTagList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index) noexcept {
-    auto& observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     std::vector<
         std::pair<observers::TypeOfObservation, observers::ObservationKey>>
         type_of_observation_and_observation_key_pairs;

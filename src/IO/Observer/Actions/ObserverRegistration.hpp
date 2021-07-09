@@ -18,6 +18,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -155,8 +156,8 @@ struct RegisterReductionNodeWithWritingNode {
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id =
-          static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocalBranch()));
+      const auto node_id = static_cast<size_t>(
+          Parallel::my_node(*Parallel::local_branch(my_proxy)));
       ASSERT(node_id == 0, "Only node zero, not node "
                                << node_id
                                << ", should be called from another node");
@@ -210,8 +211,8 @@ struct DeregisterReductionNodeWithWritingNode {
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id =
-          static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocalBranch()));
+      const auto node_id = static_cast<size_t>(
+          Parallel::my_node(*Parallel::local_branch(my_proxy)));
       ASSERT(node_id == 0,
              "Only node zero, not node "
                  << node_id
@@ -276,8 +277,8 @@ struct RegisterReductionContributorWithObserverWriter {
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id =
-          static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocalBranch()));
+      const auto node_id = static_cast<size_t>(
+          Parallel::my_node(*Parallel::local_branch(my_proxy)));
       db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&cache, &id_of_caller, &node_id, &observation_key](
@@ -341,8 +342,8 @@ struct DeregisterReductionContributorWithObserverWriter {
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id =
-          static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocalBranch()));
+      const auto node_id = static_cast<size_t>(
+          Parallel::my_node(*Parallel::local_branch(my_proxy)));
       db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&cache, &id_of_caller, &node_id, &observation_key](
@@ -438,10 +439,9 @@ struct RegisterContributorWithObserver {
         return;
       }
 
-      auto& observer_writer =
-          *Parallel::get_parallel_component<
-               observers::ObserverWriter<Metavariables>>(cache)
-               .ckLocalBranch();
+      auto& observer_writer = *Parallel::local_branch(
+          Parallel::get_parallel_component<
+              observers::ObserverWriter<Metavariables>>(cache));
 
       switch (type_of_observation) {
         case TypeOfObservation::Reduction:
@@ -528,10 +528,9 @@ struct DeregisterContributorWithObserver {
         return;
       }
 
-      auto& observer_writer =
-          *Parallel::get_parallel_component<
-               observers::ObserverWriter<Metavariables>>(cache)
-               .ckLocalBranch();
+      auto& observer_writer = *Parallel::local_branch(
+          Parallel::get_parallel_component<
+              observers::ObserverWriter<Metavariables>>(cache));
 
       switch (type_of_observation) {
         case TypeOfObservation::Reduction:

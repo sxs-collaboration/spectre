@@ -209,7 +209,7 @@ add_algorithm_test("SectionReductions"
   "Element 0 received reduction: Counted 2 odd elements.")
 
 add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
-  "AlgorithmParallel" "Objects migrating: 14")
+  "AlgorithmParallel" "Objects migrating: 15")
 
 add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
 add_algorithm_test_with_input_file("AlgorithmPhaseControl" "Unit/Parallel")

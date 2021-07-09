@@ -26,6 +26,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -238,7 +239,7 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_one() noexcept {
   // Test that the values are what we think they should be.
-  auto& local_cache = *global_cache_proxy_.ckLocalBranch();
+  auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
   SPECTRE_PARALLEL_REQUIRE("Nobody" == Parallel::get<name>(local_cache));
   SPECTRE_PARALLEL_REQUIRE(178 == Parallel::get<age>(local_cache));
   SPECTRE_PARALLEL_REQUIRE(2.2 == Parallel::get<height>(local_cache));
@@ -255,9 +256,9 @@ void TestArrayChare<Metavariables>::run_test_one() noexcept {
       6 == Parallel::get<animal_base>(local_cache).number_of_legs());
 
   const auto local_cache_from_proxy =
-      local_cache.get_this_proxy().ckLocalBranch();
+      Parallel::local_branch(local_cache.get_this_proxy());
   SPECTRE_PARALLEL_REQUIRE(local_cache_from_proxy ==
-                           global_cache_proxy_.ckLocalBranch());
+                           Parallel::local_branch(global_cache_proxy_));
 
   // test the serialization of the caches
   Parallel::GlobalCache<TestMetavariables>
@@ -287,7 +288,7 @@ void TestArrayChare<Metavariables>::run_test_two() noexcept {
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_two(),
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<weight>(
-          *global_cache_proxy_.ckLocalBranch(),
+          *Parallel::local_branch(global_cache_proxy_),
           [&callback](
               const double& weight_l) -> std::unique_ptr<Parallel::Callback> {
             return weight_l == 150
@@ -295,7 +296,7 @@ void TestArrayChare<Metavariables>::run_test_two() noexcept {
                        : std::unique_ptr<Parallel::Callback>(
                              new UseCkCallbackAsCallback(callback));
           })) {
-    auto& local_cache = *global_cache_proxy_.ckLocalBranch();
+    auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(local_cache));
 
     // Now the weight is 150, so mutate the email.
@@ -314,7 +315,7 @@ void TestArrayChare<Metavariables>::run_test_three() noexcept {
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_three(),
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<email>(
-          *global_cache_proxy_.ckLocalBranch(),
+          *Parallel::local_branch(global_cache_proxy_),
           [&callback](const std::string& email_l)
               -> std::unique_ptr<Parallel::Callback> {
             return email_l == "albert@einstein.de"
@@ -322,7 +323,7 @@ void TestArrayChare<Metavariables>::run_test_three() noexcept {
                        : std::unique_ptr<Parallel::Callback>(
                              new UseCkCallbackAsCallback(callback));
           })) {
-    auto& local_cache = *global_cache_proxy_.ckLocalBranch();
+    auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE("albert@einstein.de" ==
                              Parallel::get<email>(local_cache));
 
@@ -339,7 +340,7 @@ void TestArrayChare<Metavariables>::run_test_four() noexcept {
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_four(),
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<animal>(
-          *global_cache_proxy_.ckLocalBranch(),
+          *Parallel::local_branch(global_cache_proxy_),
           [&callback](
               const Animal& animal_l) -> std::unique_ptr<Parallel::Callback> {
             return animal_l.number_of_legs() == 8
@@ -347,7 +348,7 @@ void TestArrayChare<Metavariables>::run_test_four() noexcept {
                        : std::unique_ptr<Parallel::Callback>(
                              new UseCkCallbackAsCallback(callback));
           })) {
-    auto& local_cache = *global_cache_proxy_.ckLocalBranch();
+    auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
         8 == Parallel::get<animal>(local_cache).number_of_legs());
 
@@ -366,7 +367,7 @@ void TestArrayChare<Metavariables>::run_test_five() noexcept {
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_five(),
                  this->thisProxy[this->thisIndex]);
   if (Parallel::mutable_cache_item_is_ready<animal_base>(
-          *global_cache_proxy_.ckLocalBranch(),
+          *Parallel::local_branch(global_cache_proxy_),
           [&callback](
               const Animal& animal_l) -> std::unique_ptr<Parallel::Callback> {
             return animal_l.number_of_legs() == 30
@@ -374,7 +375,7 @@ void TestArrayChare<Metavariables>::run_test_five() noexcept {
                        : std::unique_ptr<Parallel::Callback>(
                              new UseCkCallbackAsCallback(callback));
           })) {
-    auto& local_cache = *global_cache_proxy_.ckLocalBranch();
+    auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
         30 == Parallel::get<animal_base>(local_cache).number_of_legs());
     main_proxy_.exit_if_done(this->thisIndex);

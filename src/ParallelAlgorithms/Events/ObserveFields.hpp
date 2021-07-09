@@ -32,6 +32,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -335,10 +336,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     }
 
     // Send data to volume observer
-    auto& local_observer =
-        *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-             cache)
-             .ckLocalBranch();
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
         observers::ObservationId(observation_value, subfile_path + ".vol"),

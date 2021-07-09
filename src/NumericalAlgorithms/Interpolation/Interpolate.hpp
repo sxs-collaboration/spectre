@@ -12,6 +12,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -31,7 +32,8 @@ namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
-template <size_t Dim> class Mesh;
+template <size_t Dim>
+class Mesh;
 template <size_t VolumeDim>
 class ElementId;
 namespace intrp {
@@ -88,13 +90,12 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
       get<tensor_tag>(interp_vars) = tensor;
       return 0;
     };
-    (void) copy_to_variables; // GCC warns unused variable if Tensors is empty.
+    (void)copy_to_variables;  // GCC warns unused variable if Tensors is empty.
     expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
 
     // Send volume data to the Interpolator, to trigger interpolation.
-    auto& interpolator =
-        *::Parallel::get_parallel_component<Interpolator<Metavariables>>(cache)
-             .ckLocalBranch();
+    auto& interpolator = *Parallel::local_branch(
+        Parallel::get_parallel_component<Interpolator<Metavariables>>(cache));
     Parallel::simple_action<Actions::InterpolatorReceiveVolumeData>(
         interpolator, time_id, ElementId<VolumeDim>(array_index), mesh,
         interp_vars);

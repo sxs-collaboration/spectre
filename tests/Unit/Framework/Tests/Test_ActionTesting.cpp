@@ -13,6 +13,7 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -82,8 +83,8 @@ struct simple_action_a_mock {
                     const ArrayIndex& /*array_index*/,
                     const int value) noexcept {
     db::mutate<ValueTag>(
-        make_not_null(&box), [&value](
-                                 const gsl::not_null<int*> value_box) noexcept {
+        make_not_null(&box),
+        [&value](const gsl::not_null<int*> value_box) noexcept {
           *value_box = value;
         });
   }
@@ -93,7 +94,7 @@ struct simple_action_b {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, PassedToB>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,                      // NOLINT
+  static void apply(db::DataBox<DbTagsList>& box,                 // NOLINT
                     Parallel::GlobalCache<Metavariables>& cache,  // NOLINT
                     const ArrayIndex& /*array_index*/,
                     const double to_call) noexcept {
@@ -140,9 +141,8 @@ struct simple_action_c_mock {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<ValueTag>(
-        make_not_null(&box), [](const gsl::not_null<int*> value_box) noexcept {
-          *value_box = 25;
-        });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> value_box) noexcept { *value_box = 25; });
   }
 };
 
@@ -155,8 +155,9 @@ struct threaded_action_a {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) noexcept {
-    db::mutate<ValueTag>(make_not_null(&box), [
-    ](const gsl::not_null<int*> value_box) noexcept { *value_box = 35; });
+    db::mutate<ValueTag>(
+        make_not_null(&box),
+        [](const gsl::not_null<int*> value_box) noexcept { *value_box = 35; });
   }
 };
 
@@ -403,9 +404,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
-      tmpl::list<Actions::SendValue>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Testing,
+                                        tmpl::list<Actions::SendValue>>>;
 };
 
 struct Metavariables {
@@ -490,12 +492,12 @@ struct ActionCalledOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
-  static void apply(
-      db::DataBox<DbTagsList>& box,                          // NOLINT
-      Parallel::GlobalCache<Metavariables>& /*cache*/,  // NOLINT
-      const ArrayIndex& /*array_index*/) noexcept {
-    db::mutate<ValueTag>(make_not_null(&box), [
-    ](const gsl::not_null<int*> value) noexcept { *value = 5; });
+  static void apply(db::DataBox<DbTagsList>& box,                     // NOLINT
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,  // NOLINT
+                    const ArrayIndex& /*array_index*/) noexcept {
+    db::mutate<ValueTag>(
+        make_not_null(&box),
+        [](const gsl::not_null<int*> value) noexcept { *value = 5; });
   }
 };
 
@@ -503,7 +505,7 @@ struct ActionCalledOnComponentB {
 struct CallActionOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<DbTagsList>& /*box*/,                  // NOLINT
+  static void apply(db::DataBox<DbTagsList>& /*box*/,             // NOLINT
                     Parallel::GlobalCache<Metavariables>& cache,  // NOLINT
                     const ArrayIndex& /*array_index*/) noexcept {
     Parallel::simple_action<ActionCalledOnComponentB>(
@@ -573,52 +575,53 @@ struct ComponentA {
 struct MyProc {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::my_proc(*my_proxy[array_index].ckLocal());
+    return Parallel::my_proc(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct MyNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::my_node(*my_proxy[array_index].ckLocal());
+    return Parallel::my_node(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct LocalRank {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::my_local_rank(*my_proxy[array_index].ckLocal());
+    return Parallel::my_local_rank(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct NumProcs {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::number_of_procs(*my_proxy[array_index].ckLocal());
+    return Parallel::number_of_procs(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct NumNodes {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::number_of_nodes(*my_proxy[array_index].ckLocal());
+    return Parallel::number_of_nodes(*Parallel::local(my_proxy[array_index]));
   }
 };
 
-template<int NodeIndex>
+template <int NodeIndex>
 struct ProcsOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::procs_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::procs_on_node(NodeIndex,
+                                   *Parallel::local(my_proxy[array_index]));
   }
 };
 
-template<int NodeIndex>
+template <int NodeIndex>
 struct FirstProcOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::first_proc_on_node(NodeIndex,
-                                        *my_proxy[array_index].ckLocal());
+    return Parallel::first_proc_on_node(
+        NodeIndex, *Parallel::local(my_proxy[array_index]));
   }
 };
 
@@ -626,7 +629,8 @@ template <int ProcIndex>
 struct NodeOf {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::node_of(ProcIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::node_of(ProcIndex,
+                             *Parallel::local(my_proxy[array_index]));
   }
 };
 
@@ -634,7 +638,8 @@ template <int ProcIndex>
 struct LocalRankOf {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
-    return Parallel::local_rank_of(ProcIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::local_rank_of(ProcIndex,
+                                   *Parallel::local(my_proxy[array_index]));
   }
 };
 
@@ -696,7 +701,7 @@ void test_parallel_info_functions() noexcept {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == -5);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == -3);
 
-  for(size_t i=0;i<5;++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::simple_action<component_a, ActionSetValueTo<MyProc>>(
         make_not_null(&runner), i);
   }
@@ -718,7 +723,7 @@ void test_parallel_info_functions() noexcept {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 0);
 
-  for(size_t i=0;i<5;++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRank>>(
         make_not_null(&runner), i);
   }
@@ -797,7 +802,6 @@ void test_parallel_info_functions() noexcept {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
 }
 
-
 template <typename Metavariables>
 struct GroupComponent {
   using metavariables = Metavariables;
@@ -827,7 +831,7 @@ void test_group_emplace() noexcept {
   using component = GroupComponent<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
 
   ActionTesting::emplace_group_component_and_initialize<component>(&runner,
                                                                    {-3});
@@ -906,7 +910,7 @@ void test_nodegroup_emplace() noexcept {
   using component = NodeGroupComponent<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
 
   ActionTesting::emplace_nodegroup_component_and_initialize<component>(&runner,
                                                                        {-3});
