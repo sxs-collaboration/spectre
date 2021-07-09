@@ -504,7 +504,7 @@ struct charm_base_proxy<MockGroupChare> : public CProxy_IrrGroup {};
 template <>
 struct charm_base_proxy<MockNodeGroupChare> : public CProxy_NodeGroup {};
 template <>
-struct charm_base_proxy<MockSingletonChare> : public CProxy_Chare {};
+struct charm_base_proxy<MockSingletonChare> : public CProxy_ArrayElement {};
 
 // A mock class for the Charm++ generated CProxy_AlgorithmArray or
 // CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup or
