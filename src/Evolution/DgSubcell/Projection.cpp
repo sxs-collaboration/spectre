@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -34,6 +35,9 @@ template <size_t Dim>
 void project(const gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
              const Mesh<Dim>& dg_mesh,
              const Index<Dim>& subcell_extents) noexcept {
+  ASSERT(dg_u.size() == dg_mesh.number_of_grid_points(),
+         "dg_u has incorrect size " << dg_u.size() << " since the mesh is size "
+                                    << dg_mesh.number_of_grid_points());
   subcell_u->destructive_resize(subcell_extents.product());
   detail::project_impl(gsl::span<double>{subcell_u->data(), subcell_u->size()},
                        gsl::span<const double>{dg_u.data(), dg_u.size()},

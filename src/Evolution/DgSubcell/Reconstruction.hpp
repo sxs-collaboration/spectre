@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Variables.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -63,6 +64,10 @@ void reconstruct(const gsl::not_null<Variables<DgTagList>*> dg_u,
                  const Variables<SubcellTagList>& subcell_u,
                  const Mesh<Dim>& dg_mesh,
                  const Index<Dim>& subcell_extents) noexcept {
+  ASSERT(subcell_u.number_of_grid_points() == subcell_extents.product(),
+         "Incorrect subcell size of u: " << subcell_u.number_of_grid_points()
+                                         << " but should be "
+                                         << subcell_extents.product());
   if (UNLIKELY(dg_u->number_of_grid_points() !=
                dg_mesh.number_of_grid_points())) {
     dg_u->initialize(dg_mesh.number_of_grid_points(), 0.0);

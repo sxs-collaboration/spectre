@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -36,6 +37,10 @@ void reconstruct(const gsl::not_null<DataVector*> dg_u,
                  const DataVector& subcell_u_times_projected_det_jac,
                  const Mesh<Dim>& dg_mesh,
                  const Index<Dim>& subcell_extents) noexcept {
+  ASSERT(subcell_u_times_projected_det_jac.size() == subcell_extents.product(),
+         "Incorrect subcell size of u: "
+             << subcell_u_times_projected_det_jac.size() << " but should be "
+             << subcell_extents.product());
   dg_u->destructive_resize(dg_mesh.number_of_grid_points());
   detail::reconstruct_impl(
       gsl::span<double>{dg_u->data(), dg_u->size()},

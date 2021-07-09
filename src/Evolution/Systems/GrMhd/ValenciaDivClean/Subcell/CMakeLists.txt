@@ -7,6 +7,7 @@ spectre_target_sources(
   FixConservativesAndComputePrims.cpp
   InitialDataTci.cpp
   PrimitiveGhostData.cpp
+  PrimsAfterRollback.cpp
   ResizeAndComputePrimitives.cpp
   SwapGrTags.cpp
   TciOnDgGrid.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   GrTagsForHydro.hpp
   InitialDataTci.hpp
   PrimitiveGhostData.hpp
+  PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
   Subcell.hpp
   SwapGrTags.hpp

@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -57,6 +58,10 @@ void project(const gsl::not_null<Variables<SubcellTagList>*> subcell_u,
                           tmpl::bind<db::remove_all_prefixes, tmpl::_1>>>,
       "DG and subcell tag lists must be the same once prefix tags "
       "are removed.");
+  ASSERT(dg_u.number_of_grid_points() == dg_mesh.number_of_grid_points(),
+         "dg_u has incorrect size " << dg_u.number_of_grid_points()
+                                    << " since the mesh is size "
+                                    << dg_mesh.number_of_grid_points());
   if (UNLIKELY(subcell_u->number_of_grid_points() !=
                subcell_extents.product())) {
     subcell_u->initialize(subcell_extents.product());
