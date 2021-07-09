@@ -161,8 +161,14 @@ struct PrimFromCon {
 template <bool HasPrimitiveAndConservativeVars>
 struct System {
   using variables_tag = Var;
-  static constexpr bool has_primitive_and_conservative_vars =
-      HasPrimitiveAndConservativeVars;
+  static constexpr bool has_primitive_and_conservative_vars = false;
+};
+
+template <>
+struct System<true> {
+  using variables_tag = Var;
+  using primitive_variables_tag = PrimVar;
+  static constexpr bool has_primitive_and_conservative_vars = true;
 };
 
 template <typename Metavariables>
@@ -199,6 +205,41 @@ struct Metavariables {
   };
   enum class Phase { Initialization, Testing, Exit };
 };
+
+template <typename Metavariables>
+bool run_if_ready(
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+        runner) noexcept {
+  using component = Component<Metavariables>;
+  using system = typename Metavariables::system;
+  using variables_tag = typename system::variables_tag;
+  const auto get_prims = [&runner]() noexcept {
+    if constexpr (system::has_primitive_and_conservative_vars) {
+      return ActionTesting::get_databox_tag<
+          component, typename system::primitive_variables_tag>(*runner, 0);
+    } else {
+      (void)runner;
+      return 0;
+    }
+  };
+
+  const auto time_before =
+      ActionTesting::get_databox_tag<component, ::Tags::Time>(*runner, 0);
+  const auto vars_before =
+      ActionTesting::get_databox_tag<component, variables_tag>(*runner, 0);
+  const auto prims_before = get_prims();
+  const bool was_ready =
+      ActionTesting::next_action_if_ready<component>(runner, 0);
+  const auto time_after =
+      ActionTesting::get_databox_tag<component, ::Tags::Time>(*runner, 0);
+  const auto vars_after =
+      ActionTesting::get_databox_tag<component, variables_tag>(*runner, 0);
+  const auto prims_after = get_prims();
+  CHECK(time_before == time_after);
+  CHECK(vars_before == vars_after);
+  CHECK(prims_before == prims_after);
+  return was_ready;
+}
 
 template <bool HasPrimitiveAndConservativeVars>
 void test(const bool time_runs_forward) noexcept {
@@ -285,8 +326,7 @@ void test(const bool time_runs_forward) noexcept {
             *id = TimeStepId(id->time_runs_forward(), -1, id->step_time());
           });
     }
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
     check_event_calls({});
   };
   check_self_start(true);
@@ -297,8 +337,7 @@ void test(const bool time_runs_forward) noexcept {
     MockRuntimeSystem runner{
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {});
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
   }
 
   // Triggers too far in the future
@@ -309,8 +348,7 @@ void test(const bool time_runs_forward) noexcept {
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{start_time + 1.5 * step_size, trigger_is_ready,
                                 trigger_is_ready, false}});
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
     check_event_calls({});
   };
   check_not_reached(true);
@@ -321,8 +359,7 @@ void test(const bool time_runs_forward) noexcept {
     MockRuntimeSystem runner{
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, false, true, false}});
-    CHECK(not ActionTesting::next_action_if_ready<component>(
-        make_not_null(&runner), 0));
+    CHECK(not run_if_ready(make_not_null(&runner)));
     check_event_calls({});
   }
 
@@ -331,8 +368,7 @@ void test(const bool time_runs_forward) noexcept {
     MockRuntimeSystem runner{
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, true, true, false}});
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
     check_event_calls({{step_center, initial_var, 0.0}});
   }
 
@@ -341,8 +377,7 @@ void test(const bool time_runs_forward) noexcept {
     MockRuntimeSystem runner{
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, true, true, true}});
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
     const double dense_var = initial_var + 0.5 * step_size;
     check_event_calls({{step_center, dense_var, -dense_var}});
   }
@@ -370,8 +405,7 @@ void test(const bool time_runs_forward) noexcept {
             history->most_recent_value() = initial_var;
           });
     }
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
     if (data_needed) {
       check_event_calls({});
     } else {
@@ -389,8 +423,7 @@ void test(const bool time_runs_forward) noexcept {
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, true, true, false},
                                {second_trigger, true, true, false}});
-    CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
-                                                         0));
+    CHECK(run_if_ready(make_not_null(&runner)));
     check_event_calls(
         {{step_center, initial_var, 0.0}, {second_trigger, initial_var, 0.0}});
   }
