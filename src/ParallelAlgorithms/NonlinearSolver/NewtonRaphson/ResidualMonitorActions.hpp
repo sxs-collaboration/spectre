@@ -78,7 +78,7 @@ struct CheckResidualMagnitude {
           make_not_null(&box),
           [residual_magnitude](const gsl::not_null<double*>
                                    initial_residual_magnitude) noexcept {
-            *initial_residual_magnitude = sqrt(residual_magnitude);
+            *initial_residual_magnitude = residual_magnitude;
           });
     } else {
       // Make sure we are converging. Far away from the solution the correction

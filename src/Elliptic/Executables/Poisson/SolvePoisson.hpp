@@ -17,6 +17,8 @@
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/InitializeSubdomain.hpp"
+#include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Elliptic/Triggers/EveryNIterations.hpp"
@@ -42,6 +44,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
@@ -72,6 +75,11 @@ struct LinearSolverGroup {
 struct GmresGroup {
   static std::string name() noexcept { return "GMRES"; }
   static constexpr Options::String help = "Options for the GMRES linear solver";
+  using group = LinearSolverGroup;
+};
+struct SchwarzSmootherGroup {
+  static std::string name() noexcept { return "SchwarzSmoother"; }
+  static constexpr Options::String help = "Options for the Schwarz smoother";
   using group = LinearSolverGroup;
 };
 }  // namespace SolvePoisson::OptionTags
@@ -125,9 +133,18 @@ struct Metavariables {
   using linear_solver =
       LinearSolver::gmres::Gmres<Metavariables, fields_tag,
                                  SolvePoisson::OptionTags::LinearSolverGroup,
-                                 false>;
+                                 true>;
   using linear_solver_iteration_id =
       Convergence::Tags::IterationId<typename linear_solver::options_group>;
+  // Precondition each linear solver iteration with a number of Schwarz
+  // smoothing steps
+  using subdomain_operator =
+      elliptic::dg::subdomain_operator::SubdomainOperator<
+          system, SolvePoisson::OptionTags::SchwarzSmootherGroup>;
+  using schwarz_smoother = LinearSolver::Schwarz::Schwarz<
+      typename linear_solver::operand_tag,
+      SolvePoisson::OptionTags::SchwarzSmootherGroup, subdomain_operator,
+      typename linear_solver::preconditioner_source_tag>;
   // For the GMRES linear solver we need to apply the DG operator to its
   // internal "operand" in every iteration of the algorithm.
   using vars_tag = typename linear_solver::operand_tag;
@@ -166,7 +183,7 @@ struct Metavariables {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>,
-          linear_solver>>>;
+          linear_solver, schwarz_smoother>>>;
 
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
@@ -175,12 +192,16 @@ struct Metavariables {
       Actions::SetupDataBox,
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
       typename linear_solver::initialize_element,
+      typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, analytic_solution_tag>,
       elliptic::Actions::InitializeAnalyticSolution<
           analytic_solution_tag, tmpl::append<typename system::primal_fields,
                                               typename system::primal_fluxes>>,
       elliptic::dg::Actions::initialize_operator<system>,
+      elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
+          system, analytic_solution_tag,
+          typename schwarz_smoother::options_group>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
           system, fixed_sources_tag>,
       // Apply the DG operator to the initial guess
@@ -195,12 +216,16 @@ struct Metavariables {
 
   using register_actions =
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
+                 typename schwarz_smoother::register_element,
                  Parallel::Actions::TerminatePhase>;
 
-  using solve_actions = tmpl::list<
-      typename linear_solver::template solve<tmpl::list<
-          Actions::RunEventsAndTriggers, build_linear_operator_actions>>,
-      Actions::RunEventsAndTriggers, Parallel::Actions::TerminatePhase>;
+  using solve_actions =
+      tmpl::list<typename linear_solver::template solve<
+                     tmpl::list<Actions::RunEventsAndTriggers,
+                                typename schwarz_smoother::template solve<
+                                    build_linear_operator_actions>>>,
+                 Actions::RunEventsAndTriggers,
+                 Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
@@ -213,6 +238,7 @@ struct Metavariables {
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::flatten<
       tmpl::list<dg_element_array, typename linear_solver::component_list,
+                 typename schwarz_smoother::component_list,
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
 
@@ -256,6 +282,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         metavariables::initial_guess_tag::type::element_type>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::system::boundary_conditions_base>,
+    &Parallel::register_derived_classes_with_charm<
+        metavariables::schwarz_smoother::subdomain_solver>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

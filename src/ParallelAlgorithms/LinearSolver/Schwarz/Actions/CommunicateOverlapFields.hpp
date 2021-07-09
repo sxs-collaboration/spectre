@@ -181,6 +181,8 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
       detail::OverlapFieldsTag<Dim, tmpl::list<OverlapFields...>, OptionsGroup>;
 
  public:
+  using simple_tags =
+      tmpl::list<Tags::Overlaps<OverlapFields, Dim, OptionsGroup>...>;
   using const_global_cache_tags =
       tmpl::list<Tags::MaxOverlap<OptionsGroup>,
                  logging::Tags::Verbosity<OptionsGroup>>;
