@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -109,89 +110,6 @@ using EvaluateIndexCheck =
                               tmpl::pin<RhsTensorIndexList>, tmpl::_element>>>;
 }  // namespace detail
 
-/// \brief Computes a transformation from the LHS tensor's multi-indices to
-/// the equivalent RHS tensor's multi-indices, according to the differences in
-/// the orderings of their generic indices
-///
-/// \details
-/// The elements of the transformation are the positions of the RHS generic
-/// indices in the LHS generic indices. Put another way, for some `i`,
-/// `rhs_tensorindices[i] == lhs_tensorindices[index_transformation[i]]`.
-///
-/// Here is an example of what the algorithm does:
-///
-/// Tensor equation: \f$L_{cab} = R_{abc}\f$
-/// `lhs_tensorindices`:
-/// \code
-/// {2, 0, 1} // i.e. {c, a, b}
-/// \endcode
-/// `rhs_tensorindices`:
-/// \code
-/// {0, 1, 2} // i.e. {a, b, c}
-/// \endcode
-/// returned `index_transformation`:
-/// \code
-/// {1, 2, 0} // positions of RHS indices {a, b, c} in LHS indices {c, a, b}
-/// \endcode
-///
-/// \tparam NumIndices the number of indices in the tensors
-/// \param lhs_tensorindices the TensorIndexs of the LHS tensor
-/// \param rhs_tensorindices the TensorIndexs of the RHS tensor
-/// \return a transformation from the LHS tensor's multi-indices to the
-/// equivalent RHS tensor's multi-indices
-template <size_t NumIndices>
-SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, NumIndices>
-compute_index_transformation(
-    const std::array<size_t, NumIndices>& lhs_tensorindices,
-    const std::array<size_t, NumIndices>& rhs_tensorindices) noexcept {
-  std::array<size_t, NumIndices> index_transformation{};
-  for (size_t i = 0; i < NumIndices; i++) {
-    gsl::at(index_transformation, i) = static_cast<size_t>(std::distance(
-        lhs_tensorindices.begin(),
-        alg::find(lhs_tensorindices, gsl::at(rhs_tensorindices, i))));
-  }
-  return index_transformation;
-}
-
-/// \brief Computes the RHS tensor multi-index that is equivalent to a given
-/// LHS tensor multi-index, according to the differences in the orderings of
-/// their generic indices
-///
-/// \details
-/// Here is an example of what the algorithm does:
-///
-/// Tensor equation: \f$L_{cab} = R_{abc}\f$
-/// `index_transformation`:
-/// \code
-/// {1, 2, 0} // positions of RHS indices {a, b, c} in LHS indices {c, a, b}
-/// \endcode
-/// `lhs_multi_index`:
-/// \code
-/// {3, 4, 5} // i.e. c = 3, a = 4, b = 5
-/// \endcode
-/// returned equivalent `rhs_multi_index`:
-/// \code
-/// {4, 5, 3} // i.e. a = 4, b = 5, c = 3
-/// \endcode
-///
-/// \tparam NumIndices the number of indices in the tensors
-/// \param lhs_multi_index the multi-index of the LHS tensor
-/// \param index_transformation the list of the positions of the RHS indices in
-/// the LHS indices
-/// \return the RHS tensor multi-index that is equivalent to `lhs_tensor_index`
-template <size_t NumIndices>
-SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, NumIndices>
-compute_rhs_multi_index(
-    const std::array<size_t, NumIndices>& lhs_multi_index,
-    const std::array<size_t, NumIndices>& index_transformation) noexcept {
-  std::array<size_t, NumIndices> rhs_multi_index{};
-  for (size_t i = 0; i < NumIndices; i++) {
-    gsl::at(rhs_multi_index, i) =
-        gsl::at(lhs_multi_index, gsl::at(index_transformation, i));
-  }
-  return rhs_multi_index;
-}
-
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Evaluate a RHS tensor expression to a tensor with the LHS index order
@@ -237,9 +155,12 @@ void evaluate(
     const TensorExpression<Derived, X, RhsSymmetry, RhsIndexList,
                            tmpl::list<RhsTensorIndices...>>&
         rhs_tensorexpression) {
+  constexpr size_t num_indices = sizeof...(LhsTensorIndices);
+
   using lhs_tensorindex_list =
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
   using rhs_tensorindex_list = tmpl::list<RhsTensorIndices...>;
+
   static_assert(
       tmpl::equal_members<lhs_tensorindex_list, rhs_tensorindex_list>::value,
       "The generic indices on the LHS of a tensor equation (that is, the "
@@ -253,7 +174,7 @@ void evaluate(
       "Cannot evaluate a tensor expression to a LHS tensor with a repeated "
       "generic index, e.g. evaluate<ti_a, ti_a>.");
   static_assert(
-      not detail::contains_indices_to_contract<sizeof...(LhsTensorIndices)>(
+      not detail::contains_indices_to_contract<num_indices>(
           {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
       "Cannot evaluate a tensor expression to a LHS tensor with generic "
       "indices that would be contracted, e.g. evaluate<ti_A, ti_a>.");
@@ -276,7 +197,10 @@ void evaluate(
       "index has 2 spatial dimensions but L's second index has 3 spatial "
       "dimensions. Check RHS and LHS indices that use the same generic index.");
 
-  using lhs_tensor_type = typename std::decay_t<decltype(*lhs_tensor)>;
+  constexpr std::array<size_t, num_indices> index_transformation =
+      compute_tensorindex_transformation<num_indices>(
+          {{std::decay_t<decltype(LhsTensorIndices)>::value...}},
+          {{RhsTensorIndices::value...}});
 
   // positions of indices in LHS tensor where generic spatial indices are used
   // for spacetime indices
@@ -289,16 +213,18 @@ void evaluate(
       detail::get_spatial_spacetime_index_positions<RhsIndexList,
                                                     rhs_tensorindex_list>();
 
+  using lhs_tensor_type = typename std::decay_t<decltype(*lhs_tensor)>;
+
   for (size_t i = 0; i < lhs_tensor_type::size(); i++) {
+    auto lhs_multi_index =
+        lhs_tensor_type::structure::get_canonical_tensor_index(i);
+
     if constexpr (lhs_spatial_spacetime_index_positions.size() == 0) {
       // either:
       // (i) RHS nor LHS uses a generic spatial index for a spacetime index, or
       // (ii) only RHS uses a generic spatial index for a spacetime index
-      auto rhs_multi_index = compute_rhs_multi_index(
-          lhs_tensor_type::structure::get_canonical_tensor_index(i),
-          compute_index_transformation<sizeof...(RhsTensorIndices)>(
-              {{std::decay_t<decltype(LhsTensorIndices)>::value...}},
-              {{RhsTensorIndices::value...}}));
+      auto rhs_multi_index =
+          transform_multi_index(lhs_multi_index, index_transformation);
       for (size_t j = 0; j < rhs_spatial_spacetime_index_positions.size();
            j++) {
         gsl::at(rhs_multi_index,
@@ -313,8 +239,7 @@ void evaluate(
       // either:
       // (i) only LHS uses a generic spatial index for a spacetime index
       // (ii) both RHS and LHS use a generic spatial index for a spacetime index
-      auto lhs_multi_index =
-          lhs_tensor_type::structure::get_canonical_tensor_index(i);
+
       // Only evaluate the component at `lhs_multi_index` if it does not contain
       // the time index (0) for any spacetime indices for which a generic
       // spatial index is being used
@@ -327,11 +252,8 @@ void evaluate(
           gsl::at(lhs_multi_index,
                   gsl::at(lhs_spatial_spacetime_index_positions, j)) -= 1;
         }
-        auto rhs_multi_index = compute_rhs_multi_index(
-            lhs_multi_index,
-            compute_index_transformation<sizeof...(RhsTensorIndices)>(
-                {{std::decay_t<decltype(LhsTensorIndices)>::value...}},
-                {{RhsTensorIndices::value...}}));
+        auto rhs_multi_index =
+            transform_multi_index(lhs_multi_index, index_transformation);
         for (size_t j = 0; j < rhs_spatial_spacetime_index_positions.size();
              j++) {
           gsl::at(rhs_multi_index,

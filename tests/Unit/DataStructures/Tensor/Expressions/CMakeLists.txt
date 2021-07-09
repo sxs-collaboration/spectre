@@ -15,8 +15,8 @@ set(LIBRARY_SOURCES
   Test_Product.cpp
   Test_ProductHighRankIntermediate.cpp
   Test_SquareRoot.cpp
-  Test_TensorAsExpression.cpp
   Test_TensorIndex.cpp
+  Test_TensorIndexTransformation.cpp
   )
 
 add_test_library(
