@@ -1,0 +1,84 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+#Path to XDMF file
+File_path: FishboneMoncrief.xmf
+#          insert path here
+
+#Set Scalar Variable display
+Scalar_variable_properties:
+  Variable_name: RestMassDensity
+#          insert name of variable here
+#          Choose one representation from: Surface, Points, Wireframe, Outline, Feature Edges, Surface With Edges, Point Gaussian, 3D Glyphs
+  Representation: Surface
+#          insert one of the above here
+  Color_map: Inferno (matplotlib)
+#          Viridis (matplotlib), Inferno (matplotlib) or Cool to Warm
+  Opacity:
+#          Choose Opacity function: 'Constant' or 'Proportional'
+    Function_type: Constant
+    Value: 1
+#          insert value between 0 and 1 if Function_type chosen is 'Constant'
+
+#Add vector variable
+Vector_variable_properties:
+  Add_vector_field: False
+#             enter True/False
+  Variable_name: SpatialVelocity
+#             enter name of vector variable
+  Color_map: Viridis (matplotlib)
+#             Viridis (matplotlib), Inferno (matplotlib) or Cool to Warm
+
+#Choose Filter
+Filters:
+  Clip:
+    Apply: False
+#        enter True/False
+    Clip_type: Plane
+#        Choose Clip type from: Plane, Box, Sphere, Cylinder
+#   -- For Plane --
+    Origin: [0, 0, 0]
+    Normal: [0, 0, 1]
+#   -- For Box --
+    Position: [0,0,0]
+    Rotation: [0,0,0]
+    Scale: [1,1,1]
+#   -- For Sphere --
+    Center_s: [3.14,3.14,3.14]
+    Radius_s: 3.14
+#   -- For Cylinder --
+    Center_c: [3.14,3.14,3.14]
+    Radius_c: 3.14
+    Axis: [1,0,0]
+  Slice:
+    Apply: False
+#           enter True/False
+    Slice_type: Plane
+#          Choose Slice type from: Plane, Box, Sphere, Cylinder
+#   -- For Plane --
+    Origin: [3.14, 3.14, 3.14]
+    Normal: [1, 0, 0]
+#   -- For Box --
+    Position: [0,0,0]
+    Rotation: [0,0,0]
+    Scale: [1,1,1]
+#   -- For Sphere --
+    Center_s: [3.14,3.14,3.14]
+    Radius_s: 3.14
+#   -- For Cylinder --
+    Center_c: [3.14,3.14,3.14]
+    Radius_c: 3.14
+    Axis: [1,0,0]
+
+#Warping
+Warp:
+  Add_warp: True
+#             enter True/False
+  Scale_type: Log
+#             Choose scale type: 'Log' or 'Linear'
+  Scale_factor: 10
+
+#Image/Animation Save Properties
+Save_properties:
+  Image_resolution: [1920, 1080]
+#          420p: [852, 420], 720p: [1280, 720], 1080p: [1920, 1080]
