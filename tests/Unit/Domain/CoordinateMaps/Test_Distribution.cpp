@@ -13,10 +13,13 @@ namespace domain::CoordinateMaps {
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Distribution", "[Domain][Unit]") {
   CHECK(get_output(Distribution::Linear) == "Linear");
+  CHECK(get_output(Distribution::Equiangular) == "Equiangular");
   CHECK(get_output(Distribution::Logarithmic) == "Logarithmic");
   CHECK(get_output(Distribution::Inverse) == "Inverse");
   CHECK(TestHelpers::test_creation<Distribution>("Linear") ==
         Distribution::Linear);
+  CHECK(TestHelpers::test_creation<Distribution>("Equiangular") ==
+        Distribution::Equiangular);
   CHECK(TestHelpers::test_creation<Distribution>("Logarithmic") ==
         Distribution::Logarithmic);
   CHECK(TestHelpers::test_creation<Distribution>("Inverse") ==
