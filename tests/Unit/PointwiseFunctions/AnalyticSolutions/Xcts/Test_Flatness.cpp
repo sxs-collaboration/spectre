@@ -32,7 +32,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Xcts.Flatness",
     INFO("Verify the solution solves the XCTS equations");
     TestHelpers::Xcts::Solutions::verify_solution<Xcts::Geometry::FlatCartesian,
                                                   0>(solution, {{0., 0., 0.}},
-                                                     0., 1., 1.e-14);
+                                                     0., 1., 1.e-13);
   }
 }
 

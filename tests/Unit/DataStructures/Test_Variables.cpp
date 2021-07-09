@@ -424,7 +424,7 @@ void test_variables_math() noexcept {
         [&variables, &tensor ](auto tag) noexcept {
           using Tag = tmpl::type_from<decltype(tag)>;
           for (const auto& component : get<Tag>(variables)) {
-            CHECK(component == tensor);
+            CHECK_ITERABLE_APPROX(component, tensor);
           }
         });
   };
