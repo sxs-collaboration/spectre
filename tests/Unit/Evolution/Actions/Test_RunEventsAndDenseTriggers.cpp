@@ -12,6 +12,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
@@ -41,11 +45,11 @@ class GlobalCache;
 
 namespace {
 struct Var : db::SimpleTag {
-  using type = double;
+  using type = Scalar<DataVector>;
 };
 
 struct PrimVar : db::SimpleTag {
-  using type = double;
+  using type = Scalar<DataVector>;
 };
 
 class TestTrigger : public DenseTrigger {
@@ -119,11 +123,11 @@ struct TestEvent : public Event {
   using argument_tags = tmpl::list<Tags::Time, Var, PrimVar>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  void operator()(const double time, const double var, const double prim_var,
+  void operator()(const double time, Var::type var, PrimVar::type prim_var,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
                   const Component* const /*meta*/) const noexcept {
-    calls.emplace_back(time, var, prim_var);
+    calls.emplace_back(time, std::move(var), std::move(prim_var));
   }
 
   using is_ready_argument_tags = tmpl::list<>;
@@ -140,34 +144,53 @@ struct TestEvent : public Event {
     return needs_evolved_variables_;
   }
 
+  template <bool HasPrimitiveAndConservativeVars>
+  static void check_calls(
+      const std::vector<std::tuple<double, Variables<tmpl::list<Var>>,
+                                   Variables<tmpl::list<PrimVar>>>>&
+          expected) noexcept {
+    CAPTURE(get_output(expected));
+    CAPTURE(get_output(calls));
+    REQUIRE(calls.size() == expected.size());
+    for (size_t i = 0; i < expected.size(); ++i) {
+      CHECK(std::get<0>(calls[i]) == std::get<0>(expected[i]));
+      CHECK(std::get<1>(calls[i]) == get<Var>(std::get<1>(expected[i])));
+      if (HasPrimitiveAndConservativeVars) {
+        CHECK(std::get<2>(calls[i]) == get<PrimVar>(std::get<2>(expected[i])));
+      }
+    }
+    calls.clear();
+  }
+
+ private:
   bool needs_evolved_variables_ = false;
 
-  static std::vector<std::tuple<double, double, double>> calls;
+  static std::vector<std::tuple<double, Var::type, PrimVar::type>> calls;
 };
 
-std::vector<std::tuple<double, double, double>> TestEvent::calls{};
+std::vector<std::tuple<double, Var::type, PrimVar::type>> TestEvent::calls{};
 
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
 
 struct PrimFromCon {
   using return_tags = tmpl::list<PrimVar>;
   using argument_tags = tmpl::list<Var>;
-  static void apply(const gsl::not_null<double*> prim,
-                    const double con) noexcept {
-    *prim = -con;
+  static void apply(const gsl::not_null<Scalar<DataVector>*> prim,
+                    const Scalar<DataVector>& con) noexcept {
+    get(*prim) = -get(con);
   }
 };
 
 template <bool HasPrimitiveAndConservativeVars>
 struct System {
-  using variables_tag = Var;
+  using variables_tag = Tags::Variables<tmpl::list<Var>>;
   static constexpr bool has_primitive_and_conservative_vars = false;
 };
 
 template <>
 struct System<true> {
-  using variables_tag = Var;
-  using primitive_variables_tag = PrimVar;
+  using variables_tag = Tags::Variables<tmpl::list<Var>>;
+  using primitive_variables_tag = Tags::Variables<tmpl::list<PrimVar>>;
   static constexpr bool has_primitive_and_conservative_vars = true;
 };
 
@@ -176,9 +199,13 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
+  using variables_tag = typename metavariables::system::variables_tag;
+  // Not unconditionally defined in the system to make sure the action
+  // only accesses it when it should.
+  using primitives_tag = Tags::Variables<tmpl::list<PrimVar>>;
   using initialization_tags =
-      tmpl::list<Tags::TimeStepId, Tags::TimeStep, Tags::Time, Var, PrimVar,
-                 Tags::HistoryEvolvedVariables<Var>,
+      tmpl::list<Tags::TimeStepId, Tags::TimeStep, Tags::Time, variables_tag,
+                 primitives_tag, Tags::HistoryEvolvedVariables<variables_tag>,
                  evolution::Tags::EventsAndDenseTriggers>;
 
   using prim_from_con = tmpl::conditional_t<
@@ -246,6 +273,14 @@ void test(const bool time_runs_forward) noexcept {
   using metavars = Metavariables<HasPrimitiveAndConservativeVars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using component = Component<metavars>;
+  using system = typename metavars::system;
+  using variables_tag = typename system::variables_tag;
+  using primitives_tag = typename component::primitives_tag;
+  using VarsType = typename variables_tag::type;
+  using PrimsType = typename primitives_tag::type;
+  using DtVarsType =
+      typename db::add_tag_prefix<::Tags::dt, variables_tag>::type;
+  using History = TimeSteppers::History<VarsType, DtVarsType>;
 
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(time_runs_forward, 0,
@@ -255,16 +290,19 @@ void test(const bool time_runs_forward) noexcept {
   const double start_time = time_step_id.step_time().value();
   const double step_size = exact_step_size.value();
   const double step_center = start_time + 0.5 * step_size;
-  const double initial_var = 8.0;
+  const VarsType initial_vars{1, 8.0};
+  const DtVarsType deriv_vars{1, 1.0};
+  const PrimsType unset_primitives{1, 1234.5};
 
   const auto set_up_component =
-      [&exact_step_size, &initial_var, &start_time, &time_step_id](
+      [&deriv_vars, &exact_step_size, &initial_vars, &start_time, &time_step_id,
+       &unset_primitives](
           const gsl::not_null<MockRuntimeSystem*> runner,
           const std::vector<std::tuple<double, bool, bool, bool>>&
               triggers) noexcept {
-        TimeSteppers::History<double, double> history(1);
-        history.insert(time_step_id, 1.0);
-        history.most_recent_value() = initial_var;
+        History history(1);
+        history.insert(time_step_id, deriv_vars);
+        history.most_recent_value() = initial_vars;
 
         evolution::EventsAndDenseTriggers::ConstructionType
             events_and_dense_triggers{};
@@ -279,34 +317,17 @@ void test(const bool time_runs_forward) noexcept {
 
         ActionTesting::emplace_array_component<component>(
             runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-            time_step_id, exact_step_size, start_time, initial_var, 0.0,
-            std::move(history),
+            time_step_id, exact_step_size, start_time, initial_vars,
+            unset_primitives, std::move(history),
             evolution::EventsAndDenseTriggers(
                 std::move(events_and_dense_triggers)));
         ActionTesting::set_phase(runner, metavars::Phase::Testing);
       };
 
-  const auto check_event_calls =
-      [](const std::vector<std::tuple<double, double, double>>&
-             expected) noexcept {
-        CAPTURE(get_output(expected));
-        CAPTURE(get_output(TestEvent::calls));
-        REQUIRE(TestEvent::calls.size() == expected.size());
-        for (size_t i = 0; i < expected.size(); ++i) {
-          CHECK(std::get<0>(TestEvent::calls[i]) == std::get<0>(expected[i]));
-          CHECK(std::get<1>(TestEvent::calls[i]) == std::get<1>(expected[i]));
-          if (HasPrimitiveAndConservativeVars) {
-            CHECK(std::get<2>(TestEvent::calls[i]) == std::get<2>(expected[i]));
-          }
-        }
-        TestEvent::calls.clear();
-      };
-
   // Tests start here
 
   // Nothing should happen in self-start
-  const auto check_self_start = [&check_event_calls, &set_up_component,
-                                 &start_time, &step_size](
+  const auto check_self_start = [&set_up_component, &start_time, &step_size](
                                     const bool trigger_is_ready) noexcept {
     // This isn't a valid time for the trigger to reschedule to (it is
     // in the past), but the triggers should be completely ignored in
@@ -327,7 +348,7 @@ void test(const bool time_runs_forward) noexcept {
           });
     }
     CHECK(run_if_ready(make_not_null(&runner)));
-    check_event_calls({});
+    TestEvent::check_calls<HasPrimitiveAndConservativeVars>({});
   };
   check_self_start(true);
   check_self_start(false);
@@ -341,15 +362,14 @@ void test(const bool time_runs_forward) noexcept {
   }
 
   // Triggers too far in the future
-  const auto check_not_reached = [&check_event_calls, &set_up_component,
-                                  &start_time, &step_size](
+  const auto check_not_reached = [&set_up_component, &start_time, &step_size](
                                      const bool trigger_is_ready) noexcept {
     MockRuntimeSystem runner{
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{start_time + 1.5 * step_size, trigger_is_ready,
                                 trigger_is_ready, false}});
     CHECK(run_if_ready(make_not_null(&runner)));
-    check_event_calls({});
+    TestEvent::check_calls<HasPrimitiveAndConservativeVars>({});
   };
   check_not_reached(true);
   check_not_reached(false);
@@ -360,7 +380,7 @@ void test(const bool time_runs_forward) noexcept {
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, false, true, false}});
     CHECK(not run_if_ready(make_not_null(&runner)));
-    check_event_calls({});
+    TestEvent::check_calls<HasPrimitiveAndConservativeVars>({});
   }
 
   // Variables not needed
@@ -369,7 +389,8 @@ void test(const bool time_runs_forward) noexcept {
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, true, true, false}});
     CHECK(run_if_ready(make_not_null(&runner)));
-    check_event_calls({{step_center, initial_var, 0.0}});
+    TestEvent::check_calls<HasPrimitiveAndConservativeVars>(
+        {{step_center, initial_vars, unset_primitives}});
   }
 
   // Variables needed
@@ -378,39 +399,40 @@ void test(const bool time_runs_forward) noexcept {
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{step_center, true, true, true}});
     CHECK(run_if_ready(make_not_null(&runner)));
-    const double dense_var = initial_var + 0.5 * step_size;
-    check_event_calls({{step_center, dense_var, -dense_var}});
+    const VarsType dense_var = initial_vars + 0.5 * step_size * deriv_vars;
+    TestEvent::check_calls<HasPrimitiveAndConservativeVars>(
+        {{step_center, dense_var, -dense_var}});
   }
 
   // Missing dense output data
-  const auto check_missing_dense_data = [&check_event_calls, &initial_var,
-                                         &set_up_component, &step_center,
-                                         &time_step_id](
+  const auto check_missing_dense_data = [&initial_vars, &set_up_component,
+                                         &step_center, &time_step_id,
+                                         &unset_primitives](
                                             const bool data_needed) noexcept {
     MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
     set_up_component(&runner, {{step_center, true, true, data_needed}});
     {
       auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
           make_not_null(&runner), 0);
-      db::mutate<Tags::HistoryEvolvedVariables<Var>>(
+      db::mutate<Tags::HistoryEvolvedVariables<variables_tag>>(
           make_not_null(&box),
-          [&initial_var, &time_step_id](
-              const gsl::not_null<TimeSteppers::History<double, double>*>
-                  history) noexcept {
-            *history = TimeSteppers::History<double, double>(3);
+          [&initial_vars,
+           &time_step_id](const gsl::not_null<History*> history) noexcept {
+            *history = History(3);
             history->insert(TimeStepId(time_step_id.time_runs_forward(), 0,
                                        time_step_id.step_time(), 1,
                                        time_step_id.step_time()),
-                            1.0);
-            history->most_recent_value() = initial_var;
+                            {1, 1.0});
+            history->most_recent_value() = initial_vars;
           });
     }
     CHECK(run_if_ready(make_not_null(&runner)));
     if (data_needed) {
-      check_event_calls({});
+      TestEvent::check_calls<HasPrimitiveAndConservativeVars>({});
     } else {
       // If we don't need the data, it shouldn't matter whether it is missing.
-      check_event_calls({{step_center, initial_var, 0.0}});
+      TestEvent::check_calls<HasPrimitiveAndConservativeVars>(
+          {{step_center, initial_vars, unset_primitives}});
     }
   };
   check_missing_dense_data(true);
@@ -424,8 +446,9 @@ void test(const bool time_runs_forward) noexcept {
     set_up_component(&runner, {{step_center, true, true, false},
                                {second_trigger, true, true, false}});
     CHECK(run_if_ready(make_not_null(&runner)));
-    check_event_calls(
-        {{step_center, initial_var, 0.0}, {second_trigger, initial_var, 0.0}});
+    TestEvent::check_calls<HasPrimitiveAndConservativeVars>(
+        {{step_center, initial_vars, unset_primitives},
+         {second_trigger, initial_vars, unset_primitives}});
   }
 }
 }  // namespace
