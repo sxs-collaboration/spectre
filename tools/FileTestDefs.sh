@@ -693,6 +693,45 @@ check_dox_groups_test() {
 }
 standard_checks+=(check_dox_groups)
 
+# Check for uses of `proxy.ckLocal()`, prefer `Parallel::local(proxy)`
+prevent_cklocal() {
+    is_c++ "$1" && \
+        whitelist "$1" 'src/Parallel/Local.hpp$' && \
+        staged_grep -q "\\.ckLocal()" "$1"
+}
+prevent_cklocal_report() {
+    echo "Found occurrences of ckLocal, must use Parallel::local:"
+    pretty_grep "\\.ckLocal()" "$@"
+}
+prevent_cklocal_test() {
+    test_check fail foo.cpp 'auto a = some_proxy.ckLocal();'
+    test_check pass foo.cpp 'auto a = some_proxy.ckLocalBranch();'
+    test_check pass foo.cpp 'auto a = Parallel::local(some_proxy);'
+    test_check pass foo.cpp '// a comment talking about ckLocal'
+    test_check pass foo.txt '// a comment talking about ckLocal'
+}
+standard_checks+=(prevent_cklocal)
+
+# Check for uses of `proxy.ckLocalBranch()`,
+# prefer `Parallel::local_branch(proxy)`
+prevent_cklocalbranch() {
+    is_c++ "$1" && \
+        whitelist "$1" 'src/Parallel/Local.hpp$' && \
+        staged_grep -q "\\.ckLocalBranch()" "$1"
+}
+prevent_cklocalbranch_report() {
+    echo "Found occurrences of ckLocalBranch, must use Parallel::local_branch:"
+    pretty_grep "\\.ckLocalBranch()" "$@"
+}
+prevent_cklocalbranch_test() {
+    test_check fail foo.cpp 'auto a = some_proxy.ckLocalBranch();'
+    test_check pass foo.cpp 'auto a = some_proxy.ckLocal();'
+    test_check pass foo.cpp 'auto a = Parallel::local_branch(some_proxy);'
+    test_check pass foo.cpp '// a comment talking about ckLocalBranch'
+    test_check pass foo.txt '// a comment talking about ckLocalBranch'
+}
+standard_checks+=(prevent_cklocalbranch)
+
 # Prevent editing RunSingleTest files. We may need to occasionally update these
 # files, but it's at least less than once a year.
 #
