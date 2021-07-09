@@ -427,6 +427,24 @@ void test_f_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::f_constraint<SpatialDim, Frame, DataType>),
       "TestFunctions", "f_constraint", {{{-1.0, 1.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
+          const tnsr::a<DataType, SpatialDim, Frame>&,
+          const tnsr::ab<DataType, SpatialDim, Frame>&,
+          const tnsr::a<DataType, SpatialDim, Frame>&,
+          const tnsr::A<DataType, SpatialDim, Frame>&,
+          const tnsr::II<DataType, SpatialDim, Frame>&,
+          const tnsr::AA<DataType, SpatialDim, Frame>&,
+          const tnsr::aa<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::ijaa<DataType, SpatialDim, Frame>&,
+          const Scalar<DataType>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::aa<DataType, SpatialDim, Frame>&)>(
+          &GeneralizedHarmonic::f_constraint<SpatialDim, Frame, DataType>),
+      "TestFunctions", "f_constraint_with_stress_energy", {{{-1.0, 1.0}}},
+      used_for_size);
 }
 
 // Test the return-by-reference F constraint
