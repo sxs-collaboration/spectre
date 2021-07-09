@@ -8,70 +8,39 @@
 #include <iterator>
 #include <numeric>
 
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "DataStructures/Tensor/Symmetry.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 
 namespace TestHelpers::TensorExpressions {
 /// \ingroup TestingFrameworkGroup
-/// \brief Test that the transformation between LHS and RHS multi-indices and
-/// the subsequent computed RHS multi-index of a rank 4 tensor is correctly
-/// computed by the functions of TensorAsExpression, according to the orders of
-/// the LHS and RHS generic indices
+/// \brief Test that the transformation between two rank 4 tensors' generic
+/// indices and the subsequent transformed multi-indices are correctly computed
 ///
 /// \details The functions tested are:
-/// - `TensorAsExpression::compute_index_transformation`
-/// - `TensorAsExpression::compute_rhs_multi_index`
+/// - `TensorExpressions::compute_tensorindex_transformation`
+/// - `TensorExpressions::transform_multi_index`
 ///
-/// If we consider the RHS tensor's generic indices to be (a, b, c, d), there
-/// are 24 permutations that are possible orderings of the LHS tensor's generic
-/// indices, such as: (a, b, c, d), (a, b, d, c), (a, c, b, d), etc. For each of
-/// these cases, this test checks that for each LHS component's multi-index, the
-/// equivalent RHS multi-index is correctly computed.
+/// If we consider the first tensor's generic indices to be (a, b, c, d), there
+/// are 24 permutations that are possible orderings of the second tensor's
+/// generic indices, such as: (a, b, c, d), (a, b, d, c), (a, c, b, d), etc. For
+/// each of these cases, this test checks that for each multi-index with the
+/// first generic index ordering, the equivalent multi-index with the second
+/// ordering is correctly computed.
 ///
-/// \param tensorindex_a the first TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_a`
-/// \param tensorindex_b the second TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_B`
-/// \param tensorindex_c the third TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_c`
-/// \param tensorindex_d the fourth TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_D`
+/// \tparam TensorIndexA the first generic tensor index, e.g. type of `ti_a`
+/// \tparam TensorIndexB the second generic tensor index, e.g. type of `ti_B`
+/// \tparam TensorIndexC the third generic tensor index, e.g. type of `ti_c`
+/// \tparam TensorIndexD the fourth generic tensor index, e.g. type of `ti_D`
 template <typename TensorIndexA, typename TensorIndexB, typename TensorIndexC,
           typename TensorIndexD>
-void test_tensor_as_expression_rank_4(
-    const TensorIndexA& tensorindex_a, const TensorIndexB& tensorindex_b,
-    const TensorIndexC& tensorindex_c,
-    const TensorIndexD& tensorindex_d) noexcept {
+void test_tensor_index_transformation_rank_4(
+    const TensorIndexA& /*tensorindex_a*/,
+    const TensorIndexB& /*tensorindex_b*/,
+    const TensorIndexC& /*tensorindex_c*/,
+    const TensorIndexD& /*tensorindex_d*/) noexcept {
   const size_t dim_a = 4;
   const size_t dim_b = 2;
   const size_t dim_c = 3;
   const size_t dim_d = 1;
-
-  const IndexType indextype_a =
-      TensorIndexA::is_spacetime ? IndexType::Spacetime : IndexType::Spatial;
-  const IndexType indextype_b =
-      TensorIndexB::is_spacetime ? IndexType::Spacetime : IndexType::Spatial;
-  const IndexType indextype_c =
-      TensorIndexC::is_spacetime ? IndexType::Spacetime : IndexType::Spatial;
-  const IndexType indextype_d =
-      TensorIndexD::is_spacetime ? IndexType::Spacetime : IndexType::Spatial;
-
-  Tensor<
-      double, Symmetry<4, 3, 2, 1>,
-      index_list<Tensor_detail::TensorIndexType<dim_a, TensorIndexA::valence,
-                                                Frame::Inertial, indextype_a>,
-                 Tensor_detail::TensorIndexType<dim_b, TensorIndexB::valence,
-                                                Frame::Inertial, indextype_b>,
-                 Tensor_detail::TensorIndexType<dim_c, TensorIndexC::valence,
-                                                Frame::Inertial, indextype_c>,
-                 Tensor_detail::TensorIndexType<dim_d, TensorIndexD::valence,
-                                                Frame::Inertial, indextype_d>>>
-      rhs_tensor{};
-  std::iota(rhs_tensor.begin(), rhs_tensor.end(), 0.0);
-  // Get TensorExpression from RHS tensor
-  const auto R_abcd_expr =
-      rhs_tensor(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d);
 
   const std::array<size_t, 4> index_order_abcd = {
       TensorIndexA::value, TensorIndexB::value, TensorIndexC::value,
@@ -150,102 +119,126 @@ void test_tensor_as_expression_rank_4(
       TensorIndexA::value};
 
   const std::array<size_t, 4> actual_abcd_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_abcd);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_abcd,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_abcd_to_abcd_transformation = {0, 1, 2,
                                                                       3};
   const std::array<size_t, 4> actual_abdc_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_abdc);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_abdc,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_abdc_to_abcd_transformation = {0, 1, 3,
                                                                       2};
   const std::array<size_t, 4> actual_acbd_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_acbd);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_acbd,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_acbd_to_abcd_transformation = {0, 2, 1,
                                                                       3};
   const std::array<size_t, 4> actual_acdb_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_acdb);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_acdb,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_acdb_to_abcd_transformation = {0, 3, 1,
                                                                       2};
   const std::array<size_t, 4> actual_adbc_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_adbc);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_adbc,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_adbc_to_abcd_transformation = {0, 2, 3,
                                                                       1};
   const std::array<size_t, 4> actual_adcb_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_adcb);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_adcb,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_adcb_to_abcd_transformation = {0, 3, 2,
                                                                       1};
 
   const std::array<size_t, 4> actual_bacd_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_bacd);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_bacd,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_bacd_to_abcd_transformation = {1, 0, 2,
                                                                       3};
   const std::array<size_t, 4> actual_badc_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_badc);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_badc,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_badc_to_abcd_transformation = {1, 0, 3,
                                                                       2};
   const std::array<size_t, 4> actual_bcad_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_bcad);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_bcad,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_bcad_to_abcd_transformation = {2, 0, 1,
                                                                       3};
   const std::array<size_t, 4> actual_bcda_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_bcda);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_bcda,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_bcda_to_abcd_transformation = {3, 0, 1,
                                                                       2};
   const std::array<size_t, 4> actual_bdac_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_bdac);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_bdac,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_bdac_to_abcd_transformation = {2, 0, 3,
                                                                       1};
   const std::array<size_t, 4> actual_bdca_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_bdca);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_bdca,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_bdca_to_abcd_transformation = {3, 0, 2,
                                                                       1};
 
   const std::array<size_t, 4> actual_cabd_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_cabd);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_cabd,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_cabd_to_abcd_transformation = {1, 2, 0,
                                                                       3};
   const std::array<size_t, 4> actual_cadb_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_cadb);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_cadb,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_cadb_to_abcd_transformation = {1, 3, 0,
                                                                       2};
   const std::array<size_t, 4> actual_cbad_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_cbad);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_cbad,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_cbad_to_abcd_transformation = {2, 1, 0,
                                                                       3};
   const std::array<size_t, 4> actual_cbda_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_cbda);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_cbda,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_cbda_to_abcd_transformation = {3, 1, 0,
                                                                       2};
   const std::array<size_t, 4> actual_cdab_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_cdab);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_cdab,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_cdab_to_abcd_transformation = {2, 3, 0,
                                                                       1};
   const std::array<size_t, 4> actual_cdba_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_cdba);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_cdba,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_cdba_to_abcd_transformation = {3, 2, 0,
                                                                       1};
 
   const std::array<size_t, 4> actual_dabc_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_dabc);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_dabc,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_dabc_to_abcd_transformation = {1, 2, 3,
                                                                       0};
   const std::array<size_t, 4> actual_dacb_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_dacb);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_dacb,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_dacb_to_abcd_transformation = {1, 3, 2,
                                                                       0};
   const std::array<size_t, 4> actual_dbac_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_dbac);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_dbac,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_dbac_to_abcd_transformation = {2, 1, 3,
                                                                       0};
   const std::array<size_t, 4> actual_dbca_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_dbca);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_dbca,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_dbca_to_abcd_transformation = {3, 1, 2,
                                                                       0};
   const std::array<size_t, 4> actual_dcab_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_dcab);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_dcab,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_dcab_to_abcd_transformation = {2, 3, 1,
                                                                       0};
   const std::array<size_t, 4> actual_dcba_to_abcd_transformation =
-      R_abcd_expr.compute_index_transformation(index_order_dcba);
+      ::TensorExpressions::compute_tensorindex_transformation(index_order_dcba,
+                                                              index_order_abcd);
   const std::array<size_t, 4> expected_dcba_to_abcd_transformation = {3, 2, 1,
                                                                       0};
 
@@ -334,79 +327,79 @@ void test_tensor_as_expression_rank_4(
           const std::array<size_t, 4> lkji = {l, k, j, i};
 
           // For L_{abcd} = R_{abcd}, check that L_{ijkl} == R_{ijkl}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_abcd_to_abcd_transformation) == ijkl);
           // For L_{abdc} = R_{abcd}, check that L_{ijkl} == R_{ijlk}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_abdc_to_abcd_transformation) == ijlk);
           // For L_{acbd} = R_{abcd}, check that L_{ijkl} == R_{ikjl}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_acbd_to_abcd_transformation) == ikjl);
           // For L_{acdb} = R_{abcd}, check that L_{ijkl} == R_{iljk}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_acdb_to_abcd_transformation) == iljk);
           // For L_{adbc} = R_{abcd}, check that L_{ijkl} == R_{iklj}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_adbc_to_abcd_transformation) == iklj);
           // For L_{adcb} = R_{abcd}, check that L_{ijkl} == R_{ilkj}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_adcb_to_abcd_transformation) == ilkj);
 
           // For L_{bacd} = R_{abcd}, check that L_{ijkl} == R_{jikl}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_bacd_to_abcd_transformation) == jikl);
           // For L_{badc} = R_{abcd}, check that L_{ijkl} == R_{jilk}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_badc_to_abcd_transformation) == jilk);
           // For L_{bcad} = R_{abcd}, check that L_{ijkl} == R_{kijl}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_bcad_to_abcd_transformation) == kijl);
           // For L_{bcda} = R_{abcd}, check that L_{ijkl} == R_{lijk}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_bcda_to_abcd_transformation) == lijk);
           // For L_{bdac} = R_{abcd}, check that L_{ijkl} == R_{kilj}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_bdac_to_abcd_transformation) == kilj);
           // For L_{bdca} = R_{abcd}, check that L_{ijkl} == R_{likj}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_bdca_to_abcd_transformation) == likj);
 
           // For L_{cabd} = R_{abcd}, check that L_{ijkl} == R_{jkil}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_cabd_to_abcd_transformation) == jkil);
           // For L_{cadb} = R_{abcd}, check that L_{ijkl} == R_{jlik}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_cadb_to_abcd_transformation) == jlik);
           // For L_{cbad} = R_{abcd}, check that L_{ijkl} == R_{kjil}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_cbad_to_abcd_transformation) == kjil);
           // For L_{cbda} = R_{abcd}, check that L_{ijkl} == R_{ljik}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_cbda_to_abcd_transformation) == ljik);
           // For L_{cdab} = R_{abcd}, check that L_{ijkl} == R_{klij}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_cdab_to_abcd_transformation) == klij);
           // For L_{cdba} = R_{abcd}, check that L_{ijkl} == R_{lkij}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_cdba_to_abcd_transformation) == lkij);
 
           // For L_{dabc} = R_{abcd}, check that L_{ijkl} == R_{jkli}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_dabc_to_abcd_transformation) == jkli);
           // For L_{dacb} = R_{abcd}, check that L_{ijkl} == R_{jlki}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_dacb_to_abcd_transformation) == jlki);
           // For L_{dbac} = R_{abcd}, check that L_{ijkl} == R_{kjli}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_dbac_to_abcd_transformation) == kjli);
           // For L_{dbca} = R_{abcd}, check that L_{ijkl} == R_{ljki}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_dbca_to_abcd_transformation) == ljki);
           // For L_{dcab} = R_{abcd}, check that L_{ijkl} == R_{klji}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_dcab_to_abcd_transformation) == klji);
           // For L_{dcba} = R_{abcd}, check that L_{ijkl} == R_{lkji}
-          CHECK(R_abcd_expr.compute_rhs_multi_index(
+          CHECK(::TensorExpressions::transform_multi_index(
                     ijkl, expected_dcba_to_abcd_transformation) == lkji);
         }
       }
