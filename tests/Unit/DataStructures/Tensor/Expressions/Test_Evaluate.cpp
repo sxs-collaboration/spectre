@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
-#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank0TestHelpers.hpp"
 #include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank1TestHelpers.hpp"
