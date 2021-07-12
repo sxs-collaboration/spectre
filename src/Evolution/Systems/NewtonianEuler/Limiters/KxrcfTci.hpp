@@ -21,6 +21,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
@@ -64,9 +65,8 @@ bool kxrcf_indicator(
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
-    const std::unordered_map<Direction<VolumeDim>,
-                             tnsr::i<DataVector, VolumeDim>>&
-        unnormalized_normals,
+    const typename evolution::dg::Tags::NormalCovectorAndMagnitude<
+        VolumeDim>::type& normals_and_magnitudes,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -106,30 +106,39 @@ bool kxrcf_indicator(
   double inflow_delta_density = 0.;
   double inflow_delta_energy = 0.;
 
+  // Skip boundary integrations on external boundaries. This choice might be
+  // problematic for evolutions (likely only simple test cases) that feed in
+  // shocks through the boundary condition: the limiter might fail to activate
+  // in the cell that touches the boundary.
+  //
+  // To properly compute the limiter at external boundaries we would need the
+  // limiter to know about the boundary condition, which may be difficult to
+  // do in a general way.
   for (const auto& [neighbor, data] : neighbor_data) {
-    // Skip computations on boundary if the boundary is external. This choice
-    // might be problematic for evolutions (likely only simple test cases) that
-    // feed in shocks through the boundary condition: the limiter might fail to
-    // activate in the cell that touches the boundary.
-    //
-    // Note that to do this properly we would need the limiter to know about the
-    // boundary condition in general, which may be difficult. Furthermore, such
-    // a change may also require changing the tags at the call site to ensure
-    // that ALL face normals are grabbed from the databox (and not only the
-    // internal face normals, as occurs when grabbing
-    // `Tags::Interface<Tags::InternalDirections, ...>`).
     const auto& dir = neighbor.first;
-    if (unnormalized_normals.find(dir) == unnormalized_normals.end()) {
-      continue;
-    }
+
+    // Check consistency of neighbor_data with element and normals
+    ASSERT(element.neighbors().contains(dir),
+           "Received neighbor data from dir = "
+               << dir << ", but element has no neighbor in this dir");
+    ASSERT(normals_and_magnitudes.contains(dir),
+           "Received neighbor data from dir = "
+               << dir
+               << ", but normals_and_magnitudes has no normal in this dir");
+    ASSERT(normals_and_magnitudes.at(dir).has_value(),
+           "The normals_and_magnitudes are not up-to-date in dir = " << dir);
+    const auto& normal = get<evolution::dg::Tags::NormalCovector<VolumeDim>>(
+        normals_and_magnitudes.at(dir).value());
+    const auto& magnitude_of_normal =
+        get<evolution::dg::Tags::MagnitudeOfNormal>(
+            normals_and_magnitudes.at(dir).value());
 
     const size_t sliced_dim = dir.dimension();
     const size_t index_of_slice =
         (dir.side() == Side::Lower ? 0 : mesh.extents()[sliced_dim] - 1);
     const auto momentum_on_slice = data_on_slice(
         cons_momentum_density, mesh.extents(), sliced_dim, index_of_slice);
-    const auto momentum_dot_normal =
-        dot_product(momentum_on_slice, unnormalized_normals.at(dir));
+    const auto momentum_dot_normal = dot_product(momentum_on_slice, normal);
 
     // Skip boundaries with no significant inflow
     // Note: the cutoff value here is small but arbitrarily chosen.
@@ -143,13 +152,13 @@ bool kxrcf_indicator(
     const DataVector inflow_mask = 1. - step_function(get(momentum_dot_normal));
     // Mask is then weighted pointwise by the Jacobian determinant giving
     // surface integrals in inertial coordinates. This Jacobian determinant is
-    // given by the product of the volume Jacobian determinant with the norm of
-    // the unnormalized face normals.
+    // given by the product of the volume Jacobian determinant with the
+    // magnitude of the unnormalized normal covectors.
     const DataVector weighted_inflow_mask =
         inflow_mask *
         get(data_on_slice(det_logical_to_inertial_jacobian, mesh.extents(),
                           sliced_dim, index_of_slice)) *
-        get(magnitude(unnormalized_normals.at(dir)));
+        get(magnitude_of_normal);
 
     inflow_area +=
         definite_integral(weighted_inflow_mask, mesh.slice_away(sliced_dim));

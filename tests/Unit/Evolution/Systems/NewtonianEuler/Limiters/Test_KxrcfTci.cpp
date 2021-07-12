@@ -102,17 +102,32 @@ void test_kxrcf_work(
        get(determinant(element_map.inv_jacobian(logical_coordinates(mesh))))}};
 
   // Create and fill unit normals
-  std::unordered_map<Direction<VolumeDim>, tnsr::i<DataVector, VolumeDim>>
-      unnormalized_normals{};
+  DirectionMap<VolumeDim, std::optional<Variables<tmpl::list<
+                              evolution::dg::Tags::MagnitudeOfNormal,
+                              evolution::dg::Tags::NormalCovector<VolumeDim>>>>>
+      normals_and_magnitudes{};
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
-    unnormalized_face_normal(make_not_null(&(unnormalized_normals[dir])),
+    const auto boundary_mesh = mesh.slice_away(dir.dimension());
+    normals_and_magnitudes[dir] =
+        Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                             evolution::dg::Tags::NormalCovector<VolumeDim>>>(
+            boundary_mesh.number_of_grid_points());
+    auto& covector = get<evolution::dg::Tags::NormalCovector<VolumeDim>>(
+        normals_and_magnitudes[dir].value());
+    auto& normal_magnitude = get<evolution::dg::Tags::MagnitudeOfNormal>(
+        normals_and_magnitudes[dir].value());
+    unnormalized_face_normal(make_not_null(&(covector)),
                              mesh.slice_away(dir.dimension()), element_map,
                              dir);
+    normal_magnitude = magnitude(covector);
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      covector.get(d) /= get(normal_magnitude);
+    }
   }
 
   const bool tci_detection = NewtonianEuler::Limiters::Tci::kxrcf_indicator(
       kxrcf_constant, cons_density, cons_momentum, cons_energy, mesh, element,
-      element_size, det_jacobian, unnormalized_normals, neighbor_data);
+      element_size, det_jacobian, normals_and_magnitudes, neighbor_data);
   CHECK(tci_detection == expected_detection);
 }
 
