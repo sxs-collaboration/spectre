@@ -19,3 +19,9 @@ spectre_target_headers(
   Exit.hpp
   ParallelInfo.hpp
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Charmxx::charmxx
+  )

@@ -22,6 +22,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Charmxx::pup
   EventsAndDenseTriggers
   Options
   Parallel

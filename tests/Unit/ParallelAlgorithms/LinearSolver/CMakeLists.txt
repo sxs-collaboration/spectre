@@ -40,6 +40,7 @@ function(add_linear_solver_algorithm_test TEST_NAME)
     # Link against Boost::program_options for now until we have proper
     # dependency handling for header-only libs
     Boost::program_options
+    Charmxx::main
     DataStructures
     ErrorHandling
     IO

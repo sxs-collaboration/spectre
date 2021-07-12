@@ -365,17 +365,15 @@ Follow these steps:
 **Notes**:
 * For more details on building Charm++, see the directions
   [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
-  The correct target is `charm++` and, for a personal machine, the
+  The correct target is `LIBS` and, for a personal machine, the
   correct target architecture is likely to be `multicore-linux-x86_64`
   (or `multicore-darwin-x86_64` on macOS).
   On an HPC system, the correct Charm++ target architecture depends on the
   machine's inter-node communication architecture. We will be providing specific
   instructions for various HPC systems.
-* Both Charm++ and SpECTRE must be compiled using the same compiler,
-  otherwise you will receive undefined reference errors while linking SpECTRE.
-  When compiling Charm++ you can specify the compiler using, for example,
+* When compiling Charm++ you can specify the compiler using, for example,
   ```
-  ./build charm++ ARCH clang
+  ./build LIBS ARCH clang -fPIC
   ```
   When compiling SpECTRE you can specify the compiler to CMake using,
   for example,
@@ -385,6 +383,9 @@ Follow these steps:
         -D CMAKE_Fortran_COMPILER=gfortran \
         -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT
   ```
+* You can compile Charm++ with support for shared libraries by appending the
+  option `--build-shared` to the `./build` command (see the [Charm++
+  installation instructions](https://github.com/UIUC-PPL/charm#building-dynamic-libraries)).
 * Inside the SpECTRE build directory, use `make list` to see all available
   targets. This list can be refreshed by running CMake again.
 

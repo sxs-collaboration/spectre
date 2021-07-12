@@ -496,6 +496,7 @@ jobs:
           -D CMAKE_Fortran_COMPILER=${FC}
           -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
           -D OVERRIDE_ARCH=x86-64
+          -D BUILD_SHARED_LIBS=ON
           -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF

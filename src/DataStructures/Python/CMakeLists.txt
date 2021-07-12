@@ -18,6 +18,6 @@ spectre_python_link_libraries(
   PRIVATE
   DataStructures
   pybind11::module
-  PyBindings
+  PythonBindings
   Utilities
   )

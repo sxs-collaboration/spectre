@@ -8,8 +8,10 @@
         },
         "cmakeSettings": {
             "CHARM_ROOT": "/work/charm_6_10_2/multicore-linux-x86_64-clang",
+            "BUILD_SHARED_LIBS": "ON",
             "BUILD_PYTHON_BINDINGS": "ON",
-            "PYTHON_EXECUTABLE": "/usr/bin/python3"
+            "MEMORY_ALLOCATOR": "SYSTEM",
+            "Python_EXECUTABLE": "/usr/bin/python3"
         }
     }
 ]

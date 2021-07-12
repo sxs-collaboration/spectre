@@ -60,6 +60,7 @@ target_link_libraries(
   PUBLIC
   Blaze
   Boost::boost
+  Charmxx::pup
   ErrorHandling
   Options
   Utilities
