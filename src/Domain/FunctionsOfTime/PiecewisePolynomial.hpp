@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace domain {
@@ -50,8 +51,8 @@ class PiecewisePolynomial : public FunctionOfTime {
   }
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.
-  std::array<DataVector, 3> func_and_2_derivs(double t) const
-      noexcept override {
+  std::array<DataVector, 3> func_and_2_derivs(
+      double t) const noexcept override {
     return func_and_derivs<2>(t);
   }
 
@@ -69,8 +70,7 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.
   std::array<double, 2> time_bounds() const noexcept override {
-    return {{deriv_info_at_update_times_.front().time,
-             expiration_time_}};
+    return {{deriv_info_at_update_times_.front().time, expiration_time_}};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -86,40 +86,15 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// an arbitrary time `t`.
   /// The function has multiple components.
   template <size_t MaxDerivReturned = MaxDeriv>
-  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const
-      noexcept;
+  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(
+      double t) const noexcept;
 
   // There exists a DataVector for each deriv order that contains
   // the values of that deriv order for all components.
   using value_type = std::array<DataVector, MaxDeriv + 1>;
 
-  // Holds information at single time at which the `MaxDeriv`th
-  // derivative has been updated.
-  struct DerivInfo {
-    double time{std::numeric_limits<double>::signaling_NaN()};
-    value_type derivs_coefs;
-
-    DerivInfo() = default;
-
-    // Constructor is needed for use of emplace_back of a vector
-    // (additionally, the constructor converts the supplied derivs to
-    // coefficients for simplified polynomial evaluation.)
-    DerivInfo(double t, value_type deriv) noexcept;
-
-    // NOLINTNEXTLINE(google-runtime-references)
-    void pup(PUP::er& p) noexcept;
-
-    bool operator==(const DerivInfo& rhs) const noexcept;
-  };
-
-  /// Returns a DerivInfo corresponding to the closest element in the range of
-  /// DerivInfos with an update time that is less than or equal to `t`.
-  /// The function throws an error if `t` is less than all DerivInfo update
-  /// times. (unless `t` is just less than the earliest update time by roundoff,
-  /// in which case it returns the DerivInfo at the earliest update time.)
-  const DerivInfo& deriv_info_from_upper_bound(double t) const noexcept;
-
-  std::vector<DerivInfo> deriv_info_at_update_times_;
+  std::vector<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
+      deriv_info_at_update_times_;
   double expiration_time_{std::numeric_limits<double>::lowest()};
 };
 

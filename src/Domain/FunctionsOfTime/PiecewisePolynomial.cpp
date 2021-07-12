@@ -12,7 +12,6 @@
 #include <utility>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -43,9 +42,10 @@ PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const noexcept {
           << ". The difference between times is " << t - expiration_time_
           << ".");
   }
-  const auto& deriv_info_at_t = deriv_info_from_upper_bound(t);
+  const auto& deriv_info_at_t =
+      stored_info_from_upper_bound(t, deriv_info_at_update_times_);
   const double dt = t - deriv_info_at_t.time;
-  const value_type& coefs = deriv_info_at_t.derivs_coefs;
+  const value_type& coefs = deriv_info_at_t.stored_quantities;
 
   // initialize result for the number of derivs requested
   std::array<DataVector, MaxDerivReturned + 1> result =
@@ -130,67 +130,8 @@ void PiecewisePolynomial<MaxDeriv>::update(
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::reset_expiration_time(
     const double next_expiration_time) noexcept {
-  if (next_expiration_time < expiration_time_) {
-    ERROR("Attempted to change expiration time to "
-          << next_expiration_time
-          << ", which precedes the previous expiration time of "
-          << expiration_time_ << ".");
-  }
-  expiration_time_ = next_expiration_time;
-}
-
-template <size_t MaxDeriv>
-PiecewisePolynomial<MaxDeriv>::DerivInfo::DerivInfo(const double t,
-                                                    value_type deriv) noexcept
-    : time(t), derivs_coefs(std::move(deriv)) {
-  // convert derivs to coefficients for polynomial evaluation.
-  // the coefficient of x^N is the Nth deriv rescaled by 1/factorial(N)
-  double fact = 1.0;
-  for (size_t j = 2; j < MaxDeriv + 1; j++) {
-    fact *= j;
-    gsl::at(derivs_coefs, j) /= fact;
-  }
-}
-
-template <size_t MaxDeriv>
-void PiecewisePolynomial<MaxDeriv>::DerivInfo::pup(PUP::er& p) noexcept {
-  p | time;
-  p | derivs_coefs;
-}
-
-template <size_t MaxDeriv>
-bool PiecewisePolynomial<MaxDeriv>::DerivInfo::operator==(
-    const PiecewisePolynomial<MaxDeriv>::DerivInfo& rhs) const noexcept {
-  return time == rhs.time and derivs_coefs == rhs.derivs_coefs;
-}
-
-template <size_t MaxDeriv>
-const typename PiecewisePolynomial<MaxDeriv>::DerivInfo&
-PiecewisePolynomial<MaxDeriv>::deriv_info_from_upper_bound(
-    const double t) const noexcept {
-  // this function assumes that the times in deriv_info_at_update_times is
-  // sorted, which is enforced by the update function.
-
-  const auto upper_bound_deriv_info = std::upper_bound(
-      deriv_info_at_update_times_.begin(), deriv_info_at_update_times_.end(), t,
-      [](double t0, const DerivInfo& d) { return d.time > t0; });
-
-  if (upper_bound_deriv_info == deriv_info_at_update_times_.begin()) {
-    // all elements of times are greater than t
-    // check if t is just less than the min element by roundoff
-    if (not equal_within_roundoff(upper_bound_deriv_info->time, t)) {
-      ERROR("requested time " << t << " precedes earliest time "
-                              << deriv_info_at_update_times_.begin()->time
-                              << " of times.");
-    }
-    return *upper_bound_deriv_info;
-  }
-
-  // t is either greater than all elements of times
-  // or t is within the range of times.
-  // In both cases, 'upper_bound_deriv_info' currently points to one index past
-  // the desired index.
-  return *std::prev(upper_bound_deriv_info, 1);
+  FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expiration_time_),
+                                               next_expiration_time);
 }
 
 template <size_t MaxDeriv>
