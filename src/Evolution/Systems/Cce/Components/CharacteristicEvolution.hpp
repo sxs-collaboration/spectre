@@ -189,17 +189,19 @@ struct CharacteristicEvolution {
           CharacteristicEvolution<Metavariables>>,
       Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface,
-      ::Actions::Label<CceEvolutionLabelTag>,
-      Actions::RequestNextBoundaryData<
-          typename Metavariables::cce_boundary_component,
-          CharacteristicEvolution<Metavariables>>,
-      Actions::UpdateGauge, Actions::PrecomputeGlobalCceDependencies,
+      ::Actions::Label<CceEvolutionLabelTag>, Actions::UpdateGauge,
+      Actions::PrecomputeGlobalCceDependencies,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe, record_time_stepper_data_and_step,
-      ::Actions::ChangeStepSize, ::Actions::AdvanceTime,
-      Actions::ExitIfEndTimeReached,
+      ::Actions::ChangeStepSize,
+      // We cannot know our next step for certain until after we've performed
+      // step size selection, as we may need to reject a step.
+      Actions::RequestNextBoundaryData<
+          typename Metavariables::cce_boundary_component,
+          CharacteristicEvolution<Metavariables>>,
+      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
       Actions::ReceiveWorldtubeData<Metavariables>,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 

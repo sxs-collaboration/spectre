@@ -60,6 +60,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/StepControllers/StepController.hpp"
@@ -777,9 +778,11 @@ struct component {
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepController, ::Tags::StepChoosers,
+          tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
+                     ::Tags::StepController, ::Tags::StepChoosers,
                      ::Tags::TimeStepper<LtsTimeStepper>>,
-          tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
+          tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
+                     ::Tags::TimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim, Frame::Logical,
                                     Frame::Inertial>,
@@ -1183,6 +1186,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
+         false,
          static_cast<std::unique_ptr<StepController>>(
              std::make_unique<StepControllers::SplitRemaining>()),
          std::move(step_choosers),
@@ -1215,6 +1219,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  neighbor_id,
                  domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
+             false,
              static_cast<std::unique_ptr<StepController>>(
                  std::make_unique<StepControllers::SplitRemaining>()),
              std::move(step_choosers),
@@ -1247,6 +1252,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
+         false,
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforthN>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -1276,6 +1282,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  neighbor_id,
                  domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
+             false,
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforthN>(5))});
       }

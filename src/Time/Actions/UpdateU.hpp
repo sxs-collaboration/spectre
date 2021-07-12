@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -38,15 +39,37 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
       tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
                           typename System::variables_tag, VariablesTag>;
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
-
-  db::mutate<variables_tag, history_tag>(
-      box,
-      [](const gsl::not_null<typename variables_tag::type*> vars,
-         const gsl::not_null<typename history_tag::type*> history,
-         const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
-        time_stepper.update_u(vars, history, time_step);
-      },
-      db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+  if (db::get<Tags::IsUsingTimeSteppingErrorControlBase>(*box)) {
+    using error_tag = db::add_tag_prefix<::Tags::StepperError, variables_tag>;
+    if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
+      db::mutate<Tags::StepperErrorUpdated, variables_tag, error_tag,
+                 history_tag>(
+          box,
+          [](const gsl::not_null<bool*> stepper_error_updated,
+             const gsl::not_null<typename variables_tag::type*> vars,
+             const gsl::not_null<typename error_tag::type*> error,
+             const gsl::not_null<typename history_tag::type*> history,
+             const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
+            *stepper_error_updated =
+                time_stepper.update_u(vars, error, history, time_step);
+          },
+          db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+    } else {
+      ERROR(
+          "Cannot update the stepper error measure -- "
+          "`db::add_tag_prefix<::Tags::StepperError, VariablesTag>` is not "
+          "present in the box.");
+    }
+  } else {
+    db::mutate<variables_tag, history_tag>(
+        box,
+        [](const gsl::not_null<typename variables_tag::type*> vars,
+           const gsl::not_null<typename history_tag::type*> history,
+           const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
+          time_stepper.update_u(vars, history, time_step);
+        },
+        db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+  }
 }
 
 namespace Actions {
@@ -61,6 +84,7 @@ namespace Actions {
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepper<>
+///   - Tags::IsUsingTimeSteppingErrorControlBase
 ///
 /// DataBox changes:
 /// - Adds: nothing

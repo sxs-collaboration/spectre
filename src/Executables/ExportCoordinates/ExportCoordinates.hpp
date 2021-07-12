@@ -208,9 +208,11 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>, tmpl::list<>>,
         tmpl::pair<Event, tmpl::list<Events::Completion>>,
-        tmpl::pair<Trigger, tmpl::list<Triggers::SlabCompares,
-                                       Triggers::TimeCompares>>>;
+        tmpl::pair<Trigger,
+                   tmpl::list<Triggers::SlabCompares, Triggers::TimeCompares>>>;
   };
 
   enum class Phase { Initialization, RegisterWithObserver, Export, Exit };

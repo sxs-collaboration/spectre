@@ -19,6 +19,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -61,7 +62,8 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
   using simple_tags =
-      db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>;
+      db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag,
+                        ::Tags::IsUsingTimeSteppingErrorControl<>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -79,7 +81,8 @@ struct ComponentWithTemplateSpecifiedVariables {
   using array_index = int;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStep, alternative_variables_tag,
-                        alternative_history_tag>;
+                        alternative_history_tag,
+                        ::Tags::IsUsingTimeSteppingErrorControl<>>;
   using compute_tags = db::AddComputeTags<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -118,11 +121,11 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0, {time_step, 1., history_tag::type{3}});
+      &runner, 0, {time_step, 1., history_tag::type{3}, false});
 
   ActionTesting::emplace_component_and_initialize<
       component_with_template_specified_variables>(
-      &runner, 0, {time_step, 1., alternative_history_tag::type{3}});
+      &runner, 0, {time_step, 1., alternative_history_tag::type{3}, false});
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 

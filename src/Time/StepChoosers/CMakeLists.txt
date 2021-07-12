@@ -15,6 +15,7 @@ spectre_target_headers(
   ByBlock.hpp
   Cfl.hpp
   Constant.hpp
+  ElementSizeCfl.hpp
   ErrorControl.hpp
   Factory.hpp
   Increase.hpp

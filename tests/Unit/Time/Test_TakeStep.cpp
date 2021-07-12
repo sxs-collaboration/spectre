@@ -18,6 +18,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
@@ -107,25 +108,29 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
       time_step, 4);
 
   auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                        Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-                        EvolvedVariable, Tags::dt<EvolvedVariable>,
-                        Tags::HistoryEvolvedVariables<EvolvedVariable>,
-                        Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
-                        domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
-                        Tags::StepController>,
+      db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
+          Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+          Tags::Next<Tags::TimeStep>, EvolvedVariable,
+          Tags::dt<EvolvedVariable>, Tags::StepperError<EvolvedVariable>,
+          Tags::HistoryEvolvedVariables<EvolvedVariable>,
+          Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
+          domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
+          Tags::StepController, ::Tags::IsUsingTimeSteppingErrorControl<>,
+          Tags::StepperErrorUpdated>,
       db::AddComputeTags<typename Metavariables::system::
                              compute_largest_characteristic_speed>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
-      initial_values, DataVector{5, 0.0}, std::move(history),
+      initial_values, DataVector{5, 0.0}, DataVector{5, 0.0},
+      std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
       std::move(step_choosers),
       1.0 / TimeSteppers::AdamsBashforthN{5}.stable_step(),
       static_cast<std::unique_ptr<StepController>>(
-          std::make_unique<StepControllers::BinaryFraction>()));
+          std::make_unique<StepControllers::BinaryFraction>()),
+      true, false);
 
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,

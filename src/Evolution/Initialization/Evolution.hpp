@@ -19,6 +19,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Slab.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -84,15 +85,20 @@ struct TimeAndTimeStep {
                  Tags::InitialSlabSize<Metavariables::local_time_stepping>,
                  tmpl::conditional_t<
                      Metavariables::local_time_stepping,
-                     tmpl::list<::Tags::TimeStepper<LtsTimeStepper>,
+                     tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
+                                ::Tags::TimeStepper<LtsTimeStepper>,
                                 ::Tags::StepChoosers, ::Tags::StepController>,
-                     ::Tags::TimeStepper<TimeStepper>>>>;
+                     tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
+                                ::Tags::TimeStepper<TimeStepper>>>>>;
 
-  using initialization_tags_to_keep = tmpl::conditional_t<
-      Metavariables::local_time_stepping,
-      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
-                 ::Tags::StepController>,
-      tmpl::list<::Tags::TimeStepper<TimeStepper>>>;
+  using initialization_tags_to_keep =
+      tmpl::flatten<tmpl::list<tmpl::conditional_t<
+          Metavariables::local_time_stepping,
+          tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
+                     ::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
+                     ::Tags::StepController>,
+          tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
+                     ::Tags::TimeStepper<TimeStepper>>>>>;
 
   using simple_tags =
       tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
@@ -192,6 +198,7 @@ struct TimeAndTimeStep {
 /// DataBox changes:
 /// - Adds:
 ///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
+///   * `Tags::StepperError<variables_tag>`
 ///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
 ///   * Tags::ComputeDeriv  (for non-conservative systems)
 ///   * Tags::ComputeDiv (for conservative systems)
@@ -205,11 +212,11 @@ struct TimeAndTimeStep {
 /// `Initialization` phase action list prior to this action.
 template <typename Metavariables>
 struct TimeStepperHistory {
-  using initialization_tags = tmpl::list<>;
-
   static constexpr size_t dim = Metavariables::volume_dim;
   using variables_tag = typename Metavariables::system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  using error_variables_tag =
+      db::add_tag_prefix<::Tags::StepperError, variables_tag>;
 
   template <typename System, bool IsInFluxConservativeForm =
                                  System::is_in_flux_conservative_form>
@@ -227,7 +234,8 @@ struct TimeStepperHistory {
 
   using simple_tags =
       tmpl::list<dt_variables_tag,
-                 ::Tags::HistoryEvolvedVariables<variables_tag>>;
+                 ::Tags::HistoryEvolvedVariables<variables_tag>,
+                 error_variables_tag, ::Tags::StepperErrorUpdated>;
 
   using compute_tags =
       typename ComputeTags<typename Metavariables::system>::type;
@@ -247,6 +255,7 @@ struct TimeStepperHistory {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using DtVars = typename dt_variables_tag::type;
+    using ErrorVars = typename error_variables_tag::type;
 
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
@@ -254,14 +263,19 @@ struct TimeStepperHistory {
     const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
     const size_t starting_order =
         time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
-
     // Will be overwritten before use
     DtVars dt_vars{num_grid_points};
     typename ::Tags::HistoryEvolvedVariables<variables_tag>::type history{
       starting_order};
+    ErrorVars error_vars;
+    // only bother allocating if the error vars are going to be used
+    if (db::get<::Tags::IsUsingTimeSteppingErrorControlBase>(box)) {
+      error_vars = ErrorVars{num_grid_points};
+    }
 
     Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), std::move(dt_vars), std::move(history));
+        make_not_null(&box), std::move(dt_vars), std::move(history),
+        std::move(error_vars), false);
 
     return std::make_tuple(std::move(box));
   }
