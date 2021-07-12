@@ -14,6 +14,15 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ChildSize", "[Domain][Unit]") {
   CHECK(child_size({1, 0}, {0, 0}) == Spectral::ChildSize::LowerHalf);
   CHECK(child_size({1, 1}, {0, 0}) == Spectral::ChildSize::UpperHalf);
   CHECK(child_size({1, 1}, {1, 1}) == Spectral::ChildSize::Full);
+  CHECK(child_size<1>({{{2, 3}}}, {{{1, 1}}}) ==
+        std::array<Spectral::ChildSize, 1>{{Spectral::ChildSize::UpperHalf}});
+  CHECK(child_size<2>({{{0, 0}, {1, 0}}}, {{{0, 0}, {0, 0}}}) ==
+        std::array<Spectral::ChildSize, 2>{
+            {Spectral::ChildSize::Full, Spectral::ChildSize::LowerHalf}});
+  CHECK(child_size<3>({{{1, 1}, {1, 1}, {2, 2}}}, {{{0, 0}, {1, 1}, {1, 1}}}) ==
+        std::array<Spectral::ChildSize, 3>{{Spectral::ChildSize::UpperHalf,
+                                            Spectral::ChildSize::Full,
+                                            Spectral::ChildSize::LowerHalf}});
 }
 
 // [[OutputRegex, Segment id 'L1I0' is not the parent of 'L1I1'.]]

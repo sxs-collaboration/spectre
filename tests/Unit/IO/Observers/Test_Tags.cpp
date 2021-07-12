@@ -10,6 +10,11 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace observers::Tags {
+namespace {
+struct TestTag {
+  using type = int;
+};
+}  // namespace
 SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   TestHelpers::db::test_simple_tag<ExpectedContributorsForObservations>(
       "ExpectedContributorsForObservations");
@@ -28,6 +33,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   TestHelpers::db::test_simple_tag<ReductionDataNames<double>>(
       "ReductionDataNames");
   TestHelpers::db::test_simple_tag<H5FileLock>("H5FileLock");
+  TestHelpers::db::test_simple_tag<ObservationKey<TestTag>>(
+      "ObservationKey(TestTag)");
   TestHelpers::db::test_simple_tag<VolumeFileName>("VolumeFileName");
   TestHelpers::db::test_simple_tag<ReductionFileName>("ReductionFileName");
   static_assert(

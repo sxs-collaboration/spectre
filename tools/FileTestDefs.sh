@@ -616,6 +616,8 @@ cmakelists_hardcoded_libraries() {
         whitelist "$1" \
                   "tests/Unit/Parallel/CMakeLists.txt$" \
                   "tests/Unit/ParallelAlgorithms/LinearSolver/Schwarz/\
+CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/Multigrid/\
 CMakeLists.txt$" && \
         staged_grep -E -A1 "(${CHECKED_COMMANDS})\(\$" "$1" | \
             grep -Ev -- "--|${CHECKED_COMMANDS}" | \

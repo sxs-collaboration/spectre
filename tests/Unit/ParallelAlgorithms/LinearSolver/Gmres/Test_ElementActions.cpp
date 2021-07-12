@@ -68,13 +68,13 @@ struct ElementArray {
           tmpl::list<
               LinearSolver::gmres::detail::NormalizeInitialOperand<
                   fields_tag, DummyOptionsGroup, Preconditioned,
-                  DummyOptionsGroup>,
+                  DummyOptionsGroup, void>,
               LinearSolver::gmres::detail::PrepareStep<
                   fields_tag, DummyOptionsGroup, Preconditioned,
-                  DummyOptionsGroup>,
+                  DummyOptionsGroup, void>,
               LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
                   fields_tag, DummyOptionsGroup, Preconditioned,
-                  DummyOptionsGroup>,
+                  DummyOptionsGroup, void>,
               Parallel::Actions::TerminatePhase>>>;
 };
 
@@ -167,9 +167,11 @@ void test_element_actions() {
             std::make_tuple(residual_magnitude, has_converged);
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
         CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
-                              DenseVector<double>(3, 0.5));
-        CHECK(get_tag(basis_history_tag{}).size() == 3);
-        CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
+                              DenseVector<double>(3, has_converged ? 2. : 0.5));
+        CHECK(get_tag(basis_history_tag{}).size() == (has_converged ? 2 : 3));
+        if (not has_converged) {
+          CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
+        }
         CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
         CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
@@ -201,7 +203,7 @@ void test_element_actions() {
             element_array,
             LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
                 fields_tag, DummyOptionsGroup, Preconditioned,
-                DummyOptionsGroup>>(0);
+                DummyOptionsGroup, void>>(0);
         REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
             make_not_null(&runner), 0));
         auto& inbox = ActionTesting::get_inbox_tag<

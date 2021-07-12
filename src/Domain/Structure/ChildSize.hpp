@@ -3,10 +3,14 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
+
 #include "Domain/Structure/SegmentId.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 
 namespace domain {
+/// @{
 /*!
  * \brief Size of a child segment relative to its parent
  *
@@ -15,4 +19,10 @@ namespace domain {
  */
 Spectral::ChildSize child_size(const SegmentId& child_segment_id,
                                const SegmentId& parent_segment_id) noexcept;
-}
+
+template <size_t Dim>
+std::array<Spectral::ChildSize, Dim> child_size(
+    const std::array<SegmentId, Dim>& child_segment_ids,
+    const std::array<SegmentId, Dim>& parent_segment_ids) noexcept;
+/// @}
+}  // namespace domain
