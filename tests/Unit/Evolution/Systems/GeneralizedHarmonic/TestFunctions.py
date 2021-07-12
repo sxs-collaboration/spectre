@@ -492,6 +492,33 @@ def f_constraint_term_25_of_25(spacetime_normal_one_form,
                            inverse_spacetime_metric)
 
 
+def f_constraint_stress_energy_term(inverse_spacetime_metric,
+                                    spacetime_normal_vector,
+                                    spacetime_normal_one_form,
+                                    trace_reversed_stress_energy):
+    return -16.0 * np.pi * (
+        np.einsum("b, ab", spacetime_normal_vector,
+                  trace_reversed_stress_energy) -
+        0.5 * spacetime_normal_one_form * np.einsum(
+            "ab, ab", inverse_spacetime_metric, trace_reversed_stress_energy))
+
+
+def f_constraint_with_stress_energy(
+    gauge_function, d_gauge_function, spacetime_normal_one_form,
+    spacetime_normal_vector, inverse_spatial_metric, inverse_spacetime_metric,
+    pi, phi, d_pi, d_phi, gamma2, three_index_constraint,
+    trace_reversed_stress_energy):
+    constraint = f_constraint(gauge_function, d_gauge_function,
+                              spacetime_normal_one_form,
+                              spacetime_normal_vector, inverse_spatial_metric,
+                              inverse_spacetime_metric, pi, phi, d_pi, d_phi,
+                              gamma2, three_index_constraint)
+    constraint += f_constraint_stress_energy_term(
+        inverse_spacetime_metric, spacetime_normal_vector,
+        spacetime_normal_one_form, trace_reversed_stress_energy)
+    return constraint
+
+
 def f_constraint(gauge_function, d_gauge_function, spacetime_normal_one_form,
                  spacetime_normal_vector, inverse_spatial_metric,
                  inverse_spacetime_metric, pi, phi, d_pi, d_phi, gamma2,
