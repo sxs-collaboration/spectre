@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Fluxes.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
+  Test_VelocityField.cpp
   )
 
 add_test_library(

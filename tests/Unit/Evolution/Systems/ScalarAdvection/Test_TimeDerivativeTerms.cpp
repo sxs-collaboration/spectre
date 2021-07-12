@@ -35,8 +35,8 @@ void test_time_derivative(const gsl::not_null<std::mt19937*> generator,
           generator, make_not_null(&distribution), dudt);
 
   // evaluate dudt and flux
-  ScalarAdvection::TimeDerivativeTerms<Dim>::apply(&dudt, &temp_velocity_field,
-                                                   &flux, u, velocity_field);
+  ScalarAdvection::TimeDerivativeTerms<Dim>::apply(
+      &dudt, &flux, &temp_velocity_field, u, velocity_field);
 
   // expected values of dudt and flux. note that dudt_expected is set to be
   // equal to the original value of dudt (which is 0.0 here), since we have no

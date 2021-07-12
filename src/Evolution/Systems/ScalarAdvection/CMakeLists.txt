@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   Fluxes.cpp
   TimeDerivativeTerms.cpp
+  VelocityField.cpp
   VolumeTermsInstantiation.cpp
   )
 
@@ -23,6 +24,7 @@ spectre_target_headers(
   System.hpp
   Tags.hpp
   TimeDerivativeTerms.hpp
+  VelocityField.hpp
   )
 
 target_link_libraries(
