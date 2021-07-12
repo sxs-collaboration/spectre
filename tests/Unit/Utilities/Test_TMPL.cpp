@@ -102,6 +102,29 @@ void test_as_pack() noexcept {
   CHECK(result == 6);
   // [as_pack]
 }
+
+struct Type1;
+
+template <typename... T>
+struct make_list {
+  using type = tmpl::list<T...>;
+};
+
+void test_transform() noexcept {
+  using new_list = tmpl::transform<tmpl::list<Type1>, make_list<tmpl::_1>>;
+  static_assert(std::is_same_v<new_list, tmpl::list<tmpl::list<Type1>>>);
+  using new_list_2 = tmpl::transform<tmpl::list<Type1>, tmpl::list<Type1>,
+                                     make_list<tmpl::_1, tmpl::_2>>;
+  static_assert(
+      std::is_same_v<new_list_2, tmpl::list<tmpl::list<Type1, Type1>>>);
+  // using bad_list_1 = tmpl::transform<double, make_list<tmpl::_1>>;
+  // using bad_list_2 =
+  //     tmpl::transform<int, tmpl::list<Type1>, make_list<tmpl::_1, tmpl::_2>>;
+  // using bad_list_3 =
+  //     tmpl::transform<tmpl::list<Type1>, int, make_list<tmpl::_1, tmpl::_2>>;
+  // using bad_list_4 =
+  //     tmpl::transform<double, double, make_list<tmpl::_1, tmpl::_2>>;
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
@@ -113,4 +136,5 @@ SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
                      std::integral_constant<size_t, 1>,
                      std::integral_constant<size_t, 3>>{});
   test_as_pack();
+  test_transform();
 }

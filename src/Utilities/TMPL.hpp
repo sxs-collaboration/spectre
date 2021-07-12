@@ -26,6 +26,42 @@
 namespace brigand {
 /// \cond
 namespace detail {
+
+// specializations to catch attempts to transform a non-sequence
+template <typename NotSeq, class Func>
+struct transform<0, NotSeq, Func> {
+  static_assert(
+      std::is_same_v<list<>, NotSeq>,
+      "Cannot transform a non-sequence (the second argument of is_same_v).");
+  using type = std::void_t<>;
+};
+
+template <typename NotSeq, template <class...> class Seq, class... T,
+          class Func>
+struct transform<1, NotSeq, Seq<T...>, Func> {
+  static_assert(
+      std::is_same_v<list<>, NotSeq>,
+      "Cannot transform a non-sequence (the second argument of is_same_v).");
+  using type = std::void_t<>;
+};
+
+template <template <class...> class Seq, class... T, typename NotSeq,
+          class Func>
+struct transform<1, Seq<T...>, NotSeq, Func> {
+  static_assert(
+      std::is_same_v<list<>, NotSeq>,
+      "Cannot transform a non-sequence (the second argument of is_same_v).");
+  using type = std::void_t<>;
+};
+
+template <typename NotSeq1, typename NotSeq2, class Func>
+struct transform<1, NotSeq1, NotSeq2, Func> {
+  static_assert(
+      std::is_same_v<list<>, NotSeq1>,
+      "Cannot transform a non-sequence (the second argument of is_same_v).");
+  using type = std::void_t<>;
+};
+
 template <bool b, typename O, typename L, std::size_t I, typename R,
           typename U = void>
 struct replace_at_impl;
