@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
@@ -23,12 +24,171 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 namespace detail {
+template <evolution::BoundaryConditions::Type GhBcType,
+          evolution::BoundaryConditions::Type ValenciaBcType>
+struct UnionOfBcTypes {
+  static constexpr evolution::BoundaryConditions::Type bc_type =
+      evolution::BoundaryConditions::Type::GhostAndTimeDerivative;
+};
+
+template <>
+struct UnionOfBcTypes<evolution::BoundaryConditions::Type::Ghost,
+                      evolution::BoundaryConditions::Type::Ghost> {
+  static constexpr evolution::BoundaryConditions::Type bc_type =
+      evolution::BoundaryConditions::Type::Ghost;
+};
+
+template <>
+struct UnionOfBcTypes<evolution::BoundaryConditions::Type::TimeDerivative,
+                      evolution::BoundaryConditions::Type::TimeDerivative> {
+  static constexpr evolution::BoundaryConditions::Type bc_type =
+      evolution::BoundaryConditions::Type::TimeDerivative;
+};
+
+template <evolution::BoundaryConditions::Type GhBcType>
+struct UnionOfBcTypes<GhBcType, evolution::BoundaryConditions::Type::Outflow> {
+  static_assert(GhBcType == evolution::BoundaryConditions::Type::Outflow,
+                "If either boundary condition in `ProductOfConditions` has "
+                "`Type::Outflow`, both must have `Type::Outflow`");
+};
+
+template <evolution::BoundaryConditions::Type ValenciaBcType>
+struct UnionOfBcTypes<evolution::BoundaryConditions::Type::Outflow,
+                      ValenciaBcType> {
+  static_assert(ValenciaBcType == evolution::BoundaryConditions::Type::Outflow,
+                "If either boundary condition in `ProductOfConditions` has "
+                "`Type::Outflow`, both must have `Type::Outflow`");
+};
+
+template <>
+struct UnionOfBcTypes<evolution::BoundaryConditions::Type::Outflow,
+                      evolution::BoundaryConditions::Type::Outflow> {
+  static constexpr evolution::BoundaryConditions::Type bc_type =
+      evolution::BoundaryConditions::Type::Outflow;
+};
+
+struct ValenciaDoNothingGhostCondition {
+  using dg_interior_evolved_variables_tags =
+      typename grmhd::ValenciaDivClean::System::variables_tag::tags_list;
+
+  using dg_interior_temporary_tags = tmpl::push_back<
+      db::wrap_tags_in<::Tags::Flux,
+                       typename grmhd::ValenciaDivClean::System::flux_variables,
+                       tmpl::size_t<3_st>, Frame::Inertial>,
+      gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>;
+
+  std::optional<std::string> dg_ghost(
+      const gsl::not_null<Scalar<DataVector>*> tilde_d,
+      const gsl::not_null<Scalar<DataVector>*> tilde_tau,
+      const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
+      const gsl::not_null<Scalar<DataVector>*> tilde_phi,
+
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          tilde_d_flux,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          tilde_tau_flux,
+      const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*>
+          tilde_s_flux,
+      const gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*>
+          tilde_b_flux,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          tilde_phi_flux,
+
+      const gsl::not_null<Scalar<DataVector>*> lapse,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+      const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+          inv_spatial_metric,
+
+      const std::optional<
+          tnsr::I<DataVector, 3, Frame::Inertial>>& /*face_mesh_velocity*/,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& /*normal_covector*/,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
+
+      const Scalar<DataVector>& interior_tilde_d,
+      const Scalar<DataVector>& interior_tilde_tau,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& interior_tilde_s,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_b,
+      const Scalar<DataVector>& interior_tilde_phi,
+
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_d_flux,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_tau_flux,
+      const tnsr::Ij<DataVector, 3, Frame::Inertial>& interior_tilde_s_flux,
+      const tnsr::IJ<DataVector, 3, Frame::Inertial>& interior_tilde_b_flux,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_phi_flux,
+
+      const tnsr::aa<DataVector, 3, Frame::Inertial>&
+          interior_spacetime_metric) noexcept {
+    *tilde_d = interior_tilde_d;
+    *tilde_tau = interior_tilde_tau;
+    *tilde_s = interior_tilde_s;
+    *tilde_b = interior_tilde_b;
+    *tilde_phi = interior_tilde_phi;
+
+    *tilde_d_flux = interior_tilde_d_flux;
+    *tilde_tau_flux = interior_tilde_tau_flux;
+    *tilde_s_flux = interior_tilde_s_flux;
+    *tilde_b_flux = interior_tilde_b_flux;
+    *tilde_phi_flux = interior_tilde_phi_flux;
+
+    const auto spatial_metric = gr::spatial_metric(interior_spacetime_metric);
+    *inv_spatial_metric = determinant_and_inverse(spatial_metric).second;
+    gr::shift(shift, interior_spacetime_metric, *inv_spatial_metric);
+    gr::lapse(lapse, *shift, interior_spacetime_metric);
+    return {};
+  }
+};
+
+struct GhDoNothingGhostCondition {
+  using dg_interior_evolved_variables_tags =
+      typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list;
+
+  using dg_interior_temporary_tags = tmpl::list<
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>;
+
+  std::optional<std::string> dg_ghost(
+      const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
+          spacetime_metric,
+      const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
+      const gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
+      const gsl::not_null<Scalar<DataVector>*> gamma1,
+      const gsl::not_null<Scalar<DataVector>*> gamma2,
+      const gsl::not_null<Scalar<DataVector>*> lapse,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+      const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+          inv_spatial_metric,
+      const std::optional<
+          tnsr::I<DataVector, 3, Frame::Inertial>>& /*face_mesh_velocity*/,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& /*normal_covector*/,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
+      const tnsr::aa<DataVector, 3, Frame::Inertial>& interior_spacetime_metric,
+      const tnsr::aa<DataVector, 3, Frame::Inertial>& interior_pi,
+      const tnsr::iaa<DataVector, 3, Frame::Inertial>& interior_phi,
+      const Scalar<DataVector>& interior_gamma1,
+      const Scalar<DataVector>& interior_gamma2) noexcept {
+    *gamma1 = interior_gamma1;
+    *gamma2 = interior_gamma2;
+    *spacetime_metric = interior_spacetime_metric;
+    *pi = interior_pi;
+    *phi = interior_phi;
+
+    const auto spatial_metric = gr::spatial_metric(interior_spacetime_metric);
+    *inv_spatial_metric = determinant_and_inverse(spatial_metric).second;
+    gr::shift(shift, interior_spacetime_metric, *inv_spatial_metric);
+    gr::lapse(lapse, *shift, interior_spacetime_metric);
+    return {};
+  }
+};
 
 // Implementation for expanding the combination of packs for full compatibility
 // with all possible combination of tag lists that can be used for constructing
@@ -38,6 +198,7 @@ template <
     typename GhEvolvedTagList, typename ValenciaEvolvedTagList,
     typename GhFluxTagList, typename ValenicaFluxTagList,
     typename GhInteriorEvolvedTagList, typename ValenciaInteriorEvolvedTagList,
+    typename DeduplicatedInteriorEvolvedTagList,
     typename GhInteriorPrimitiveTagList, typename ValenciaInteriorPrimitiveTgs,
     typename GhInteriorTempTagList, typename ValenciaInteriorTempTagList,
     typename DeduplicatedTempTagList, typename GhInteriorDtTagList,
@@ -51,6 +212,7 @@ template <
     typename... GhEvolvedTags, typename... ValenciaEvolvedTags,
     typename... GhFluxTags, typename... ValenciaFluxTags,
     typename... GhInteriorEvolvedTags, typename... ValenciaInteriorEvolvedTags,
+    typename... DeduplicatedInteriorEvolvedTags,
     typename... GhInteriorPrimitiveTags,
     typename... ValenciaInteriorPrimitiveTags, typename... GhInteriorTempTags,
     typename... ValenciaInteriorTempTags, typename... DeduplicatedTempTags,
@@ -63,6 +225,7 @@ struct ProductOfConditionsImpl<
     tmpl::list<ValenciaEvolvedTags...>, tmpl::list<GhFluxTags...>,
     tmpl::list<ValenciaFluxTags...>, tmpl::list<GhInteriorEvolvedTags...>,
     tmpl::list<ValenciaInteriorEvolvedTags...>,
+    tmpl::list<DeduplicatedInteriorEvolvedTags...>,
     tmpl::list<GhInteriorPrimitiveTags...>,
     tmpl::list<ValenciaInteriorPrimitiveTags...>,
     tmpl::list<GhInteriorTempTags...>, tmpl::list<ValenciaInteriorTempTags...>,
@@ -101,9 +264,8 @@ struct ProductOfConditionsImpl<
       const tnsr::i<DataVector, 3_st, Frame::Inertial>& normal_covector,
       const tnsr::I<DataVector, 3_st, Frame::Inertial>& normal_vector,
 
-      const typename GhInteriorEvolvedTags::type&... gh_int_evolved_variables,
-      const typename ValenciaInteriorEvolvedTags::
-          type&... valencia_int_evolved_variables,
+      const typename DeduplicatedInteriorEvolvedTags::
+          type&... int_evolved_variables,
 
       const typename GhInteriorPrimitiveTags::type&... gh_int_prim_variables,
       const typename ValenciaInteriorPrimitiveTags::
@@ -126,30 +288,80 @@ struct ProductOfConditionsImpl<
         Tags::detail::TemporaryReference<
             DeduplicatedGridlessTags,
             tmpl::at<gridless_tags_and_types, DeduplicatedGridlessTags>>...,
-        Tags::detail::TemporaryReference<DeduplicatedTempTags>...>
-        shuffle_refs{gridless_variables..., temp_variables...};
+        Tags::detail::TemporaryReference<DeduplicatedTempTags>...,
+        Tags::detail::TemporaryReference<DeduplicatedInteriorEvolvedTags>...>
+        shuffle_refs{gridless_variables..., temp_variables...,
+                     int_evolved_variables...};
 
-    auto gh_string = gh_condition.dg_ghost(
-        gh_variables..., gh_fluxes..., gamma1, gamma2, lapse, shift,
-        inv_spatial_metric, face_mesh_velocity, normal_covector, normal_vector,
-        gh_int_evolved_variables..., gh_int_prim_variables...,
-        tuples::get<Tags::detail::TemporaryReference<GhInteriorTempTags>>(
-            shuffle_refs)...,
-        gh_int_dt_variables..., gh_int_deriv_variables...,
-        tuples::get<Tags::detail::TemporaryReference<
-            GhGridlessTags, tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
-            shuffle_refs)...);
-    auto valencia_string = valencia_condition.dg_ghost(
-        valencia_variables..., valencia_fluxes..., lapse, shift,
-        inv_spatial_metric, face_mesh_velocity, normal_covector, normal_vector,
-        valencia_int_evolved_variables..., valencia_int_prim_variables...,
-        tuples::get<Tags::detail::TemporaryReference<ValenciaInteriorTempTags>>(
-            shuffle_refs)...,
-        valencia_int_dt_variables..., valencia_int_deriv_variables...,
-        tuples::get<Tags::detail::TemporaryReference<
-            ValenciaGridlessTags,
-            tmpl::at<gridless_tags_and_types, ValenciaGridlessTags>>>(
-            shuffle_refs)...);
+    std::optional<std::string> gh_string{};
+    if constexpr (DerivedGhCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::Ghost or
+                  DerivedGhCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::
+                          GhostAndTimeDerivative) {
+      gh_string = gh_condition.dg_ghost(
+          gh_variables..., gh_fluxes..., gamma1, gamma2, lapse, shift,
+          inv_spatial_metric, face_mesh_velocity, normal_covector,
+          normal_vector,
+          tuples::get<Tags::detail::TemporaryReference<GhInteriorEvolvedTags>>(
+              shuffle_refs)...,
+          gh_int_prim_variables...,
+          tuples::get<Tags::detail::TemporaryReference<GhInteriorTempTags>>(
+              shuffle_refs)...,
+          gh_int_dt_variables..., gh_int_deriv_variables...,
+          tuples::get<Tags::detail::TemporaryReference<
+              GhGridlessTags,
+              tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
+              shuffle_refs)...);
+    } else {
+      GhDoNothingGhostCondition{}.dg_ghost(
+          gh_variables..., gh_fluxes..., gamma1, gamma2, lapse, shift,
+          inv_spatial_metric, face_mesh_velocity, normal_covector,
+          normal_vector,
+          tuples::get<Tags::detail::TemporaryReference<GhEvolvedTags>>(
+              shuffle_refs)...,
+          tuples::get<Tags::detail::TemporaryReference<
+              ::GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma1>>(shuffle_refs),
+          tuples::get<Tags::detail::TemporaryReference<
+              ::GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma2>>(shuffle_refs));
+    }
+    std::optional<std::string> valencia_string{};
+    if constexpr (DerivedValenciaCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::Ghost or
+                  DerivedValenciaCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::
+                          GhostAndTimeDerivative) {
+      valencia_string = valencia_condition.dg_ghost(
+          valencia_variables..., valencia_fluxes..., lapse, shift,
+          inv_spatial_metric, face_mesh_velocity, normal_covector,
+          normal_vector,
+          tuples::get<
+              Tags::detail::TemporaryReference<ValenciaInteriorEvolvedTags>>(
+              shuffle_refs)...,
+          valencia_int_prim_variables...,
+          tuples::get<
+              Tags::detail::TemporaryReference<ValenciaInteriorTempTags>>(
+              shuffle_refs)...,
+          valencia_int_dt_variables..., valencia_int_deriv_variables...,
+          tuples::get<Tags::detail::TemporaryReference<
+              ValenciaGridlessTags,
+              tmpl::at<gridless_tags_and_types, ValenciaGridlessTags>>>(
+              shuffle_refs)...);
+    } else {
+      ValenciaDoNothingGhostCondition{}.dg_ghost(
+          valencia_variables..., valencia_fluxes..., gamma1, gamma2, lapse,
+          shift, inv_spatial_metric, face_mesh_velocity, normal_covector,
+          normal_vector,
+          tuples::get<Tags::detail::TemporaryReference<ValenciaEvolvedTags>>(
+              shuffle_refs)...,
+          tuples::get<Tags::detail::TemporaryReference<ValenciaFluxTags>>(
+              shuffle_refs)...,
+          tuples::get<Tags::detail::TemporaryReference<
+              gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>>(
+              shuffle_refs));
+    }
     if (not gh_string.has_value()) {
       return valencia_string;
     }
@@ -169,9 +381,8 @@ struct ProductOfConditionsImpl<
       const tnsr::i<DataVector, 3_st, Frame::Inertial>& normal_covector,
       const tnsr::I<DataVector, 3_st, Frame::Inertial>& normal_vector,
 
-      const typename GhInteriorEvolvedTags::type&... gh_int_evolved_variables,
-      const typename ValenciaInteriorEvolvedTags::
-          type&... valencia_int_evolved_variables,
+      const typename DeduplicatedInteriorEvolvedTags::
+          type&... int_evolved_variables,
 
       const typename GhInteriorPrimitiveTags::type&... gh_int_prim_variables,
       const typename ValenciaInteriorPrimitiveTags::
@@ -192,23 +403,32 @@ struct ProductOfConditionsImpl<
 
     tuples::TaggedTuple<
         Tags::detail::TemporaryReference<
-        DeduplicatedGridlessTags,
-          tmpl::at<gridless_tags_and_types, DeduplicatedGridlessTags>>...,
-      Tags::detail::TemporaryReference<DeduplicatedTempTags>...>
-        shuffle_refs{gridless_variables..., temp_variables...};
-
+            DeduplicatedGridlessTags,
+            tmpl::at<gridless_tags_and_types, DeduplicatedGridlessTags>>...,
+        Tags::detail::TemporaryReference<DeduplicatedTempTags>...,
+        Tags::detail::TemporaryReference<DeduplicatedInteriorEvolvedTags>...>
+        shuffle_refs{gridless_variables..., temp_variables...,
+                     int_evolved_variables...};
+    // outflow condition is only valid if both boundary conditions are outflow,
+    // so we directly apply both. A static_assert elsewhere is triggered if only
+    // one boundary condition is outflow.
     auto gh_string = gh_condition.dg_outflow(
         face_mesh_velocity, normal_covector, normal_vector,
-        gh_int_evolved_variables..., gh_int_prim_variables...,
+        tuples::get<Tags::detail::TemporaryReference<GhInteriorEvolvedTags>>(
+            shuffle_refs)...,
+        gh_int_prim_variables...,
         tuples::get<Tags::detail::TemporaryReference<GhInteriorTempTags>>(
             shuffle_refs)...,
         gh_int_dt_variables..., gh_int_deriv_variables...,
         tuples::get<Tags::detail::TemporaryReference<
-        GhGridlessTags, tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
+            GhGridlessTags, tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
             shuffle_refs)...);
     auto valencia_string = valencia_condition.dg_outflow(
         face_mesh_velocity, normal_covector, normal_vector,
-        valencia_int_evolved_variables..., valencia_int_prim_variables...,
+        tuples::get<
+            Tags::detail::TemporaryReference<ValenciaInteriorEvolvedTags>>(
+            shuffle_refs)...,
+        valencia_int_prim_variables...,
         tuples::get<Tags::detail::TemporaryReference<ValenciaInteriorTempTags>>(
             shuffle_refs)...,
         valencia_int_dt_variables..., valencia_int_deriv_variables...,
@@ -239,9 +459,8 @@ struct ProductOfConditionsImpl<
       const tnsr::i<DataVector, 3_st, Frame::Inertial>& normal_covector,
       const tnsr::I<DataVector, 3_st, Frame::Inertial>& normal_vector,
 
-      const typename GhInteriorEvolvedTags::type&... gh_int_evolved_variables,
-      const typename ValenciaInteriorEvolvedTags::
-          type&... valencia_int_evolved_variables,
+      const typename DeduplicatedInteriorEvolvedTags::
+          type&... int_evolved_variables,
 
       const typename GhInteriorPrimitiveTags::type&... gh_int_prim_variables,
       const typename ValenciaInteriorPrimitiveTags::
@@ -262,31 +481,55 @@ struct ProductOfConditionsImpl<
 
     tuples::TaggedTuple<
         Tags::detail::TemporaryReference<
-        DeduplicatedGridlessTags,
-        tmpl::at<gridless_tags_and_types, DeduplicatedGridlessTags>>...,
-      Tags::detail::TemporaryReference<DeduplicatedTempTags>...>
-        shuffle_refs{gridless_variables..., temp_variables...};
+            DeduplicatedGridlessTags,
+            tmpl::at<gridless_tags_and_types, DeduplicatedGridlessTags>>...,
+        Tags::detail::TemporaryReference<DeduplicatedTempTags>...,
+        Tags::detail::TemporaryReference<DeduplicatedInteriorEvolvedTags>...>
+        shuffle_refs{gridless_variables..., temp_variables...,
+                     int_evolved_variables...};
 
-    auto gh_string = gh_condition.dg_time_derivative(
-        gh_dt_variables..., face_mesh_velocity, normal_covector, normal_vector,
-        gh_int_evolved_variables..., gh_int_prim_variables...,
-        tuples::get<Tags::detail::TemporaryReference<GhInteriorTempTags>>(
-            shuffle_refs)...,
-        gh_int_dt_variables..., gh_int_deriv_variables...,
-        tuples::get<Tags::detail::TemporaryReference<
-            GhGridlessTags, tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
-            shuffle_refs)...);
-    auto valencia_string = valencia_condition.dg_time_derivative(
-        valencia_dt_variables..., face_mesh_velocity, normal_covector,
-        normal_vector, valencia_int_evolved_variables...,
-        valencia_int_prim_variables...,
-        tuples::get<Tags::detail::TemporaryReference<ValenciaInteriorTempTags>>(
-            shuffle_refs)...,
-        valencia_int_dt_variables..., valencia_int_deriv_variables...,
-        tuples::get<Tags::detail::TemporaryReference<
-            ValenciaGridlessTags,
-            tmpl::at<gridless_tags_and_types, ValenciaGridlessTags>>>(
-            shuffle_refs)...);
+    std::optional<std::string> gh_string{};
+    if constexpr (DerivedGhCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::TimeDerivative or
+                  DerivedGhCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::
+                          GhostAndTimeDerivative) {
+      gh_string = gh_condition.dg_time_derivative(
+          gh_dt_variables..., face_mesh_velocity, normal_covector,
+          normal_vector,
+          tuples::get<Tags::detail::TemporaryReference<GhInteriorEvolvedTags>>(
+              shuffle_refs)...,
+          gh_int_prim_variables...,
+          tuples::get<Tags::detail::TemporaryReference<GhInteriorTempTags>>(
+              shuffle_refs)...,
+          gh_int_dt_variables..., gh_int_deriv_variables...,
+          tuples::get<Tags::detail::TemporaryReference<
+              GhGridlessTags,
+              tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
+              shuffle_refs)...);
+    }
+    std::optional<std::string> valencia_string{};
+    if constexpr (DerivedValenciaCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::TimeDerivative or
+                  DerivedValenciaCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::
+                          GhostAndTimeDerivative) {
+      valencia_string = valencia_condition.dg_time_derivative(
+          valencia_dt_variables..., face_mesh_velocity, normal_covector,
+          normal_vector,
+          tuples::get<
+              Tags::detail::TemporaryReference<ValenciaInteriorEvolvedTags>>(
+              shuffle_refs)...,
+          valencia_int_prim_variables...,
+          tuples::get<
+              Tags::detail::TemporaryReference<ValenciaInteriorTempTags>>(
+              shuffle_refs)...,
+          valencia_int_dt_variables..., valencia_int_deriv_variables...,
+          tuples::get<Tags::detail::TemporaryReference<
+              ValenciaGridlessTags,
+              tmpl::at<gridless_tags_and_types, ValenciaGridlessTags>>>(
+              shuffle_refs)...);
+    }
     if (not gh_string.has_value()) {
       return valencia_string;
     }
@@ -305,25 +548,60 @@ struct ProductOfConditionsImpl<
  *
  * \details The implementation of this boundary condition applies the
  * `DerivedGhCondition` followed by the `DerivedValenciaCondition`.
- * To be consistent, both derived conditions must have the same `bc_type`. It is
- * anticipated that the systems are sufficiently independent that the order of
- * application is inconsequential.
- * \note The constraint of matching `bc_type`s will likely need to be relaxed in
- * future changes to permit separate boundary condition calculations for the two
- * sytems.
+ * It is anticipated that the systems are sufficiently independent that the
+ * order of application is inconsequential. Arbitrary combinations of differing
+ * `bc_type`s for the two systems are supported, with the only restriction that
+ * if either is an outflow condition, both must be.
  */
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 class ProductOfConditions final : public BoundaryCondition {
  public:
-  using dg_interior_evolved_variables_tags = tmpl::append<
-      typename DerivedGhCondition::dg_interior_evolved_variables_tags,
-      typename DerivedValenciaCondition::dg_interior_evolved_variables_tags>;
+  static constexpr evolution::BoundaryConditions::Type bc_type =
+      detail::UnionOfBcTypes<DerivedGhCondition::bc_type,
+                             DerivedValenciaCondition::bc_type>::bc_type;
+
+  using dg_interior_evolved_variables_tags =
+      tmpl::remove_duplicates<tmpl::append<
+          typename DerivedGhCondition::dg_interior_evolved_variables_tags,
+          typename DerivedValenciaCondition::dg_interior_evolved_variables_tags,
+          tmpl::conditional_t<
+              DerivedGhCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::TimeDerivative and
+                  bc_type == evolution::BoundaryConditions::Type::
+                                 GhostAndTimeDerivative,
+              typename detail::GhDoNothingGhostCondition::
+                  dg_interior_evolved_variables_tags,
+              tmpl::list<>>,
+          tmpl::conditional_t<
+              DerivedValenciaCondition::bc_type ==
+                      evolution::BoundaryConditions::Type::TimeDerivative and
+                  bc_type == evolution::BoundaryConditions::Type::
+                                 GhostAndTimeDerivative,
+              typename detail::ValenciaDoNothingGhostCondition::
+                  dg_interior_evolved_variables_tags,
+              tmpl::list<>>>>;
   using dg_interior_primitive_variables_tags = tmpl::append<
       tmpl::list<>,
       typename DerivedValenciaCondition::dg_interior_primitive_variables_tags>;
   using dg_interior_temporary_tags = tmpl::remove_duplicates<tmpl::append<
       typename DerivedGhCondition::dg_interior_temporary_tags,
-      typename DerivedValenciaCondition::dg_interior_temporary_tags>>;
+      typename DerivedValenciaCondition::dg_interior_temporary_tags,
+      tmpl::conditional_t<
+          DerivedGhCondition::bc_type ==
+                  evolution::BoundaryConditions::Type::TimeDerivative and
+              bc_type ==
+                  evolution::BoundaryConditions::Type::GhostAndTimeDerivative,
+          typename detail::GhDoNothingGhostCondition::
+              dg_interior_temporary_tags,
+          tmpl::list<>>,
+      tmpl::conditional_t<
+          DerivedValenciaCondition::bc_type ==
+                  evolution::BoundaryConditions::Type::TimeDerivative and
+              bc_type ==
+                  evolution::BoundaryConditions::Type::GhostAndTimeDerivative,
+          typename detail::ValenciaDoNothingGhostCondition::
+              dg_interior_temporary_tags,
+          tmpl::list<>>>>;
   using dg_gridless_tags = tmpl::remove_duplicates<
       tmpl::append<typename DerivedGhCondition::dg_gridless_tags,
                    typename DerivedValenciaCondition::dg_gridless_tags>>;
@@ -351,7 +629,7 @@ class ProductOfConditions final : public BoundaryCondition {
                        tmpl::size_t<3_st>, Frame::Inertial>,
       typename DerivedGhCondition::dg_interior_evolved_variables_tags,
       typename DerivedValenciaCondition::dg_interior_evolved_variables_tags,
-      tmpl::list<>,
+      dg_interior_evolved_variables_tags, tmpl::list<>,
       typename DerivedValenciaCondition::dg_interior_primitive_variables_tags,
       typename DerivedGhCondition::dg_interior_temporary_tags,
       typename DerivedValenciaCondition::dg_interior_temporary_tags,
@@ -395,13 +673,6 @@ class ProductOfConditions final : public BoundaryCondition {
       "Direct product of a GH and ValenciaDivClean GRMHD boundary conditions. "
       "See the documentation for the two individual boundary conditions for "
       "further details."};
-
-  static constexpr evolution::BoundaryConditions::Type bc_type =
-      DerivedGhCondition::bc_type;
-  static_assert(DerivedGhCondition::bc_type ==
-                    DerivedValenciaCondition::bc_type,
-                "The types of the Generalized Harmonic and GRMHD boundary "
-                "conditions must be the same in ProductOfConditions");
 
   ProductOfConditions() = default;
   ProductOfConditions(DerivedGhCondition gh_condition,
