@@ -5,10 +5,10 @@
 
 #include <array>
 #include <cstddef>
-#include <iterator>
 #include <utility>
 
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -55,10 +55,9 @@ struct LhsTensorSymmAndIndices<
       {LhsTensorIndices::value...}};
   static constexpr std::array<size_t, NumIndices> rhs_tensorindex_values = {
       {tmpl::at_c<RhsTensorIndexList, Ints>::value...}};
-  static constexpr std::array<size_t, NumIndices> lhs_to_rhs_map = {
-      {std::distance(
-          rhs_tensorindex_values.begin(),
-          alg::find(rhs_tensorindex_values, lhs_tensorindex_values[Ints]))...}};
+  static constexpr std::array<size_t, NumIndices> rhs_to_lhs_map =
+      compute_tensorindex_transformation(rhs_tensorindex_values,
+                                         lhs_tensorindex_values);
 
   // Compute symmetry of RHS after spacetime indices using generic spatial
   // indices are swapped for spatial indices
@@ -85,10 +84,10 @@ struct LhsTensorSymmAndIndices<
 
   // Desired LHS Tensor's Symmetry, typelist of TensorIndexTypes, and Structure
   using symmetry =
-      Symmetry<rhs_spatial_spacetime_index_symmetry[lhs_to_rhs_map[Ints]]...>;
+      Symmetry<rhs_spatial_spacetime_index_symmetry[rhs_to_lhs_map[Ints]]...>;
   using tensorindextype_list =
       tmpl::list<tmpl::at_c<rhs_spatial_spacetime_tensorindextype_list,
-                            lhs_to_rhs_map[Ints]>...>;
+                            rhs_to_lhs_map[Ints]>...>;
   using structure =
       Tensor_detail::Structure<symmetry,
                                tmpl::at_c<tensorindextype_list, Ints>...>;
