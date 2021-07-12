@@ -229,10 +229,16 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
+          local_time_stepping,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
+                         system::primitive_from_conservative<
+                             ordered_list_of_primitive_recovery_schemes>>,
+                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                         EvolutionMetavars>>,
+          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
+                         EvolutionMetavars>,
+                     Actions::RecordTimeStepperData<>,
                      evolution::Actions::RunEventsAndDenseTriggers<
                          system::primitive_from_conservative<
                              ordered_list_of_primitive_recovery_schemes>>,

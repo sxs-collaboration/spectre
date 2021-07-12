@@ -43,8 +43,7 @@ void lift_flux(
     const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
         boundary_correction_terms,
     const size_t extent_perpendicular_to_boundary,
-    Scalar<DataVector> magnitude_of_face_normal) noexcept {
-  DataVector lift_factor = std::move(get(magnitude_of_face_normal));
+    const Scalar<DataVector>& magnitude_of_face_normal) noexcept {
   // For an Nth degree basis (i.e., one with N+1 basis functions), the LGL
   // weights are:
   //   w_i = 2 / ((N + 1) * N * (P_{N}(xi_i))^2)
@@ -55,22 +54,22 @@ void lift_flux(
   // RHS of the equal sign (e.g. `du/dt=Source - div Flux - boundary corr`),
   // while the magnitude of the normal vector above accounts for the ratios of
   // spatial metrics and Jacobians.
-  lift_factor *=
-      -0.5 * static_cast<double>((extent_perpendicular_to_boundary *
-                                  (extent_perpendicular_to_boundary - 1)));
-
-  *boundary_correction_terms *= lift_factor;
+  *boundary_correction_terms *=
+      -0.5 *
+      static_cast<double>((extent_perpendicular_to_boundary *
+                           (extent_perpendicular_to_boundary - 1))) *
+      get(magnitude_of_face_normal);
 }
 
 template <typename... FluxTags>
 auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
                const size_t extent_perpendicular_to_boundary,
-               Scalar<DataVector> magnitude_of_face_normal) noexcept
+               const Scalar<DataVector>& magnitude_of_face_normal) noexcept
     -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
   Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> lifted_data(
       std::move(flux));
   lift_flux(make_not_null(&lifted_data), extent_perpendicular_to_boundary,
-            std::move(magnitude_of_face_normal));
+            magnitude_of_face_normal);
   return lifted_data;
 }
 /// @}
