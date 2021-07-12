@@ -1,7 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(BoundarySchemes)
 add_subdirectory(NumericalFluxes)
 add_subdirectory(Tags)
 
