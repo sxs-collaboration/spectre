@@ -4,8 +4,11 @@
 import itertools as it
 import numpy as np
 
+import Evolution.Systems.GeneralizedHarmonic.TestFunctions as ght
 import PointwiseFunctions.GeneralRelativity.Christoffel as ch
 import PointwiseFunctions.GeneralRelativity.ComputeGhQuantities as gh
+import PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities as gr
+import PointwiseFunctions.GeneralRelativity.InterfaceNullNormal as nn
 import PointwiseFunctions.GeneralRelativity.ProjectionOperators as proj
 import PointwiseFunctions.GeneralRelativity.WeylPropagating as wp
 
@@ -219,3 +222,303 @@ def constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
                 outgoing_null_one_form, incoming_null_vector,
                 outgoing_null_vector, projection_Ab,
                 char_projected_rhs_dt_v_psi) - char_projected_rhs_dt_v_minus
+
+
+def compute_intermediate_vars(
+    face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
+    inertial_coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source, dt_pi,
+    dt_phi, dt_spacetime_metric, d_pi, d_phi, d_spacetime_metric):
+    inverse_spatial_metric = (inverse_spacetime_metric[1:, 1:] +
+                              (np.einsum('i,j->ij', shift, shift) /
+                               (lapse * lapse)))
+    unit_interface_normal_vector = np.einsum('i,ij->j', normal_covector,
+                                             inverse_spatial_metric)
+    extrinsic_curvature = gh.extrinsic_curvature(spacetime_unit_normal_vector,
+                                                 pi, phi)
+    four_index_constraint = 0 * three_index_constraint  # Dim == 1
+    if len(normal_covector) == 2:
+        four_index_constraint[0, :, :] = d_phi[0, 1, :, :] - d_phi[1, 0, :, :]
+        four_index_constraint[1, :, :] = -four_index_constraint[0, :, :]
+    elif len(normal_covector) == 3:
+        four_index_constraint = ght.four_index_constraint(d_phi)
+
+    incoming_null_one_form = nn.interface_incoming_null_normal(
+        spacetime_unit_normal_one_form, normal_covector)
+    outgoing_null_one_form = nn.interface_outgoing_null_normal(
+        spacetime_unit_normal_one_form, normal_covector)
+    incoming_null_vector = nn.interface_incoming_null_normal(
+        spacetime_unit_normal_vector, unit_interface_normal_vector)
+    outgoing_null_vector = nn.interface_outgoing_null_normal(
+        spacetime_unit_normal_vector, unit_interface_normal_vector)
+
+    projection_ab = proj.projection_operator_transverse_to_interface(
+        spacetime_metric, spacetime_unit_normal_one_form, normal_covector)
+    projection_Ab = proj.projection_operator_transverse_to_interface_mixed(
+        spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+        unit_interface_normal_vector, normal_covector)
+    projection_AB = proj.projection_operator_transverse_to_interface(
+        inverse_spacetime_metric, spacetime_unit_normal_vector,
+        unit_interface_normal_vector)
+
+    char_projected_rhs_dt_v_psi = ght.char_field_upsi(gamma2,
+                                                      inverse_spatial_metric,
+                                                      dt_spacetime_metric,
+                                                      dt_pi, dt_phi,
+                                                      normal_covector)
+    char_projected_rhs_dt_v_zero = ght.char_field_uzero(
+        gamma2, inverse_spatial_metric, dt_spacetime_metric, dt_pi, dt_phi,
+        normal_covector)
+    char_projected_rhs_dt_v_minus = ght.char_field_uminus(
+        gamma2, inverse_spatial_metric, dt_spacetime_metric, dt_pi, dt_phi,
+        normal_covector)
+
+    two_index_constraint_ = ght.two_index_constraint(
+        spacetime_deriv_gauge_source, spacetime_unit_normal_one_form,
+        spacetime_unit_normal_vector, inverse_spatial_metric,
+        inverse_spacetime_metric, pi, phi, d_pi, d_phi, gamma2,
+        three_index_constraint)
+    f_constraint_ = ght.f_constraint(
+        gauge_source, spacetime_deriv_gauge_source,
+        spacetime_unit_normal_one_form, spacetime_unit_normal_vector,
+        inverse_spatial_metric, inverse_spacetime_metric, pi, phi, d_pi, d_phi,
+        gamma2, three_index_constraint)
+    constraint_char_zero_plus = f_constraint_ - np.einsum(
+        'i,ia->a', unit_interface_normal_vector, two_index_constraint_)
+    constraint_char_zero_minus = f_constraint_ + np.einsum(
+        'i,ia->a', unit_interface_normal_vector, two_index_constraint_)
+
+    char_speeds = [
+        ght.char_speed_upsi(gamma1, lapse, shift, normal_covector),
+        ght.char_speed_uzero(gamma1, lapse, shift, normal_covector),
+        ght.char_speed_uplus(gamma1, lapse, shift, normal_covector),
+        ght.char_speed_uminus(gamma1, lapse, shift, normal_covector)
+    ]
+
+    return (unit_interface_normal_vector, four_index_constraint,
+            inverse_spatial_metric, extrinsic_curvature,
+            incoming_null_one_form, outgoing_null_one_form,
+            incoming_null_vector, outgoing_null_vector, projection_ab,
+            projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
+            char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_minus,
+            constraint_char_zero_plus, constraint_char_zero_minus, char_speeds)
+
+
+def error(face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
+          pi, phi, coords, gamma1, gamma2, lapse, shift,
+          inverse_spacetime_metric, spacetime_unit_normal_vector,
+          spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+          spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+          d_spacetime_metric, d_pi, d_phi):
+    if face_mesh_velocity is not None:
+        (unit_interface_normal_vector, four_index_constraint,
+         inverse_spatial_metric, extrinsic_curvature, incoming_null_one_form,
+         outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
+         projection_ab, projection_Ab, projection_AB,
+         char_projected_rhs_dt_v_psi, char_projected_rhs_dt_v_zero,
+         char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+         constraint_char_zero_minus, char_speeds) = compute_intermediate_vars(
+             face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
+             coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+             spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+             three_index_constraint, gauge_source,
+             spacetime_deriv_gauge_source, dt_pi, dt_phi, dt_spacetime_metric,
+             d_pi, d_phi, d_spacetime_metric)
+        char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
+        if (np.amin(char_speeds) < 0.0) and (np.dot(face_mesh_velocity,
+                                                    normal_covector) > 0.0):
+            return (
+                "We found the radial mesh velocity points in the direction "
+                "of the outward normal, i.e. we possibly have an expanding "
+                "domain. Its unclear if proper boundary conditions are "
+                "imposed in this case.")
+    return None
+
+
+def set_bc_corr_zero_when_char_speed_is_positive(dt_v_corr, char_speeds):
+    if char_speeds > 0.0:
+        return dt_v_corr * 0
+    return dt_v_corr
+
+
+def dt_corrs_ConstraintPreserving(
+    face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
+    phi, coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    (unit_interface_normal_vector, four_index_constraint,
+     inverse_spatial_metric, extrinsic_curvature, incoming_null_one_form,
+     outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
+     projection_ab, projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
+     char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_minus,
+     constraint_char_zero_plus,
+     constraint_char_zero_minus, char_speeds) = compute_intermediate_vars(
+         face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
+         coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+         spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+         three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+         dt_pi, dt_phi, dt_spacetime_metric, d_pi, d_phi, d_spacetime_metric)
+    if face_mesh_velocity is not None:
+        char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
+    if np.amin(char_speeds) >= 0.:
+        return (pi * 0, phi * 0, pi * 0, pi * 0)
+    dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
+        unit_interface_normal_vector, three_index_constraint, char_speeds)
+    dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
+        unit_interface_normal_vector, four_index_constraint, char_speeds)
+    dt_v_plus = dt_v_psi * 0
+    dt_v_minus = constraint_preserving_bjorhus_corrections_dt_v_minus(
+        gamma2, coords, incoming_null_one_form, outgoing_null_one_form,
+        incoming_null_vector, outgoing_null_vector, projection_ab,
+        projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
+        char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+        constraint_char_zero_minus, char_speeds)
+    dt_v_psi = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_psi, char_speeds[0])
+    dt_v_zero = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_zero, char_speeds[1])
+    dt_v_minus = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_minus, char_speeds[3])
+    return dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus
+
+
+def dt_corrs_ConstraintPreservingPhysical(
+    face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
+    phi, coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    (unit_interface_normal_vector, four_index_constraint,
+     inverse_spatial_metric, extrinsic_curvature, incoming_null_one_form,
+     outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
+     projection_ab, projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
+     char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_minus,
+     constraint_char_zero_plus,
+     constraint_char_zero_minus, char_speeds) = compute_intermediate_vars(
+         face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
+         coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+         spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+         three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+         dt_pi, dt_phi, dt_spacetime_metric, d_pi, d_phi, d_spacetime_metric)
+    if face_mesh_velocity is not None:
+        char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
+    if np.amin(char_speeds) >= 0.:
+        return (pi * 0, phi * 0, pi * 0, pi * 0)
+    dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
+        unit_interface_normal_vector, three_index_constraint, char_speeds)
+    dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
+        unit_interface_normal_vector, four_index_constraint, char_speeds)
+    dt_v_plus = dt_v_psi * 0
+    dt_v_minus = constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
+        gamma2, coords, normal_covector, unit_interface_normal_vector,
+        spacetime_unit_normal_vector, incoming_null_one_form,
+        outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
+        projection_ab, projection_Ab, projection_AB, inverse_spatial_metric,
+        extrinsic_curvature, spacetime_metric, inverse_spacetime_metric,
+        three_index_constraint, char_projected_rhs_dt_v_psi,
+        char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+        constraint_char_zero_minus, phi, d_phi, d_pi, char_speeds)
+    dt_v_psi = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_psi, char_speeds[0])
+    dt_v_zero = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_zero, char_speeds[1])
+    dt_v_minus = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_minus, char_speeds[3])
+    return dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus
+
+
+def dt_spacetime_metric(face_mesh_velocity, normal_covector, normal_vector,
+                        spacetime_metric, pi, phi, inertial_coords, gamma1,
+                        gamma2, lapse, shift, inverse_spacetime_metric,
+                        spacetime_unit_normal_vector,
+                        spacetime_unit_normal_one_form, three_index_constraint,
+                        gauge_source, spacetime_deriv_gauge_source,
+                        dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric,
+                        d_pi, d_phi):
+    (dt_v_psi, dt_v_zero, dt_v_plus,
+     dt_v_minus) = dt_corrs_ConstraintPreserving(
+         face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
+         pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+         inverse_spacetime_metric, spacetime_unit_normal_vector,
+         spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+         spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+         d_spacetime_metric, d_pi, d_phi)
+    return dt_v_psi
+
+
+def dt_pi_ConstraintPreserving(
+    face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
+    phi, inertial_coords, gamma1, gamma2, lapse, shift,
+    inverse_spacetime_metric, spacetime_unit_normal_vector,
+    spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+    spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+    d_spacetime_metric, d_pi, d_phi):
+    (dt_v_psi, dt_v_zero, dt_v_plus,
+     dt_v_minus) = dt_corrs_ConstraintPreserving(
+         face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
+         pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+         inverse_spacetime_metric, spacetime_unit_normal_vector,
+         spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+         spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+         d_spacetime_metric, d_pi, d_phi)
+    return ght.evol_field_pi(gamma2, dt_v_psi, dt_v_zero, dt_v_plus,
+                             dt_v_minus, normal_covector)
+
+
+def dt_pi_ConstraintPreservingPhysical(
+    face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
+    phi, inertial_coords, gamma1, gamma2, lapse, shift,
+    inverse_spacetime_metric, spacetime_unit_normal_vector,
+    spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+    spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+    d_spacetime_metric, d_pi, d_phi):
+    (dt_v_psi, dt_v_zero, dt_v_plus,
+     dt_v_minus) = dt_corrs_ConstraintPreservingPhysical(
+         face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
+         pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+         inverse_spacetime_metric, spacetime_unit_normal_vector,
+         spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+         spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+         d_spacetime_metric, d_pi, d_phi)
+    return ght.evol_field_pi(gamma2, dt_v_psi, dt_v_zero, dt_v_plus,
+                             dt_v_minus, normal_covector)
+
+
+def dt_phi_ConstraintPreserving(
+    face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
+    phi, inertial_coords, gamma1, gamma2, lapse, shift,
+    inverse_spacetime_metric, spacetime_unit_normal_vector,
+    spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+    spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+    d_spacetime_metric, d_pi, d_phi):
+    (dt_v_psi, dt_v_zero, dt_v_plus,
+     dt_v_minus) = dt_corrs_ConstraintPreserving(
+         face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
+         pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+         inverse_spacetime_metric, spacetime_unit_normal_vector,
+         spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+         spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+         d_spacetime_metric, d_pi, d_phi)
+    return ght.evol_field_phi(gamma2, dt_v_psi, dt_v_zero, dt_v_plus,
+                              dt_v_minus, normal_covector)
+
+
+def dt_phi_ConstraintPreservingPhysical(
+    face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
+    phi, inertial_coords, gamma1, gamma2, lapse, shift,
+    inverse_spacetime_metric, spacetime_unit_normal_vector,
+    spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+    spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+    d_spacetime_metric, d_pi, d_phi):
+    (dt_v_psi, dt_v_zero, dt_v_plus,
+     dt_v_minus) = dt_corrs_ConstraintPreservingPhysical(
+         face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
+         pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+         inverse_spacetime_metric, spacetime_unit_normal_vector,
+         spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+         spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+         d_spacetime_metric, d_pi, d_phi)
+    return ght.evol_field_phi(gamma2, dt_v_psi, dt_v_zero, dt_v_plus,
+                              dt_v_minus, normal_covector)

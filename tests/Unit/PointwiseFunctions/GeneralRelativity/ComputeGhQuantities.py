@@ -131,6 +131,13 @@ def spacetime_deriv_detg(sqrt_det_spatial_metric, inverse_spatial_metric,
     return dg
 
 
+def extrinsic_curvature(spacetime_normal_vector, pi, phi):
+    return (
+        0.5 * pi[1:, 1:] +
+        0.5 * np.einsum('ija,a->ij', phi[:, 1:, :], spacetime_normal_vector) +
+        0.5 * np.einsum('jia,a->ij', phi[:, 1:, :], spacetime_normal_vector))
+
+
 def covariant_deriv_extrinsic_curvture(extrinsic_curvature,
                                        spacetime_unit_nomal_vector,
                                        spatial_christoffel_second_kind,
