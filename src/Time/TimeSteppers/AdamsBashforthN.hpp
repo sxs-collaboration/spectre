@@ -409,10 +409,8 @@ template <typename Vars, typename DerivVars>
 bool AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
                                      const History<Vars, DerivVars>& history,
                                      const double time) const noexcept {
-  ASSERT(history.integration_order() == order_,
-         "Dense output is only supported at full order");
   const ApproximateTimeDelta time_step{time - history.back().value()};
-  update_u_impl(u, history, time_step, order_);
+  update_u_impl(u, history, time_step, history.integration_order());
   return true;
 }
 

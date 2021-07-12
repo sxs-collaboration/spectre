@@ -24,7 +24,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3", "[Unit][Time]") {
   TimeStepperTestUtils::integrate_variable_test(stepper, 3, 0, 1e-9);
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_convergence_order(stepper);
-  TimeStepperTestUtils::check_dense_output(stepper);
+  TimeStepperTestUtils::check_dense_output(stepper, 3_st);
 
   CHECK(stepper.order() == 3_st);
   CHECK(stepper.error_estimate_order() == 2_st);
