@@ -20,6 +20,14 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
     const gsl::not_null<Scalar<DataVector>*> dt_psi,
+
+    const gsl::not_null<Scalar<DataVector>*> result_lapse,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> result_shift,
+    const gsl::not_null<tnsr::II<DataVector, Dim>*>
+        result_inverse_spatial_metric,
+    const gsl::not_null<Scalar<DataVector>*> result_gamma1,
+    const gsl::not_null<Scalar<DataVector>*> result_gamma2,
+
     const tnsr::i<DataVector, Dim>& d_pi,
     const tnsr::ij<DataVector, Dim>& d_phi,
     const tnsr::i<DataVector, Dim>& d_psi, const Scalar<DataVector>& pi,
@@ -32,6 +40,12 @@ void TimeDerivative<Dim>::apply(
     const Scalar<DataVector>& trace_extrinsic_curvature,
     const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2) noexcept {
+  *result_lapse = lapse;
+  *result_shift = shift;
+  *result_inverse_spatial_metric = upper_spatial_metric;
+  *result_gamma1 = gamma1;
+  *result_gamma2 = gamma2;
+
   dt_psi->get() = -lapse.get() * pi.get();
   for (size_t m = 0; m < Dim; ++m) {
     dt_psi->get() +=
