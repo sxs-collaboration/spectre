@@ -234,14 +234,42 @@ void four_index_constraint(
  * \nonumber \\ &&
  * + \frac{1}{2} t_a \Pi_{cd}\psi^{cd} H_b t^b
  * - t_a g^{ij} \Phi_{ijc} H_d \psi^{cd}
- * +\frac{1}{2}  t_a g^{ij} H_i \Phi_{jcd}\psi^{cd},
+ * +\frac{1}{2}  t_a g^{ij} H_i \Phi_{jcd}\psi^{cd}
+ * \nonumber \\ &&
+ * - 16 \pi t^a T_{a b}
  * \f}
  * where \f$H_a\f$ is the gauge function,
  * \f$\psi_{ab}\f$ is the spacetime metric,
  * \f$\Pi_{ab}=-t^c\partial_c \psi_{ab}\f$, and
  * \f$\Phi_{iab} = \partial_i\psi_{ab}\f$; \f$t^a\f$ is the timelike unit
  * normal vector to the spatial slice, \f$g^{ij}\f$ is the inverse spatial
- * metric, and \f$g^b_c = \delta^b_c + t^b t_c\f$.
+ * metric, \f$g^b_c = \delta^b_c + t^b t_c\f$, and \f$T_{a b}\f$ is the
+ * stress-energy tensor if nonzero (if using the overload with no stress-energy
+ * tensor provided, the stress energy term is omitted).
+ *
+ * To justify the stress-energy contribution to the F constraint, note that
+ * the stress-energy tensor appears in the dynamics of the Generalized
+ * Harmonic system only through \f$\partial_t \Pi_{a b}\f$.
+ * That dependence arises from (using \f$\dots\f$ to indicate collections of
+ * terms that are known to be independent of the stress-energy tensor):
+ *
+ * \f[
+ * {\cal F}_a = \dots \alpha^{-1}(\partial_t {\cal C}_a),
+ * \f]
+ *
+ * where
+ *
+ * \f[
+ * {\cal C}_a = H_a + g^{i j} \Phi_{ij a} + t^b \Pi_{ba}
+ * - \frac{1}{2} g_a{}^i \psi^{bc} \Phi_{i b c}
+ * - \frac{1}{2} t_a \psi^{bc} \Pi_{b c}.
+ * \f].
+ *
+ * Therefore, the Stress-energy contribution can be calculated from the
+ * trace-reversed contribution appearing in
+ * `grmhd::GhValenciaDivClean::add_stress_energy_term_to_dt_pi` -- the
+ * trace reversal in that function and the trace-reversal that appears
+ * explicitly in \f${\cal C}_a\f$ cancel.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> f_constraint(
@@ -275,6 +303,41 @@ void f_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>&
         three_index_constraint) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> f_constraint(
+    const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
+    const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function,
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const Scalar<DataType>& gamma2,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
+    const tnsr::aa<DataType, SpatialDim, Frame>&
+        trace_reversed_stress_energy) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void f_constraint(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
+    const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
+    const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function,
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const Scalar<DataType>& gamma2,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
+    const tnsr::aa<DataType, SpatialDim, Frame>&
+        trace_reversed_stress_energy) noexcept;
 /// @}
 
 /// @{
@@ -535,6 +598,10 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
  *
  * \details See `f_constraint()`. Can be retrieved using
  * `GeneralizedHarmonic::Tags::FConstraint`.
+ *
+ * \note If the system contains matter, you will need to use a system-specific
+ * version of this compute tag that passes the appropriate stress-energy tensor
+ * to the F-constraint calculation.
  */
 template <size_t SpatialDim, typename Frame>
 struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
