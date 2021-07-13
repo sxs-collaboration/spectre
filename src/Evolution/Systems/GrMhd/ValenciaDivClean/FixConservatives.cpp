@@ -189,25 +189,52 @@ bool FixConservatives::operator()(
       //   converge. We handle this case explicitly because we found that
       //   setting a lower bound of 1.-1.e-12 leads to floating point
       //   exceptions.
+      // - In regions where the solution is just above atmosphere we sometimes
+      //   obtain an upper bound on the Lorentz factor somewhere around ~1e5,
+      //   while the actual Lorentz factor is only 1+1e-6. This leads to
+      //   situations where the solver must perform many (over 50) iterations to
+      //   converge. A simple way of avoiding this is to check that
+      //   [W_{lower_bound}, 10 * W_{lower_bound}] brackets the root and then
+      //   use 10 * W_{lower_bound} as the upper bound. This reduces the number
+      //   of iterations for the TOMS748 algorithm to converge to less than 10.
+      //   Note that the factor 10 is chosen arbitrarily and could probably be
+      //   reduced if required. The reasoning behind 10 is that it is unlikely
+      //   the Lorentz factor will increase by a factor of 10 from one time step
+      //   to the next in a physically meaning situation, and so 10 provides a
+      //   reasonable bound.
       const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
           b_squared_over_d, tau_over_d, normalized_s_dot_b};
-      const double upper_bound_of_lorentz_factor = 1.0 + tau_over_d;
+      double upper_bound_of_lorentz_factor = 1.0 + tau_over_d;
 
       double lorentz_factor = std::numeric_limits<double>::signaling_NaN();
       if (const double f_at_lower =
               f_of_lorentz_factor(lower_bound_of_lorentz_factor);
-          lower_bound_of_lorentz_factor == 1.0 and f_at_lower > 0.0 and
-          f_at_lower < 1.0e-14) {
+          equal_within_roundoff(lower_bound_of_lorentz_factor,
+                                upper_bound_of_lorentz_factor) or
+          (lower_bound_of_lorentz_factor == 1.0 and f_at_lower > 0.0 and
+           f_at_lower < 1.0e-14)) {
         lorentz_factor = lower_bound_of_lorentz_factor;
       } else {
         try {
-          lorentz_factor =
-              (equal_within_roundoff(lower_bound_of_lorentz_factor,
-                                     upper_bound_of_lorentz_factor)
-                   ? lower_bound_of_lorentz_factor
-                   : RootFinder::toms748(
-                         f_of_lorentz_factor, lower_bound_of_lorentz_factor,
-                         upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
+          double f_at_upper{0.0};
+          if (upper_bound_of_lorentz_factor >
+              10.0 * lower_bound_of_lorentz_factor) {
+            const double f_at_10x_lower_bound =
+                f_of_lorentz_factor(10.0 * lower_bound_of_lorentz_factor);
+            if (std::signbit(f_at_10x_lower_bound) !=
+                std::signbit(f_at_lower)) {
+              upper_bound_of_lorentz_factor =
+                  10.0 * lower_bound_of_lorentz_factor;
+              f_at_upper = f_at_10x_lower_bound;
+            }
+          } else {
+            f_at_upper = f_of_lorentz_factor(upper_bound_of_lorentz_factor);
+          }
+
+          lorentz_factor = RootFinder::toms748(
+              f_of_lorentz_factor, lower_bound_of_lorentz_factor,
+              upper_bound_of_lorentz_factor, f_at_lower, f_at_upper, 1.e-14,
+              1.e-14, 100);
         } catch (std::exception& exception) {
           // clang-format makes the streamed text hard to read in code...
           // clang-format off
