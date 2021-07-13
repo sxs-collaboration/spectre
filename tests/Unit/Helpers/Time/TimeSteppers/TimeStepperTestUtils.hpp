@@ -77,7 +77,8 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, size_t order,
 
 void check_convergence_order(const TimeStepper& stepper) noexcept;
 
-void check_dense_output(const TimeStepper& stepper) noexcept;
+void check_dense_output(const TimeStepper& stepper,
+                        const size_t history_integration_order) noexcept;
 
 void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept;
 }  // namespace TimeStepperTestUtils

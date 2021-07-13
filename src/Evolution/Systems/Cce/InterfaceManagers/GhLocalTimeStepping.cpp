@@ -135,6 +135,10 @@ void GhLocalTimeStepping::insert_next_gh_time(
         boundary_history_.begin() +
         static_cast<ptrdiff_t>(boundary_history_.size() - order_));
   }
+  if (boundary_history_.integration_order() < boundary_history_.size()) {
+    boundary_history_.integration_order(
+        std::min(boundary_history_.size(), order_));
+  }
 }
 
 void GhLocalTimeStepping::request_gh_data(const TimeStepId& time_id) noexcept {
@@ -164,6 +168,10 @@ void GhLocalTimeStepping::update_history() noexcept {
     boundary_history_.mark_unneeded(
         boundary_history_.begin() +
         static_cast<ptrdiff_t>(boundary_history_.size() - order_));
+  }
+  if (boundary_history_.integration_order() < boundary_history_.size()) {
+    boundary_history_.integration_order(
+        std::min(boundary_history_.size(), order_));
   }
 }
 

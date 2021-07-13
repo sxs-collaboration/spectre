@@ -46,10 +46,10 @@ void test_gh_local_time_stepping_interface_manager(
       {true, 0, {source_slab, {3, 5}}}, {true, 0, {source_slab, {7, 10}}},
       {true, 0, {source_slab, {4, 5}}}, {true, 0, {source_slab, {9, 10}}}};
   const std::vector<TimeStepId> target_time_steps{
-      {true, 0, {target_slab, {19, 80}}},
-      {true, 0, {target_slab, {7, 20}}},
-      {true, 0, {target_slab, {17, 40}}},
-      {true, 0, {target_slab, {1, 2}}}};
+      {true, 0, {target_slab, {0, 1}}},   {true, 0, {target_slab, {1, 40}}},
+      {true, 0, {target_slab, {3, 40}}},  {true, 0, {target_slab, {7, 40}}},
+      {true, 0, {target_slab, {19, 80}}}, {true, 0, {target_slab, {7, 20}}},
+      {true, 0, {target_slab, {17, 40}}}, {true, 0, {target_slab, {1, 2}}}};
   InterfaceManagers::GhLocalTimeStepping interface_manager{5};
   CHECK(interface_manager.get_interpolation_strategy() ==
         InterpolationStrategy::EveryStep);
@@ -147,7 +147,8 @@ void test_gh_local_time_stepping_interface_manager(
                                    const gsl::not_null<
                                        InterfaceManagers::GhLocalTimeStepping*>
                                        local_interface_manager,
-                                   const size_t index) noexcept {
+                                   const size_t index,
+                                   Approx local_approx = approx) noexcept {
     const double current_time = target_time_steps[index].substep_time().value();
     tnsr::aa<DataVector, 3> expected_spacetime_metric{5_st};
     tnsr::iaa<DataVector, 3> expected_phi{5_st};
@@ -175,24 +176,35 @@ void test_gh_local_time_stepping_interface_manager(
     const auto retrieved_data =
         local_interface_manager->retrieve_and_remove_first_ready_gh_data();
     REQUIRE(static_cast<bool>(retrieved_data));
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(
         SINGLE_ARG(
             get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
                 get<1>(*retrieved_data))),
-        expected_spacetime_metric);
-    CHECK_ITERABLE_APPROX(
+        expected_spacetime_metric, local_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
         SINGLE_ARG(get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
             get<1>(*retrieved_data))),
-        expected_pi);
-    CHECK_ITERABLE_APPROX(
+        expected_pi, local_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
         SINGLE_ARG(get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
             get<1>(*retrieved_data))),
-        expected_phi);
+        expected_phi, local_approx);
   };
 
   // Test plan (given in ratios of the source interval):
-  // insert preparation steps 0.0 0.1 0.2 0.3 0.4 and next times except for 0.4
-  // (order 5)
+  // insert 0.0
+  // request 0.0
+  // insert 0.0 next time
+  // request 0.05
+  //
+  // insert 0.1 and next time
+  // request 0.15
+  //
+  // insert 0.2 and next time
+  // request 0.35
+  // insert 0.3 and next time
+  // insert 0.4
+  //
   // request 0.475 (19/40)
   // fail to retrieve .475
   // insert 0.4 next time
@@ -211,24 +223,41 @@ void test_gh_local_time_stepping_interface_manager(
   // retrieve .85
 
   check_no_retrieval(make_not_null(&interface_manager));
+
   insert_source_data(make_not_null(&interface_manager), 0_st);
+  request_target_time(make_not_null(&interface_manager), 0_st);
+  check_no_retrieval(make_not_null(&interface_manager));
   insert_source_next_time(make_not_null(&interface_manager), 0_st);
+  request_target_time(make_not_null(&interface_manager), 1_st);
+  check_retrieval(make_not_null(&interface_manager), 0_st,
+                  Approx::custom().epsilon(1.e-5).scale(1.));
+  check_retrieval(make_not_null(&interface_manager), 1_st,
+                  Approx::custom().epsilon(1.e-7).scale(1.));
+
   insert_source_data(make_not_null(&interface_manager), 1_st);
   insert_source_next_time(make_not_null(&interface_manager), 1_st);
+  request_target_time(make_not_null(&interface_manager), 2_st);
+  check_retrieval(make_not_null(&interface_manager), 2_st,
+                  Approx::custom().epsilon(1.e-9).scale(1.));
+
   insert_source_data(make_not_null(&interface_manager), 2_st);
   insert_source_next_time(make_not_null(&interface_manager), 2_st);
+  request_target_time(make_not_null(&interface_manager), 3_st);
+  check_no_retrieval(make_not_null(&interface_manager));
   insert_source_data(make_not_null(&interface_manager), 3_st);
   insert_source_next_time(make_not_null(&interface_manager), 3_st);
+  check_retrieval(make_not_null(&interface_manager), 3_st);
   insert_source_data(make_not_null(&interface_manager), 4_st);
-  request_target_time(make_not_null(&interface_manager), 0_st);
+
+  request_target_time(make_not_null(&interface_manager), 4_st);
   check_no_retrieval(make_not_null(&interface_manager));
   insert_source_next_time(make_not_null(&interface_manager), 4_st);
   insert_source_data(make_not_null(&interface_manager), 5_st);
   insert_source_next_time(make_not_null(&interface_manager), 5_st);
-  check_retrieval(make_not_null(&interface_manager), 0_st);
+  check_retrieval(make_not_null(&interface_manager), 4_st);
   check_no_retrieval(make_not_null(&interface_manager));
   insert_source_data(make_not_null(&interface_manager), 6_st);
-  request_target_time(make_not_null(&interface_manager), 1_st);
+  request_target_time(make_not_null(&interface_manager), 5_st);
 
   const auto second_half_checks =
       [&request_target_time, &check_no_retrieval, &check_retrieval,
@@ -236,13 +265,13 @@ void test_gh_local_time_stepping_interface_manager(
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager) noexcept {
         insert_source_next_time(local_interface_manager, 6_st);
-        request_target_time(local_interface_manager, 2_st);
+        request_target_time(local_interface_manager, 6_st);
         insert_source_next_time(local_interface_manager, 7_st);
         insert_source_data(local_interface_manager, 7_st);
         insert_source_data(local_interface_manager, 8_st);
         insert_source_next_time(local_interface_manager, 8_st);
-        check_retrieval(local_interface_manager, 1_st);
-        check_retrieval(local_interface_manager, 2_st);
+        check_retrieval(local_interface_manager, 5_st);
+        check_retrieval(local_interface_manager, 6_st);
         check_no_retrieval(local_interface_manager);
       };
   auto clone = interface_manager.get_clone();
